@@ -1094,9 +1094,10 @@ dnl a custom prefix with a trailing slash
 	
 fi
 
-AC_CONFIG_FILES(		\
-	Makefile		\
-	libio/Makefile		\
+AC_CONFIG_FILES(		  \
+	Makefile		        \
+  services/Makefile   \
+	libio/Makefile		  \
 	libio/comm/Makefile	\
 	libio/mem/Makefile	\
 	libio/misc/Makefile	\

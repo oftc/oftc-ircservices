@@ -23,7 +23,7 @@ RM          = @RM@
 
 # Default make flags - you may want to uncomment this on a multicpu machine
 #MFLAGS   = -j 4
-DEPEND_DIRS  = libio 
+DEPEND_DIRS  = libio services
 BUILD_DIRS   = ${DEPEND_DIRS} 
 INSTALL_DIRS = ${BUILD_DIRS} 
 CLEAN_DIRS   = ${BUILD_DIRS}
@@ -48,7 +48,7 @@ build: include/setup.h depend
 	done
 
 clean:
-	${RM} -f *~ core rsa_respond.tar rsa_respond.tar.gz
+	${RM} -f *~ rsa_respond.tar rsa_respond.tar.gz
 	@for i in $(CLEAN_DIRS); do \
 		echo "clean ==> $$i";\
 		cd $$i && ${MAKE} ${MFLAGS} clean || exit; cd ..;\
@@ -58,7 +58,7 @@ clean:
 	fi
 
 distclean:
-	${RM} -f Makefile *~ *.rej *.orig *core
+	${RM} -f Makefile *~ *.rej *.orig 
 	${RM} -f config.status config.cache config.log
 	${RM} -rf autom4te.cache
 	cd include; ${RM} -f setup.h *~ *.rej *.orig ; cd ..

@@ -10735,7 +10735,7 @@ _ACEOF
 
 fi
 
-                                                                      ac_config_files="$ac_config_files Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile"
+                                                                                ac_config_files="$ac_config_files Makefile services/Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -11264,6 +11264,7 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+  "services/Makefile" ) CONFIG_FILES="$CONFIG_FILES services/Makefile" ;;
   "libio/Makefile" ) CONFIG_FILES="$CONFIG_FILES libio/Makefile" ;;
   "libio/comm/Makefile" ) CONFIG_FILES="$CONFIG_FILES libio/comm/Makefile" ;;
   "libio/mem/Makefile" ) CONFIG_FILES="$CONFIG_FILES libio/mem/Makefile" ;;
