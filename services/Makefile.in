@@ -27,7 +27,7 @@ localstatedir	= $(DESTDIR)@localstatedir@
 CLOBBER=@CLOBBER@
 
 # If you wish to change this, look in include/defaults.h also and change SPATH
-PROGS		= ircd
+PROGS		= services
 
 SSL_LIBS	= @SSL_LIBS@
 SSL_INCLUDES	= @SSL_INCLUDES@
@@ -80,7 +80,7 @@ install: install-mkdirs build
 	@${MV} Makefile.depend Makefile
 
 clean:
-	${RM} -f *.o conf/*.o *.exe *~ *core ircd
+	${RM} -f *.o conf/*.o *.exe *~ *core services
 distclean: clean
 	${RM} -f Makefile .depend
 

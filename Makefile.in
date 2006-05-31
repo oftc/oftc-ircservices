@@ -28,7 +28,7 @@ BUILD_DIRS   = ${DEPEND_DIRS}
 INSTALL_DIRS = ${BUILD_DIRS} 
 CLEAN_DIRS   = ${BUILD_DIRS}
 # Anywhere that we can make install, we obviously can rm -f Makefile
-DISTCLEAN_DIRS = ${INSTALL_DIRS} c
+DISTCLEAN_DIRS = ${INSTALL_DIRS} 
 
 prefix		= $(DESTDIR)@prefix@
 
