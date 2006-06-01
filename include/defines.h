@@ -1,0 +1,3 @@
+#define IRCD_BUFSIZE 512
+
+#define ETCPATH SERVICES_PREFIX "/etc/"

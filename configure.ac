@@ -1085,7 +1085,7 @@ AC_SUBST(SEDOBJ)
 AC_SUBST(DYNLINK_C)
 
 if test "$prefix" = "NONE"; then 
-	AC_DEFINE_UNQUOTED(IRCD_PREFIX, "$ac_default_prefix", [Prefix where the ircd is installed.])
+	AC_DEFINE_UNQUOTED(SERVICES_PREFIX, "$ac_default_prefix", [Prefix where the ircd is installed.])
 
 else
 
@@ -1093,7 +1093,7 @@ dnl Don't get bitten by Cygwin's stupidity if the user specified
 dnl a custom prefix with a trailing slash
 
 	prefix=`echo $prefix | sed 's/\/$//'`
-	AC_DEFINE_UNQUOTED(IRCD_PREFIX, "$prefix", [Prefix where the ircd is installed.])
+	AC_DEFINE_UNQUOTED(SERVICES_PREFIX, "$prefix", [Prefix where the ircd is installed.])
 	
 fi
 

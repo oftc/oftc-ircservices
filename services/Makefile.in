@@ -1,5 +1,5 @@
 #
-# Makefile.in for ircd/src
+# Makefile.in for services/services
 #
 # $Id: Makefile.in 603 2006-05-14 10:32:26Z michael $
 #
@@ -37,9 +37,27 @@ CPPFLAGS	= ${INCLUDES} @CPPFLAGS@
 
 default:	all
 
+y.tab.o:  y.tab.c services_parser.y
+	${CC} ${CPPFLAGS} ${CFLAGS} -I. -c y.tab.c
+
+# Note GNU bison uses <file>.tab.c not y.tab.c
+y.tab.c:  services_parser.y
+	${YACC} -d services_parser.y
+
+
+lex.yy.o: y.tab.c lex.yy.c services_lexer.l
+	${CC} ${CPPFLAGS} ${CFLAGS} -I. -c lex.yy.c
+
+lex.yy.c: services_lexer.l
+	${LEX} services_lexer.l
+
+
+
 SSL_SRCS = rsa.c
 
 SRCS = \
+ dbm.c 		  \
+ conf.c			\
  services.c
 
 OBJS = ${SRCS:.c=.o}
@@ -48,8 +66,8 @@ all: .depend services
 
 build: all
 
-services: @MODULES_LIBS@ ../libio/libio.a $(OBJS)
-	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} ${IRCDLIBS}
+services: @MODULES_LIBS@ ../libio/libio.a lex.yy.o y.tab.o $(OBJS)
+	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} y.tab.o lex.yy.o ${IRCDLIBS}
 
 ../libio/libio.a:
 	cd ../libio && ${MAKE} ${MFLAGS}
@@ -80,7 +98,7 @@ install: install-mkdirs build
 	@${MV} Makefile.depend Makefile
 
 clean:
-	${RM} -f *.o conf/*.o *.exe *~ *core services
+	${RM} -f *.o conf/*.o *.exe *~ *core services lex.yy.c y.tab.*
 distclean: clean
 	${RM} -f Makefile .depend
 

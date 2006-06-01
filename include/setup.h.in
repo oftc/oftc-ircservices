@@ -165,8 +165,8 @@
 /* Define if IPv6 support is present and available. */
 #undef IPV6
 
-/* Prefix where the ircd is installed. */
-#undef IRCD_PREFIX
+/* Prefix where the services is installed. */
+#undef SERVICES_PREFIX
 
 /* Size of the local client heap. */
 #undef LCLIENT_HEAP_SIZE
