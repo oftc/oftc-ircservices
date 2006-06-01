@@ -789,6 +789,10 @@ AC_HELP_STRING([--enable-warnings],[Enable all sorts of warnings for debugging.]
 dnl Server Tweaks
 dnl =============
 
+AC_DEFINE([CLIENT_HEAP_SIZE], 256, [Size of the client heap.])
+AC_DEFINE([DBUF_HEAP_SIZE], 64, [Size of the dbuf heap.])
+AC_DEFINE([DNODE_HEAP_SIZE], 256, [Size of the dlink_node heap.])
+
 AC_ARG_ENABLE(halfops,
 AC_HELP_STRING([--enable-halfops],[Enable halfops support.]),
 [halfops=$enableval], [halfops=no])

@@ -1,5 +1,14 @@
 /* include/setup.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Size of the client heap. */ 	 
+#undef CLIENT_HEAP_SIZE
+
+/* Size of the dbuf heap. */ 	 
+#undef DBUF_HEAP_SIZE
+
+/* Size of the dlink_node heap. */ 	 
+#undef DNODE_HEAP_SIZE
+
 /* Define to 1 if you have the `basename' function. */
 #undef HAVE_BASENAME
 
