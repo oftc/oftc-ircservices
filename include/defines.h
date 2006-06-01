@@ -1,1 +1,3 @@
 #define ETCPATH SERVICES_PREFIX "/etc/"
+
+#define IRC_BUFSIZE 512

@@ -42,14 +42,14 @@
 
 
 unsigned int lineno = 1;
-char linebuf[IRCD_BUFSIZE];
-char conffilebuf[IRCD_BUFSIZE];
+char linebuf[IRC_BUFSIZE];
+char conffilebuf[IRC_BUFSIZE];
 
 static int include_stack_ptr = 0;
 static YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
 static unsigned int lineno_stack[MAX_INCLUDE_DEPTH];
 static FBFILE *inc_fbfile_in[MAX_INCLUDE_DEPTH];
-static char conffile_stack[MAX_INCLUDE_DEPTH][IRCD_BUFSIZE];
+static char conffile_stack[MAX_INCLUDE_DEPTH][IRC_BUFSIZE];
 static void ccomment(void);
 static void cinclude(void);
 static int ieof(void);
@@ -465,7 +465,7 @@ cinclude(void)
   else
   {
     FBFILE *tmp_fbfile_in = NULL;
-    char filenamebuf[IRCD_BUFSIZE];
+    char filenamebuf[IRC_BUFSIZE];
 
     if (*p == '/')  /* if it is an absolute path */
       snprintf(filenamebuf, sizeof(filenamebuf), "%s", p);
@@ -484,7 +484,7 @@ cinclude(void)
     lineno_stack[include_stack_ptr] = lineno;
     lineno = 1;
     inc_fbfile_in[include_stack_ptr] = conf_fbfile_in;
-    strlcpy(conffile_stack[include_stack_ptr], conffilebuf, IRCD_BUFSIZE);
+    strlcpy(conffile_stack[include_stack_ptr], conffilebuf, IRC_BUFSIZE);
     include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
     conf_fbfile_in = tmp_fbfile_in;
     snprintf(conffilebuf, sizeof(conffilebuf), "%s", p);
