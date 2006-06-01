@@ -170,6 +170,19 @@ else
 	MKDEP=":"
 fi
 
+AC_PROG_YACC
+if test "$YACC" == "yacc"; then
+	AC_PATH_PROG(YACC, yacc, [no])
+	if test "$YACC" == "no"; then
+		AC_MSG_ERROR([bison or yacc must be installed to compile services])
+	fi
+fi
+
+AC_PROG_LEX
+if test "$LEX" == ":"; then
+	AC_MSG_ERROR([flex or lex must be installed to compile services])
+fi
+
 AC_SUBST(MKDEP)
 AC_SUBST(STDOUT)
 

@@ -16,6 +16,8 @@ STDOUT		= @STDOUT@
 MV		= @MV@
 RM		= @RM@
 SED		= @SED@
+YACC		= @YACC@
+LEX		= @LEX@
 
 prefix		= @prefix@
 exec_prefix	= $(DESTDIR)@exec_prefix@
