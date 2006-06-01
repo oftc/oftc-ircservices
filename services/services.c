@@ -2,7 +2,8 @@
 
 int main()
 {
-  libio_init(TRUE);
+  libio_init(FALSE);
+  init_db();
   for(;;)
       ;
   return 0;
