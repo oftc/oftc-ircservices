@@ -25,7 +25,7 @@ RM          = @RM@
 #MFLAGS   = -j 4
 DEPEND_DIRS  = libio services
 BUILD_DIRS   = ${DEPEND_DIRS} 
-INSTALL_DIRS = ${BUILD_DIRS} 
+INSTALL_DIRS = ${BUILD_DIRS} etc
 CLEAN_DIRS   = ${BUILD_DIRS}
 # Anywhere that we can make install, we obviously can rm -f Makefile
 DISTCLEAN_DIRS = ${INSTALL_DIRS} 

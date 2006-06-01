@@ -1,0 +1,34 @@
+# $Id: Makefile.in 229 2003-08-14 07:51:22Z stu $
+
+INSTALL		= @INSTALL@
+INSTALL_DATA	= @INSTALL_DATA@
+MV		= @MV@
+RM		= @RM@
+
+# no whitespace here, test will mess up
+CLOBBER=@CLOBBER@
+
+prefix		= @prefix@
+sysconfdir	= @sysconfdir@
+exec_prefix	= @exec_prefix@
+
+DISTFILES	= example.conf
+
+all:
+
+install:
+	@if test $(sysconfdir) = `pwd`; then exit; fi; \
+	mkdir -p $(sysconfdir); \
+	for i in $(DISTFILES); do \
+		if test -f $(sysconfdir)/$$i -a -z "$(CLOBBER)"; then \
+			echo $(MV) $(sysconfdir)/$$i $(sysconfdir)/$$i.old; \
+			$(MV) $(sysconfdir)/$$i $(sysconfdir)/$$i.old; \
+		fi; \
+		echo $(INSTALL_DATA) $$i $(sysconfdir); \
+		$(INSTALL_DATA) $$i $(sysconfdir); \
+	done
+
+distclean:
+	${RM} -f Makefile
+
+.PHONY: install distclean
