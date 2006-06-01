@@ -3,7 +3,7 @@
 CC		= @CC@
 SED		= @SED@
 STDOUT		= @STDOUT@
-CFLAGS		= @IRC_CFLAGS@
+CFLAGS		= @IRCSERVICES_CFLAGS@
 MKDEP		= @MKDEP@
 MV		= @MV@
 RM              = @RM@

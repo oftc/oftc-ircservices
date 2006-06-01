@@ -36,7 +36,7 @@ AC_MSG_CHECKING($CC -version for TenDRA or MIPSpro)
 case `$CC -version 2>&1` in
 *TenDRA*)
 	AC_MSG_RESULT([yes, TenDRA])
-	IRC_CFLAGS=""
+	IRCSERVICES_CFLAGS=""
 	CPPFLAGS="$CPPFLAGS -Ylonglong -Yansi -Ysystem"
 	SGS=yes
 	TenDRA=yes
@@ -57,20 +57,20 @@ AC_MSG_CHECKING([$CC -V for Sun Workshop, Forte, HPUX or Tru64 cc])
 case `$CC -V 2>&1` in
 *Sun*WorkShop* | *Forte*Developer* | *Sun*C*)
 	AC_MSG_RESULT(Sun Workshop/Forte)
-	IRC_CFLAGS="-xO3 -xdepend -xinline=dlinkAdd,dlinkAddBefore,dlinkAddTail,dlinkDelete,dlink_list_length,dlink_node,dlinkMoveList,_MyMalloc,_MyRealloc,_MyFree,_DupString"
+	IRCSERVICES_CFLAGS="-xO3 -xdepend -xinline=dlinkAdd,dlinkAddBefore,dlinkAddTail,dlinkDelete,dlink_list_length,dlink_node,dlinkMoveList,_MyMalloc,_MyRealloc,_MyFree,_DupString"
 	SunWorkShop=yes
 	SGS=yes
 ;;
 *Tru64*)
 	AC_MSG_RESULT(Tru64 cc)
-	IRC_CFLAGS=""
+	IRCSERVICES_CFLAGS=""
 	CPPFLAGS="-I/usr/local/include"
 	Tru=yes
 ;;
 *HP*ANSI*)
 	AC_MSG_RESULT(HPUX cc)
 	HPUX=yes
-	IRC_CFLAGS="+e"
+	IRCSERVICES_CFLAGS="+e"
 ;;
 *)
 	AC_MSG_RESULT(no)
@@ -87,7 +87,7 @@ case `uname -s` in
 	
 		if test "$HPUX" != yes -a "$ac_cv_c_compiler_gnu" = no; then
         	        AC_MSG_RESULT(assuming old HPUX with its own cc)  
-			IRC_CFLAGS="$IRC_CFLAGS +e"
+			IRCSERVICES_CFLAGS="$IRCSERVICES_CFLAGS +e"
 			HPUX=yes
 		else
 			AC_MSG_RESULT(already using newer HPUX)
@@ -117,16 +117,16 @@ if test "$ac_cv_c_compiler_gnu" = yes; then
 
 	AC_MSG_RESULT($AppleGCC)
 
-	IRC_CFLAGS="$IRC_CFLAGS -Wall"
+	IRCSERVICES_CFLAGS="$IRCSERVICES_CFLAGS -Wall"
 fi
 
 dnl If we support -g, use it!
 if test "$ac_cv_prog_cc_g" = yes; then
 	dnl Tru64 needs -g3 for -O2
 	if test "$Tru" = yes; then
-		IRC_CFLAGS="$IRC_CFLAGS -g3"
+		IRCSERVICES_CFLAGS="$IRCSERVICES_CFLAGS -g3"
 	else
-		IRC_CFLAGS="$IRC_CFLAGS -g"
+		IRCSERVICES_CFLAGS="$IRCSERVICES_CFLAGS -g"
 	fi
 fi
 
@@ -187,7 +187,7 @@ dnl jdc -- If CFLAGS is defined, best use it everywhere...
 dnl NOTE: jv says it must be added to the *END*, because things like
 dnl "gcc -O9 -O2" will result in -O2 getting preference.  How stupid.
 if test ! -z "$CFLAGS"; then
-	IRC_CFLAGS="$IRC_CFLAGS $CFLAGS"
+	IRCSERVICES_CFLAGS="$IRCSERVICES_CFLAGS $CFLAGS"
 fi
 
 AC_ISC_POSIX
@@ -334,7 +334,7 @@ fi
 AC_C_BIGENDIAN
 
 dnl Check for stdarg.h - if we can't find it, halt configure
-AC_CHECK_HEADER(stdarg.h, , [AC_MSG_ERROR([** stdarg.h could not be found - ircd-hybrid will not compile without it **])])
+AC_CHECK_HEADER(stdarg.h, , [AC_MSG_ERROR([** stdarg.h could not be found - oftc-ircservices will not compile without it **])])
 
 dnl Checks for the existence of strlcat, strlcpy, basename...
 dnl This more reliable test only works with gcc though.
@@ -559,6 +559,9 @@ dnl End OpenSSL detection
 dnl Specialized functions and libraries
 dnl ===================================
 
+dnl Lets check for zlib
+dnl ===================
+
 AC_ARG_WITH(zlib-path,
 AC_HELP_STRING([--with-zlib-path=DIR],[Path to libz.so for ziplinks support.]),
 [LIBS="$LIBS -L$withval"],)
@@ -578,6 +581,9 @@ AC_CHECK_HEADER(zlib.h, [
 ], zlib=no)
 
 fi
+
+dnl DBI Checks
+dnl ==========
 
 AC_CHECK_LIB([dbi], [dbi_initialize], ,[AC_MSG_ERROR([libdbi must be installed to compile services])])
 AC_CHECK_HEADER([dbi/dbi.h], ,[AC_MSG_ERROR([libdbi must be installed to compile services])])
@@ -731,7 +737,7 @@ AC_HELP_STRING([--enable-profile],[Enable profiling]),
 
 if test "$profile" = yes; then
 	if test "$ac_cv_c_compiler_gnu" = yes; then
-		IRC_CFLAGS="$IRC_CFLAGS -pg -static"
+		IRCSERVICES_CFLAGS="$IRCSERVICES_CFLAGS -pg -static"
 		AC_MSG_RESULT([yes, adding -pg -static])
 	else
 		AC_MSG_RESULT([no, profile builds only work with gcc])
@@ -778,57 +784,10 @@ AC_MSG_RESULT($balloc)
 
 AC_ARG_ENABLE(warnings,
 AC_HELP_STRING([--enable-warnings],[Enable all sorts of warnings for debugging.]),
-[IRC_CFLAGS="$IRC_CFLAGS -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wredundant-decls -Wshadow -Wwrite-strings -W -Wno-unused"],[])
+[IRCSERVICES_CFLAGS="$IRCSERVICES_CFLAGS -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wredundant-decls -Wshadow -Wwrite-strings -W -Wno-unused"],[])
 
 dnl Server Tweaks
 dnl =============
-
-AC_ARG_ENABLE(small-net,
-AC_HELP_STRING([--enable-small-net],[Enable small network support.]),
-[small_net=$enableval], [small_net=no])
-
-if test "$small_net" = yes; then
-	AC_DEFINE([NICKNAMEHISTORYLENGTH], 1500, [Size of the WHOWAS array.])
-	AC_DEFINE([CHANNEL_HEAP_SIZE], 256, [Size of the channel heap.])
-	AC_DEFINE([BAN_HEAP_SIZE], 128, [Size of the ban heap.])
-	AC_DEFINE([CLIENT_HEAP_SIZE], 256, [Size of the client heap.])
-	AC_DEFINE([LCLIENT_HEAP_SIZE], 128, [Size of the local client heap.])
-	AC_DEFINE([DNODE_HEAP_SIZE], 256, [Size of the dlink_node heap.])
-	AC_DEFINE([TOPIC_HEAP_SIZE], 256, [Size of the topic heap.])
-	AC_DEFINE([DBUF_HEAP_SIZE], 64, [Size of the dbuf heap.])
-else
-	AC_DEFINE([NICKNAMEHISTORYLENGTH], 15000, [Size of the WHOWAS array.])
-	AC_DEFINE([CHANNEL_HEAP_SIZE], 1024, [Size of the channel heap.])
-	AC_DEFINE([BAN_HEAP_SIZE], 1024, [Size of the ban heap.])
-	AC_DEFINE([CLIENT_HEAP_SIZE], 1024, [Size of the client heap.])
-	AC_DEFINE([LCLIENT_HEAP_SIZE], 512, [Size of the local client heap.])
-	AC_DEFINE([DNODE_HEAP_SIZE], 2048, [Size of the dlink_node heap.])
-	AC_DEFINE([TOPIC_HEAP_SIZE], 1024, [Size of the topic heap.])
-	AC_DEFINE([DBUF_HEAP_SIZE], 512, [Size of the dbuf heap.])
-fi
-
-AC_ARG_ENABLE(efnet,
-AC_HELP_STRING([--enable-efnet],[For IRCDs running on EFnet.]),
-[efnet=$enableval], [efnet=no])
-
-if test "$efnet" = yes; then
-	AC_DEFINE(EFNET, 1, [Define if this ircd will be an EFnet server.])
-	AC_DEFINE(TS5_ONLY, 1, [If enabled, server links to your network must have a minimum of TS5.])
-	echo "Building ircd for use with EFnet"
-	EXAMPLE_CONF=example.efnet.conf
-else
-	AC_DEFINE(INVARIANTS, 1, [Miscellaneous sanity checks for the ircd. Makes it slightly slower])
-	EXAMPLE_CONF=example.conf
-fi
-
-AC_ARG_ENABLE(gline-voting,
-AC_HELP_STRING([--disable-gline-voting],[Disable G-line voting.]),
-[gline_voting=$enableval], [gline_voting=yes])
-
-if test "$gline_voting" = yes; then
-	AC_DEFINE(GLINE_VOTING, 1, [Define this if you want to enable gline voting.])
-	echo "Building ircd with G-Line voting support"
-fi
 
 AC_ARG_ENABLE(halfops,
 AC_HELP_STRING([--enable-halfops],[Enable halfops support.]),
@@ -843,7 +802,7 @@ AC_SUBST(EXAMPLE_CONF)
 AC_MSG_CHECKING(for syslog options)
 
 AC_ARG_ENABLE(syslog,
-AC_HELP_STRING([--enable-syslog="EVENTS"], [Enable syslog for events: kill, squit, connect, users, oper, space separated in quotes (default: disabled)]),
+AC_HELP_STRING([--enable-syslog="EVENTS"], [Enable syslog for events: user, oper, space separated in quotes (default: disabled)]),
 [
 dnl Hopelessly swiped from the mozilla source (kind of)
 
@@ -855,25 +814,13 @@ if test "$enableval" != no; then
 
 for option in $enableval; do
 case "$option" in
-	kill)
-		syslogstuff="$syslogstuff kill"
-		AC_DEFINE(SYSLOG_KILL, 1, [Send oper kills to syslog])
-	;;
-	squit)
-		syslogstuff="$syslogstuff squit"
-		AC_DEFINE(SYSLOG_SQUIT, 1, [Send remote squits for all servers to syslog])
-	;;
-	connect)
-		syslogstuff="$syslogstuff connect"
-		AC_DEFINE(SYSLOG_CONNECT, 1, [Send connect notices for other servers to syslog])
-	;;
 	users)
 		syslogstuff="$syslogstuff users"
 		AC_DEFINE(SYSLOG_USERS, 1, [Send user log stuff to syslog])
 	;;
 	oper)
 		syslogstuff="$syslogstuff oper"
-		AC_DEFINE(SYSLOG_OPER, 1, [Send /OPER successes to syslog])
+		AC_DEFINE(SYSLOG_OPER, 1, [Send oper stuff to syslog])
 	;;
 dnl yes is okay, shut up you
 	yes)
@@ -885,7 +832,7 @@ esac
 done
 	
 	if test ! -z "$syslogstuff" -o "$enableval" = yes; then
-		AC_DEFINE(USE_SYSLOG, 1, [Send vital ircd messages to syslog])
+		AC_DEFINE(USE_SYSLOG, 1, [Send vital services messages to syslog])
 	fi
 else dnl $enableval is no
 	syslogstuff=none
@@ -900,7 +847,7 @@ fi
 AC_MSG_RESULT($syslogstuff)
 
 AC_ARG_WITH(syslog-facility,
-AC_HELP_STRING([--with-syslog-facility=LOG], [Define the log facility to use with ircd's syslog output (default LOG_LOCAL4)]),
+AC_HELP_STRING([--with-syslog-facility=LOG], [Define the log facility to use with service's syslog output (default LOG_LOCAL4)]),
 [facility=$withval],[facility="LOG_LOCAL4"])
 
 if test "$syslogstuff" != none; then
@@ -911,18 +858,6 @@ AC_ARG_WITH(nicklen,
 AC_HELP_STRING([--with-nicklen=LENGTH],[Set the nick length to LENGTH (default 9)]),
 	NICKLEN="$withval", NICKLEN="9")
 
-AC_ARG_WITH(topiclen,           
-AC_HELP_STRING([--with-topiclen=NUMBER],[Set the max topic length to NUMBER (default 160, max 390)]),
-[
- if test $withval -ge 390; then
-	TOPICLEN=390
-	AC_MSG_WARN([TOPICLEN has a hard limit of 390. Setting TOPICLEN=390])
- else
- 	TOPICLEN=$withval
- fi
-], [TOPICLEN=160])
-
-AC_DEFINE_UNQUOTED(TOPICLEN, ${TOPICLEN}, [Maximum topic length (<=390)])
 AC_DEFINE_UNQUOTED(NICKLEN, (${NICKLEN}+1), [Nickname length])
 AC_DEFINE_UNQUOTED(USERLEN, 10, [Length of username/ident])
 AC_DEFINE_UNQUOTED(HOSTLEN, 63, [Length of hostname.  Updated to comply with RFC1123])
@@ -1079,13 +1014,13 @@ AC_SUBST(SSL_INCLUDES)
 AC_SUBST(SSL_LIBS)
 
 AC_SUBST(PICFLAGS)
-AC_SUBST(IRC_CFLAGS)
+AC_SUBST(IRCSERVICES_CFLAGS)
 AC_SUBST(SEDOBJ)
 
 AC_SUBST(DYNLINK_C)
 
 if test "$prefix" = "NONE"; then 
-	AC_DEFINE_UNQUOTED(SERVICES_PREFIX, "$ac_default_prefix", [Prefix where the ircd is installed.])
+	AC_DEFINE_UNQUOTED(SERVICES_PREFIX, "$ac_default_prefix", [Prefix where the services will be installed.])
 
 else
 
@@ -1093,7 +1028,7 @@ dnl Don't get bitten by Cygwin's stupidity if the user specified
 dnl a custom prefix with a trailing slash
 
 	prefix=`echo $prefix | sed 's/\/$//'`
-	AC_DEFINE_UNQUOTED(SERVICES_PREFIX, "$prefix", [Prefix where the ircd is installed.])
+	AC_DEFINE_UNQUOTED(SERVICES_PREFIX, "$prefix", [Prefix where the services will be installed.])
 	
 fi
 
