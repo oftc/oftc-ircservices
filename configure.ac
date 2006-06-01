@@ -579,6 +579,9 @@ AC_CHECK_HEADER(zlib.h, [
 
 fi
 
+AC_CHECK_LIB([dbi], [dbi_initialize], ,[AC_MSG_ERROR([libdbi must be installed to compile services])])
+AC_CHECK_HEADER([dbi/dbi.h], ,[AC_MSG_ERROR([libdbi must be installed to compile services])])
+
 dnl IO Loop Selection
 dnl =================
 
@@ -1135,4 +1138,3 @@ fi
 echo  "Modules ................. $tmpresult"
 echo  "IPv6 support ............ $have_v6"
 echo  "Net I/O implementation .. $SELECT_TYPE"
-
