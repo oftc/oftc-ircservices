@@ -45,7 +45,10 @@
 
 %token  BYTES
 %token  DAYS
+%token  DATABASE
+%token  DBNAME
 %token  DESCRIPTION
+%token  DRIVER
 %token  GBYTES
 %token  HOURS
 %token  KBYTES
@@ -54,6 +57,7 @@
 %token  NAME
 %token  NOT
 %token  NUMBER
+%token  PASSWORD
 %token  QSTRING
 %token  RSA_PRIVATE_KEY_FILE
 %token  SECONDS
@@ -62,10 +66,10 @@
 %token  SSL_CERTIFICATE_FILE
 %token  TBYTES
 %token  TWODOTS
-%token  WEEKS
-
+%token  USERNAME
 %token  VHOST
 %token  VHOST6
+%token  WEEKS
 
 %type <string> QSTRING
 %type <number> NUMBER
@@ -81,6 +85,7 @@ conf:
 
 conf_item:        
                 servicesinfo_entry
+                | database_entry
                 | error ';'
                 | error '}'
         ;
@@ -128,12 +133,13 @@ servicesinfo_entry: SERVICESINFO
   '{' servicesinfo_items '}' ';';
 
 servicesinfo_items:       servicesinfo_items servicesinfo_item |
-                        servicesinfo_item ;
+                          servicesinfo_item ;
 servicesinfo_item:        servicesinfo_name | servicesinfo_vhost |
-                         servicesinfo_description |
-                        servicesinfo_rsa_private_key_file | servicesinfo_vhost6 |
-                        servicesinfo_sid | servicesinfo_ssl_certificate_file |
-			error ';' ;
+                          servicesinfo_description |
+                          servicesinfo_rsa_private_key_file | 
+                          servicesinfo_vhost6 | servicesinfo_sid | 
+                          servicesinfo_ssl_certificate_file |
+                    			error ';' ;
 
 servicesinfo_ssl_certificate_file: SSL_CERTIFICATE_FILE '=' QSTRING ';'
 {
@@ -284,4 +290,40 @@ servicesinfo_vhost6: VHOST6 '=' QSTRING ';'
     services_info.specific_ipv6_vhost = 1;
   }
 #endif
+};
+
+/***************************************************************************
+ *  section database
+ ***************************************************************************/
+database_entry: DATABASE
+  '{' database_items '}' ';';
+
+database_items:       database_items database_item |
+                      database_item ;
+database_item:        database_driver | database_dbname |
+                      database_username | database_password |
+                      error ';' ;
+
+database_driver: DRIVER '=' QSTRING ';'
+{
+  MyFree(database_info.driver);
+  DupString(database_info.driver, yylval.string);
+};
+
+database_dbname: DBNAME '=' QSTRING ';'
+{
+  MyFree(database_info.dbname);
+  DupString(database_info.dbname, yylval.string);
+};
+
+database_username: USERNAME '=' QSTRING ';'
+{
+  MyFree(database_info.username);
+  DupString(database_info.username, yylval.string);
+};
+
+database_password: PASSWORD '=' QSTRING ';'
+{
+  MyFree(database_info.password);
+  DupString(database_info.password, yylval.string);
 };

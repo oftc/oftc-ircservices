@@ -16,7 +16,9 @@
 
 #include "defines.h"
 #include "irc_libio.h"
+
 #include "conf.h"
+#include "dbm.h"
 
 #define TRUE 1
 #define FALSE 0
