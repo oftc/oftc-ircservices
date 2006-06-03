@@ -11,6 +11,7 @@ typedef struct
 
 extern database_info_t database_info;
 
-void init_db();
+void db_init();
+void db_load_driver();
 
 #endif
