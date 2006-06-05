@@ -118,12 +118,17 @@ include   \.include{WS}(\<.*\>|\".*\")
 		}
 
 ~		{ return NOT; }
+connect               { return CONNECT;               }
 database              { return DATABASE;              }
 dbname                { return DBNAME;                }
 description           { return DESCRIPTION;           }
 driver                { return DRIVER;                }
+flags                 { return FLAGS;                 }
+host                  { return HOST;                  }
 name                  { return NAME;                  }
 password              { return PASSWORD;              }
+port                  { return PORT;                  }
+protocol              { return PROTOCOL;              }
 rsa_private_key_file  { return RSA_PRIVATE_KEY_FILE;  }
 servicesinfo	        { return SERVICESINFO;          }
 sid                   { return SID;                   }

@@ -44,12 +44,15 @@
 }
 
 %token  BYTES
+%token  CONNECT
 %token  DAYS
 %token  DATABASE
 %token  DBNAME
 %token  DESCRIPTION
 %token  DRIVER
+%token  FLAGS
 %token  GBYTES
+%token  HOST
 %token  HOURS
 %token  KBYTES
 %token  MBYTES
@@ -58,6 +61,8 @@
 %token  NOT
 %token  NUMBER
 %token  PASSWORD
+%token  PORT
+%token  PROTOCOL
 %token  QSTRING
 %token  RSA_PRIVATE_KEY_FILE
 %token  SECONDS
@@ -327,3 +332,45 @@ database_password: PASSWORD '=' QSTRING ';'
   MyFree(database_info.password);
   DupString(database_info.password, yylval.string);
 };
+
+/***************************************************************************
+ *  section connect 
+ ***************************************************************************/
+conenct_entry: CONNECT
+  '{' connect_items '}' ';';
+
+connect_items:        connect_items connect_item |
+                      connect_item ;
+connect_item:         connect_name | connect_host | connect_port |
+                      connect_flags | connect_protocol |
+                      error ';' ;
+
+connect_name: NAME '=' QSTRING ';'
+{
+
+};
+
+connect_host: HOST '=' QSTRING ';'
+{
+};
+
+connect_port: PORT '=' NUMBER ';'
+{
+};
+
+connect_flags: FLAGS
+{
+} '='  connect_flags_items ';';
+
+connect_flags_items: connect_flags_items ',' connect_flags_item | connect_flags_item 
+
+connect_flags_item: NOT  { not_atom = 1; } connect_flags_item_atom
+      |  { not_atom = 0; } connect_flags_item_atom;
+
+connect_flags_item_atom:
+{
+};
+
+connect_protocol: PROTOCOL '=' QSTRING ';'
+{
+}
