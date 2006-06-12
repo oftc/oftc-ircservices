@@ -337,8 +337,24 @@ database_password: PASSWORD '=' QSTRING ';'
  *  section connect 
  ***************************************************************************/
 conenct_entry: CONNECT
-  '{' connect_items '}' ';';
+{
+  connect_conf = make_services_conf();
+} connect_name_b '{' connect_items '}' ';'
+{
+  if(yy_conf->name != NULL)
+  {
+#ifndef HAVE_LIBCRYPTO
+    if (IsConfCryptLink(yy_aconf))
+      yyerror("Ignoring connect block -- no OpenSSL support");
+#else
+    if (IsConfCryptLink(yy_aconf) && !yy_aconf->rsa_public_key)
+      yyerror("Ignoring connect block -- missing key");
+#endif
 
+  }
+}
+
+connect_name_b: | connect_name_t;
 connect_items:        connect_items connect_item |
                       connect_item ;
 connect_item:         connect_name | connect_host | connect_port |

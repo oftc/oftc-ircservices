@@ -57,9 +57,10 @@ lex.yy.c: services_lexer.l
 
 SSL_SRCS = rsa.c
 
-SRCS = \
- dbm.c 		  \
- conf.c			\
+SRCS = 				\
+ dbm.c 		  	\
+ conf.c				\
+ connection.c \
  services.c
 
 OBJS = ${SRCS:.c=.o}

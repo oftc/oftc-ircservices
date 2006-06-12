@@ -18,6 +18,7 @@
 #include "irc_libio.h"
 
 #include "conf.h"
+#include "connection.h"
 #include "dbm.h"
 
 #define TRUE 1
