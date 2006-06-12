@@ -366,6 +366,16 @@ connect_name: NAME '=' QSTRING ';'
 
 };
 
+connect_name_t: QSTRING
+{
+  if(yy_conf->name != NULL)
+    yyerror("Multiple connect name entry");
+
+  MyFree(yy_conf->name);
+  DupString(yy_conf->name, yylval.string);
+};
+
+
 connect_host: HOST '=' QSTRING ';'
 {
 };

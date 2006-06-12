@@ -1,6 +1,6 @@
 #include "stdinc.h"
 
-dlink_list connection_confs = { NULL, NULL, NULL};
+dlink_list connection_confs = { NULL, NULL, 0};
 
 connection_conf_t *make_connection_conf()
 {
@@ -14,11 +14,11 @@ connection_conf_t *make_connection_conf()
 
 void free_connection_conf(connection_conf_t *connection)
 {
-  MyFree(conf->name);
-  MyFree(conf->host);
-  MyFree(conf->protocol);
+  MyFree(connection->name);
+  MyFree(connection->host);
+  MyFree(connection->protocol);
 
-  dlinkDelete(conf->node, connection_confs);
-  free_dlink_node(conf->node);
-  MyFree(conf);
+  dlinkDelete(connection->node, &connection_confs);
+  free_dlink_node(connection->node);
+  MyFree(connection);
 }
