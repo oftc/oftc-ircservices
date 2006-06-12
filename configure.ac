@@ -1052,7 +1052,7 @@ fi
 AC_CONFIG_FILES(		  \
 	Makefile		        \
   etc/Makefile        \
-  services/Makefile   \
+  src/Makefile        \
 	libio/Makefile		  \
 	libio/comm/Makefile	\
 	libio/mem/Makefile	\

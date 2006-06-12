@@ -23,7 +23,7 @@ RM          = @RM@
 
 # Default make flags - you may want to uncomment this on a multicpu machine
 #MFLAGS   = -j 4
-DEPEND_DIRS  = libio services
+DEPEND_DIRS  = libio src
 BUILD_DIRS   = ${DEPEND_DIRS} 
 INSTALL_DIRS = ${BUILD_DIRS} etc
 CLEAN_DIRS   = ${BUILD_DIRS}
