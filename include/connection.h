@@ -16,4 +16,6 @@ typedef struct
 
 extern dlink_list connection_confs;
 
+connection_conf_t *make_connection_conf();
+
 #endif

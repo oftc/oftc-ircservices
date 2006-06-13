@@ -36,6 +36,9 @@
 #include <openssl/pem.h>
 #endif
 
+static connection_conf_t *cconf = NULL;
+static int not_atom = 0;
+
 %}
 
 %union {
@@ -45,6 +48,7 @@
 
 %token  BYTES
 %token  CONNECT
+%token  CRYPT
 %token  DAYS
 %token  DATABASE
 %token  DBNAME
@@ -75,6 +79,7 @@
 %token  VHOST
 %token  VHOST6
 %token  WEEKS
+%token  ZIP
 
 %type <string> QSTRING
 %type <number> NUMBER
@@ -91,6 +96,7 @@ conf:
 conf_item:        
                 servicesinfo_entry
                 | database_entry
+                | connect_entry
                 | error ';'
                 | error '}'
         ;
@@ -336,19 +342,19 @@ database_password: PASSWORD '=' QSTRING ';'
 /***************************************************************************
  *  section connect 
  ***************************************************************************/
-conenct_entry: CONNECT
+connect_entry: CONNECT
 {
-  connect_conf = make_services_conf();
+  cconf = make_connection_conf();
 } connect_name_b '{' connect_items '}' ';'
 {
-  if(yy_conf->name != NULL)
+  if(cconf->name != NULL)
   {
 #ifndef HAVE_LIBCRYPTO
-    if (IsConfCryptLink(yy_aconf))
+    if(cconf->flags & CONF_FLAGS_SSL)
       yyerror("Ignoring connect block -- no OpenSSL support");
 #else
-    if (IsConfCryptLink(yy_aconf) && !yy_aconf->rsa_public_key)
-      yyerror("Ignoring connect block -- missing key");
+   /* if(IsConfCryptLink(cconf) && !cconf->rsa_public_key)
+      yyerror("Ignoring connect block -- missing key");*/
 #endif
 
   }
@@ -363,25 +369,32 @@ connect_item:         connect_name | connect_host | connect_port |
 
 connect_name: NAME '=' QSTRING ';'
 {
+  if(cconf->name != NULL)
+    yyerror("Multiple connect name entry");
 
+  MyFree(cconf->name);
+  DupString(cconf->name, yylval.string);
 };
 
 connect_name_t: QSTRING
 {
-  if(yy_conf->name != NULL)
+  if(cconf->name != NULL)
     yyerror("Multiple connect name entry");
 
-  MyFree(yy_conf->name);
-  DupString(yy_conf->name, yylval.string);
+  MyFree(cconf->name);
+  DupString(cconf->name, yylval.string);
 };
 
 
 connect_host: HOST '=' QSTRING ';'
-{
+{ 
+  MyFree(cconf->host);
+  DupString(cconf->host, yylval.string);
 };
 
 connect_port: PORT '=' NUMBER ';'
 {
+  cconf->port = $3;
 };
 
 connect_flags: FLAGS
@@ -393,10 +406,26 @@ connect_flags_items: connect_flags_items ',' connect_flags_item | connect_flags_
 connect_flags_item: NOT  { not_atom = 1; } connect_flags_item_atom
       |  { not_atom = 0; } connect_flags_item_atom;
 
-connect_flags_item_atom:
+connect_flags_item_atom: ZIP
 {
+#ifndef HAVE_LIBZ
+  yyerror("Ignoring flags = compressed; -- no zlib support");
+#else
+  if(not_atom)
+    cconf->flags &= ~CONF_FLAG_ZIP;
+  else 
+    cconf->flags |= CONF_FLAG_ZIP;
+#endif
+} | CRYPT 
+{
+  if(not_atom)
+    cconf->flags &= ~CONF_FLAG_SSL;
+  else
+    cconf->flags |= CONF_FLAG_SSL;
 };
 
 connect_protocol: PROTOCOL '=' QSTRING ';'
 {
-}
+  MyFree(cconf->protocol);
+  DupString(cconf->protocol, yylval.string);
+};

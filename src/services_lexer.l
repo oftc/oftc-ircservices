@@ -119,6 +119,7 @@ include   \.include{WS}(\<.*\>|\".*\")
 
 ~		{ return NOT; }
 connect               { return CONNECT;               }
+crypt                 { return CRYPT;                 }
 database              { return DATABASE;              }
 dbname                { return DBNAME;                }
 description           { return DESCRIPTION;           }
@@ -136,6 +137,7 @@ ssl_certificate_file  { return SSL_CERTIFICATE_FILE;  }
 username              { return USERNAME;              }
 vhost                 { return VHOST;                 }
 vhost6                { return VHOST6;                }
+zip                   { return ZIP;                   }
 
 weeks			    { return WEEKS; }
 week		  	  { return WEEKS; }
