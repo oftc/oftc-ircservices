@@ -112,8 +112,8 @@ parse_client_queued(client_t *client)
 
   while (1)
   {
-/*    if (IsDefunct(client))
-      return;*/
+    if (IsDefunct(client->server))
+      return;
     if ((dolen = extract_one_line(&client->server->buf_recvq, readBuf)) == 0)
       break;
     client_dopacket(client, readBuf, dolen);
@@ -165,6 +165,5 @@ iorecv_default(va_list args)
 
   dbuf_put(&client->server->buf_recvq, buf, length);
 
-  printf("got: %s!\n", buf);
   return NULL;
 }

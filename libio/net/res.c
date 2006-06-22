@@ -346,7 +346,7 @@ send_res_msg(const char *msg, int len, int rcount)
 {
   int i;
   int sent = 0;
-  int max_queries = IRCD_MIN(irc_nscount, rcount);
+  int max_queries = IRC_MIN(irc_nscount, rcount);
 
   /* RES_PRIMARY option is not implemented
    * if (res.options & RES_PRIMARY || 0 == max_queries)

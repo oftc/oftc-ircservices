@@ -1,7 +1,7 @@
 #include "stdinc.h"
 
-static dlink_list global_client_list;
-static dlink_list global_server_list;
+dlink_list global_client_list;
+dlink_list global_server_list;
 
 client_t *
 make_client()
@@ -18,3 +18,23 @@ make_server()
  
   return server;
 }
+
+/* find_person()
+ *
+ * inputs - pointer to name
+ * output - return client pointer
+ * side effects - find person by (nick)name
+ */
+client_t *
+find_person(const client_t *source, const char *name)
+{
+  client_t *target = NULL;
+
+  if(IsDigit(*name) && IsServer(source->from))
+    target = hash_find_id(name);
+  else
+    target = find_client(name);
+
+  return(target && IsClient(target)) ? target : NULL;
+}
+

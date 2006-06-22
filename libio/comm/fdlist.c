@@ -69,7 +69,7 @@ recalc_fdlimit(void *unused)
 
   /* under no condition shall this raise over 65536
    * for example user ip heap is sized 2*hard_fdlimit */
-  fdmax = IRCD_MIN(fdmax, 65536);
+  fdmax = IRC_MIN(fdmax, 65536);
 
   if (fdmax != hard_fdlimit)
     execute_callback(fdlimit_cb, fdmax);

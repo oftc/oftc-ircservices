@@ -62,6 +62,7 @@ SRCS = 				\
  conf.c				\
  connection.c \
  dbm.c 		  	\
+ hash.c				\
  packet.c			\
  parse.c			\
  services.c

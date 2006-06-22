@@ -41,5 +41,5 @@
 
 #define LEAKED_FDS 10
 #define INIT_LOG_LEVEL L_NOTICE
-#define IRCD_MAX(a, b)  ((a) > (b) ? (a) : (b))
-#define IRCD_MIN(a, b)  ((a) < (b) ? (a) : (b))
+#define IRC_MAX(a, b)  ((a) > (b) ? (a) : (b))
+#define IRC_MIN(a, b)  ((a) < (b) ? (a) : (b))

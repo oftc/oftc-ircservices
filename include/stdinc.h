@@ -21,7 +21,10 @@
 #include "client.h"
 #include "connection.h"
 #include "dbm.h"
+#include "hash.h"
 #include "packet.h"
+#include "msg.h"
+#include "parse.h"
 
 #define TRUE 1
 #define FALSE 0

@@ -15,6 +15,7 @@ typedef struct
 #define CONF_FLAG_SSL   0x0002
 
 extern dlink_list connection_confs;
+extern client_t me;
 
 connection_conf_t *make_connection_conf();
 void connect_server(connection_conf_t *);

@@ -1,12 +1,16 @@
 #include "stdinc.h"
 
 services_info_t services_info;
+client_t me;
 
 int main(int argc, char *argv[])
 {
   memset(&services_info, 0, sizeof(services_info));
 
   libio_init(FALSE);
+
+  memset(&me, 0, sizeof(me));
+
   iorecv_cb = register_callback("iorecv", iorecv_default);
   //iosend_cb = register_callback("iosend", iosend_default);
       
