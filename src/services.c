@@ -7,6 +7,9 @@ int main(int argc, char *argv[])
   memset(&services_info, 0, sizeof(services_info));
 
   libio_init(FALSE);
+  iorecv_cb = register_callback("iorecv", iorecv_default);
+  //iosend_cb = register_callback("iosend", iosend_default);
+      
   db_init();
 
   read_services_conf(TRUE);
@@ -16,8 +19,12 @@ int main(int argc, char *argv[])
 
   db_load_driver();
 
+  connect_server((connection_conf_t*)connection_confs.head->data);
+
   for(;;)
-      ;
+  {
+    comm_select();
+  }
 
   return 0;
 }

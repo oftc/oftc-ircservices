@@ -1,0 +1,170 @@
+#include "stdinc.h"
+
+struct Callback *iorecv_cb = NULL;
+struct Callback *iosend_cb = NULL;
+static char readBuf[READBUF_SIZE];
+
+/*
+ * client_dopacket - copy packet to client buf and parse it
+ *      client - pointer to client structure for which the buffer data
+ *             applies.
+ *      buffer - pointr to the buffer containing the newly read data
+ *      length - number of valid bytes of data in the buffer
+ *
+ * Note:
+ *      It is implicitly assumed that dopacket is called only
+ *      with client_p of "local" variation, which contains all the
+ *      necessary fields (buffer etc..)
+ */
+static void
+client_dopacket(client_t *client, char *buffer, size_t length)
+{
+  /*
+   * Update messages received
+  ++me.localClient->recv.messages;
+  ++client_p->localClient->recv.messages;
+
+   * Update bytes received
+  client_p->localClient->recv.bytes += length;
+  me.localClient->recv.bytes += length;
+*/
+
+  parse(client, buffer, buffer + length);
+}
+
+
+/* extract_one_line()
+ *
+ * inputs       - pointer to a dbuf queue
+ *              - pointer to buffer to copy data to
+ * output       - length of <buffer>
+ * side effects - one line is copied and removed from the dbuf
+ */
+static int
+extract_one_line(struct dbuf_queue *qptr, char *buffer)
+{
+  struct dbuf_block *block;
+  int line_bytes = 0, empty_bytes = 0, phase = 0;
+  unsigned int idx;
+
+  char c;
+  dlink_node *ptr;
+
+  /*
+   * Phase 0: "empty" characters before the line
+   * Phase 1: copying the line
+   * Phase 2: "empty" characters after the line
+   *          (delete them as well and free some space in the dbuf)
+   *
+   * Empty characters are CR, LF and space (but, of course, not
+   * in the middle of a line). We try to remove as much of them as we can,
+   * since they simply eat server memory.
+   *
+   * --adx
+   */
+  DLINK_FOREACH(ptr, qptr->blocks.head)
+  {
+    block = ptr->data;
+
+    for (idx = 0; idx < block->size; idx++)
+    {
+      c = block->data[idx];
+      if (IsEol(c) || (c == ' ' && phase != 1))
+      {
+        empty_bytes++;
+        if (phase == 1)
+          phase = 2;
+      }
+      else switch (phase)
+      {
+        case 0: phase = 1;
+        case 1: if (line_bytes++ < IRC_BUFSIZE - 2)
+                  *buffer++ = c;
+                break;
+        case 2: *buffer = '\0';
+                dbuf_delete(qptr, line_bytes + empty_bytes);
+                return IRC_MIN(line_bytes, IRC_BUFSIZE - 2);
+      }
+    }
+  }
+
+  /*
+   * Now, if we haven't reached phase 2, ignore all line bytes
+   * that we have read, since this is a partial line case.
+   */
+  if (phase != 2)
+    line_bytes = 0;
+  else
+    *buffer = '\0';
+
+  /* Remove what is now unnecessary */
+  dbuf_delete(qptr, line_bytes + empty_bytes);
+  return IRC_MIN(line_bytes, IRC_BUFSIZE - 2);
+}
+
+/*
+ * parse_client_queued - parse client queued messages
+ */
+static void
+parse_client_queued(client_t *client)
+{
+  int dolen = 0;
+
+  while (1)
+  {
+/*    if (IsDefunct(client))
+      return;*/
+    if ((dolen = extract_one_line(&client->server->buf_recvq, readBuf)) == 0)
+      break;
+    client_dopacket(client, readBuf, dolen);
+  }
+}
+
+
+void
+read_packet(fde_t *fd, void *data)
+{
+  client_t *client = (client_t*)data;
+  int length = 0;
+
+  do
+  {
+    length = recv(fd->fd, readBuf, READBUF_SIZE, 0);
+#ifdef _WIN32
+    if (length < 0)
+      errno = WSAGetLastError();
+#endif
+    if (length <= 0)
+    {
+      /*
+       * If true, then we can recover from this error.  Just jump out of
+       * the loop and re-register a new io-request.
+       */
+      if (length < 0 && ignoreErrno(errno))
+        break;
+
+      printf("connection went dead on read!\n");
+      return;
+    }
+    
+    execute_callback(iorecv_cb, client, length, readBuf);
+    parse_client_queued(client);
+  } while (length == sizeof(readBuf));
+  comm_setselect(fd, COMM_SELECT_READ, read_packet, client, 0);
+}
+
+/*
+ * iorecv_default - append a packet to the recvq dbuf
+ */
+void *
+iorecv_default(va_list args)
+{
+  client_t *client = va_arg(args, client_t*);
+  int length = va_arg(args, int);
+  char *buf = va_arg(args, char *);
+
+  dbuf_put(&client->server->buf_recvq, buf, length);
+
+  printf("got: %s!\n", buf);
+  return NULL;
+}

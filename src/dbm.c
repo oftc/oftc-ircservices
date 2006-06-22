@@ -42,10 +42,10 @@ db_load_driver()
 
   if(dbi_conn_connect(dbconn) < 0)
   {
-    char *error;
+    const char *error;
     dbi_conn_error(dbconn, &error);
     printf("db: Failed to connect to database %s\n", error);
-    exit(-1);
+   // exit(-1);
   }
   else
     printf("db: Database connection succeeded.\n");

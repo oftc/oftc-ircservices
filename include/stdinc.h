@@ -18,8 +18,10 @@
 #include "irc_libio.h"
 
 #include "conf.h"
+#include "client.h"
 #include "connection.h"
 #include "dbm.h"
+#include "packet.h"
 
 #define TRUE 1
 #define FALSE 0

@@ -347,6 +347,10 @@ connect_entry: CONNECT
   cconf = make_connection_conf();
 } connect_name_b '{' connect_items '}' ';'
 {
+  if(cconf->name && cconf->host)
+  {
+    add_connection_conf(cconf);
+  }
   if(cconf->name != NULL)
   {
 #ifndef HAVE_LIBCRYPTO
@@ -356,7 +360,8 @@ connect_entry: CONNECT
    /* if(IsConfCryptLink(cconf) && !cconf->rsa_public_key)
       yyerror("Ignoring connect block -- missing key");*/
 #endif
-
+    if(cconf->host == NULL)
+      yyerror("Ignoring connect block -- No host");
   }
 }
 
