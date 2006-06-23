@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
   for(;;)
   {
     comm_select();
+    send_queued_all();
   }
 
   return 0;

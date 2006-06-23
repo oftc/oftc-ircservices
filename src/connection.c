@@ -57,6 +57,9 @@ serv_connect_callback(fde_t *fd, int status, void *data)
   printf("serv_connect_callback: connection succeeded!\n");
   comm_setselect(fd, COMM_SELECT_READ, read_packet, client, 0);
 
+  client->node = make_dlink_node();
+  dlinkAdd(client, client->node, &global_server_list);
+  
   execute_callback(connected_cb, client);
 }
 
@@ -67,6 +70,7 @@ connect_server(connection_conf_t *connection)
   server_t *server = make_server();
 
   client->server = server;
+  memcpy(server->pass, connection->password, 20);
 
   if(comm_open(&server->fd, AF_INET, SOCK_STREAM, 0, NULL) < 0)
   {
@@ -76,6 +80,7 @@ connect_server(connection_conf_t *connection)
 
   comm_connect_tcp(&server->fd, connection->host, connection->port,
       NULL, 0, serv_connect_callback, client, AF_INET, CONNECTTIMEOUT);
+  
 }
 
 void *

@@ -28,16 +28,17 @@ extern dlink_list global_server_list;
 
 typedef struct server
 {
-  dlink_node node;
+  dlink_node *node;
   fde_t fd;
   int flags;
   struct dbuf_queue buf_recvq;
   struct dbuf_queue buf_sendq;
+  char pass[20];
 } server_t;
 
 typedef struct client
 {
-  dlink_node node;
+  dlink_node *node;
 
   struct client *hnext;         /* For client hash table lookups by name */
   struct client *idhnext;       /* For SID hash table lookups by sid */

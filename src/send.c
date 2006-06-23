@@ -16,6 +16,21 @@ iosend_default(va_list args)
   return NULL;
 }
 
+/* send_queued_all()
+ *
+ * input        - NONE
+ * output       - NONE
+ * side effects - try to flush sendq of each client
+ */
+void
+send_queued_all(void)
+{
+  dlink_node *ptr;
+
+  DLINK_FOREACH(ptr, global_server_list.head)
+    send_queued_write((client_t *) ptr->data);
+}
+
 
 /* send_format()
  *
@@ -92,6 +107,9 @@ send_message(client_t *to, char *buf, int len)
   assert(len <= IRC_BUFSIZE);
 
   execute_callback(iosend_cb, to, len, buf);
+  if (dbuf_length(&to->server->buf_sendq) >
+      (IsServer(to) ? (unsigned int) 1024 : (unsigned int) 4096))
+    send_queued_write(to);
 }
 
 /*

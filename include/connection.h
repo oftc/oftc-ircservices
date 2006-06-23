@@ -5,9 +5,10 @@ typedef struct
 {
   char        *name;
   char        *host;
+  char        *protocol;
+  char        *password;
   int         port;
   int         flags;
-  char        *protocol;
   dlink_node  *node;
 } connection_conf_t;
 

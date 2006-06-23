@@ -373,7 +373,7 @@ connect_name_b: | connect_name_t;
 connect_items:        connect_items connect_item |
                       connect_item ;
 connect_item:         connect_name | connect_host | connect_port |
-                      connect_flags | connect_protocol |
+                      connect_flags | connect_protocol | connect_pass |
                       error ';' ;
 
 connect_name: NAME '=' QSTRING ';'
@@ -405,6 +405,12 @@ connect_port: PORT '=' NUMBER ';'
 {
   cconf->port = $3;
 };
+
+connect_pass: PASSWORD '=' QSTRING ';'
+{
+  MyFree(cconf->password);
+  DupString(cconf->password, yylval.string);
+}
 
 connect_flags: FLAGS
 {

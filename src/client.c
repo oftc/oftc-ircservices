@@ -7,6 +7,7 @@ client_t *
 make_client()
 {
   client_t *client = MyMalloc(sizeof(client_t));
+  client->from = client;
 
   return client;
 }
