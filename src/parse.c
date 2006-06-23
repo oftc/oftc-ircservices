@@ -213,14 +213,14 @@ parse(client_t *client, char *pbuffer, char *bufend)
        */
       if (from == NULL)
       {
-        return;
+ //       return;
       }
 
       para[0] = from->name;
 
       if (from->from != client)
       {
-        return;
+   //     return;
       }
     }
 
@@ -257,6 +257,7 @@ parse(client_t *client, char *pbuffer, char *bufend)
     if ((s = strchr(ch, ' ')) != NULL)
       *s++ = '\0';
 
+    printf("Message: %s %s\n", ch, s);
     if ((mptr = find_command(ch)) == NULL)
     {
       /* Note: Give error message *only* to recognized
@@ -282,7 +283,6 @@ parse(client_t *client, char *pbuffer, char *bufend)
     mptr->bytes += ii;
   }
 
-  printf("Message: %s %s\n", s, para);
   if (s != NULL)
     i = string_to_array(s, para);
   else

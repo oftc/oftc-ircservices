@@ -38,3 +38,19 @@ find_person(const client_t *source, const char *name)
   return(target && IsClient(target)) ? target : NULL;
 }
 
+/*
+ * dead_link_on_write - report a write error if not already dead,
+ *      mark it as dead then exit it
+ */
+void
+dead_link_on_write(client_t *client, int ierrno)
+{
+  dlink_node *ptr;
+
+  if (IsDefunct(client->server))
+    return;
+
+  dbuf_clear(&client->server->buf_recvq);
+  dbuf_clear(&client->server->buf_sendq);
+}
+

@@ -16,9 +16,11 @@ typedef struct
 
 extern dlink_list connection_confs;
 extern client_t me;
+extern struct Callback *connected_cb;
 
 connection_conf_t *make_connection_conf();
 void connect_server(connection_conf_t *);
+CBFUNC server_connected;
 
 
 #endif

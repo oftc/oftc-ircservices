@@ -83,6 +83,6 @@ typedef struct message
                                          * once per 2 seconds.                
 					 */
 #define   MFLG_UNREG            0x002   /* Command available to unregistered
-                                         * clients.                          
-					 */
+                                         * clients.                   */       
+extern void ms_error(client_t *, client_t *, int, char *[]);
 #endif /* INCLUDED_msg_h */

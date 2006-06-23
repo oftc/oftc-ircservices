@@ -14,6 +14,7 @@ extern dlink_list global_server_list;
 #define STAT_ME             0x04
 
 #define IsDefunct(x)            ((x)->flags & (FLAGS_DEADSOCKET|FLAGS_CLOSING))
+#define IsDead(x)               ((x)->flags & FLAGS_DEADSOCKET)
 
 #define IsServer(x)             ((x)->status == STAT_SERVER)
 #define IsClient(x)             ((x)->status == STAT_CLIENT)
@@ -31,6 +32,7 @@ typedef struct server
   fde_t fd;
   int flags;
   struct dbuf_queue buf_recvq;
+  struct dbuf_queue buf_sendq;
 } server_t;
 
 typedef struct client
@@ -42,7 +44,9 @@ typedef struct client
   struct client *from;
 
   char          name[HOSTLEN+1];
-  char          id[IDLEN + 1];  /* client ID, unique ID per client */
+  char          id[IDLEN + 1];      /* client ID, unique ID per client */
+  char          info[REALLEN + 1];  /* Free form additional client info */
+    
   server_t      *server;
 
   unsigned int  status;
@@ -52,5 +56,6 @@ typedef struct client
 client_t *make_client();
 server_t *make_server();
 client_t *find_person(const client_t *source, const char *name);
+void dead_link_on_write(client_t *, int);
 
 #endif

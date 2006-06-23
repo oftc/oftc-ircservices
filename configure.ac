@@ -1053,6 +1053,7 @@ AC_CONFIG_FILES(		  \
 	Makefile		        \
   etc/Makefile        \
   src/Makefile        \
+  modules/Makefile    \
 	libio/Makefile		  \
 	libio/comm/Makefile	\
 	libio/mem/Makefile	\

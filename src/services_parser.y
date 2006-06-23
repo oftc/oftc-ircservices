@@ -61,10 +61,13 @@ static int not_atom = 0;
 %token  KBYTES
 %token  MBYTES
 %token  MINUTES
+%token  MODULE
+%token  MODULES
 %token  NAME
 %token  NOT
 %token  NUMBER
 %token  PASSWORD
+%token  PATH
 %token  PORT
 %token  PROTOCOL
 %token  QSTRING
@@ -97,6 +100,7 @@ conf_item:
                 servicesinfo_entry
                 | database_entry
                 | connect_entry
+                | modules_entry
                 | error ';'
                 | error '}'
         ;
@@ -434,3 +438,34 @@ connect_protocol: PROTOCOL '=' QSTRING ';'
   MyFree(cconf->protocol);
   DupString(cconf->protocol, yylval.string);
 };
+
+/***************************************************************************
+ *  section modules
+ ***************************************************************************/
+modules_entry: MODULES
+  '{' modules_items '}' ';';
+
+modules_items:  modules_items modules_item | modules_item;
+modules_item:   modules_module | modules_path | error ';' ;
+
+modules_module: MODULE '=' QSTRING ';'
+{
+#ifndef STATIC_MODULES /* NOOP in the static case */
+  char *m_bn;
+
+  m_bn = basename(yylval.string);
+
+  /* I suppose we should just ignore it if it is already loaded(since
+   * otherwise we would flood the opers on rehash) -A1kmm.
+   */
+  add_conf_module(yylval.string);
+#endif
+};
+
+modules_path: PATH '=' QSTRING ';'
+{
+#ifndef STATIC_MODULES
+  mod_add_path(yylval.string);
+#endif
+};
+

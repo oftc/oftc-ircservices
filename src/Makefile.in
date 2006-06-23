@@ -62,10 +62,14 @@ SRCS = 				\
  conf.c				\
  connection.c \
  dbm.c 		  	\
+ dynlink.c		\
  hash.c				\
+ m_error.c		\
+ modules.c		\
  packet.c			\
  parse.c			\
- services.c
+ services.c		\
+ send.c
 
 OBJS = ${SRCS:.c=.o}
 

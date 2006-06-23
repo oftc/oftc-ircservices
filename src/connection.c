@@ -3,6 +3,7 @@
 dlink_list connection_confs = { NULL, NULL, 0};
 
 static CNCB serv_connect_callback;
+struct Callback *connected_cb;
 
 connection_conf_t *
 make_connection_conf()
@@ -55,6 +56,8 @@ serv_connect_callback(fde_t *fd, int status, void *data)
 
   printf("serv_connect_callback: connection succeeded!\n");
   comm_setselect(fd, COMM_SELECT_READ, read_packet, client, 0);
+
+  execute_callback(connected_cb, client);
 }
 
 void 
@@ -73,4 +76,10 @@ connect_server(connection_conf_t *connection)
 
   comm_connect_tcp(&server->fd, connection->host, connection->port,
       NULL, 0, serv_connect_callback, client, AF_INET, CONNECTTIMEOUT);
+}
+
+void *
+server_connected(va_list args)
+{
+  return NULL;
 }
