@@ -34,6 +34,7 @@ irc_server_connected(va_list args)
   sendto_server(client, "PASS %s TS 6 %s", client->server->pass, me.id);
   sendto_server(client, "CAPAB :TS6");
   sendto_server(client, "SERVER %s 1 :%s", me.name, me.info);
+  sendto_server(client, ":%s PING :%s", me.name, me.name);
   send_queued_write(client);
 }
 
