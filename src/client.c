@@ -3,19 +3,19 @@
 dlink_list global_client_list;
 dlink_list global_server_list;
 
-client_t *
+struct Client *
 make_client()
 {
-  client_t *client = MyMalloc(sizeof(client_t));
+  struct Client *client = MyMalloc(sizeof(struct Client));
   client->from = client;
 
   return client;
 }
 
-server_t *
+struct Server *
 make_server()
 {
-  server_t *server = MyMalloc(sizeof(server_t));
+  struct Server *server = MyMalloc(sizeof(struct Server));
  
   return server;
 }
@@ -26,10 +26,10 @@ make_server()
  * output - return client pointer
  * side effects - find person by (nick)name
  */
-client_t *
-find_person(const client_t *source, const char *name)
+struct Client *
+find_person(const struct Client *source, const char *name)
 {
-  client_t *target = NULL;
+  struct Client *target = NULL;
 
   if(IsDigit(*name) && IsServer(source->from))
     target = hash_find_id(name);
@@ -44,7 +44,7 @@ find_person(const client_t *source, const char *name)
  *      mark it as dead then exit it
  */
 void
-dead_link_on_write(client_t *client, int ierrno)
+dead_link_on_write(struct Client *client, int ierrno)
 {
   dlink_node *ptr;
 

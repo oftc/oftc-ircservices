@@ -6,8 +6,8 @@ struct Callback *connected_cb;
 static void
 serv_connect_callback(fde_t *fd, int status, void *data)
 {
-  client_t *client = (client_t*)data;
-  server_t *server = NULL;
+  struct Client *client = (struct Client*)data;
+  struct Server *server = NULL;
 
   assert(client != NULL);
 
@@ -34,8 +34,8 @@ serv_connect_callback(fde_t *fd, int status, void *data)
 void 
 connect_server()
 {
-  client_t *client = make_client();
-  server_t *server = make_server();
+  struct Client *client = make_client();
+  struct Server *server = make_server();
 
   client->server = server;
   memcpy(server->pass, Connect.password, 20);

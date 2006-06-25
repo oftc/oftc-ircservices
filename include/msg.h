@@ -38,17 +38,17 @@ typedef enum HandlerType {
 /*
  * MessageHandler function
  * Params:
- * client_t* client   - connection message originated from
- * client_t* source   - source of message, may be different from client * int            parc   - parameter count
+ * struct Client* client   - connection message originated from
+ * struct Client* source   - source of message, may be different from client * int            parc   - parameter count
  * char*          parv[] - parameter vector
  */
-typedef void (*MessageHandler)(client_t*, client_t*, int, char*[]);
+typedef void (*MessageHandler)(struct Client*, struct Client*, int, char*[]);
 
 
 /* 
  * Message table structure 
  */
-typedef struct message
+struct Message
 {
   const char *cmd;
   unsigned int count;      /* number of times command used */
@@ -74,7 +74,7 @@ typedef struct message
    * UNREGISTERED, CLIENT, SERVER, ENCAP, OPER, DUMMY, LAST
    */
   MessageHandler handlers[LAST_HANDLER_TYPE];
-} message_t;
+};
 
 /*
  * Constants
@@ -84,5 +84,5 @@ typedef struct message
 					 */
 #define   MFLG_UNREG            0x002   /* Command available to unregistered
                                          * clients.                   */       
-extern void ms_error(client_t *, client_t *, int, char *[]);
+extern void ms_error(struct Client *, struct Client *, int, char *[]);
 #endif /* INCLUDED_msg_h */

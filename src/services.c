@@ -2,7 +2,7 @@
 #include "conf.h"
 #include "conf/conf.h"
 
-client_t me;
+struct Client me;
 
 int main(int argc, char *argv[])
 {

@@ -17,7 +17,7 @@ static char readBuf[READBUF_SIZE];
  *      necessary fields (buffer etc..)
  */
 static void
-client_dopacket(client_t *client, char *buffer, size_t length)
+client_dopacket(struct Client *client, char *buffer, size_t length)
 {
   /*
    * Update messages received
@@ -106,7 +106,7 @@ extract_one_line(struct dbuf_queue *qptr, char *buffer)
  * parse_client_queued - parse client queued messages
  */
 static void
-parse_client_queued(client_t *client)
+parse_client_queued(struct Client *client)
 {
   int dolen = 0;
 
@@ -124,7 +124,7 @@ parse_client_queued(client_t *client)
 void
 read_packet(fde_t *fd, void *data)
 {
-  client_t *client = (client_t*)data;
+  struct Client *client = (struct Client*)data;
   int length = 0;
 
   do
@@ -159,7 +159,7 @@ read_packet(fde_t *fd, void *data)
 void *
 iorecv_default(va_list args)
 {
-  client_t *client = va_arg(args, client_t*);
+  struct Client *client = va_arg(args, struct Client*);
   int length = va_arg(args, int);
   char *buf = va_arg(args, char *);
 

@@ -77,7 +77,7 @@ struct MessageTree
   int links; /* Count of all pointers (including msg) at this node 
               * used as reference count for deletion of _this_ node.
               */
-  message_t *msg;
+  struct Message *msg;
   struct MessageTree *pointers[MAXPTRLEN];
 };
 
@@ -90,9 +90,9 @@ static char *sender;
 static char *para[IRCD_MAXPARA + 1];
 static char buffer[1024];
 
-static void handle_command(message_t *, client_t *, client_t *, unsigned int, char **);
-static void recurse_report_messages(client_t *source_p, struct MessageTree *mtree);
-static void add_msg_element(struct MessageTree *mtree_p, message_t *msg_p, const char *cmd);
+static void handle_command(struct Message *, struct Client *, struct Client *, unsigned int, char **);
+static void recurse_report_messages(struct Client *source_p, struct MessageTree *mtree);
+static void add_msg_element(struct MessageTree *mtree_p, struct Message *msg_p, const char *cmd);
 static void del_msg_element(struct MessageTree *mtree_p, const char *cmd);
 
 /* turn a string into a parc/parv pair */
@@ -155,16 +155,16 @@ string_to_array(char *string, char *parv[])
  * NOTE: parse() should not be called recusively by any other functions!
  */
 void
-parse(client_t *client, char *pbuffer, char *bufend)
+parse(struct Client *client, char *pbuffer, char *bufend)
 {
-  client_t *from = client;
+  struct Client *from = client;
   char *ch;
   char *s;
   char *numeric = 0;
   unsigned int i = 0;
   int paramcount;
   int mpara = 0;
-  message_t *mptr = NULL;
+  struct Message *mptr = NULL;
 
   if (IsDefunct(client->server))
     return;
@@ -305,8 +305,8 @@ parse(client_t *client, char *pbuffer, char *bufend)
  * side effects	-
  */
 static void
-handle_command(message_t *mptr, client_t *client,
-               client_t *from, unsigned int i, char *hpara[])
+handle_command(struct Message *mptr, struct Client *client,
+               struct Client *from, unsigned int i, char *hpara[])
 {
   MessageHandler handler = 0;
 
@@ -355,17 +355,17 @@ clear_tree_parse(void)
  * How this works.
  *
  * The code first checks to see if its reached the end of the command
- * If so, that message_tTree has a msg pointer updated and the links
+ * If so, that struct MessageTree has a msg pointer updated and the links
  * count incremented, since a msg pointer is a reference.
  * Then the code descends recursively, building the trie.
- * If a pointer index inside the message_tTree is NULL a new
- * child message_tTree has to be allocated.
+ * If a pointer index inside the struct MessageTree is NULL a new
+ * child struct MessageTree has to be allocated.
  * The links (reference count) is incremented as they are created
  * in the parent.
  */
 static void
 add_msg_element(struct MessageTree *mtree_p, 
-		message_t *msg_p, const char *cmd)
+		struct Message *msg_p, const char *cmd)
 {
   struct MessageTree *ntree_p;
 
@@ -407,13 +407,13 @@ add_msg_element(struct MessageTree *mtree_p,
  * Well, first off, the code recursively descends into the trie
  * until it finds the terminating letter of the command being removed.
  * Once it has done that, it marks the msg pointer as NULL then
- * reduces the reference count on that allocated message_tTree
+ * reduces the reference count on that allocated struct MessageTree
  * since a command counts as a reference.
  *
  * Then it pops up the recurse stack. As it comes back up the recurse
  * The code checks to see if the child now has no pointers or msg
  * i.e. the links count has gone to zero. If its no longer used, the
- * child message_tTree can be deleted. The parent reference
+ * child struct MessageTree can be deleted. The parent reference
  * to this child is then removed and the parents link count goes down.
  * Thus, we continue to go back up removing all unused MessageTree(s)
  */
@@ -455,7 +455,7 @@ del_msg_element(struct MessageTree *mtree_p, const char *cmd)
  * output	- Find given command returning Message * if found NULL if not
  * side effects	- none
  */
-static message_t *
+static struct Message *
 msg_tree_parse(const char *cmd, struct MessageTree *root)
 {
   struct MessageTree *mtree = root;
@@ -470,16 +470,16 @@ msg_tree_parse(const char *cmd, struct MessageTree *root)
 
 /* mod_add_cmd()
  *
- * inputs	- pointer to message_t
+ * inputs	- pointer to struct Message
  * output	- none
  * side effects - load this one command name
  *		  msg->count msg->bytes is modified in place, in
  *		  modules address space. Might not want to do that...
  */
 void
-mod_add_cmd(message_t *msg)
+mod_add_cmd(struct Message *msg)
 {
-  message_t *found_msg = NULL;
+  struct Message *found_msg = NULL;
 
   if (msg == NULL)
     return;
@@ -497,12 +497,12 @@ mod_add_cmd(message_t *msg)
 
 /* mod_del_cmd()
  *
- * inputs	- pointer to message_t
+ * inputs	- pointer to struct Message
  * output	- none
  * side effects - unload this one command name
  */
 void
-mod_del_cmd(message_t *msg)
+mod_del_cmd(struct Message *msg)
 {
   assert(msg != NULL);
 
@@ -515,10 +515,10 @@ mod_del_cmd(message_t *msg)
 /* find_command()
  *
  * inputs	- command name
- * output	- pointer to message_t
+ * output	- pointer to struct Message
  * side effects - none
  */
-message_t *
+struct Message *
 find_command(const char *cmd)
 {
   return msg_tree_parse(cmd, &msg_tree);
@@ -531,9 +531,9 @@ find_command(const char *cmd)
  * side effects	- client is shown list of commands
  */
 void
-report_messages(client_t *source_p)
+report_messages(struct Client *source_p)
 {
-  message_tTree *mtree = &msg_tree;
+  struct MessageTree *mtree = &msg_tree;
   int i;
 
   for (i = 0; i < MAXPTRLEN; i++)
@@ -544,7 +544,7 @@ report_messages(client_t *source_p)
 }
 
 static void
-recurse_report_messages(client_t *source_p, message_tTree *mtree)
+recurse_report_messages(struct Client *source_p, struct MessageTree *mtree)
 {
   int i;
 
@@ -565,7 +565,7 @@ recurse_report_messages(client_t *source_p, message_tTree *mtree)
 #endif
 
 void
-m_ignore(client_t *client, client_t *source_p,
+m_ignore(struct Client *client, struct Client *source_p,
          int parc, char *parv[])
 {
   return;

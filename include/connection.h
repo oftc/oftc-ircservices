@@ -1,7 +1,7 @@
 #ifndef CONNECTIONH
 #define CONNECTIONH
 
-extern client_t me;
+extern struct Client me;
 extern struct Callback *connected_cb;
 
 void connect_server();

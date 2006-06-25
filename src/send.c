@@ -1,6 +1,6 @@
 #include "stdinc.h"
 
-static void send_message(client_t *, char *, int);
+static void send_message(struct Client *, char *, int);
 
 /*
  *  * iosend_default - append a packet to the client's sendq.
@@ -8,7 +8,7 @@ static void send_message(client_t *, char *, int);
 void *
 iosend_default(va_list args)
 {
-  client_t *to = va_arg(args, client_t *);
+  struct Client *to = va_arg(args, struct Client *);
   int length = va_arg(args, int);
   char *buf = va_arg(args, char *);
 
@@ -28,7 +28,7 @@ send_queued_all(void)
   dlink_node *ptr;
 
   DLINK_FOREACH(ptr, global_server_list.head)
-    send_queued_write((client_t *) ptr->data);
+    send_queued_write((struct Client *) ptr->data);
 }
 
 
@@ -76,7 +76,7 @@ send_format(char *lsendbuf, int bufsize, const char *pattern, va_list args)
  * side effects - send message to single client
  */
 void
-sendto_server(client_t *to, const char *pattern, ...)
+sendto_server(struct Client *to, const char *pattern, ...)
 {
   va_list args;
   char buffer[IRC_BUFSIZE];
@@ -100,7 +100,7 @@ sendto_server(client_t *to, const char *pattern, ...)
  **      sendq.
  */
 static void
-send_message(client_t *to, char *buf, int len)
+send_message(struct Client *to, char *buf, int len)
 {
   assert(!IsMe(to));
   assert(&me != to);
@@ -119,7 +119,7 @@ send_message(client_t *to, char *buf, int len)
  **      possible, and then if any data is left, a write is rescheduled.
  */
 void
-send_queued_write(client_t *to)
+send_queued_write(struct Client *to)
 {
   int retlen;
   struct dbuf_block *first;

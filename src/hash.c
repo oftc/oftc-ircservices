@@ -34,8 +34,8 @@ static unsigned int ircd_random_key = 0;
  * rebuild the transformation maps, I kept the tables of equal size 
  * so that I can use one hash function.
  */
-static client_t *idTable[HASHSIZE];
-static client_t *clientTable[HASHSIZE];
+static struct Client *idTable[HASHSIZE];
+static struct Client *clientTable[HASHSIZE];
 static struct Channel *channelTable[HASHSIZE];
 static struct UserHost *userhostTable[HASHSIZE];
 
@@ -115,7 +115,7 @@ strhash(const char *name)
  *                taken from client->name
  */
 void
-hash_add_client(client_t *client)
+hash_add_client(struct Client *client)
 {
   unsigned int hashv = strhash(client->name);
 
@@ -152,7 +152,7 @@ hash_add_userhost(struct UserHost *userhost)
 }*/
 
 void
-hash_add_id(client_t *client)
+hash_add_id(struct Client *client)
 {
   unsigned int hashv = strhash(client->id);
 
@@ -167,10 +167,10 @@ hash_add_id(client_t *client)
  * side effects - Removes an ID from the hash linked list
  */
 void
-hash_del_id(client_t *client)
+hash_del_id(struct Client *client)
 {
   unsigned int hashv = strhash(client->id);
-  client_t *tmp = idTable[hashv];
+  struct Client *tmp = idTable[hashv];
 
   if (tmp != NULL)
   {
@@ -200,10 +200,10 @@ hash_del_id(client_t *client)
  * side effects - Removes a Client's name from the hash linked list
  */
 void
-hash_del_client(client_t *client)
+hash_del_client(struct Client *client)
 {
   unsigned int hashv = strhash(client->name);
-  client_t *tmp = clientTable[hashv];
+  struct Client *tmp = clientTable[hashv];
 
   if (tmp != NULL)
   {
@@ -302,17 +302,17 @@ hash_del_channel(struct Channel *chptr)
  *                if can't find one returns NULL. If it finds one moves
  *                it to the top of the list and returns it.
  */
-client_t *
+struct Client *
 find_client(const char *name)
 {
   unsigned int hashv = strhash(name);
-  client_t *client;
+  struct Client *client;
 
   if ((client = clientTable[hashv]) != NULL)
   {
     if (irccmp(name, client->name))
     {
-      client_t *prev;
+      struct Client *prev;
 
       while (prev = client, (client = client->hnext) != NULL)
       {
@@ -330,17 +330,17 @@ find_client(const char *name)
   return client;
 }
 
-client_t *
+struct Client *
 hash_find_id(const char *name)
 {
   unsigned int hashv = strhash(name);
-  client_t *client;
+  struct Client *client;
 
   if ((client = idTable[hashv]) != NULL)
   {
     if (irccmp(name, client->id))
     {
-      client_t *prev;
+      struct Client *prev;
 
       while (prev = client, (client = client->idhnext) != NULL)
       {
@@ -368,13 +368,13 @@ hash_find_id(const char *name)
  * also made const correct
  * --Bleep
  */
-static client_t *
+static struct Client *
 hash_find_masked_server(const char *name)
 {
   char buf[HOSTLEN + 1];
   char *p = buf;
   char *s = NULL;
-  client_t *server = NULL;
+  struct Client *server = NULL;
 
   if (*name == '*' || *name == '.')
     return NULL;
@@ -399,11 +399,11 @@ hash_find_masked_server(const char *name)
   return NULL;
 }
 
-client_t *
+struct Client *
 find_server(const char *name)
 {
   unsigned int hashv = strhash(name);
-  client_t *client = NULL;
+  struct Client *client = NULL;
 
   if (IsDigit(*name) && strlen(name) == IRC_MAXSID)
     client = hash_find_id(name);
@@ -413,7 +413,7 @@ find_server(const char *name)
     if ((!IsServer(client) && !IsMe(client)) ||
         irccmp(name, client->name))
     {
-      client_t *prev;
+      struct Client *prev;
 
       while (prev = client, (client = client->hnext) != NULL)
       {

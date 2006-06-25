@@ -23,10 +23,7 @@ extern dlink_list global_server_list;
 
 #define IDLEN           12 /* this is the maximum length, not the actual
                               generated length; DO NOT CHANGE! */
-
-
-
-typedef struct server
+struct Server
 {
   dlink_node *node;
   fde_t fd;
@@ -34,29 +31,29 @@ typedef struct server
   struct dbuf_queue buf_recvq;
   struct dbuf_queue buf_sendq;
   char pass[20];
-} server_t;
+};
 
-typedef struct client
+struct Client
 {
   dlink_node *node;
 
-  struct client *hnext;         /* For client hash table lookups by name */
-  struct client *idhnext;       /* For SID hash table lookups by sid */
-  struct client *from;
+  struct Client *hnext;         /* For client hash table lookups by name */
+  struct Client *idhnext;       /* For SID hash table lookups by sid */
+  struct Client *from;
 
   char          name[HOSTLEN+1];
   char          id[IDLEN + 1];      /* client ID, unique ID per client */
   char          info[REALLEN + 1];  /* Free form additional client info */
     
-  server_t      *server;
+  struct Server      *server;
 
   unsigned int  status;
   unsigned char handler;        /* Handler index */
-} client_t;
+} Client;
 
-client_t *make_client();
-server_t *make_server();
-client_t *find_person(const client_t *source, const char *name);
-void dead_link_on_write(client_t *, int);
+struct Client *make_client();
+struct Server *make_server();
+struct Client *find_person(const struct Client *source, const char *name);
+void dead_link_on_write(struct Client *, int);
 
 #endif
