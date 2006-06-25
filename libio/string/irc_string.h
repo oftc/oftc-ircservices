@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: irc_string.h 613 2006-05-19 09:23:10Z michael $
+ *  $Id: irc_string.h 641 2006-06-07 10:51:31Z michael $
  */
 
 LIBIO_EXTERN int ircd_pcre_exec(const pcre *, const char *);
@@ -87,9 +87,7 @@ LIBIO_EXTERN int snprintf(char *, size_t, const char *,...);
 LIBIO_EXTERN int vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
-#ifndef HAVE_BASENAME
-LIBIO_EXTERN char *basename(char *);
-#endif
+LIBIO_EXTERN const char *libio_basename(const char *);
 
 /*
  * clean_string - cleanup control and high ascii characters
@@ -140,7 +138,9 @@ LIBIO_EXTERN const unsigned int CharAttrs[];
 #define SERV_C   0x2000
 #define EOL_C    0x4000
 #define MWILD_C  0x8000
+#define VCHAN_C   0x10000
 
+#define IsVisibleChanChar(c)   (CharAttrs[(unsigned char)(c)] & VCHAN_C)
 #define IsHostChar(c)   (CharAttrs[(unsigned char)(c)] & HOST_C)
 #define IsUserChar(c)   (CharAttrs[(unsigned char)(c)] & USER_C)
 #define IsChanPrefix(c) (CharAttrs[(unsigned char)(c)] & CHANPFX_C)

@@ -39,36 +39,39 @@ CPPFLAGS	= ${INCLUDES} @CPPFLAGS@
 
 default:	all
 
-y.tab.o:  y.tab.c services_parser.y
-	${CC} ${CPPFLAGS} ${CFLAGS} -I. -c y.tab.c
+y.tab.o:  y.tab.c conf/parser.y
+	${CC} -DYYDEBUG ${CPPFLAGS} ${CFLAGS} -I. -c y.tab.c
 
 # Note GNU bison uses <file>.tab.c not y.tab.c
-y.tab.c:  services_parser.y
-	${YACC} -d services_parser.y
+y.tab.c:  conf/parser.y
+	${YACC} -d conf/parser.y
 
 
-lex.yy.o: y.tab.c lex.yy.c services_lexer.l
+lex.yy.o: y.tab.c lex.yy.c conf/lexer.l
 	${CC} ${CPPFLAGS} ${CFLAGS} -I. -c lex.yy.c
 
-lex.yy.c: services_lexer.l
-	${LEX} services_lexer.l
+lex.yy.c: conf/lexer.l
+	${LEX} conf/lexer.l
 
 
 
 SSL_SRCS = rsa.c
 
-SRCS = 				\
- client.c			\
- conf.c				\
- connection.c \
- dbm.c 		  	\
- dynlink.c		\
- hash.c				\
- m_error.c		\
- modules.c		\
- packet.c			\
- parse.c			\
- services.c		\
+SRCS = 								\
+ conf/conf.c  				\
+ conf/connect.c				\
+ conf/database.c			\
+ conf/modules.c				\
+ conf/servicesinfo.c	\
+ conf.c								\
+ client.c							\
+ connection.c 				\
+ dbm.c 		  					\
+ hash.c								\
+ m_error.c						\
+ packet.c							\
+ parse.c							\
+ services.c						\
  send.c
 
 OBJS = ${SRCS:.c=.o}

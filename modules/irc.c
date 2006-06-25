@@ -11,16 +11,13 @@ message_t ping_msgtab = {
 static dlink_node *connected_hook;
 static void *irc_server_connected(va_list);
 
-#ifndef STATIC_MODULES
-void
-_modinit(void)
+INIT_MODULE(irc, "$Revision: 470 $")
 {
   connected_hook = install_hook(connected_cb, irc_server_connected);
   mod_add_cmd(&ping_msgtab);
 }
 
-void
-_moddeinit(void)
+CLEANUP_MODULE
 {
   uninstall_hook(connected_cb, irc_server_connected);
   mod_del_cmd(&ping_msgtab);
@@ -42,7 +39,4 @@ static void ms_ping(client_t *source, client_t *client, int parc, char *parv[])
 {
   sendto_server(source, ":%s PONG %s :%s", me.id, me.name, source->name);
 }
-
-const char *_version = "$Revision: 2 $";
-#endif
 

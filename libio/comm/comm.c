@@ -19,8 +19,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: comm.c 77 2005-10-04 20:45:31Z adx $
+ *  $Id: comm.c 649 2006-06-07 17:57:52Z michael $
  */
+
+#include "stdinc.h"
 
 #ifndef _WIN32
 #include <netinet/in_systm.h>
@@ -28,17 +30,17 @@
 #include <netinet/tcp.h>
 #endif
 
-#include "libioinc.h"
-
 static const char *comm_err_str[] = { "Comm OK", "Error during bind()",
-  "Error during DNS lookup", "connect timeout", "Error during connect()",
-  "Comm Error" };
+                                      "Error during DNS lookup",
+                                      "connect timeout",
+                                      "Error during connect()",
+                                      "Comm Error" };
 
 struct Callback *setup_socket_cb = NULL;
 
-static void comm_connect_callback(fde_t *fd, int status);
+static void comm_connect_callback(fde_t *, int);
 static PF comm_connect_timeout;
-static void comm_connect_dns_callback(void *vptr, struct DNSReply *reply);
+static void comm_connect_dns_callback(void *, struct DNSReply *);
 static PF comm_connect_tryconnect;
 
 extern void init_netio(void);
@@ -53,7 +55,7 @@ check_can_use_v6(void)
   int v6;
 
   if ((v6 = socket(AF_INET6, SOCK_STREAM, 0)) < 0)
-    return NO;
+    return 0;
   else
   {
 #ifdef _WIN32
@@ -61,10 +63,10 @@ check_can_use_v6(void)
 #else
     close(v6);
 #endif
-    return YES;
+    return 1;
   }
 #else
-  return NO;
+  return 0;
 #endif
 }
 
@@ -86,11 +88,12 @@ get_sockerr(int fd)
   int err = 0;
   socklen_t len = sizeof(err);
 
-  if (-1 < fd && !getsockopt(fd, SOL_SOCKET, SO_ERROR, (char*) &err, (socklen_t *)&len))
+  if (fd > -1 && !getsockopt(fd, SOL_SOCKET, SO_ERROR, (char*) &err, (socklen_t *)&len))
   {
     if (err)
       errtmp = err;
   }
+
   errno = errtmp;
 #endif
   return errtmp;
@@ -212,7 +215,8 @@ comm_checktimeouts(void *notused)
   PF *hdl;
   void *data;
 
-  for (i = 0; i < FD_HASH_SIZE; i++)
+  for (i = 0; i < FD_HASH_SIZE; ++i)
+  {
     for (F = fd_hash[i]; F != NULL; F = fd_next_in_loop)
     {
       assert(F->flags.open);
@@ -239,6 +243,7 @@ comm_checktimeouts(void *notused)
         hdl(F, data);
       }
     }
+  }
 }
 
 /*
@@ -307,9 +312,12 @@ comm_connect_tcp(fde_t *fd, const char *host, unsigned short port,
     /* We have a valid IP, so we just call tryconnect */
     /* Make sure we actually set the timeout here .. */
     assert(res != NULL);
+
     memcpy(&fd->connect.hostaddr, res->ai_addr, res->ai_addrlen);
+
     fd->connect.hostaddr.ss_len = res->ai_addrlen;
     fd->connect.hostaddr.ss.ss_family = res->ai_family;
+
     irc_freeaddrinfo(res);
     comm_settimeout(fd, timeout*1000, comm_connect_timeout, NULL);
     comm_connect_tryconnect(fd, NULL);
@@ -366,6 +374,7 @@ comm_connect_dns_callback(void *vptr, struct DNSReply *reply)
   {
     MyFree(F->dns_query);
     F->dns_query = NULL;
+
     comm_connect_callback(F, COMM_ERR_DNS);
     return;
   }
@@ -409,8 +418,8 @@ comm_connect_tryconnect(fde_t *fd, void *notused)
     return;
 
   /* Try the connect() */
-  retval = connect(fd->fd, (struct sockaddr *) &fd->connect.hostaddr, 
-    fd->connect.hostaddr.ss_len);
+  retval = connect(fd->fd, (struct sockaddr *)&fd->connect.hostaddr, 
+                   fd->connect.hostaddr.ss_len);
 
   /* Error? */
   if (retval < 0)
@@ -550,7 +559,7 @@ remove_ipv6_mapping(struct irc_ssaddr *addr)
   {
     struct sockaddr_in6 *v6;
 
-    v6 = (struct sockaddr_in6*)addr;
+    v6 = (struct sockaddr_in6 *)addr;
     if (IN6_IS_ADDR_V4MAPPED(&v6->sin6_addr))
     {
       char v4ip[HOSTIPLEN];

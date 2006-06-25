@@ -1,4 +1,4 @@
-# $Id: Makefile.in 86 2005-10-05 20:36:04Z adx $
+# $Id: Makefile.in 648 2006-06-07 15:16:38Z michael $
 
 CC		= @CC@
 SED		= @SED@
@@ -19,7 +19,8 @@ SRCS = \
   hook.c \
   list.c \
   log.c \
-  misc.c
+  misc.c \
+  libio_getopt.c
 
 OBJS = ${SRCS:.c=.o}
 

@@ -160,28 +160,29 @@ strtoken(char** save, char* str, const char* fs)
 
 #endif /* !HAVE_STRTOK_R */
 
-#ifndef HAVE_BASENAME
-
-/* basename()
+/* libio_basename()
  *
  * input	- i.e. "/usr/local/ircd/modules/m_whois.so"
  * output	- i.e. "m_whois.so"
  * side effects - this will be overwritten on subsequent calls
  */
-char *
-basename(char *path)
+const char *
+libio_basename(const char *path)
 {
-  char *s;
+  const char *s = strrchr(path, '/');
+#ifdef _WIN32
+  const char *s2 = strrchr(path, '\\');
 
-  if ((s = strrchr(path, '/')) == NULL)
+  s = IRCD_MAX(s, s2);
+#endif
+
+  if (s == NULL)
     s = path;
   else
     s++;
 
   return s;
 }
-
-#endif /* !HAVE_BASENAME */
 
 /*
  * Copyright (c) 1996-1999 by Internet Software Consortium.

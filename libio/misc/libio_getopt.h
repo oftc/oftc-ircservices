@@ -1,6 +1,6 @@
 /*
  *  ircd-hybrid: an advanced Internet Relay Chat Daemon(ircd).
- *  irc_libio.h: libio interface specification.
+ *  ircd_getopt.h: A header for the getopt() command line option calls.
  *
  *  Copyright (C) 2002 by the past and present ircd coders, and others.
  *
@@ -19,40 +19,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: libio.h 86 2005-10-05 20:36:04Z adx $
+ *  $Id: libio_getopt.h 648 2006-06-07 15:16:38Z michael $
  */
 
-#ifndef _WIN32
-# define LIBIO_EXTERN extern
-#else
-# ifdef IN_LIBIO
-#  define LIBIO_EXTERN extern __declspec(dllexport)
-# else
-#  define LIBIO_EXTERN extern __declspec(dllimport)
-# endif
-#endif
+#ifndef __GETOPT_H_INCLUDED__
+#define __GETOPT_H_INCLUDED__
 
-#include "misc/event.h"
-#include "misc/list.h"
-#include "misc/log.h"
-#include "misc/misc.h"
-#include "misc/hook.h"
-#include "misc/libio_getopt.h"
+struct lgetopt {
+  const char *opt; /* name of the argument */
+  void *argloc; /* where we store the argument to it (-option argument) */
+  enum { INTEGER, YESNO, STRING, USAGE, ENDEBUG } argtype;
+  const char *desc; /* description of the argument, usage for printing help */
+};
 
-#include "net/inet_misc.h"
-#include "comm/fdlist.h"
-#include "comm/fileio.h"
-#include "comm/comm.h"
-
-#include "mem/balloc.h"
-#include "mem/dbuf.h"
-#include "mem/memory.h"
-#include "mem/dynlink.h"
-
-#include "net/irc_getaddrinfo.h"
-#include "net/irc_getnameinfo.h"
-#include "net/res.h"
-
-#include "string/sprintf_irc.h"
-#include "string/pcre.h"
-#include "string/irc_string.h"
+LIBIO_EXTERN void parseargs(int *, char ***, struct lgetopt *);
+#endif /* __GETOPT_H_INCLUDED__ */

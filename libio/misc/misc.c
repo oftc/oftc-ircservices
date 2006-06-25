@@ -26,6 +26,7 @@
 #include "libioinc.h"
 #include <sys/time.h>
 #include <time.h>
+#include "../comm/rlimits.h"
 
 struct timeval SystemTime;
 
@@ -124,6 +125,146 @@ small_file_date(time_t lclock)
   return timebuffer;
 }
 
+
+#ifdef _WIN32
+/* Copyright (C) 2001 Free Software Foundation, Inc.
+ *
+ * Get name and information about current kernel.
+ */
+int
+uname(struct utsname *uts)
+{
+  enum { WinNT, Win95, Win98, WinUnknown };
+  OSVERSIONINFO osver;
+  SYSTEM_INFO sysinfo;
+  DWORD sLength;
+  DWORD os = WinUnknown;
+
+  memset(uts, 0, sizeof(*uts));
+
+  osver.dwOSVersionInfoSize = sizeof(osver);
+  GetVersionEx(&osver);
+  GetSystemInfo(&sysinfo);
+
+  switch (osver.dwPlatformId)
+  {
+    case VER_PLATFORM_WIN32_NT: /* NT, Windows 2000 or Windows XP */
+      if (osver.dwMajorVersion == 4)
+        strcpy (uts->sysname, "Windows NT4x");    /* NT4x */
+      else if (osver.dwMajorVersion <= 3)
+        strcpy (uts->sysname, "Windows NT3x");    /* NT3x */
+      else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion  < 1)
+        strcpy (uts->sysname, "Windows 2000");    /* 2k */
+      else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 2)
+        strcpy (uts->sysname, "Windows 2003");    /* 2003 */
+      else if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 1)
+        strcpy (uts->sysname, "Windows XP");      /* XP */
+      else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 0)
+        strcpy (uts->sysname, "Windows Vista");   /* Vista */
+      os = WinNT;
+      break;
+
+    case VER_PLATFORM_WIN32_WINDOWS: /* Win95, Win98 or WinME */
+      if ((osver.dwMajorVersion > 4) ||
+          ((osver.dwMajorVersion == 4) && (osver.dwMinorVersion > 0)))
+      {
+        if (osver.dwMinorVersion >= 90)
+          strcpy (uts->sysname, "Windows ME"); /* ME */
+        else
+          strcpy (uts->sysname, "Windows 98"); /* 98 */
+        os = Win98;
+      }
+      else
+      {
+        strcpy (uts->sysname, "Windows 95"); /* 95 */
+        os = Win95;
+      }
+      break;
+
+    case VER_PLATFORM_WIN32s: /* Windows 3.x */
+      strcpy (uts->sysname, "Windows");
+      break;
+  }
+
+  sprintf(uts->version, "%ld.%02ld",
+          osver.dwMajorVersion, osver.dwMinorVersion);
+
+  if (osver.szCSDVersion[0] != '\0' &&
+      (strlen (osver.szCSDVersion) + strlen (uts->version) + 1) <
+      sizeof (uts->version))
+    {
+      strcat (uts->version, " ");
+      strcat (uts->version, osver.szCSDVersion);
+    }
+
+  sprintf (uts->release, "build %ld", osver.dwBuildNumber & 0xFFFF);
+
+  switch (sysinfo.wProcessorArchitecture)
+    {
+    case PROCESSOR_ARCHITECTURE_PPC:
+      strcpy (uts->machine, "ppc");
+      break;
+    case PROCESSOR_ARCHITECTURE_ALPHA:
+      strcpy (uts->machine, "alpha");
+      break;
+    case PROCESSOR_ARCHITECTURE_MIPS:
+      strcpy (uts->machine, "mips");
+      break;
+    case PROCESSOR_ARCHITECTURE_INTEL:
+      /*
+       * dwProcessorType is only valid in Win95 and Win98 and WinME
+       * wProcessorLevel is only valid in WinNT
+       */
+      switch (os)
+      {
+        case Win95:
+        case Win98:
+          switch (sysinfo.dwProcessorType)
+          {
+            case PROCESSOR_INTEL_386:
+            case PROCESSOR_INTEL_486:
+            case PROCESSOR_INTEL_PENTIUM:
+              sprintf(uts->machine, "i%ld", sysinfo.dwProcessorType);
+              break;
+            default:
+              strcpy(uts->machine, "i386");
+              break;
+          }
+          break;
+        case WinNT:
+          switch(sysinfo.wProcessorArchitecture)
+            {
+            case PROCESSOR_ARCHITECTURE_INTEL:
+              sprintf (uts->machine, "x86(%d)", sysinfo.wProcessorLevel);
+              break;
+            case PROCESSOR_ARCHITECTURE_IA64:
+              sprintf (uts->machine, "ia64(%d)", sysinfo.wProcessorLevel);
+              break;
+#ifdef PROCESSOR_ARCHITECTURE_AMD64
+            case PROCESSOR_ARCHITECTURE_AMD64:
+              sprintf (uts->machine, "x86_64(%d)", sysinfo.wProcessorLevel);
+              break;
+#endif
+            default:
+              sprintf (uts->machine, "unknown(%d)", sysinfo.wProcessorLevel);
+              break;
+            }
+          break;
+        default:
+          strcpy(uts->machine, "unknown");
+      }
+      break;
+    default:
+      strcpy (uts->machine, "unknown");
+      break;
+  }
+
+  sLength = sizeof(uts->nodename) - 1;
+  GetComputerName(uts->nodename, &sLength);
+  return 0;
+}
+#endif
+
 #ifdef HAVE_LIBCRYPTO
 char *
 ssl_get_cipher(SSL *ssl)
@@ -189,6 +330,28 @@ set_time(void)
 
   SystemTime.tv_sec  = newtime.tv_sec;
   SystemTime.tv_usec = newtime.tv_usec;
+}
+
+/* setup_corefile()
+ *
+ * inputs       - nothing
+ * output       - nothing
+ * side effects - setups corefile to system limits.
+ * -kre
+ */
+void
+setup_corefile(void)
+{
+#ifdef HAVE_SYS_RESOURCE_H
+  struct rlimit rlim; /* resource limits */
+
+  /* Set corefilesize to maximum */
+  if (!getrlimit(RLIMIT_CORE, &rlim))
+  {
+    rlim.rlim_cur = rlim.rlim_max;
+    setrlimit(RLIMIT_CORE, &rlim);
+  }
+#endif
 }
 
 void

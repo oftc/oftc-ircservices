@@ -1,14 +1,13 @@
 #include "stdinc.h"
 #include <dbi/dbi.h>
-
-database_info_t database_info;
+#include "conf/conf.h"
 
 void
 db_init()
 {
   int num_drivers = dbi_initialize(NULL);
 
-  memset(&database_info, 0, sizeof(database_info));
+  memset(&Database, 0, sizeof(Database));
 
   if(num_drivers >= 0)
     printf("db: loaded: %d drivers available.\n", num_drivers);
@@ -26,19 +25,19 @@ db_load_driver()
 {
   dbi_conn *dbconn;
 
-  dbconn = dbi_conn_new(database_info.driver);
+  dbconn = dbi_conn_new(Database.driver);
   if(dbconn == NULL)
   {
-    printf("db: Error loading database driver %s\n", database_info.driver);
+    printf("db: Error loading database driver %s\n", Database.driver);
     exit(-1);
   }
 
-  printf("db: Driver %s loaded\n", database_info.driver);
+  printf("db: Driver %s loaded\n", Database.driver);
 
 
-  dbi_conn_set_option(dbconn, "username", database_info.username);
-  dbi_conn_set_option(dbconn, "password", database_info.password);
-  dbi_conn_set_option(dbconn, "dbname", database_info.dbname);
+  dbi_conn_set_option(dbconn, "username", Database.username);
+  dbi_conn_set_option(dbconn, "password", Database.password);
+  dbi_conn_set_option(dbconn, "dbname", Database.dbname);
 
   if(dbi_conn_connect(dbconn) < 0)
   {

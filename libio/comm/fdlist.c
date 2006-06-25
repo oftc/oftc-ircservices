@@ -67,9 +67,11 @@ recalc_fdlimit(void *unused)
 
   fdmax = getdtablesize();
 
-  /* under no condition shall this raise over 65536
-   * for example user ip heap is sized 2*hard_fdlimit */
-  fdmax = IRC_MIN(fdmax, 65536);
+  /*
+   * under no condition shall this raise over 65536
+   * for example user ip heap is sized 2*hard_fdlimit
+   */
+  fdmax = LIBIO_MIN(fdmax, 65536);
 
   if (fdmax != hard_fdlimit)
     execute_callback(fdlimit_cb, fdmax);
@@ -91,12 +93,9 @@ lookup_fd(int fd)
 {
   fde_t *F = fd_hash[hash_fd(fd)];
 
-  while (F)
-  {
+  for (; F; F = F->hnext)
     if (F->fd == fd)
       return F;
-    F = F->hnext;
-  }
 
   return NULL;
 }
@@ -219,8 +218,10 @@ close_fds(fde_t *one)
   int i;
   fde_t *F;
 
-  for (i = 0; i < FD_HASH_SIZE; i++)
+  for (i = 0; i < FD_HASH_SIZE; ++i)
+  {
     for (F = fd_hash[i]; F != NULL; F = F->hnext)
+    {
       if (F != one)
       {
 #ifdef _WIN32
@@ -232,4 +233,6 @@ close_fds(fde_t *one)
         close(F->fd);
 #endif	 
       }
+    }
+  }
 }

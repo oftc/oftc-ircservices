@@ -7,7 +7,7 @@
  * The authors takes no responsibility for any damage or loss
  * of property which results from the use of this software.
  *
- * $Id: res.c 469 2006-02-17 05:06:40Z db $
+ * $Id: res.c 649 2006-06-07 17:57:52Z michael $
  *
  * July 1999 - Rewrote a bunch of stuff here. Change hostent builder code,
  *     added callbacks and reference counting of returned hostents.
@@ -346,15 +346,16 @@ send_res_msg(const char *msg, int len, int rcount)
 {
   int i;
   int sent = 0;
-  int max_queries = IRC_MIN(irc_nscount, rcount);
+  int max_queries = LIBIO_MIN(irc_nscount, rcount);
 
-  /* RES_PRIMARY option is not implemented
+  /*
+   * RES_PRIMARY option is not implemented
    * if (res.options & RES_PRIMARY || 0 == max_queries)
    */
   if (max_queries == 0)
     max_queries = 1;
 
-  for (i = 0; i < max_queries; i++)
+  for (i = 0; i < max_queries; ++i)
   {
     if (sendto(ResolverFileDescriptor.fd, msg, len, 0, 
         (struct sockaddr*)&(irc_nsaddr_list[i]), 
@@ -362,7 +363,7 @@ send_res_msg(const char *msg, int len, int rcount)
       ++sent;
   }
 
-  return(sent);
+  return sent;
 }
 
 /*
@@ -371,18 +372,17 @@ send_res_msg(const char *msg, int len, int rcount)
 static struct reslist *
 find_id(int id)
 {
-  dlink_node *ptr;
-  struct reslist *request;
+  dlink_node *ptr = NULL;
 
   DLINK_FOREACH(ptr, request_list.head)
   {
-    request = ptr->data;
+    struct reslist *request = ptr->data;
 
     if (request->id == id)
-      return(request);
+      return request;
   }
 
-  return(NULL);
+  return NULL;
 }
 
 /* 
@@ -625,14 +625,14 @@ proc_answer(struct reslist *request, HEADER* header, char* buf, char* eob)
       /*
        * broken message
        */
-      return(0);
+      return 0;
     }
     else if (n == 0)
     {
       /*
        * no more answers left
        */
-      return(0);
+      return 0;
     }
 
     hostbuf[HOSTLEN] = '\0';
@@ -837,6 +837,7 @@ res_readreply(fde_t *fd, void *data)
     } 
     return;
   }
+
   /*
    * If this fails there was an error decoding the received packet, 
    * try it again and hope it works the next time.
@@ -904,5 +905,6 @@ make_dnsreply(struct reslist *request)
 
   cp->h_name = request->name;
   memcpy(&cp->addr, &request->addr, sizeof(cp->addr));
-  return(cp);
+
+  return cp;
 }
