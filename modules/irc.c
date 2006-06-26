@@ -52,7 +52,8 @@ ms_server(struct Client *source, struct Client *client, int parc, char *parv[])
 {
   if(IsConnecting(client))
   {
-    sendto_server(source, "SVINFO 5 5 0: %lu", CurrentTime);
+    sendto_server(client, "SVINFO 5 5 0: %lu", CurrentTime);
+    sendto_server(client, ":%s PING :%s", me.name, me.name);
     SetServer(client);
     hash_add_client(client);
     printf("Completeed server connection to %s\n", source->name);
