@@ -8,17 +8,25 @@ extern dlink_list global_server_list;
 #define FLAGS_DEADSOCKET    0x00000002UL /* Local socket is dead--Exiting soon*/
 #define FLAGS_KILLED        0x00000004UL /* Prevents "QUIT" from being sent to this */
 #define FLAGS_CLOSING       0x00000008UL /* set when closing */
+#define FLAGS_CONNECTING    0x00000010UL /* Currently connecting not bursted */
 
 #define STAT_SERVER         0x01
 #define STAT_CLIENT         0x02
 #define STAT_ME             0x04
 
+#define IsConnecting(x)         ((x)->flags & FLAGS_CONNECTING)
 #define IsDefunct(x)            ((x)->flags & (FLAGS_DEADSOCKET|FLAGS_CLOSING))
 #define IsDead(x)               ((x)->flags & FLAGS_DEADSOCKET)
+
+#define SetConnecting(x)        ((x)->flags|= FLAGS_CONNECTING)
+
+#define ClearConnecting(x)      ((x)->flags &= ~FLAGS_CONNECTING)
 
 #define IsServer(x)             ((x)->status == STAT_SERVER)
 #define IsClient(x)             ((x)->status == STAT_CLIENT)
 #define IsMe(x)                 ((x)->status == STAT_ME)
+
+#define SetServer(x)            ((x)->status |= STAT_SERVER)
 
 
 #define IDLEN           12 /* this is the maximum length, not the actual
@@ -42,6 +50,7 @@ struct Client
   struct Client *from;
 
   char          name[HOSTLEN+1];
+  char          host[HOSTLEN+1];
   char          id[IDLEN + 1];      /* client ID, unique ID per client */
   char          info[REALLEN + 1];  /* Free form additional client info */
     
@@ -49,6 +58,8 @@ struct Client
 
   unsigned int  status;
   unsigned char handler;        /* Handler index */
+
+  int flags;
 } Client;
 
 struct Client *make_client();

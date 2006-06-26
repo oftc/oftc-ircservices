@@ -39,6 +39,12 @@ connect_server()
 
   client->server = server;
   memcpy(server->pass, Connect.password, 20);
+  strlcpy(client->name, Connect.name, sizeof(client->name));
+  strlcpy(client->host, Connect.host, sizeof(client->host));
+
+  SetConnecting(client);
+    
+  dlinkAdd(client, &client->node, &global_client_list);
 
   if(comm_open(&server->fd, AF_INET, SOCK_STREAM, 0, NULL) < 0)
   {

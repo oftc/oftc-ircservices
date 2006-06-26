@@ -8,6 +8,7 @@ make_client()
 {
   struct Client *client = MyMalloc(sizeof(struct Client));
   client->from = client;
+  client->node = make_dlink_node();
 
   return client;
 }

@@ -213,14 +213,16 @@ parse(struct Client *client, char *pbuffer, char *bufend)
        */
       if (from == NULL)
       {
- //       return;
+        printf("from null, sender:%s\n", sender);
+        return;
       }
 
       para[0] = from->name;
 
       if (from->from != client)
       {
-   //     return;
+        printf("from from is not client");
+        return;
       }
     }
 
