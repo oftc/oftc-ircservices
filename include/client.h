@@ -27,6 +27,7 @@ extern dlink_list global_server_list;
 #define IsMe(x)                 ((x)->status == STAT_ME)
 
 #define SetServer(x)            ((x)->status |= STAT_SERVER)
+#define SetClient(x)            ((x)->status |= STAT_CLIENT)
 
 
 #define IDLEN           12 /* this is the maximum length, not the actual
@@ -53,9 +54,12 @@ struct Client
   char          host[HOSTLEN+1];
   char          id[IDLEN + 1];      /* client ID, unique ID per client */
   char          info[REALLEN + 1];  /* Free form additional client info */
+  char          username[USERLEN + 1];
     
   struct Server      *server;
 
+  time_t        tsinfo;
+  unsigned short hopcount;
   unsigned int  status;
   unsigned char handler;        /* Handler index */
 

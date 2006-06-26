@@ -44,7 +44,7 @@ connect_server()
 
   SetConnecting(client);
     
-  dlinkAdd(client, &client->node, &global_client_list);
+  dlinkAdd(client, client->node, &global_client_list);
 
   if(comm_open(&server->fd, AF_INET, SOCK_STREAM, 0, NULL) < 0)
   {
