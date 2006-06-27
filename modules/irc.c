@@ -38,6 +38,36 @@ CLEANUP_MODULE
   mod_del_cmd(&nick_msgtab);
 }
 
+/** Introduce a new server; currently only useful for connect and jupes
+ * @param
+ * prefix prefix, usually me.name
+ * name server to introduce
+ * info Server Information string
+ */
+static void *
+irc_sendmsg_server(struct Client *client, char *prefix, char *name, char *info) {
+  if (prefix == NULL) {
+    sendto_server(client, "SERVER %s 1 :%s", name, info);
+  } else {
+    sendto_server(client, ":%s SERVER %s 2 :%s", prefix, name, info);
+  }
+}
+
+/** Introduce a new user
+ * @param
+ * nick Nickname of user
+ * user username ("identd") of user
+ * host hostname of that user
+ * info Realname Information
+ * umode usermode to add (i.e. "ao")
+ */
+static void *
+irc_sendmsg_nick(struct Client *client, char *nick, char *user, char *host,
+  char *info, char *umode)
+{
+  sendto_server(client, "NICK %s 1 0 +%s %s %s %s :%s", nick, umode, user, host, me.name, info);
+}
+
 static void *
 irc_server_connected(va_list args)
 {
@@ -45,7 +75,7 @@ irc_server_connected(va_list args)
   
   sendto_server(client, "PASS %s TS 5", client->server->pass);
   sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
-  sendto_server(client, "SERVER %s 1 :%s", me.name, me.info);
+  irc_sendmsg_server(client, NULL, me.name, me.info);
   send_queued_write(client);
 }
 
