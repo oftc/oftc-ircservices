@@ -53,8 +53,6 @@ reset_database(va_list args)
 static void *
 verify_database(va_list args)
 {
-  char *p;
-
   if (!Database.driver[0])
     parse_fatal("driver= field missing in database{} section");
 

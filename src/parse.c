@@ -88,10 +88,9 @@ static struct MessageTree msg_tree;
  */
 static char *sender;
 static char *para[IRCD_MAXPARA + 1];
-static char buffer[1024];
 
 static void handle_command(struct Message *, struct Client *, struct Client *, unsigned int, char **);
-static void recurse_report_messages(struct Client *source_p, struct MessageTree *mtree);
+//static void recurse_report_messages(struct Client *source_p, struct MessageTree *mtree);
 static void add_msg_element(struct MessageTree *mtree_p, struct Message *msg_p, const char *cmd);
 static void del_msg_element(struct MessageTree *mtree_p, const char *cmd);
 

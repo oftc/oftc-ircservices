@@ -32,5 +32,5 @@ struct DatabaseConf
 EXTERN struct DatabaseConf Database;
 
 #ifdef IN_CONF_C
-void init_databaseinfo(void);
+void init_database(void);
 #endif

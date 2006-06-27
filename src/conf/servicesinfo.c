@@ -24,7 +24,7 @@
 #include "stdinc.h"
 #include "conf/conf.h"
 
-struct ServicesInfoConf ServicesInfo = {0};
+struct ServicesInfoConf ServicesInfo = {};
 char new_uid[TOTALSIDUID + 1] = {0};
 
 static dlink_node *hreset, *hverify;
@@ -59,8 +59,6 @@ reset_servicesinfo(va_list args)
 static void *
 verify_servicesinfo(va_list args)
 {
-  char *p;
-
   if (!me.name[0])
     parse_fatal("name= field missing in servicesinfo{} section");
 

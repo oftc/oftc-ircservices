@@ -44,7 +44,7 @@ CLEANUP_MODULE
  * name server to introduce
  * info Server Information string
  */
-static void
+static void 
 irc_sendmsg_server(struct Client *client, char *prefix, char *name, char *info) {
   if (prefix == NULL) {
     sendto_server(client, "SERVER %s 1 :%s", name, info);
@@ -68,7 +68,7 @@ irc_sendmsg_nick(struct Client *client, char *nick, char *user, char *host,
   sendto_server(client, "NICK %s 1 0 +%s %s %s %s :%s", nick, umode, user, host, me.name, info);
 }
 
-static void
+static void *
 irc_server_connected(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
@@ -77,6 +77,8 @@ irc_server_connected(va_list args)
   sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
   irc_sendmsg_server(client, NULL, me.name, me.info);
   send_queued_write(client);
+
+  return NULL;
 }
 
 static void 

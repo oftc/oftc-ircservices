@@ -53,8 +53,6 @@ reset_connect(va_list args)
 static void *
 verify_connect(va_list args)
 {
-  char *p;
-
   if (Connect.name == NULL)
     parse_fatal("name= field missing in connect{} section");
 

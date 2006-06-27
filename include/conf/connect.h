@@ -33,5 +33,5 @@ struct ConnectConf
 EXTERN struct ConnectConf Connect;
 
 #ifdef IN_CONF_C
-void init_connectinfo(void);
+void init_connect(void);
 #endif

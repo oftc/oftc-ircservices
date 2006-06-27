@@ -47,8 +47,6 @@ find_person(const struct Client *source, const char *name)
 void
 dead_link_on_write(struct Client *client, int ierrno)
 {
-  dlink_node *ptr;
-
   if (IsDefunct(client->server))
     return;
 

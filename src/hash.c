@@ -23,10 +23,10 @@
 
 #include "stdinc.h"
 
-static BlockHeap *userhost_heap = NULL;
+/*static BlockHeap *userhost_heap = NULL;
 static BlockHeap *namehost_heap = NULL;
 static struct UserHost *find_or_add_userhost(const char *);
-
+*/
 static unsigned int ircd_random_key = 0;
 
 /* The actual hash tables, They MUST be of the same HASHSIZE, variable

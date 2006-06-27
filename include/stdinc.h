@@ -25,6 +25,7 @@
 #include "msg.h"
 #include "parse.h"
 #include "send.h"
+#include "services.h"
 
 #define TRUE 1
 #define FALSE 0
