@@ -10,10 +10,11 @@ CLEANUP_MODULE
 }
 
 static void 
-irc_sendmsg_svscloak(struct Client *client, struct Client *target, char *cloakstring) 
+irc_sendmsg_svscloak(struct Client *client, struct Client *target, 
+    char *cloakstring) 
 {
   sendto_server(client, ":%s SVSCLOAK %s :%s", 
-    me.name, target->nick, cloakstring);
+    me.name, target->name, cloakstring);
 }
 
 static void

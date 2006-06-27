@@ -803,6 +803,7 @@ dnl Server Tweaks
 dnl =============
 
 AC_DEFINE([CLIENT_HEAP_SIZE], 256, [Size of the client heap.])
+AC_DEFINE([CHANNEL_HEAP_SIZE], 256, [Size of the channel heap.])
 AC_DEFINE([DBUF_HEAP_SIZE], 64, [Size of the dbuf heap.])
 AC_DEFINE([DNODE_HEAP_SIZE], 256, [Size of the dlink_node heap.])
 

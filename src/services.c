@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
   iosend_cb = register_callback("iosend", iosend_default);
       
   db_init();
+  channel_init();
   init_conf();
 
   read_services_conf(TRUE);

@@ -65,7 +65,7 @@ init_hash(void)
   {
     idTable[i]          = NULL;
     clientTable[i]      = NULL;
-//    channelTable[i]     = NULL;
+    channelTable[i]     = NULL;
 //    userhostTable[i]    = NULL;
   }
 }
@@ -133,15 +133,14 @@ hash_add_client(struct Client *client)
  *                from chptr->name, we do hash its entire lenght
  *                since this proved to be statistically faster
  */
-/*void
+void
 hash_add_channel(struct Channel *chptr)
 {
   unsigned int hashv = strhash(chptr->chname);
 
   chptr->hnextch = channelTable[hashv];
   channelTable[hashv] = chptr;
-}*/
-
+}
 /*void
 hash_add_userhost(struct UserHost *userhost)
 {
@@ -258,6 +257,7 @@ hash_del_userhost(struct UserHost *userhost)
     }
   }
 }
+#endif
 
 /* hash_del_channel()
  *
@@ -292,7 +292,6 @@ hash_del_channel(struct Channel *chptr)
     }
   }
 }
-#endif
 
 /* find_client()
  *
@@ -440,7 +439,7 @@ find_server(const char *name)
  *                if can't find one returns NULL, if can find it moves
  *                it to the top of the list and returns it.
  */
-/*struct Channel *
+struct Channel *
 hash_find_channel(const char *name)
 {
   unsigned int hashv = strhash(name);
@@ -467,7 +466,6 @@ hash_find_channel(const char *name)
 
   return chptr;
 }
-*/
 /* hash_get_bucket(int type, unsigned int hashv)
  *
  * inputs       - hash value (must be between 0 and HASHSIZE - 1)

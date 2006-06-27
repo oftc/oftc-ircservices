@@ -58,6 +58,7 @@ lex.yy.c: conf/lexer.l
 SSL_SRCS = rsa.c
 
 SRCS = 								\
+ channel.c						\
  conf/conf.c  				\
  conf/connect.c				\
  conf/database.c			\

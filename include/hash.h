@@ -41,8 +41,8 @@ void init_hash(void);
 
 void hash_add_client(struct Client *);
 void hash_del_client(struct Client *);
-/*void hash_add_channel(struct Channel *);
-void hash_del_channel(struct Channel *);*/
+void hash_add_channel(struct Channel *);
+/*void hash_del_channel(struct Channel *);*/
 void hash_add_id(struct Client *);
 void hash_del_id(struct Client *);
 /*void hash_add_userhost(struct UserHost *);
@@ -52,7 +52,7 @@ void hash_del_userhost(struct UserHost *);*/
 struct Client *hash_find_id(const char *);
 struct Client *find_client(const char *);
 struct Client *find_server(const char *);
-//struct Channel *hash_find_channel(const char *);
+struct Channel *hash_find_channel(const char *);
 void *hash_get_bucket(int, unsigned int);
 
 unsigned int strhash(const char *);

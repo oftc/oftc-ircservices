@@ -1,8 +1,11 @@
 #include "stdinc.h"
 
 static void ms_ping(struct Client *, struct Client *, int, char *[]);
-static void ms_server(struct Client *, struct Client *, int, char*[]);
 static void ms_nick(struct Client *, struct Client *, int, char*[]);
+static void ms_server(struct Client *, struct Client *, int, char*[]);
+static void ms_sjoin(struct Client *, struct Client *, int, char*[]);
+
+static void do_user_modes(struct Client *client, const char *modes);
 
 struct Message ping_msgtab = {
   "PING", 0, 0, 1, 0, MFLG_SLOW, 0,
@@ -19,6 +22,11 @@ struct Message nick_msgtab = {
   { ms_nick, m_ignore, ms_nick }
 };
 
+struct Message sjoin_msgtab = {
+  "SJOIN", 0, 0, 4, 0, MFLG_SLOW, 0,
+  { ms_sjoin, m_ignore, ms_sjoin }
+};
+
 static dlink_node *connected_hook;
 static void *irc_server_connected(va_list);
 
@@ -28,6 +36,7 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
+  mod_add_cmd(&sjoin_msgtab);
 }
 
 CLEANUP_MODULE
@@ -36,6 +45,7 @@ CLEANUP_MODULE
   mod_del_cmd(&ping_msgtab);
   mod_del_cmd(&server_msgtab);
   mod_del_cmd(&nick_msgtab);
+  mod_del_cmd(&sjoin_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
@@ -115,33 +125,23 @@ ms_server(struct Client *source, struct Client *client, int parc, char *parv[])
   }
 }
 
+//SJOIN 1151079915 #test +nt :cryogen
 static void
-do_user_modes(struct Client *client, const char *modes)
+ms_sjoin(struct Client *source, struct Client *client, int parc, char *parv[])
 {
-  char *ch = (char*)modes;
-  int dir = MODE_ADD;
+  struct Channel *chan = hash_find_channel(parv[2]);
 
-  while(*ch)
+  if(chan == NULL)
   {
-    switch(*ch)
-    {
-      case '+':
-        dir = MODE_ADD;
-        break;
-      case '-':
-        dir = MODE_DEL;
-        break;
-      case 'o':
-        if(dir == MODE_ADD)
-        {
-          SetOper(client);
-          printf("Setting %s as operator(o)\n", client->name);
-        }
-        else
-          ClearOper(client);
-        break;
-    }
-    ch++;
+    /* Don't know about this channel, it's new.. */
+    chan = make_channel(parv[2]);
+    chan->channelts = atoi(parv[1]);
+
+    printf("Adding channel %s\n", parv[2]);
+  }
+  else
+  {
+    /* This channel exists, but we need to add more people to it */
   }
 }
 
@@ -184,3 +184,35 @@ ms_nick(struct Client *source, struct Client *client, int parc, char *parv[])
     hash_add_client(client);
   }
 }
+
+static void
+do_user_modes(struct Client *client, const char *modes)
+{
+  char *ch = (char*)modes;
+  int dir = MODE_ADD;
+
+  while(*ch)
+  {
+    switch(*ch)
+    {
+      case '+':
+        dir = MODE_ADD;
+        break;
+      case '-':
+        dir = MODE_DEL;
+        break;
+      case 'o':
+        if(dir == MODE_ADD)
+        {
+          SetOper(client);
+          printf("Setting %s as operator(o)\n", client->name);
+        }
+        else
+          ClearOper(client);
+        break;
+    }
+    ch++;
+  }
+}
+
+

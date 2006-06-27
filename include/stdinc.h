@@ -19,6 +19,7 @@
 
 #include "client.h"
 #include "connection.h"
+#include "channel.h"
 #include "dbm.h"
 #include "hash.h"
 #include "packet.h"
