@@ -14,6 +14,8 @@ extern dlink_list global_server_list;
 #define STAT_CLIENT         0x02
 #define STAT_ME             0x04
 
+#define UMODE_OPER          0x1
+
 #define IsConnecting(x)         ((x)->flags & FLAGS_CONNECTING)
 #define IsDefunct(x)            ((x)->flags & (FLAGS_DEADSOCKET|FLAGS_CLOSING))
 #define IsDead(x)               ((x)->flags & FLAGS_DEADSOCKET)
@@ -29,9 +31,19 @@ extern dlink_list global_server_list;
 #define SetServer(x)            ((x)->status |= STAT_SERVER)
 #define SetClient(x)            ((x)->status |= STAT_CLIENT)
 
+#define IsOper(x)               ((x)->umodes & UMODE_OPER)
+
+#define SetOper(x)              ((x)->umodes |= UMODE_OPER)
+
+#define ClearOper(x)            ((x)->umodes &= ~UMODE_OPER)
+
 
 #define IDLEN           12 /* this is the maximum length, not the actual
                               generated length; DO NOT CHANGE! */
+
+
+#define MODE_ADD 1
+#define MODE_DEL 2
 struct Server
 {
   dlink_node *node;
@@ -59,8 +71,9 @@ struct Client
   struct Server      *server;
 
   time_t        tsinfo;
-  unsigned short hopcount;
   unsigned int  status;
+  unsigned int  umodes;
+  unsigned short hopcount;
   unsigned char handler;        /* Handler index */
 
   int flags;

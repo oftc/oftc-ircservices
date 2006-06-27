@@ -24,6 +24,7 @@
 #include "packet.h"
 #include "msg.h"
 #include "parse.h"
+#include "send.h"
 
 #define TRUE 1
 #define FALSE 0

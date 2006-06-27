@@ -74,12 +74,42 @@ ms_server(struct Client *source, struct Client *client, int parc, char *parv[])
     strlcpy(newclient->name, parv[1], sizeof(newclient->name));
     strlcpy(newclient->info, parv[3], sizeof(newclient->info));
     newclient->node = make_dlink_node();
-    newclient->from = client;
+    newclient->from = source;
     newclient->hopcount = atoi(parv[2]);
     SetServer(newclient);
     dlinkAdd(newclient, newclient->node, &global_client_list);
     hash_add_client(newclient);
     printf("Got server %s from hub %s\n", parv[1], client->name);
+  }
+}
+
+static void
+do_user_modes(struct Client *client, const char *modes)
+{
+  char *ch = (char*)modes;
+  int dir = MODE_ADD;
+
+  while(*ch)
+  {
+    switch(*ch)
+    {
+      case '+':
+        dir = MODE_ADD;
+        break;
+      case '-':
+        dir = MODE_DEL;
+        break;
+      case 'o':
+        if(dir == MODE_ADD)
+        {
+          SetOper(client);
+          printf("Setting %s as operator(o)\n", client->name);
+        }
+        else
+          ClearOper(client);
+        break;
+    }
+    ch++;
   }
 }
 
@@ -104,6 +134,7 @@ ms_nick(struct Client *source, struct Client *client, int parc, char *parv[])
     strlcpy(newclient->info, parv[8], sizeof(newclient->info));
     newclient->hopcount = atoi(parv[2]);
     newclient->tsinfo = atoi(parv[3]);
+    do_user_modes(newclient, parv[4]);
 
     newclient->node = make_dlink_node();
     SetClient(newclient);
