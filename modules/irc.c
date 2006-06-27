@@ -44,7 +44,7 @@ CLEANUP_MODULE
  * name server to introduce
  * info Server Information string
  */
-static void *
+static void
 irc_sendmsg_server(struct Client *client, char *prefix, char *name, char *info) {
   if (prefix == NULL) {
     sendto_server(client, "SERVER %s 1 :%s", name, info);
@@ -61,14 +61,14 @@ irc_sendmsg_server(struct Client *client, char *prefix, char *name, char *info) 
  * info Realname Information
  * umode usermode to add (i.e. "ao")
  */
-static void *
+static void
 irc_sendmsg_nick(struct Client *client, char *nick, char *user, char *host,
   char *info, char *umode)
 {
   sendto_server(client, "NICK %s 1 0 +%s %s %s %s :%s", nick, umode, user, host, me.name, info);
 }
 
-static void *
+static void
 irc_server_connected(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
