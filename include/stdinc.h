@@ -43,6 +43,10 @@
 # define _version   __declspec(dllexport) _version
 #endif
 
+#ifdef HAVE_STRTOK_R
+# define strtoken(x, y, z) strtok_r(y, z, x)
+#endif
+
 #include "conf/conf.h"
 #include "conf.h"
 #include "channel_mode.h"

@@ -4,6 +4,7 @@ static void ms_ping(struct Client *, struct Client *, int, char *[]);
 static void ms_nick(struct Client *, struct Client *, int, char*[]);
 static void ms_server(struct Client *, struct Client *, int, char*[]);
 static void ms_sjoin(struct Client *, struct Client *, int, char*[]);
+static void ms_part(struct Client *, struct Client *, int, char*[]);
 
 static void do_user_modes(struct Client *client, const char *modes);
 static void set_final_mode(struct Mode *, struct Mode *);
@@ -17,29 +18,34 @@ static const char *para[MAXMODEPARAMS];
 static char *mbuf;
 static int pargs;
 
+struct Message part_msgtab = {
+  "PART", 0, 0, 2, 0, MFLG_SLOW, 0,
+  { ms_part, m_ignore }
+};
+
 struct Message ping_msgtab = {
   "PING", 0, 0, 1, 0, MFLG_SLOW, 0,
-  { ms_ping, m_ignore, ms_ping }
+  { ms_ping, m_ignore }
 };
 
 struct Message eob_msgtab = {
   "EOB", 0, 0, 0, 0, MFLG_SLOW, 0,
-  { m_ignore, m_ignore, m_ignore }
+  { m_ignore, m_ignore }
 };
 
 struct Message server_msgtab = {
   "SERVER", 0, 0, 3, 0, MFLG_SLOW, 0,
-  { ms_server, m_ignore, ms_server }
+  { ms_server, m_ignore }
 };
 
 struct Message nick_msgtab = {
   "NICK", 0, 0, 1, 0, MFLG_SLOW, 0,
-  { ms_nick, m_ignore, ms_nick }
+  { ms_nick, m_ignore }
 };
 
 struct Message sjoin_msgtab = {
   "SJOIN", 0, 0, 4, 0, MFLG_SLOW, 0,
-  { ms_sjoin, m_ignore, ms_sjoin }
+  { ms_sjoin, m_ignore }
 };
 
 static dlink_node *connected_hook;
@@ -53,6 +59,7 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&nick_msgtab);
   mod_add_cmd(&sjoin_msgtab);
   mod_add_cmd(&eob_msgtab);
+  mod_add_cmd(&part_msgtab);
 }
 
 CLEANUP_MODULE
@@ -63,6 +70,7 @@ CLEANUP_MODULE
   mod_del_cmd(&nick_msgtab);
   mod_del_cmd(&sjoin_msgtab);
   mod_del_cmd(&eob_msgtab);
+  mod_del_cmd(&part_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
@@ -285,15 +293,45 @@ remove_a_mode(struct Channel *chptr, struct Client *source,
   }
 }
 
+/* part_one_client()
+ *
+ * inputs - pointer to server
+ *    - pointer to source client to remove
+ *    - char pointer of name of channel to remove from
+ * output - none
+ * side effects - remove ONE client given the channel name
+ */
+static void
+part_one_client(struct Client *client, struct Client *source, char *name)
+{
+  struct Channel *chptr = NULL;
+  struct Membership *ms = NULL;
+
+  if ((chptr = hash_find_channel(name)) == NULL)
+  {
+    printf("Trying to part %s from %s which doesnt exist\n", source->name,
+        name);
+    return;
+  }
+
+  if ((ms = find_channel_link(source, chptr)) == NULL)
+  {
+    printf("Trying to part %s from %s which they aren't on\n", source->name,
+        chptr->chname);
+    return;
+  }
+
+  remove_user_from_channel(ms);
+}
 
 static void 
-ms_ping(struct Client *source, struct Client *client, int parc, char *parv[])
+ms_ping(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   sendto_server(source, ":%s PONG %s :%s", me.name, me.name, source->name);
 }
 
 static void
-ms_server(struct Client *source, struct Client *client, int parc, char *parv[])
+ms_server(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   if(IsConnecting(client))
   {
@@ -306,7 +344,7 @@ ms_server(struct Client *source, struct Client *client, int parc, char *parv[])
   }
   else
   {
-    struct Client *newclient = make_client(source);
+    struct Client *newclient = make_client(client);
 
     strlcpy(newclient->name, parv[1], sizeof(newclient->name));
     strlcpy(newclient->info, parv[3], sizeof(newclient->info));
@@ -314,13 +352,12 @@ ms_server(struct Client *source, struct Client *client, int parc, char *parv[])
     SetServer(newclient);
     dlinkAdd(newclient, &newclient->node, &global_client_list);
     hash_add_client(newclient);
-    printf("Got server %s from hub %s\n", parv[1], client->name);
+    printf("Got server %s from hub %s\n", parv[1], source->name);
   }
 }
 
-//SJOIN 1151079915 #test +nt :cryogen
-  static void
-ms_sjoin(struct Client *source, struct Client *client, int parc, char *parv[])
+static void
+ms_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   struct Channel *chptr;
   struct Client  *target;
@@ -757,5 +794,19 @@ ms_nick(struct Client *source, struct Client *client, int parc, char *parv[])
     strlcpy(client->name, parv[1], sizeof(client->name));
     client->tsinfo = atoi(parv[2]);
     hash_add_client(client);
+  }
+}
+
+static void 
+ms_part(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  char *p, *name;
+
+  name = strtoken(&p, parv[1], ",");
+    
+  while (name)
+  {
+    part_one_client(client, source, name);
+    name = strtoken(&p, NULL, ",");
   }
 }

@@ -50,6 +50,30 @@ remove_ban(struct Ban *bptr, dlink_list *list)
   BlockHeapFree(ban_heap, bptr);
 }
 
+/*! \brief deletes an user from a channel by removing a link in the
+ *         channels member chain.
+ * \param member pointer to Membership struct
+ */
+void
+remove_user_from_channel(struct Membership *member)
+{
+  struct Client *client_p = member->client_p;
+  struct Channel *chptr = member->chptr;
+
+  dlinkDelete(&member->channode, &chptr->members);
+  dlinkDelete(&member->usernode, &client_p->channel);
+
+  BlockHeapFree(member_heap, member);
+  printf("Removing %s from channel %s\n", client_p->name, chptr->chname);
+
+  if (chptr->members.head == NULL)
+  {
+    assert(dlink_list_length(&chptr->members) == 0);  
+    printf("Destroying empty channel %s\n", chptr->chname);
+    destroy_channel(chptr);
+  }
+}
+
 /* free_channel_list()
  *
  * inputs       - pointer to dlink_list
@@ -145,6 +169,8 @@ add_user_to_channel(struct Channel *chptr, struct Client *who,
   ms->client_p = who;
   ms->chptr = chptr;
   ms->flags = flags;
+
+  printf("Adding %s to %s\n", who->name, chptr->chname);
 
   dlinkAdd(ms, &ms->channode, &chptr->members);
   dlinkAdd(ms, &ms->usernode, &who->channel);

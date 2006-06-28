@@ -141,7 +141,10 @@ load_shared_module(const char *name, const char *dir, const char *fname)
 
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
   if (!(handle = modload(path, &base)))
+  {
+    printf("Failed to load %s: %s\n", path, dlerror());
     return 0;
+  }
 
   snprintf(sym, sizeof(sym), "%s_module", name);
   if (!(mod = modsym(handle, sym)))

@@ -7,6 +7,7 @@ void remove_ban(struct Ban *bptr, dlink_list *list);
 struct Membership *find_channel_link(struct Client *, struct Channel *);
 void add_user_to_channel(struct Channel *, struct Client *, unsigned int, int);
 void destroy_channel(struct Channel *);
+void remove_user_from_channel(struct Membership *);
 
 struct Channel
 {
