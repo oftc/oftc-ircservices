@@ -56,6 +56,30 @@ find_person(const struct Client *source, const char *name)
 }
 
 /*
+ * find_chasing - find the client structure for a nick name (user)
+ *      using history mechanism if necessary. If the client is not found,
+ *      an error message (NO SUCH NICK) is generated. If the client was found
+ *      through the history, chasing will be 1 and otherwise 0.
+ */
+struct Client *
+find_chasing(struct Client *source_p, const char *user, int *chasing)
+{
+  struct Client *who = find_person(source_p, user);
+
+  if (chasing)
+    *chasing = 0;
+
+  if (who)
+    return who;
+
+  if (IsDigit(*user))
+    return NULL;
+
+  return NULL;
+}
+
+
+/*
  * dead_link_on_write - report a write error if not already dead,
  *      mark it as dead then exit it
  */

@@ -59,6 +59,7 @@ SSL_SRCS = rsa.c
 
 SRCS = 								\
  channel.c						\
+ channel_mode.c				\
  conf/conf.c  				\
  conf/connect.c				\
  conf/database.c			\
@@ -69,6 +70,7 @@ SRCS = 								\
  connection.c 				\
  dbm.c 		  					\
  hash.c								\
+ hostmask.c						\
  m_error.c						\
  packet.c							\
  parse.c							\

@@ -6,6 +6,12 @@
 /* Size of the channel heap. */
 #undef CHANNEL_HEAP_SIZE
 
+/* Size of the ban heap. */
+#undef BAN_HEAP_SIZE
+
+/* Size of tyhe topic heap. */
+#undef TOPIC_HEAP_SIZE
+
 /* Size of the dbuf heap. */ 	 
 #undef DBUF_HEAP_SIZE
 

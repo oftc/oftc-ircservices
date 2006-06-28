@@ -41,9 +41,10 @@ extern dlink_list global_server_list;
 #define IDLEN           12 /* this is the maximum length, not the actual
                               generated length; DO NOT CHANGE! */
 
+#define MODE_QUERY  0
+#define MODE_ADD    1
+#define MODE_DEL   -1
 
-#define MODE_ADD 1
-#define MODE_DEL 2
 struct Server
 {
   dlink_node node;
@@ -57,6 +58,7 @@ struct Server
 struct Client
 {
   dlink_node node;
+  dlink_list channel;
 
   struct Client *hnext;         /* For client hash table lookups by name */
   struct Client *idhnext;       /* For SID hash table lookups by sid */
@@ -82,7 +84,8 @@ struct Client
 void init_client();
 struct Client *make_client(struct Client*);
 struct Server *make_server(struct Client*);
-struct Client *find_person(const struct Client *source, const char *name);
+struct Client *find_person(const struct Client *, const char *);
+struct Client *find_chasing(struct Client *, const char *, int *);
 void dead_link_on_write(struct Client *, int);
 
 #endif

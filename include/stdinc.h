@@ -19,7 +19,6 @@
 
 #include "client.h"
 #include "connection.h"
-#include "channel.h"
 #include "dbm.h"
 #include "hash.h"
 #include "packet.h"
@@ -45,4 +44,7 @@
 #endif
 
 #include "conf/conf.h"
-
+#include "conf.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "hostmask.h"

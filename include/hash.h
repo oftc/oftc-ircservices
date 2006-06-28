@@ -37,12 +37,14 @@ enum {
   HASH_TYPE_RESERVED
 };
 
+struct Channel;
+
 void init_hash(void);
 
 void hash_add_client(struct Client *);
 void hash_del_client(struct Client *);
 void hash_add_channel(struct Channel *);
-/*void hash_del_channel(struct Channel *);*/
+void hash_del_channel(struct Channel *);
 void hash_add_id(struct Client *);
 void hash_del_id(struct Client *);
 /*void hash_add_userhost(struct UserHost *);
