@@ -1,10 +1,12 @@
 #include "stdinc.h"
 
-static void ms_ping(struct Client *, struct Client *, int, char *[]);
-static void ms_nick(struct Client *, struct Client *, int, char*[]);
-static void ms_server(struct Client *, struct Client *, int, char*[]);
-static void ms_sjoin(struct Client *, struct Client *, int, char*[]);
-static void ms_part(struct Client *, struct Client *, int, char*[]);
+static void m_ping(struct Client *, struct Client *, int, char *[]);
+static void m_nick(struct Client *, struct Client *, int, char*[]);
+static void m_server(struct Client *, struct Client *, int, char*[]);
+static void m_sjoin(struct Client *, struct Client *, int, char*[]);
+static void m_part(struct Client *, struct Client *, int, char*[]);
+static void m_quit(struct Client *, struct Client *, int, char*[]);
+static void m_squit(struct Client *, struct Client *, int, char*[]);
 
 static void do_user_modes(struct Client *client, const char *modes);
 static void set_final_mode(struct Mode *, struct Mode *);
@@ -20,12 +22,12 @@ static int pargs;
 
 struct Message part_msgtab = {
   "PART", 0, 0, 2, 0, MFLG_SLOW, 0,
-  { ms_part, m_ignore }
+  { m_part, m_ignore }
 };
 
 struct Message ping_msgtab = {
   "PING", 0, 0, 1, 0, MFLG_SLOW, 0,
-  { ms_ping, m_ignore }
+  { m_ping, m_ignore }
 };
 
 struct Message eob_msgtab = {
@@ -35,18 +37,29 @@ struct Message eob_msgtab = {
 
 struct Message server_msgtab = {
   "SERVER", 0, 0, 3, 0, MFLG_SLOW, 0,
-  { ms_server, m_ignore }
+  { m_server, m_ignore }
 };
 
 struct Message nick_msgtab = {
   "NICK", 0, 0, 1, 0, MFLG_SLOW, 0,
-  { ms_nick, m_ignore }
+  { m_nick, m_ignore }
 };
 
 struct Message sjoin_msgtab = {
   "SJOIN", 0, 0, 4, 0, MFLG_SLOW, 0,
-  { ms_sjoin, m_ignore }
+  { m_sjoin, m_ignore }
 };
+
+struct Message quit_msgtab = {
+  "QUIT", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_quit, m_ignore }
+};
+
+struct Message squit_msgtab = {
+  "SQUIT", 0, 0, 1, 0, MFLG_SLOW, 0,
+  { m_squit, m_ignore }
+};
+
 
 static dlink_node *connected_hook;
 static void *irc_server_connected(va_list);
@@ -60,6 +73,8 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&sjoin_msgtab);
   mod_add_cmd(&eob_msgtab);
   mod_add_cmd(&part_msgtab);
+  mod_add_cmd(&quit_msgtab);
+  mod_add_cmd(&squit_msgtab);
 }
 
 CLEANUP_MODULE
@@ -71,6 +86,8 @@ CLEANUP_MODULE
   mod_del_cmd(&sjoin_msgtab);
   mod_del_cmd(&eob_msgtab);
   mod_del_cmd(&part_msgtab);
+  mod_del_cmd(&quit_msgtab);
+  mod_del_cmd(&squit_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
@@ -325,13 +342,13 @@ part_one_client(struct Client *client, struct Client *source, char *name)
 }
 
 static void 
-ms_ping(struct Client *client, struct Client *source, int parc, char *parv[])
+m_ping(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   sendto_server(source, ":%s PONG %s :%s", me.name, me.name, source->name);
 }
 
 static void
-ms_server(struct Client *client, struct Client *source, int parc, char *parv[])
+m_server(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   if(IsConnecting(client))
   {
@@ -341,6 +358,7 @@ ms_server(struct Client *client, struct Client *source, int parc, char *parv[])
     hash_add_client(client);
     printf("Completed server connection to %s\n", source->name);
     ClearConnecting(client);
+    client->servptr = &me;
   }
   else
   {
@@ -352,12 +370,14 @@ ms_server(struct Client *client, struct Client *source, int parc, char *parv[])
     SetServer(newclient);
     dlinkAdd(newclient, &newclient->node, &global_client_list);
     hash_add_client(newclient);
+    newclient->servptr = source;
+    dlinkAdd(newclient, &newclient->lnode, &newclient->servptr->server_list);
     printf("Got server %s from hub %s\n", parv[1], source->name);
   }
 }
 
 static void
-ms_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
+m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   struct Channel *chptr;
   struct Client  *target;
@@ -760,7 +780,7 @@ nextnick:
 }
 
 static void
-ms_nick(struct Client *source, struct Client *client, int parc, char *parv[])
+m_nick(struct Client *source, struct Client *client, int parc, char *parv[])
 {
   struct Client *newclient;
 
@@ -780,6 +800,8 @@ ms_nick(struct Client *source, struct Client *client, int parc, char *parv[])
     newclient->hopcount = atoi(parv[2]);
     newclient->tsinfo = atoi(parv[3]);
     do_user_modes(newclient, parv[4]);
+    newclient->servptr = find_server(source->name);
+    dlinkAdd(newclient, &newclient->lnode, &newclient->servptr->client_list);
 
     SetClient(newclient);
     dlinkAdd(newclient, &newclient->node, &global_client_list);
@@ -798,7 +820,7 @@ ms_nick(struct Client *source, struct Client *client, int parc, char *parv[])
 }
 
 static void 
-ms_part(struct Client *client, struct Client *source, int parc, char *parv[])
+m_part(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   char *p, *name;
 
@@ -809,4 +831,39 @@ ms_part(struct Client *client, struct Client *source, int parc, char *parv[])
     part_one_client(client, source, name);
     name = strtoken(&p, NULL, ",");
   }
+}
+
+static void
+m_quit(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  char *comment = (parc > 1 && parv[1]) ? parv[1] : client->name;
+
+  if (strlen(comment) > (size_t)KICKLEN)
+    comment[KICKLEN] = '\0';
+
+  exit_client(source, source, comment);
+}
+
+static void
+m_squit(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  struct Client *target = NULL;
+  char *comment;
+  const char *server;
+  char def_reason[] = "No reason";
+
+  server = parv[1];
+
+  if ((target = find_server(server)) == NULL)
+    return;
+
+  if (!IsServer(target) || IsMe(target))
+    return;
+
+  comment = (parc > 2 && parv[2]) ? parv[2] : def_reason;
+
+  if (strlen(comment) > (size_t)REASONLEN)
+    comment[REASONLEN] = '\0';
+
+  exit_client(target, source, comment);
 }

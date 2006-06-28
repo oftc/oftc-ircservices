@@ -14,7 +14,9 @@
 #define IRCD_MAXPARA    15     /* Maximum allowed parameters a command may have */
 #define REALLEN         50
 #define CHANNELLEN      200
+#define KICKLEN         160
 #define KEYLEN          24
+#define REASONLEN       120
 #define TOPICLEN 300
 #define USERHOST_REPLYLEN       (NICKLEN+HOSTLEN+USERLEN+5)
 

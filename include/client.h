@@ -19,8 +19,12 @@ extern dlink_list global_server_list;
 #define IsConnecting(x)         ((x)->flags & FLAGS_CONNECTING)
 #define IsDefunct(x)            ((x)->flags & (FLAGS_DEADSOCKET|FLAGS_CLOSING))
 #define IsDead(x)               ((x)->flags & FLAGS_DEADSOCKET)
+#define IsClosing(x)            ((x)->flags & FLAGS_CLOSING)
+
 
 #define SetConnecting(x)        ((x)->flags|= FLAGS_CONNECTING)
+#define SetClosing(x)           ((x)->flags |= FLAGS_CLOSING)
+
 
 #define ClearConnecting(x)      ((x)->flags &= ~FLAGS_CONNECTING)
 
@@ -58,11 +62,17 @@ struct Server
 struct Client
 {
   dlink_node node;
+  dlink_node lnode;
   dlink_list channel;
+
+  dlink_list server_list;   /**< Servers on this server      */
+  dlink_list client_list;   /**< Clients on this server      */
+
 
   struct Client *hnext;         /* For client hash table lookups by name */
   struct Client *idhnext;       /* For SID hash table lookups by sid */
   struct Client *from;
+  struct Client *servptr;
 
   char          name[HOSTLEN+1];
   char          host[HOSTLEN+1];
