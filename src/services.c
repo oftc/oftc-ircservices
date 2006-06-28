@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
   db_init();
   channel_init();
   init_conf();
+  init_client();
 
   read_services_conf(TRUE);
 

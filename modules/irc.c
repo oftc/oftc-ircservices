@@ -12,6 +12,11 @@ struct Message ping_msgtab = {
   { ms_ping, m_ignore, ms_ping }
 };
 
+struct Message eob_msgtab = {
+  "EOB", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore, m_ignore }
+};
+
 struct Message server_msgtab = {
   "SERVER", 0, 0, 3, 0, MFLG_SLOW, 0,
   { ms_server, m_ignore, ms_server }
@@ -37,6 +42,7 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
   mod_add_cmd(&sjoin_msgtab);
+  mod_add_cmd(&eob_msgtab);
 }
 
 CLEANUP_MODULE
@@ -46,6 +52,7 @@ CLEANUP_MODULE
   mod_del_cmd(&server_msgtab);
   mod_del_cmd(&nick_msgtab);
   mod_del_cmd(&sjoin_msgtab);
+  mod_del_cmd(&eob_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
@@ -56,9 +63,12 @@ CLEANUP_MODULE
  */
 static void 
 irc_sendmsg_server(struct Client *client, char *prefix, char *name, char *info) {
-  if (prefix == NULL) {
+  if (prefix == NULL) 
+  {
     sendto_server(client, "SERVER %s 1 :%s", name, info);
-  } else {
+  } 
+  else 
+  {
     sendto_server(client, ":%s SERVER %s 2 :%s", prefix, name, info);
   }
 }
@@ -111,15 +121,13 @@ ms_server(struct Client *source, struct Client *client, int parc, char *parv[])
   }
   else
   {
-    struct Client *newclient = make_client();
+    struct Client *newclient = make_client(source);
 
     strlcpy(newclient->name, parv[1], sizeof(newclient->name));
     strlcpy(newclient->info, parv[3], sizeof(newclient->info));
-    newclient->node = make_dlink_node();
-    newclient->from = source;
     newclient->hopcount = atoi(parv[2]);
     SetServer(newclient);
-    dlinkAdd(newclient, newclient->node, &global_client_list);
+    dlinkAdd(newclient, &newclient->node, &global_client_list);
     hash_add_client(newclient);
     printf("Got server %s from hub %s\n", parv[1], client->name);
   }
@@ -158,8 +166,7 @@ ms_nick(struct Client *source, struct Client *client, int parc, char *parv[])
       printf("Already got this nick! %s\n", parv[1]);
       return;
     }
-    newclient = make_client();
-    newclient->from = client;
+    newclient = make_client(client);
     strlcpy(newclient->name, parv[1], sizeof(newclient->name));
     strlcpy(newclient->username, parv[5], sizeof(newclient->username));
     strlcpy(newclient->host, parv[6], sizeof(newclient->host));
@@ -168,9 +175,8 @@ ms_nick(struct Client *source, struct Client *client, int parc, char *parv[])
     newclient->tsinfo = atoi(parv[3]);
     do_user_modes(newclient, parv[4]);
 
-    newclient->node = make_dlink_node();
     SetClient(newclient);
-    dlinkAdd(newclient, newclient->node, &global_client_list);
+    dlinkAdd(newclient, &newclient->node, &global_client_list);
     hash_add_client(newclient);
   }
   /* Client changing nick with TS */

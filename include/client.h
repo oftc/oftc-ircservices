@@ -46,7 +46,7 @@ extern dlink_list global_server_list;
 #define MODE_DEL 2
 struct Server
 {
-  dlink_node *node;
+  dlink_node node;
   fde_t fd;
   int flags;
   struct dbuf_queue buf_recvq;
@@ -56,7 +56,7 @@ struct Server
 
 struct Client
 {
-  dlink_node *node;
+  dlink_node node;
 
   struct Client *hnext;         /* For client hash table lookups by name */
   struct Client *idhnext;       /* For SID hash table lookups by sid */
@@ -79,8 +79,9 @@ struct Client
   int flags;
 } Client;
 
-struct Client *make_client();
-struct Server *make_server();
+void init_client();
+struct Client *make_client(struct Client*);
+struct Server *make_server(struct Client*);
 struct Client *find_person(const struct Client *source, const char *name);
 void dead_link_on_write(struct Client *, int);
 

@@ -3,22 +3,37 @@
 dlink_list global_client_list;
 dlink_list global_server_list;
 
-struct Client *
-make_client()
+static BlockHeap *client_heap  = NULL;
+
+void
+init_client()
 {
-  struct Client *client = MyMalloc(sizeof(struct Client));
-  client->from = client;
-  client->node = make_dlink_node();
+  client_heap = BlockHeapCreate("client", sizeof(struct Client), CLIENT_HEAP_SIZE);
+}
+
+struct Client *
+make_client(struct Client *from)
+{
+  struct Client *client = BlockHeapAlloc(client_heap);
+
+  if(from == NULL)
+    client->from = client;
+  else
+    client->from = from;
+
+  client->hnext  = client;
+  strlcpy(client->username, "unknown", sizeof(client->username));
 
   return client;
 }
 
 struct Server *
-make_server()
+make_server(struct Client *client)
 {
-  struct Server *server = MyMalloc(sizeof(struct Server));
- 
-  return server;
+  if(client->server == NULL)
+    client->server = MyMalloc(sizeof(struct Server));
+
+  return client->server;
 }
 
 /* find_person()
