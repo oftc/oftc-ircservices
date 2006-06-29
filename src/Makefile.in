@@ -75,7 +75,8 @@ SRCS = 								\
  packet.c							\
  parse.c							\
  services.c						\
- send.c
+ send.c								\
+ user.c
 
 OBJS = ${SRCS:.c=.o}
 

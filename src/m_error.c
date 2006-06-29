@@ -25,12 +25,11 @@
 
 struct Message error_msgtab = {
  "ERROR", 0, 0, 1, 0, MFLG_SLOW | MFLG_UNREG, 0,
-  { ms_error, m_ignore, m_ignore }
+  { ms_error, m_ignore }
 };
 
 void
-ms_error(struct Client *client, struct Client *source,
-         int parc, char *parv[])
+ms_error(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   const char *para;
 

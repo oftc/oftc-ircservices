@@ -7,6 +7,7 @@ static void m_sjoin(struct Client *, struct Client *, int, char*[]);
 static void m_part(struct Client *, struct Client *, int, char*[]);
 static void m_quit(struct Client *, struct Client *, int, char*[]);
 static void m_squit(struct Client *, struct Client *, int, char*[]);
+static void m_mode(struct Client *, struct Client *, int, char*[]);
 
 static void do_user_modes(struct Client *client, const char *modes);
 static void set_final_mode(struct Mode *, struct Mode *);
@@ -60,6 +61,10 @@ struct Message squit_msgtab = {
   { m_squit, m_ignore }
 };
 
+struct Message mode_msgtab = {
+  "MODE", 0, 0, 2, 0, MFLG_SLOW, 0,
+  { m_mode, m_ignore }
+};
 
 static dlink_node *connected_hook;
 static void *irc_server_connected(va_list);
@@ -75,6 +80,7 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&part_msgtab);
   mod_add_cmd(&quit_msgtab);
   mod_add_cmd(&squit_msgtab);
+  mod_add_cmd(&mode_msgtab);
 }
 
 CLEANUP_MODULE
@@ -88,6 +94,7 @@ CLEANUP_MODULE
   mod_del_cmd(&part_msgtab);
   mod_del_cmd(&quit_msgtab);
   mod_del_cmd(&squit_msgtab);
+  mod_del_cmd(&mode_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
@@ -156,7 +163,7 @@ irc_sendmsg_quit(struct Client *client, char *nick, char *reason)
 static void
 irc_sendmsg_squit(struct Client *client, char *source, char *target, char *reason)
 {
-  sendtoserver(client, ":%s SQUIT %s :%s", source, target, reason);
+  sendto_server(client, ":%s SQUIT %s :%s", source, target, reason);
 }
 
 /** Send a PING to a remote client
@@ -178,7 +185,7 @@ irc_sendmsg_ping(struct Client *client, char *source, char *target)
  * para parameter to modes (i.e. (+l) 42), NULL if none
  */
 static void
-irc_sendmsg_join(struct Client *client, char *source, char *target, char *mode, char *para) 
+irc_sendmsg_join(struct Client *client, char *source, char *target, char *mode, char *para)
 {
   if (mode == NULL) 
   {
@@ -859,43 +866,104 @@ nextnick:
     return;
 }
 
+/*
+ * ms_nick()
+ *
+ * server -> server nick change
+ *    parv[0] = sender prefix
+ *    parv[1] = nickname
+ *    parv[2] = TS when nick change
+ *
+ * server introducing new nick
+ *    parv[0] = sender prefix
+ *    parv[1] = nickname
+ *    parv[2] = hop count
+ *    parv[3] = TS
+ *    parv[4] = umode
+ *    parv[5] = username
+ *    parv[6] = hostname
+ *    parv[7] = server
+ *    parv[8] = ircname
+ */
 static void
-m_nick(struct Client *source, struct Client *client, int parc, char *parv[])
+m_nick(struct Client *client_p, struct Client *source_p,
+        int parc, char *parv[])
 {
-  struct Client *newclient;
+  struct Client* target_p;
+  char nick[NICKLEN];
+  char ngecos[REALLEN + 1];
+  time_t newts = 0;
+  char *nnick = parv[1];
+  char *nhop = parv[2];
+  char *nts = parv[3];
+  char *nusername = parv[5];
+  char *nhost = parv[6];
+  char *nserver = parv[7];
 
-  /* NICK from server */
-  if(parc == 9)
+  if (parc < 2 || EmptyString(nnick))
+    return;
+
+  /* fix the lengths */
+  strlcpy(nick, nnick, sizeof(nick));
+
+  if (parc == 9)
   {
-    if((newclient = find_client(parv[1])) != NULL)
+    struct Client *server_p = find_server(nserver);
+
+    strlcpy(ngecos, parv[8], sizeof(ngecos));
+
+    if (server_p == NULL)
     {
-      printf("Already got this nick! %s\n", parv[1]);
+      printf("Invalid server %s from %s for NICK %s",
+          nserver, source_p->name, nick);
       return;
     }
-    newclient = make_client(client);
-    strlcpy(newclient->name, parv[1], sizeof(newclient->name));
-    strlcpy(newclient->username, parv[5], sizeof(newclient->username));
-    strlcpy(newclient->host, parv[6], sizeof(newclient->host));
-    strlcpy(newclient->info, parv[8], sizeof(newclient->info));
-    newclient->hopcount = atoi(parv[2]);
-    newclient->tsinfo = atoi(parv[3]);
-    do_user_modes(newclient, parv[4]);
-    newclient->servptr = find_server(source->name);
-    dlinkAdd(newclient, &newclient->lnode, &newclient->servptr->client_list);
 
-    SetClient(newclient);
-    dlinkAdd(newclient, &newclient->node, &global_client_list);
-    hash_add_client(newclient);
+    if (check_clean_nick(client_p, source_p, nick, nnick, server_p) ||
+        check_clean_user(client_p, nick, nusername, server_p) ||
+        check_clean_host(client_p, nick, nhost, server_p))
+      return;
+
+    /* check the length of the clients gecos */
+    if (strlen(parv[8]) > REALLEN)
+      printf("Long realname from server %s for %s", nserver, nnick);
+
+    if (IsServer(source_p))
+      newts = atol(nts);
   }
-  /* Client changing nick with TS */
-  else if(parc == 3)
+  else if (parc == 3)
   {
-    printf("Nick change: %s!%s@%s -> %s\n", client->name, client->username,
-        client->host, parv[1]);
-    hash_del_client(client);
-    strlcpy(client->name, parv[1], sizeof(client->name));
-    client->tsinfo = atoi(parv[2]);
-    hash_add_client(client);
+    if (IsServer(source_p))
+      /* Server's cant change nicks.. */
+      return;
+
+    if (check_clean_nick(client_p, source_p, nick, nnick, source_p->servptr))
+      return;
+
+    /*
+     * Yes, this is right. HOP field is the TS field for parc = 3
+     */
+    newts = atol(nhop);
+  }
+
+  /* if the nick doesnt exist, allow it and process like normal */
+  if (!(target_p = find_client(nick)))
+  {
+    nick_from_server(client_p, source_p, parc, parv, newts, nick, ngecos);
+    return;
+  }
+
+  if (target_p == source_p)
+  {
+    if (strcmp(target_p->name, nick))
+    {
+      /* client changing case of nick */
+      nick_from_server(client_p, source_p, parc, parv, newts, nick, ngecos);
+      return;
+    }
+    else
+      /* client not changing nicks at all */
+      return;
   }
 }
 
@@ -947,3 +1015,65 @@ m_squit(struct Client *client, struct Client *source, int parc, char *parv[])
 
   exit_client(target, source, comment);
 }
+
+/*
+ * m_mode - MODE command handler
+ * parv[0] - sender
+ * parv[1] - channel
+ */
+static void
+m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+  struct Channel *chptr = NULL;
+  struct Membership *member = NULL;
+
+  if (*parv[1] == '\0')
+  {
+    return;
+  }
+
+  /* Now, try to find the channel in question */
+  if (!IsChanPrefix(*parv[1]))
+  {
+    /* if here, it has to be a non-channel name */
+    set_user_mode(client_p, source_p, parc, parv);
+    return;
+  }
+
+  if ((chptr = hash_find_channel(parv[1])) == NULL)
+  {
+    printf("Mode for unknown channel %s\n", parv[1]);
+    return;
+  }
+
+  /* Now known the channel exists */
+  if (parc < 3)
+  {
+    return;
+  }
+
+  /* bounce all modes from people we deop on sjoin
+   * servers have always gotten away with murder,
+   * including telnet servers *g* - Dianora
+   *
+   * XXX Is it worth the bother to make an ms_mode() ? - Dianora
+   */
+  else if (IsServer(source_p))
+  {
+    set_channel_mode(client_p, source_p, chptr, NULL, parc - 2, parv + 2,
+                     chptr->chname);
+  }
+  else
+  {
+    member = find_channel_link(source_p, chptr);
+
+    if (!has_member_flags(member, CHFL_DEOPPED))
+    {
+      /* Finish the flood grace period... */
+      set_channel_mode(client_p, source_p, chptr, member, parc - 2, parv + 2,
+                       chptr->chname);
+    }
+  }
+}
+
+

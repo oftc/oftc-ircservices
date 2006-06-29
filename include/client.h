@@ -14,7 +14,30 @@ extern dlink_list global_server_list;
 #define STAT_CLIENT         0x02
 #define STAT_ME             0x04
 
-#define UMODE_OPER          0x1
+/* umodes, settable flags */
+#define UMODE_SERVNOTICE   0x00001 /* server notices such as kill */
+#define UMODE_CCONN        0x00002 /* Client Connections */
+#define UMODE_REJ          0x00004 /* Bot Rejections */
+#define UMODE_SKILL        0x00008 /* Server Killed */
+#define UMODE_FULL         0x00010 /* Full messages */
+#define UMODE_SPY          0x00020 /* see STATS / LINKS */
+#define UMODE_DEBUG        0x00040 /* 'debugging' info */
+#define UMODE_NCHANGE      0x00080 /* Nick change notice */
+#define UMODE_WALLOP       0x00100 /* send wallops to them */
+#define UMODE_OPERWALL     0x00200 /* Operwalls */
+#define UMODE_INVISIBLE    0x00400 /* makes user invisible */
+#define UMODE_BOTS         0x00800 /* shows bots */
+#define UMODE_EXTERNAL     0x01000 /* show servers introduced and splitting */
+#define UMODE_CALLERID     0x02000 /* block unless caller id's */
+#define UMODE_SOFTCALLERID 0x04000 /* block unless on common channel */
+#define UMODE_UNAUTH       0x08000 /* show unauth connects here */
+#define UMODE_LOCOPS       0x10000 /* show locops */
+#define UMODE_DEAF         0x20000 /* don't receive channel messages */
+
+/* user information flags, only settable by remote mode or local oper */
+#define UMODE_OPER         0x40000 /* Operator */
+#define UMODE_ADMIN        0x80000 /* Admin on server */
+#define UMODE_ALL    UMODE_SERVNOTICE
 
 #define IsConnecting(x)         ((x)->flags & FLAGS_CONNECTING)
 #define IsDefunct(x)            ((x)->flags & (FLAGS_DEADSOCKET|FLAGS_CLOSING))
@@ -97,5 +120,12 @@ struct Server *make_server(struct Client*);
 struct Client *find_person(const struct Client *, const char *);
 struct Client *find_chasing(struct Client *, const char *, int *);
 void dead_link_on_write(struct Client *, int);
-
+void set_user_mode(struct Client *, struct Client *, int, char *[]);
+void exit_client(struct Client *, struct Client *, const char *);
+int check_clean_nick(struct Client *, struct Client *, char *, char *, 
+    struct Client *);
+int check_clean_user(struct Client *, char *, char *, struct Client *);
+int check_clean_host(struct Client *, char *, char *, struct Client *);
+void nick_from_server(struct Client *, struct Client *, int,
+                     char *[], time_t, char *, char *);
 #endif

@@ -2,6 +2,10 @@
 
 dlink_list global_client_list;
 dlink_list global_server_list;
+static int clean_nick_name(char *, int);
+static int clean_user_name(char *);
+static int clean_host_name(char *);
+
 
 static BlockHeap *client_heap  = NULL;
 
@@ -278,4 +282,155 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
   }
 
   exit_one_client(source_p);
+}
+
+/* check_clean_nick()
+ *
+ * input  - pointer to source
+ *    -
+ *    - nickname
+ *    - truncated nickname
+ *    - origin of client
+ *    - pointer to server nick is coming from
+ * output - none
+ * side effects - if nickname is erroneous, or a different length to
+ *                truncated nickname, return 1
+ */
+int
+check_clean_nick(struct Client *client_p, struct Client *source_p,
+                 char *nick, char *newnick, struct Client *server_p)
+{
+  /* the old code did some wacky stuff here, if the nick is invalid, kill it
+   * and dont bother messing at all
+   */
+  if (!clean_nick_name(nick, 0) || strcmp(nick, newnick))
+  {
+    printf("Bad Nick: %s From: %s(via %s)",
+        nick, server_p->name, client_p->name);
+
+    /* bad nick change */
+    if (source_p != client_p)
+    {
+      exit_client(source_p, &me, "Bad Nickname");
+    }
+
+    return 1;
+  }
+
+  return 0;
+}
+
+/* check_clean_user()
+ *
+ * input  - pointer to client sending data
+ *              - nickname
+ *              - username to check
+ *    - origin of NICK
+ * output - none
+ * side effects - if username is erroneous, return 1
+ */
+int
+check_clean_user(struct Client *client_p, char *nick,
+                 char *user, struct Client *server_p)
+{
+  if (strlen(user) > USERLEN)
+  {
+    printf("Long Username: %s Nickname: %s From: %s(via %s)",
+        user, nick, server_p->name, client_p->name);
+
+    return 1;
+  }
+
+  if (!clean_user_name(user))
+    printf("Bad Username: %s Nickname: %s From: %s(via %s)",
+       user, nick, server_p->name, client_p->name);
+
+  return 0;
+}
+
+/* check_clean_host()
+ *
+ * input  - pointer to client sending us data
+ *              - nickname
+ *              - hostname to check
+ *    - source name
+ * output - none
+ * side effects - if hostname is erroneous, return 1
+ */
+int
+check_clean_host(struct Client *client_p, char *nick,
+                 char *host, struct Client *server_p)
+{
+  if (strlen(host) > HOSTLEN)
+  {
+    printf("Long Hostname: %s Nickname: %s From: %s(via %s)",
+        host, nick, server_p->name, client_p->name);
+
+    return 1;
+  }
+
+  if (!clean_host_name(host))
+    printf("Bad Hostname: %s Nickname: %s From: %s(via %s)",
+        host, nick, server_p->name, client_p->name);
+
+  return 0;
+}
+
+/* clean_nick_name()
+ *
+ * input  - nickname
+ *              - whether it's a local nick (1) or remote (0)
+ * output - none
+ * side effects - walks through the nickname, returning 0 if erroneous
+ */
+static int
+clean_nick_name(char *nick, int local)
+{
+  assert(nick);
+
+  /* nicks cant start with a digit or - or be 0 length */
+  /* This closer duplicates behaviour of hybrid-6 */
+  if (*nick == '-' || (IsDigit(*nick) && local) || *nick == '\0')
+    return 0;
+
+  for (; *nick; ++nick)
+    if (!IsNickChar(*nick))
+      return 0;
+
+  return 1;
+}
+
+/* clean_user_name()
+ *
+ * input  - username
+ * output - none
+ * side effects - walks through the username, returning 0 if erroneous
+ */
+static int
+clean_user_name(char *user)
+{
+  assert(user);
+
+  for (; *user; ++user)
+    if (!IsUserChar(*user))
+      return 0;
+
+  return 1;
+}
+
+/* clean_host_name()
+ * input  - hostname
+ * output - none
+ * side effects - walks through the hostname, returning 0 if erroneous
+ */
+static int
+clean_host_name(char *host)
+{
+  assert(host);
+
+  for (; *host; ++host)
+    if (!IsHostChar(*host))
+      return 0;
+
+  return 1;
 }
