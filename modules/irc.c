@@ -31,6 +31,11 @@ struct Message ping_msgtab = {
   { m_ping, m_ignore }
 };
 
+struct Message pong_msgtab = {
+  "PONG", 0, 0, 1, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
 struct Message eob_msgtab = {
   "EOB", 0, 0, 0, 0, MFLG_SLOW, 0,
   { m_ignore, m_ignore }
@@ -81,6 +86,7 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&quit_msgtab);
   mod_add_cmd(&squit_msgtab);
   mod_add_cmd(&mode_msgtab);
+  mod_add_cmd(&pong_msgtab);
 }
 
 CLEANUP_MODULE
@@ -95,6 +101,7 @@ CLEANUP_MODULE
   mod_del_cmd(&quit_msgtab);
   mod_del_cmd(&squit_msgtab);
   mod_del_cmd(&mode_msgtab);
+  mod_del_cmd(&pong_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
