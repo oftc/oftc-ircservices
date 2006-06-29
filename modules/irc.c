@@ -176,9 +176,13 @@ irc_sendmsg_ping(struct Client *client, char *source, char *target)
  * target where is it joining?
  */
 static void
-irc_sendmsg_join(struct Client *client, char *source, char *target) {
+irc_sendmsg_join(struct Client *client, char *source, char *target, char *mode, char *para) {
 {
-  sendto_server(client, ":%s JOIN %s", source, target);
+  if ((mode == NULL) || (para == NULL)) {
+    mode = "0";
+	para = "";
+  }
+  sendto_server(client, ":%s SJOIN 0 %s %s %s", source, target, mode, para);
 }
 
 /** Set User or Channelmode
