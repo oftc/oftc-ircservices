@@ -138,7 +138,6 @@ send_queued_write(struct Client *to)
     do {
       first = to->server->buf_sendq.blocks.head->data;
 
-      printf("sending: %s", first->data);
       retlen = send(to->server->fd.fd, first->data, first->size, 0);
 
       if (retlen <= 0)
