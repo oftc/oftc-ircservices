@@ -131,7 +131,7 @@ irc_sendmsg_nick(struct Client *client, char *nick, char *user, char *host,
  * newnick New nick of Client
  */
 static void
-irc_sendmsg_chnick(struct Client *client, char *oldnick, char *newnick);
+irc_sendmsg_chnick(struct Client *client, char *oldnick, char *newnick)
 {
   sendto_server(client, "%s NICK :%s", oldnick, newnick);
 }
@@ -178,7 +178,7 @@ irc_sendmsg_ping(struct Client *client, char *source, char *target)
  * para parameter to modes (i.e. (+l) 42), NULL if none
  */
 static void
-irc_sendmsg_join(struct Client *client, char *source, char *target, char *mode, char *para) {
+irc_sendmsg_join(struct Client *client, char *source, char *target, char *mode, char *para) 
 {
   if (mode == NULL) 
   {
