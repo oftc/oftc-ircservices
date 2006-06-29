@@ -258,7 +258,6 @@ parse(struct Client *client, char *pbuffer, char *bufend)
     if ((s = strchr(ch, ' ')) != NULL)
       *s++ = '\0';
 
-    printf("Message: %s %s\n", ch, s);
     if ((mptr = find_command(ch)) == NULL)
     {
       /* Note: Give error message *only* to recognized
@@ -272,6 +271,7 @@ parse(struct Client *client, char *pbuffer, char *bufend)
        * code has been found ?? -Armin
        */
 
+      printf("Unknown Message: %s %s\n", ch, s);
       return;
     }
 

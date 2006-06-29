@@ -1,12 +1,18 @@
 #include "stdinc.h"
 
+struct Message gnotice_msgtab = {
+  "GNOTICE", 0, 0, 3, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
 
 INIT_MODULE(oftc, "$Revision: 470 $")
 {
+  mod_add_cmd(&gnotice_msgtab);
 }
 
 CLEANUP_MODULE
 {
+  mod_del_cmd(&gnotice_msgtab);
 }
 
 static void 
