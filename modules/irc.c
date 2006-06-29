@@ -174,13 +174,20 @@ irc_sendmsg_ping(struct Client *client, char *source, char *target)
  * @param
  * source who's joining?
  * target where is it joining?
+ * mode mode to change with SJOIN, NULL if none
+ * para parameter to modes (i.e. (+l) 42), NULL if none
  */
 static void
 irc_sendmsg_join(struct Client *client, char *source, char *target, char *mode, char *para) {
 {
-  if ((mode == NULL) || (para == NULL)) {
+  if (mode == NULL) 
+  {
     mode = "0";
-	para = "";
+    para = "";
+  }
+  else if (para == NULL) 
+  {
+    para = "";
   }
   sendto_server(client, ":%s SJOIN 0 %s %s %s", source, target, mode, para);
 }
