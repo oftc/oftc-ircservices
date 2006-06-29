@@ -124,6 +124,75 @@ irc_sendmsg_nick(struct Client *client, char *nick, char *user, char *host,
   sendto_server(client, "NICK %s 1 0 +%s %s %s %s :%s", nick, umode, user, host, me.name, info);
 }
 
+/** Change nick of one of our introduced fake clients
+ * DO NOT use for remote clients or it will cause havoc, use SVSNICK instead
+ * @param
+ * oldnick Old nick of Client
+ * newnick New nick of Client
+ */
+static void
+irc_sendmsg_chnick(struct Client *client, char *oldnick, char *newnick);
+{
+  sendto_server(client, "%s NICK :%s", oldnick, newnick);
+}
+
+/** Quit a Client
+ * @param
+ * nick Nickname of user
+ * reason Quit Reason
+ */
+static void 
+irc_sendmsg_quit(struct Client *client, char *nick, char *reason)
+{
+  sendto_server(client, ":%s QUIT :%s", nick, reason);
+}
+
+/** SQuit a Server
+ * @param
+ * source who originated the squit
+ * target Server to be squit
+ * reason Why the squit?
+ */
+static void
+irc_sendmsg_squit(struct Client *client, char *source, char *target, char *reason)
+{
+  sendtoserver(client, ":%s SQUIT %s :%s", source, target, reason);
+}
+
+/** Send a PING to a remote client
+ * @param
+ * source Source of PING
+ * target Target of PING
+ */
+static void
+irc_sendmsg_ping(struct Client *client, char *source, char *target)
+{
+  sendto_server(client, ":%s PING :%s", source, target);
+}
+
+/** Let a client join a channel
+ * @param
+ * source who's joining?
+ * target where is it joining?
+ */
+static void
+irc_sendmsg_join(struct Client *client, char *source, char *target) {
+{
+  sendto_server(client, ":%s JOIN %s", source, target);
+}
+
+/** Set User or Channelmode
+ * not sanity checked!
+ * source source of Modechange (server or client)
+ * target target of Modechange (channel or client)
+ * mode Mode to set (+ai)
+ */
+static void
+irc_sendmsg_mode(struct Client *client, char *source, char *target, char *mode)
+{
+  sendto_server(client, ":%s MODE %s %s", source, target, mode);
+}
+
 static void *
 irc_server_connected(va_list args)
 {
@@ -353,7 +422,7 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
   if(IsConnecting(client))
   {
     sendto_server(client, "SVINFO 5 5 0: %lu", CurrentTime);
-    sendto_server(client, ":%s PING :%s", me.name, me.name);
+	irc_sendmsg_ping(client, me.name, me.name);
     SetServer(client);
     hash_add_client(client);
     printf("Completed server connection to %s\n", source->name);
