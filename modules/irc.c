@@ -478,12 +478,13 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
   if(IsConnecting(client))
   {
     sendto_server(client, "SVINFO 5 5 0: %lu", CurrentTime);
-	irc_sendmsg_ping(client, me.name, me.name);
+    irc_sendmsg_ping(client, me.name, me.name);
     SetServer(client);
     hash_add_client(client);
     printf("Completed server connection to %s\n", source->name);
     ClearConnecting(client);
     client->servptr = &me;
+    dlinkAdd(client, &client->lnode, &me.server_list);
   }
   else
   {

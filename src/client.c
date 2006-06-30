@@ -122,6 +122,8 @@ close_connection(struct Client *client_p)
   dbuf_clear(&client_p->server->buf_recvq);
 
   client_p->from = NULL; /* ...this should catch them! >:) --msa */
+
+  printf("Closed connection to %s\n", client_p->name);
 }
 
 /*
@@ -272,7 +274,7 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
      * messages are attempted to send to it.  Remember it makes
      * source_p->from == NULL.
      */
-    close_connection(source_p);
+      close_connection(source_p);
     }
   }
 
