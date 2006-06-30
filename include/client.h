@@ -96,6 +96,7 @@ struct Client
   struct Client *idhnext;       /* For SID hash table lookups by sid */
   struct Client *from;
   struct Client *servptr;
+  struct Client *uplink;        /* services uplink server */
 
   char          name[HOSTLEN+1];
   char          host[HOSTLEN+1];
@@ -128,4 +129,7 @@ int check_clean_user(struct Client *, char *, char *, struct Client *);
 int check_clean_host(struct Client *, char *, char *, struct Client *);
 void nick_from_server(struct Client *, struct Client *, int,
                      char *[], time_t, char *, char *);
+void register_remote_user(struct Client *, struct Client *,
+                         const char *, const char *, const char *, const char *);
+
 #endif

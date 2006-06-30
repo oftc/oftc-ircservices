@@ -23,9 +23,9 @@
 
 #include "stdinc.h"
 
-/*static BlockHeap *userhost_heap = NULL;
+/*static BlockHeap *service_heap = NULL;
 static BlockHeap *namehost_heap = NULL;
-static struct UserHost *find_or_add_userhost(const char *);
+static struct Service *find_or_add_service(const char *);
 */
 static unsigned int ircd_random_key = 0;
 
@@ -37,7 +37,7 @@ static unsigned int ircd_random_key = 0;
 static struct Client *idTable[HASHSIZE];
 static struct Client *clientTable[HASHSIZE];
 static struct Channel *channelTable[HASHSIZE];
-static struct UserHost *userhostTable[HASHSIZE];
+static struct Service *serviceTable[HASHSIZE];
 
 /* init_hash()
  *
@@ -51,11 +51,11 @@ init_hash(void)
 {
   unsigned int i;
 
-  /* Default the userhost/namehost sizes to CLIENT_HEAP_SIZE for now,
+  /* Default the service/namehost sizes to CLIENT_HEAP_SIZE for now,
    * should be a good close approximation anyway
    * - Dianora
    */
-//  userhost_heap = BlockHeapCreate("userhost", sizeof(struct UserHost), CLIENT_HEAP_SIZE);
+//  service_heap = BlockHeapCreate("service", sizeof(struct Service), CLIENT_HEAP_SIZE);
 //  namehost_heap = BlockHeapCreate("namehost", sizeof(struct NameHost), CLIENT_HEAP_SIZE);
 
   ircd_random_key = rand() % 256;  /* better than nothing --adx */
@@ -66,7 +66,7 @@ init_hash(void)
     idTable[i]          = NULL;
     clientTable[i]      = NULL;
     channelTable[i]     = NULL;
-//    userhostTable[i]    = NULL;
+    serviceTable[i]     = NULL;
   }
 }
 
@@ -123,6 +123,15 @@ hash_add_client(struct Client *client)
   clientTable[hashv] = client;
 }
 
+void
+hash_add_service(struct Service *service)
+{
+  unsigned int hashv = strhash(service->name);
+
+  service->hnext = serviceTable[hashv];
+  serviceTable[hashv] = service;
+}
+
 /* hash_add_channel()
  *
  * inputs       - pointer to channel
@@ -141,14 +150,6 @@ hash_add_channel(struct Channel *chptr)
   chptr->hnextch = channelTable[hashv];
   channelTable[hashv] = chptr;
 }
-/*void
-hash_add_userhost(struct UserHost *userhost)
-{
-  unsigned int hashv = strhash(userhost->host);
-
-  userhost->next = userhostTable[hashv];
-  userhostTable[hashv] = userhost;
-}*/
 
 void
 hash_add_id(struct Client *client)
@@ -224,40 +225,38 @@ hash_del_client(struct Client *client)
     }
   }
 }
-#if 0
-/* hash_del_userhost()
+/* hash_del_service()
  *
- * inputs       - pointer to userhost
+ * inputs       - pointer to service 
  * output       - NONE
- * side effects - Removes a userhost from the hash linked list
+ * side effects - Removes a service from the hash linked list
  */
 void
-hash_del_userhost(struct UserHost *userhost)
+hash_del_service(struct Service *service)
 {
-  unsigned int hashv = strhash(userhost->host);
-  struct UserHost *tmp = userhostTable[hashv];
+  unsigned int hashv = strhash(service->name);
+  struct Service *tmp = serviceTable[hashv];
 
   if (tmp != NULL)
   {
-    if (tmp == userhost)
+    if (tmp == service)
     {
-      userhostTable[hashv] = userhost->next;
-      userhost->next = userhost;
+      serviceTable[hashv] = service->hnext;
+      service->hnext = service;
     }
     else
     {
-      while (tmp->next != userhost)
+      while (tmp->hnext != service)
       {
-        if ((tmp = tmp->next) == NULL)
+        if ((tmp = tmp->hnext) == NULL)
           return;
       }
 
-      tmp->next = tmp->next->next;
-      userhost->next = userhost;
+      tmp->hnext = tmp->hnext->hnext;
+      service->hnext = service;
     }
   }
 }
-#endif
 
 /* hash_del_channel()
  *
@@ -327,6 +326,42 @@ find_client(const char *name)
   }
 
   return client;
+}
+
+/* find_service()
+ *
+ * inputs       - pointer to name
+ * output       - NONE
+ * side effects - New semantics: finds a service whose name is 'name'
+ *                if can't find one returns NULL. If it finds one moves
+ *                it to the top of the list and returns it.
+ */
+struct Service *
+find_service(const char *name)
+{
+  unsigned int hashv = strhash(name);
+  struct Service *service;
+
+  if ((service = serviceTable[hashv]) != NULL)
+  {
+    if (irccmp(name, service->name))
+    {
+      struct Service *prev;
+
+      while (prev = service, (service = service->hnext) != NULL)
+      {
+        if (!irccmp(name, service->name))
+        {
+          prev->hnext = service->hnext;
+          service->hnext = serviceTable[hashv];
+          serviceTable[hashv] = service;
+          break;
+        }
+      }
+    }
+  }
+
+  return service;
 }
 
 struct Client *
@@ -494,8 +529,8 @@ hash_get_bucket(int type, unsigned int hashv)
     case HASH_TYPE_CLIENT:
       return clientTable[hashv];
       break;
-    case HASH_TYPE_USERHOST:
-      return userhostTable[hashv];
+    case HASH_TYPE_SERVICE:
+      return serviceTable[hashv];
       break;
     default:
       assert(0);
@@ -504,204 +539,30 @@ hash_get_bucket(int type, unsigned int hashv)
   return NULL;
 }
 
-/*struct UserHost *
-hash_find_userhost(const char *host)
+struct Service *
+hash_find_service(const char *host)
 {
   unsigned int hashv = strhash(host);
-  struct UserHost *userhost;
+  struct Service *service;
 
-  if ((userhost = userhostTable[hashv]))
+  if ((service = serviceTable[hashv]))
   {
-    if (irccmp(host, userhost->host))
+    if (irccmp(host, service->name))
     {
-      struct UserHost *prev;
+      struct Service *prev;
 
-      while (prev = userhost, (userhost = userhost->next) != NULL)
+      while (prev = service, (service = service->hnext) != NULL)
       {
-        if (!irccmp(host, userhost->host))
+        if (!irccmp(host, service->name))
         {
-          prev->next = userhost->next;
-          userhost->next = userhostTable[hashv];
-          userhostTable[hashv] = userhost;
+          prev->hnext = service->hnext;
+          service->hnext = serviceTable[hashv];
+          serviceTable[hashv] = service;
           break;
         }
       }
     }
   }
 
-  return userhost;
-}*/
-
-/* count_user_host()
- *
- * inputs	- user name
- *		- hostname
- *		- int flag 1 if global, 0 if local
- * 		- pointer to where global count should go
- *		- pointer to where local count should go
- *		- pointer to where identd count should go (local clients only)
- * output	- none
- * side effects	-
- */
-/*void
-count_user_host(const char *user, const char *host, int *global_p,
-                int *local_p, int *icount_p)
-{
-  dlink_node *ptr;
-  struct UserHost *found_userhost;
-  struct NameHost *nameh;
-
-  if ((found_userhost = hash_find_userhost(host)) == NULL)
-    return;
-
-  DLINK_FOREACH(ptr, found_userhost->list.head)
-  {
-    nameh = ptr->data;
-
-    if (!irccmp(user, nameh->name))
-    {
-      if (global_p != NULL)
-        *global_p = nameh->gcount;
-      if (local_p != NULL)
-        *local_p  = nameh->lcount;
-      if (icount_p != NULL)
-        *icount_p = nameh->icount;
-      return;
-    }
-  }
+  return service;
 }
-*/
-/* add_user_host()
- *
- * inputs	- user name
- *		- hostname
- *		- int flag 1 if global, 0 if local
- * output	- none
- * side effects	- add given user@host to hash tables
- */
-/*void
-add_user_host(const char *user, const char *host, int global)
-{
-  dlink_node *ptr;
-  struct UserHost *found_userhost;
-  struct NameHost *nameh;
-  int hasident = 1;
-
-  if (*user == '~')
-  {
-    hasident = 0;
-    ++user;
-  }
-
-  if ((found_userhost = find_or_add_userhost(host)) == NULL)
-    return;
-
-  DLINK_FOREACH(ptr, found_userhost->list.head)
-  {
-    nameh = ptr->data;
-
-    if (!irccmp(user, nameh->name))
-    {
-      nameh->gcount++;
-      if (!global)
-      {
-	if (hasident)
-	  nameh->icount++;
-	nameh->lcount++;
-      }
-      return;
-    }
-  }
-
-  nameh = BlockHeapAlloc(namehost_heap);
-  strlcpy(nameh->name, user, sizeof(nameh->name));
-
-  nameh->gcount = 1;
-  if (!global)
-  {
-    if (hasident)
-      nameh->icount = 1;
-    nameh->lcount = 1;
-  }
-
-  dlinkAdd(nameh, &nameh->node, &found_userhost->list);
-}
-*/
-/* delete_user_host()
- *
- * inputs	- user name
- *		- hostname
- *		- int flag 1 if global, 0 if local
- * output	- none
- * side effects	- delete given user@host to hash tables
- */
-/*void
-delete_user_host(const char *user, const char *host, int global)
-{
-  dlink_node *ptr = NULL, *next_ptr = NULL;
-  struct UserHost *found_userhost;
-  struct NameHost *nameh;
-  int hasident = 1;
-
-  if (*user == '~')
-  {
-    hasident = 0;
-    ++user;
-  }
-
-  if ((found_userhost = hash_find_userhost(host)) == NULL)
-    return;
-
-  DLINK_FOREACH_SAFE(ptr, next_ptr, found_userhost->list.head)
-  {
-    nameh = ptr->data;
-
-    if (!irccmp(user, nameh->name))
-    {
-      if (nameh->gcount > 0)
-        nameh->gcount--;
-      if (!global)
-      {
-	if (nameh->lcount > 0)
-	  nameh->lcount--;
-	if (hasident && nameh->icount > 0)
-	  nameh->icount--;
-      }
-
-      if (nameh->gcount == 0 && nameh->lcount == 0)
-      {
-	dlinkDelete(&nameh->node, &found_userhost->list);
-	BlockHeapFree(namehost_heap, nameh);
-      }
-
-      if (dlink_list_length(&found_userhost->list) == 0)
-      {
-	hash_del_userhost(found_userhost);
-	BlockHeapFree(userhost_heap, found_userhost);
-      }
-
-      return;
-    }
-  }
-}
-*/
-/* find_or_add_userhost()
- *
- * inputs	- host name
- * output	- none
- * side effects	- find UserHost * for given host name
- */
-/*static struct UserHost *
-find_or_add_userhost(const char *host)
-{
-  struct UserHost *userhost;
-
-  if ((userhost = hash_find_userhost(host)) != NULL)
-    return userhost;
-
-  userhost = BlockHeapAlloc(userhost_heap);
-  strlcpy(userhost->host, host, sizeof(userhost->host));
-  hash_add_userhost(userhost);
-
-  return userhost;
-}*/

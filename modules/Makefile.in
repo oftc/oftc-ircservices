@@ -30,7 +30,9 @@ INCLUDES	= -I../include -I../libio $(SSL_INCLUDES)
 CPPFLAGS	= ${INCLUDES} @CPPFLAGS@
 
 SRCS =       \
-  irc.c oftc.c
+  irc.c \
+	oftc.c \
+	nickserv.c
 
 ALL_SRCS = $(CORE_SRCS) $(SRCS) @SSL_SRCS_ENABLE@
 

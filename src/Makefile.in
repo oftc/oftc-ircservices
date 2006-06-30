@@ -71,6 +71,7 @@ SRCS = 								\
  dbm.c 		  					\
  hash.c								\
  hostmask.c						\
+ interface.c					\
  m_error.c						\
  packet.c							\
  parse.c							\

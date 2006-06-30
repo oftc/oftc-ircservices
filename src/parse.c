@@ -55,45 +55,25 @@
  * Diane Bruce (Dianora), June 6 2003
  */
 
-#define MAXPTRLEN    32
-                                /* Must be a power of 2, and
-				 * larger than 26 [a-z]|[A-Z]
-				 * its used to allocate the set
-				 * of pointers at each node of the tree
-				 * There are MAXPTRLEN pointers at each node.
-				 * Obviously, there have to be more pointers
-				 * Than ASCII letters. 32 is a nice number
-				 * since there is then no need to shift
-				 * 'A'/'a' to base 0 index, at the expense
-				 * of a few never used pointers. For a small
-				 * parser like this, this is a good compromise
-				 * and does make it somewhat faster.
-				 *
-				 * - Dianora
-				 */
-
-struct MessageTree
-{
-  int links; /* Count of all pointers (including msg) at this node 
-              * used as reference count for deletion of _this_ node.
-              */
-  struct Message *msg;
-  struct MessageTree *pointers[MAXPTRLEN];
-};
-
-static struct MessageTree msg_tree;
+static struct MessageTree irc_msg_tree;
 
 /*
  * NOTE: parse() should not be called recursively by other functions!
  */
 static char *sender;
 static char *para[IRCD_MAXPARA + 1];
+static char *servpara[IRCD_MAXPARA+1];
 
 static void handle_command(struct Message *, struct Client *, struct Client *, unsigned int, char **);
 //static void recurse_report_messages(struct Client *source_p, struct MessageTree *mtree);
 static void add_msg_element(struct MessageTree *mtree_p, struct Message *msg_p, const char *cmd);
 static void del_msg_element(struct MessageTree *mtree_p, const char *cmd);
 
+void
+init_parser()
+{
+  clear_tree_parse(&irc_msg_tree);
+}
 /* turn a string into a parc/parv pair */
 static inline int
 string_to_array(char *string, char *parv[])
@@ -258,19 +238,8 @@ parse(struct Client *client, char *pbuffer, char *bufend)
     if ((s = strchr(ch, ' ')) != NULL)
       *s++ = '\0';
 
-    if ((mptr = find_command(ch)) == NULL)
+    if ((mptr = find_command(ch, &irc_msg_tree)) == NULL)
     {
-      /* Note: Give error message *only* to recognized
-       * persons. It's a nightmare situation to have
-       * two programs sending "Unknown command"'s or
-       * equivalent to each other at full blast....
-       * If it has got to person state, it at least
-       * seems to be well behaving. Perhaps this message
-       * should never be generated, though...  --msa
-       * Hm, when is the buffer empty -- if a command
-       * code has been found ?? -Armin
-       */
-
       printf("Unknown Message: %s %s\n", ch, s);
       return;
     }
@@ -333,15 +302,15 @@ handle_command(struct Message *mptr, struct Client *client,
 
 /* clear_tree_parse()
  *
- * inputs       - NONE
+ * inputs       - msg_tree - the tree to clear
  * output       - NONE
  * side effects - MUST MUST be called at startup ONCE before
  *                any other keyword routine is used.
  */
 void
-clear_tree_parse(void)
+clear_tree_parse(struct MessageTree *msg_tree)
 {
-  memset(&msg_tree, 0, sizeof(msg_tree));
+  memset(msg_tree, 0, sizeof(*msg_tree));
 }
 
 /* add_msg_element()
@@ -489,12 +458,41 @@ mod_add_cmd(struct Message *msg)
   assert(msg->cmd != NULL);
 
   /* command already added? */
-  if ((found_msg = msg_tree_parse(msg->cmd, &msg_tree)) != NULL)
+  if ((found_msg = msg_tree_parse(msg->cmd, &irc_msg_tree)) != NULL)
     return;
 
-  add_msg_element(&msg_tree, msg, msg->cmd);
+  add_msg_element(&irc_msg_tree, msg, msg->cmd);
   msg->count = msg->rcount = msg->bytes = 0;
 }
+
+/* mod_add_servcmd()
+ *
+ * inputs - pointer to Message Tree
+          - pointer to struct Message
+ * output - none
+ * side effects - load this one command name
+ *      msg->count msg->bytes is modified in place, in
+ *      modules address space. Might not want to do that...
+ */
+void
+mod_add_servcmd(struct MessageTree *msg_tree, struct Message *msg)
+{
+  struct Message *found_msg = NULL;
+
+  if (msg == NULL)
+    return;
+
+  /* someone loaded a module with a bad messagetab */
+  assert(msg->cmd != NULL);
+
+  /* command already added? */
+  if ((found_msg = msg_tree_parse(msg->cmd, msg_tree)) != NULL)
+    return;
+
+  add_msg_element(msg_tree, msg, msg->cmd);
+  msg->count = msg->rcount = msg->bytes = 0;
+}
+
 
 /* mod_del_cmd()
  *
@@ -510,8 +508,27 @@ mod_del_cmd(struct Message *msg)
   if (msg == NULL)
     return;
 
-  del_msg_element(&msg_tree, msg->cmd);
+  del_msg_element(&irc_msg_tree, msg->cmd);
 }
+
+/* mod_del_servcmd()
+ *
+ * inputs - pointer to Message Tree
+          - pointer to struct Message
+ * output - none
+ * side effects - unload this one command name
+ */
+void
+mod_del_servcmd(struct MessageTree *msg_tree, struct Message *msg)
+{
+  assert(msg != NULL);
+
+  if (msg == NULL)
+    return;
+
+  del_msg_element(msg_tree, msg->cmd);
+}
+
 
 /* find_command()
  *
@@ -520,9 +537,9 @@ mod_del_cmd(struct Message *msg)
  * side effects - none
  */
 struct Message *
-find_command(const char *cmd)
+find_command(const char *cmd, struct MessageTree *msg_tree)
 {
-  return msg_tree_parse(cmd, &msg_tree);
+  return msg_tree_parse(cmd, msg_tree);
 }
 #if 0
 /* report_messages()
@@ -566,8 +583,43 @@ recurse_report_messages(struct Client *source_p, struct MessageTree *mtree)
 #endif
 
 void
-m_ignore(struct Client *client, struct Client *source_p,
-         int parc, char *parv[])
+m_ignore(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   return;
+}
+
+void
+process_privmsg(struct Client *client, struct Client *source, 
+    int parc, char *parv[])
+{
+  struct Service *service;
+  struct Message *mptr;
+  char  *s;
+  int i;
+
+  service = find_service(parv[1]);
+  if(service == NULL)
+  {
+    printf("Message for %s from %s, who we know nothing about!", parv[1], 
+        source->name);
+    return;
+  }
+
+  if ((s = strchr(parv[2], ' ')) != NULL)
+    *s++ = '\0';
+
+  if ((mptr = find_command(parv[2], &service->msg_tree)) == NULL)
+  {
+    printf("Unknown Message: %s %s for service %s from %s\n", parv[2], s, 
+        parv[1], source->name);
+    return;
+  }
+
+  assert(mptr->cmd != NULL);
+
+  servpara[0] = source->name;
+
+  i = string_to_array(parv[2], servpara);
+
+  handle_command(mptr, client, source, i, para);
 }

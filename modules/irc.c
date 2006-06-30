@@ -14,6 +14,9 @@ static void set_final_mode(struct Mode *, struct Mode *);
 static void remove_our_modes(struct Channel *, struct Client *);
 static void remove_a_mode(struct Channel *, struct Client *, int, char);
 
+static void *irc_sendmsg_nick(va_list);
+static void *irc_server_connected(va_list);
+
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
 static char sendbuf[MODEBUFLEN];
@@ -71,12 +74,18 @@ struct Message mode_msgtab = {
   { m_mode, m_ignore }
 };
 
+struct Message privmsg_msgtab = {
+  "PRIVMSG", 0, 0, 2, 0, MFLG_SLOW, 0,
+  { process_privmsg, m_ignore }
+};
+
 static dlink_node *connected_hook;
-static void *irc_server_connected(va_list);
+static dlink_node *newuser_hook;
 
 INIT_MODULE(irc, "$Revision: 470 $")
 {
   connected_hook = install_hook(connected_cb, irc_server_connected);
+  newuser_hook = install_hook(newuser_cb, irc_sendmsg_nick);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -87,6 +96,7 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&squit_msgtab);
   mod_add_cmd(&mode_msgtab);
   mod_add_cmd(&pong_msgtab);
+  mod_add_cmd(&privmsg_msgtab);
 }
 
 CLEANUP_MODULE
@@ -102,6 +112,7 @@ CLEANUP_MODULE
   mod_del_cmd(&squit_msgtab);
   mod_del_cmd(&mode_msgtab);
   mod_del_cmd(&pong_msgtab);
+  mod_del_cmd(&privmsg_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
@@ -131,11 +142,19 @@ irc_sendmsg_server(struct Client *client, char *prefix, char *name, char *info)
  * info Realname Information
  * umode usermode to add (i.e. "ao")
  */
-static void
-irc_sendmsg_nick(struct Client *client, char *nick, char *user, char *host,
-  char *info, char *umode)
+static void *
+irc_sendmsg_nick(va_list args)
 {
+  struct Client *client = va_arg(args, struct Client*);
+  char          *nick   = va_arg(args, char *);
+  char          *user   = va_arg(args, char *);
+  char          *host   = va_arg(args, char *);
+  char          *info   = va_arg(args, char *);
+  char          *umode  = va_arg(args, char *);
+  
   sendto_server(client, "NICK %s 1 0 +%s %s %s %s :%s", nick, umode, user, host, me.name, info);
+
+  return NULL;
 }
 
 /** Change nick of one of our introduced fake clients
@@ -222,11 +241,23 @@ static void *
 irc_server_connected(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
+  dlink_node *ptr;
   
   sendto_server(client, "PASS %s TS 5", client->server->pass);
   sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
   irc_sendmsg_server(client, NULL, me.name, me.info);
   send_queued_write(client);
+
+  me.uplink = client;
+
+  /* Send out our list of services loaded */
+  DLINK_FOREACH(ptr, services_list.head)
+  {
+    struct Service *service = ptr->data;
+
+    introduce_service(service);
+
+  }
 
   return NULL;
 }

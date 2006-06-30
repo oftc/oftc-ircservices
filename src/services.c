@@ -20,11 +20,19 @@ int main(int argc, char *argv[])
   channel_init();
   init_conf();
   init_client();
+  init_interface();
+  init_parser();
 
   read_services_conf(TRUE);
 
   printf("Services starting with name %s description %s sid %s\n",
       me.name, me.info, me.id);
+
+  me.from = me.servptr = &me;
+  SetServer(&me);
+  dlinkAdd(&me, &me.node, &global_client_list);
+  hash_add_client(&me);
+
 
   db_load_driver();
 #ifndef STATIC_MODULES

@@ -15,6 +15,9 @@
 /* Size of the dbuf heap. */ 	 
 #undef DBUF_HEAP_SIZE
 
+/* Size of the services heap */
+#undef SERVICES_HEAP_SIZE
+
 /* Size of the dlink_node heap. */ 	 
 #undef DNODE_HEAP_SIZE
 
