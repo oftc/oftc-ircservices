@@ -34,6 +34,14 @@ typedef enum HandlerType {
   LAST_HANDLER_TYPE
 } HandlerType;
 
+typedef enum ServicesHandlerType {
+  UNREG_HANDLER,
+  REG_HANDLER,
+  OPER_HANDLER,
+  ADMIN_HANDLER,
+  SERVICES_LAST_HANDLER_TYPE
+} ServiceHandlerType;
+
 /*
  * MessageHandler function
  * Params:
@@ -42,6 +50,7 @@ typedef enum HandlerType {
  * char*          parv[] - parameter vector
  */
 typedef void (*MessageHandler)(struct Client*, struct Client*, int, char*[]);
+typedef void (*ServiceMessageHandler)(struct Service*, struct Client*, int, char*[]);
 
 
 /* 
@@ -70,10 +79,31 @@ struct Message
    * parv = parameter variable array
    */
   /* handlers:
-   * UNREGISTERED, CLIENT, SERVER, ENCAP, OPER, DUMMY, LAST
+   * SERVER, ENCAP, LAST
    */
   MessageHandler handlers[LAST_HANDLER_TYPE];
 };
+
+struct ServiceMessage
+{
+  const char *cmd;
+  unsigned int count;      /* number of times command used */
+  unsigned int parameters; /* at least this many args must be passed
+                             * or an error will be sent to the user
+                             * before the m_func is even called
+                             */
+  /*
+   * service_p = service being spoken to
+   * source_p = Source client ptr
+   * parc = parameter count
+   * parv = parameter variable array
+   */
+  /* handlers:
+   * UNREGISTERED, REGISTERD, OPER, ADMIN
+   */
+  ServiceMessageHandler handlers[SERVICES_LAST_HANDLER_TYPE];
+};
+
 
 /*
  * Constants

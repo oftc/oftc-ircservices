@@ -68,6 +68,8 @@ static void handle_command(struct Message *, struct Client *, struct Client *, u
 //static void recurse_report_messages(struct Client *source_p, struct MessageTree *mtree);
 static void add_msg_element(struct MessageTree *mtree_p, struct Message *msg_p, const char *cmd);
 static void del_msg_element(struct MessageTree *mtree_p, const char *cmd);
+static void serv_add_msg_element(struct ServiceMessageTree *mtree_p, struct ServiceMessage *, const char *cmd);
+static void serv_del_msg_element(struct ServiceMessageTree *mtree_p, const char *cmd);
 
 void
 init_parser()
@@ -293,11 +295,28 @@ handle_command(struct Message *mptr, struct Client *client,
     printf("Dropping server %s due to (invalid) command '%s' "
         "with only %d arguments (expecting %d).",
         client->name, mptr->cmd, i, mptr->parameters);
-   // exit_client(client, client,
-     //   "Not enough arguments to server command.");
+    exit_client(client, client, "Not enough arguments to server command.");
   }
   else
     (*handler)(client, from, i, hpara);
+}
+
+static void
+handle_services_command(struct ServiceMessage *mptr, struct Service *service,
+     struct Client *from, unsigned int i, char *hpara[])
+{
+  ServiceMessageHandler handler = 0;
+  
+  mptr->count++;
+  handler = mptr->handlers[from->service_handler];
+
+  if (i < mptr->parameters)
+  {
+    printf("%s sent services a command %s with too few paramters\n",
+        from->name, mptr->cmd);
+  }
+  else
+    (*handler)(service, from, i, hpara);
 }
 
 /* clear_tree_parse()
@@ -309,6 +328,12 @@ handle_command(struct Message *mptr, struct Client *client,
  */
 void
 clear_tree_parse(struct MessageTree *msg_tree)
+{
+  memset(msg_tree, 0, sizeof(*msg_tree));
+}
+
+void
+clear_serv_tree_parse(struct ServiceMessageTree *msg_tree)
 {
   memset(msg_tree, 0, sizeof(*msg_tree));
 }
@@ -364,6 +389,39 @@ add_msg_element(struct MessageTree *mtree_p,
   }
 }
 
+static void
+serv_add_msg_element(struct ServiceMessageTree *mtree_p,
+    struct ServiceMessage *msg_p, const char *cmd)
+{
+  struct ServiceMessageTree *ntree_p;
+
+  if (*cmd == '\0')
+  {
+    mtree_p->msg = msg_p;
+    mtree_p->links++;    /* Have msg pointer, so up ref count */
+  }
+  else
+  {
+    /* *cmd & (MAXPTRLEN-1)
+     * convert the char pointed to at *cmd from ASCII to an integer
+     * between 0 and MAXPTRLEN.
+     * Thus 'A' -> 0x1 'B' -> 0x2 'c' -> 0x3 etc.
+     */
+
+    if ((ntree_p = mtree_p->pointers[*cmd & (MAXPTRLEN-1)]) == NULL)
+    {
+      ntree_p = (struct ServiceMessageTree *)
+        MyMalloc(sizeof(struct ServiceMessageTree));
+      mtree_p->pointers[*cmd & (MAXPTRLEN-1)] = ntree_p;
+
+      mtree_p->links++;    /* Have new pointer, so up ref count */
+    }
+
+    serv_add_msg_element(ntree_p, msg_p, cmd+1);
+  }
+}
+
+
 /* del_msg_element()
  *
  * inputs	- Pointer to MessageTree to delete from
@@ -418,6 +476,37 @@ del_msg_element(struct MessageTree *mtree_p, const char *cmd)
   }
 }
 
+static void
+serv_del_msg_element(struct ServiceMessageTree *mtree_p, const char *cmd)
+{
+  struct ServiceMessageTree *ntree_p;
+
+  /*
+   * In case this is called for a nonexistent command
+   * check that there is a msg pointer here, else links-- goes -ve
+   * -db
+   */
+  if ((*cmd == '\0') && (mtree_p->msg != NULL))
+  {
+    mtree_p->msg = NULL;
+    mtree_p->links--;
+  }
+  else
+  {
+    if ((ntree_p = mtree_p->pointers[*cmd & (MAXPTRLEN-1)]) != NULL)
+    {
+      serv_del_msg_element(ntree_p, cmd+1);
+
+      if (ntree_p->links == 0)
+      {
+        mtree_p->pointers[*cmd & (MAXPTRLEN-1)] = NULL;
+        mtree_p->links--;
+        MyFree(ntree_p);
+      }
+    }
+  }
+}
+
 /* msg_tree_parse()
  *
  * inputs	- Pointer to command to find
@@ -437,6 +526,20 @@ msg_tree_parse(const char *cmd, struct MessageTree *root)
 
   return NULL;
 }
+
+static struct ServiceMessage *
+serv_msg_tree_parse(const char *cmd, struct ServiceMessageTree *root)
+{
+  struct ServiceMessageTree *mtree = root;
+  assert(cmd && *cmd);
+
+  while (IsAlpha(*cmd) && (mtree = mtree->pointers[*cmd & (MAXPTRLEN - 1)]))
+    if (*++cmd == '\0')
+      return mtree->msg;
+
+  return NULL;
+}
+
 
 /* mod_add_cmd()
  *
@@ -475,9 +578,9 @@ mod_add_cmd(struct Message *msg)
  *      modules address space. Might not want to do that...
  */
 void
-mod_add_servcmd(struct MessageTree *msg_tree, struct Message *msg)
+mod_add_servcmd(struct ServiceMessageTree *msg_tree, struct ServiceMessage *msg)
 {
-  struct Message *found_msg = NULL;
+  struct ServiceMessage *found_msg = NULL;
 
   if (msg == NULL)
     return;
@@ -486,11 +589,10 @@ mod_add_servcmd(struct MessageTree *msg_tree, struct Message *msg)
   assert(msg->cmd != NULL);
 
   /* command already added? */
-  if ((found_msg = msg_tree_parse(msg->cmd, msg_tree)) != NULL)
+  if ((found_msg = serv_msg_tree_parse(msg->cmd, msg_tree)) != NULL)
     return;
 
-  add_msg_element(msg_tree, msg, msg->cmd);
-  msg->count = msg->rcount = msg->bytes = 0;
+  serv_add_msg_element(msg_tree, msg, msg->cmd);
 }
 
 
@@ -519,14 +621,14 @@ mod_del_cmd(struct Message *msg)
  * side effects - unload this one command name
  */
 void
-mod_del_servcmd(struct MessageTree *msg_tree, struct Message *msg)
+mod_del_servcmd(struct ServiceMessageTree *msg_tree, struct ServiceMessage *msg)
 {
   assert(msg != NULL);
 
   if (msg == NULL)
     return;
 
-  del_msg_element(msg_tree, msg->cmd);
+  serv_del_msg_element(msg_tree, msg->cmd);
 }
 
 
@@ -541,6 +643,13 @@ find_command(const char *cmd, struct MessageTree *msg_tree)
 {
   return msg_tree_parse(cmd, msg_tree);
 }
+
+struct ServiceMessage *
+find_services_command(const char *cmd, struct ServiceMessageTree *msg_tree)
+{
+  return serv_msg_tree_parse(cmd, msg_tree);
+}
+
 #if 0
 /* report_messages()
  *
@@ -589,11 +698,16 @@ m_ignore(struct Client *client, struct Client *source, int parc, char *parv[])
 }
 
 void
+m_servignore(struct Service *client, struct Client *source, int parc, char *parv[])
+{
+}
+
+void
 process_privmsg(struct Client *client, struct Client *source, 
     int parc, char *parv[])
 {
   struct Service *service;
-  struct Message *mptr;
+  struct ServiceMessage *mptr;
   char  *s;
   int i;
 
@@ -608,7 +722,7 @@ process_privmsg(struct Client *client, struct Client *source,
   if ((s = strchr(parv[2], ' ')) != NULL)
     *s++ = '\0';
 
-  if ((mptr = find_command(parv[2], &service->msg_tree)) == NULL)
+  if ((mptr = find_services_command(parv[2], &service->msg_tree)) == NULL)
   {
     printf("Unknown Message: %s %s for service %s from %s\n", parv[2], s, 
         parv[1], source->name);
@@ -621,5 +735,5 @@ process_privmsg(struct Client *client, struct Client *source,
 
   i = string_to_array(parv[2], servpara);
 
-  handle_command(mptr, client, source, i, para);
+  handle_services_command(mptr, service, source, i, para);
 }

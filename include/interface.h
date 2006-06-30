@@ -6,6 +6,8 @@ extern dlink_list services_list;
 extern struct Callback *newuser_cb;
 
 struct Service *make_service(char *name);
+void introduce_service(struct Service *service);
+void init_interface();
 
 struct Service
 {
@@ -13,9 +15,8 @@ struct Service
   struct Service *hnext;
 
   char name[NICKLEN+1];
-  struct MessageTree msg_tree;
+  struct ServiceMessageTree msg_tree;
 };
 
-void introduce_service(struct Service *service);
 
 #endif
