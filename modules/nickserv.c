@@ -24,9 +24,22 @@ CLEANUP_MODULE
 {
 }
 
+static void *
+ns_find_nick(char *nick)
+{
+  printf("We try to find %s\n", nick);
+  return (void *) 1;  // XXX FIXME XXX
+}
+
 static void 
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
   printf("ZOMG %s wants to register with %s\n", client->name, service->name);
+  if (ns_find_nick(client->name) != NULL)
+  {
+    tell_user(service, client, "NICK EXISTS");
+    return;
+  }
 }
+
