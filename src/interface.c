@@ -3,6 +3,7 @@
 dlink_list services_list = { 0 };
 struct Callback *newuser_cb;
 struct Callback *privmsg_cb;
+struct Callback *notice_cb;
 static BlockHeap *services_heap  = NULL;
 
 void
@@ -11,6 +12,7 @@ init_interface()
   services_heap = BlockHeapCreate("services", sizeof(struct Service), SERVICES_HEAP_SIZE);
   newuser_cb = register_callback("introduce user", NULL);
   privmsg_cb = register_callback("message user", NULL);
+  notice_cb  = register_callback("NOTICE user", NULL);
 }
 
 struct Service *
@@ -49,4 +51,10 @@ void
 tell_user(struct Service *service, struct Client *client, char *text)
 {
   execute_callback(privmsg_cb, me.uplink, service->name, client->name, text);
+}
+
+void
+reply_user(struct Service *service, struct Client *client, char *text)
+{
+  execute_callback(notice_cb, me.uplink, service->name, client->name, text);
 }

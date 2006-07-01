@@ -16,6 +16,7 @@ static void remove_a_mode(struct Channel *, struct Client *, int, char);
 
 static void *irc_sendmsg_nick(va_list);
 static void *irc_sendmsg_privmsg(va_list);
+static void *irc_sendmsg_notice(va_list);
 static void *irc_server_connected(va_list);
 
 static char modebuf[MODEBUFLEN];
@@ -83,12 +84,14 @@ struct Message privmsg_msgtab = {
 static dlink_node *connected_hook;
 static dlink_node *newuser_hook;
 static dlink_node *privmsg_hook;
+static dlink_node *notice_hook;
 
 INIT_MODULE(irc, "$Revision: 470 $")
 {
   connected_hook = install_hook(connected_cb, irc_server_connected);
   newuser_hook = install_hook(newuser_cb, irc_sendmsg_nick);
   privmsg_hook = install_hook(privmsg_cb, irc_sendmsg_privmsg);
+  notice_hook  = install_hook(notice_cb, irc_sendmsg_notice);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -173,6 +176,21 @@ irc_sendmsg_privmsg(va_list args)
   sendto_server(client, ":%s PRIVMSG %s :%s", source, target, text);
   return NULL;
 }
+
+/** Send a Message to an user
+ */
+static void *
+irc_sendmsg_notice(va_list args)
+{
+  struct Client *client = va_arg(args, struct Client *);
+  char          *source = va_arg(args, char *);
+  char          *target = va_arg(args, char *);
+  char          *text   = va_arg(args, char *);
+  
+  sendto_server(client, ":%s NOTICE %s :%s", source, target, text);
+  return NULL;
+}
+
 
 /** Change nick of one of our introduced fake clients
  * DO NOT use for remote clients or it will cause havoc, use SVSNICK instead
