@@ -190,7 +190,7 @@ irc_sendmsg_gnotice(va_list args)
   char          *text   = va_arg(args, char *);
   
   // 1 is UMODE_ALL, aka UMODE_SERVERNOTICE
-  sendto_server(client, ":%s GNOTICE 1 :%s", source, text);
+  sendto_server(client, ":%s GNOTICE %s 1 :%s", source, source, text);
   return NULL;
 }
 
