@@ -312,6 +312,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
 
   if (i < mptr->parameters)
   {
+    reply_user(service, from, "Insufficient Parameters");
     printf("%s sent services a command %s with too few paramters\n",
         from->name, mptr->cmd);
   }
@@ -753,5 +754,5 @@ process_privmsg(struct Client *client, struct Client *source,
     parv[1] = NULL;
   }
 
-  handle_services_command(mptr, service, source, i, servpara);
+  handle_services_command(mptr, service, source, i-1, servpara);
 }
