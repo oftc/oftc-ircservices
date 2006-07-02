@@ -33,3 +33,4 @@
 #include "hostmask.h"
 #include "interface.h"
 #include "nickserv.h"
+#include "crypt.h"

@@ -21,13 +21,13 @@ typedef struct MD5Context {
   u_int32_t state[4];   /* state (ABCD) */
   u_int32_t count[2];   /* number of bits, modulo 2^64 (lsb first) */
   unsigned char buffer[64];     /* input buffer */
-} MD5_CTX;
+} SERVMD5_CTX;
 
-void   MD5Init (MD5_CTX *);
-void   MD5Update (MD5_CTX *, const unsigned char *, unsigned int);
-void   MD5Pad (MD5_CTX *);
-void   MD5Final (unsigned char [16], MD5_CTX *);
-char * MD5End(MD5_CTX *, char *);
+void   MD5Init (SERVMD5_CTX *);
+void   MD5Update (SERVMD5_CTX *, const unsigned char *, unsigned int);
+void   MD5Pad (SERVMD5_CTX *);
+void   MD5Final (unsigned char [16], SERVMD5_CTX *);
+char * MD5End(SERVMD5_CTX *, char *);
 char * MD5File(const char *, char *);
 char * MD5Data(const unsigned char *, unsigned int, char *);
 
@@ -51,7 +51,7 @@ _crypt_to64(s, v, n)
  */
 
 LIBIO_EXTERN char *
-crypt(const char *pw, const char *salt)
+servcrypt(const char *pw, const char *salt)
 {
 	static char	*magic = "$1$";	/*
 					 * This string is magic for
@@ -63,7 +63,7 @@ crypt(const char *pw, const char *salt)
 	static const char *sp,*ep;
 	unsigned char	final[MD5_SIZE];
 	int sl,pl,i;
-	MD5_CTX	ctx,ctx1;
+	SERVMD5_CTX	ctx,ctx1;
 	unsigned long l;
 
 	/* Refine the Salt first */
@@ -279,7 +279,7 @@ static unsigned char PADDING[64] = {
 
 void
 MD5Init (context)
-	MD5_CTX *context;
+	SERVMD5_CTX *context;
 {
 
 	context->count[0] = context->count[1] = 0;
@@ -299,7 +299,7 @@ MD5Init (context)
 
 void
 MD5Update (context, input, inputLen)
-	MD5_CTX *context;
+	SERVMD5_CTX *context;
 	const unsigned char *input;
 	unsigned int inputLen;
 {
@@ -341,7 +341,7 @@ MD5Update (context, input, inputLen)
 
 void
 MD5Pad (context)
-	MD5_CTX *context;
+	SERVMD5_CTX *context;
 {
 	unsigned char bits[8];
 	unsigned int index, padLen;
@@ -366,7 +366,7 @@ MD5Pad (context)
 void
 MD5Final (digest, context)
 	unsigned char digest[16];
-	MD5_CTX *context;
+	SERVMD5_CTX *context;
 {
 	/* Do padding. */
 	MD5Pad (context);

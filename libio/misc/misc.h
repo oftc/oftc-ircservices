@@ -55,6 +55,7 @@ LIBIO_EXTERN void set_time(void);
 LIBIO_EXTERN void libio_init(int);
 LIBIO_EXTERN void setup_corefile(void);
 
+LIBIO_EXTERN char *servcrypt(const char *, const char *);
 
 #define LIBIO_MAX(a, b)  ((a) > (b) ? (a) : (b))
 #define LIBIO_MIN(a, b)  ((a) < (b) ? (a) : (b))

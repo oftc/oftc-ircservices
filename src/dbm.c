@@ -107,11 +107,12 @@ db_find_nick(const char *nick)
 }
 
 int
-db_register_nick(struct Client *client, const char *password, const char *email)
+db_register_nick(struct Client *client, const char *email)
 {
   struct Nick *nick = client->nickname;
   char *escnick = NULL;
   char *escemail = NULL;
+  char *escpass = NULL;
   dbi_result result;
   
   assert(nick != NULL);
@@ -128,13 +129,22 @@ db_register_nick(struct Client *client, const char *password, const char *email)
     MyFree(escnick);
     return -1;
   }
+
+  if(dbi_driver_quote_string_copy(Database.driv, nick->pass, &escpass) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    MyFree(escnick);
+    MyFree(escemail);
+    return -1;
+  }
   
-  snprintf(querybuffer, 1024, "INSERT INTO %s (nick, email, reg_time, last_seen, "
-      "last_used) VALUES(%s, %s, %ld, %ld, %ld)", "nicknames", 
-      escnick, escemail, CurrentTime, CurrentTime, CurrentTime);
+  snprintf(querybuffer, 1024, "INSERT INTO %s (nick, password, email, reg_time,"
+      " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nicknames", 
+      escnick, escemail, escpass, CurrentTime, CurrentTime, CurrentTime);
 
   MyFree(escnick);
   MyFree(escemail);
+  MyFree(escpass);
   
   printf("db: query: %s\n", querybuffer);
 

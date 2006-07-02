@@ -38,9 +38,10 @@ m_register(struct Service *service, struct Client *client,
 
   nick = MyMalloc(sizeof(struct Nick));
   strlcpy(nick->nick, client->name, sizeof(nick->nick));
+  strlcpy(nick->pass, crypt_pass(parv[1]), sizeof(nick->pass));
 
   client->nickname = nick;
-  if(db_register_nick(client, parv[1], parv[2]) >= 0)
+  if(db_register_nick(client, parv[2]) >= 0)
   {
     if(IsOper(client))
       client->service_handler = OPER_HANDLER;

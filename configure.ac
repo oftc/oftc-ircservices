@@ -227,7 +227,7 @@ fi
 dnl Checks for header files.
 AC_HEADER_STDC
 
-AC_CHECK_HEADERS([crypt.h inttypes.h stdint.h sys/resource.h sys/param.h errno.h sys/syslog.h stddef.h libgen.h sys/wait.h wait.h link.h])
+AC_CHECK_HEADERS([inttypes.h stdint.h sys/resource.h sys/param.h errno.h sys/syslog.h stddef.h libgen.h sys/wait.h wait.h link.h])
 
 dnl Networking Functions
 dnl ====================
@@ -315,16 +315,8 @@ AC_COMPILE_IFELSE(
 [AC_MSG_RESULT(no)
 have_v6="no"])
 
-AC_SEARCH_LIBS(crypt, [crypt descrypt],,)
-
-CRYPT_LIB=$ac_cv_search_crypt
-
-if test "$CRYPT_LIB" = "none required"; then
-	unset CRYPT_LIB
-elif test "$CRYPT_LIB" = no; then
-	CRYPT_C=crypt.c
-	unset CRYPT_LIB
-fi
+CRYPT_C=crypt.c
+unset CRYPT_LIB
 
 AC_SUBST(CRYPT_C)
 AC_SUBST(CRYPT_LIB)

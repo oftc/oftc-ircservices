@@ -67,6 +67,7 @@ SRCS = 								\
  conf/servicesinfo.c	\
  conf.c								\
  client.c							\
+ crypt.c							\
  connection.c 				\
  dbm.c 		  					\
  hash.c								\
