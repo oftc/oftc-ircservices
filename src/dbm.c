@@ -140,7 +140,7 @@ db_register_nick(struct Client *client, const char *email)
   
   snprintf(querybuffer, 1024, "INSERT INTO %s (nick, password, email, reg_time,"
       " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nicknames", 
-      escnick, escemail, escpass, CurrentTime, CurrentTime, CurrentTime);
+      escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime);
 
   MyFree(escnick);
   MyFree(escemail);

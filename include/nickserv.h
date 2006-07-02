@@ -7,7 +7,7 @@ struct Nick
   
   unsigned int id;
   char nick[NICKLEN+1];
-  char pass[34];
+  char pass[35];
   unsigned int status;
   unsigned int flags;
   unsigned short language;
