@@ -754,5 +754,5 @@ process_privmsg(struct Client *client, struct Client *source,
     parv[1] = NULL;
   }
 
-  handle_services_command(mptr, service, source, i-1, servpara);
+  handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
 }
