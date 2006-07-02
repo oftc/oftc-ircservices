@@ -98,6 +98,8 @@ struct Client
   struct Client *servptr;
   struct Client *uplink;        /* services uplink server */
 
+  struct Nick   *nickname;
+
   char          name[HOSTLEN+1];
   char          host[HOSTLEN+1];
   char          id[IDLEN + 1];      /* client ID, unique ID per client */

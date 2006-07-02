@@ -6,7 +6,7 @@ static void m_register(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
   "REGISTER", 0, 2,
-  { m_register, m_servignore, m_servignore, m_servignore }
+  { m_register, m_alreadyreg, m_alreadyreg, m_alreadyreg}
 };
 
 INIT_MODULE(nickserv, "$Revision: 470 $")
@@ -24,22 +24,31 @@ CLEANUP_MODULE
 {
 }
 
-static void *
-ns_find_nick(char *nick)
-{
-  printf("We try to find %s\n", nick);
-  return (void *) 1;  // XXX FIXME XXX
-}
-
 static void 
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  global_notice(service, "ZOMG %s wants to register with %s\n", client->name, service->name);
-  if (ns_find_nick(client->name) != NULL)
+  struct Nick *nick;
+  
+  if (db_find_nick(client->name) != NULL)
   {
-    reply_user(service, client, "NICK EXISTS");
+    reply_user(service, client, "This nick is registered already numbnuts.");
     return;
   }
-}
 
+  nick = MyMalloc(sizeof(struct Nick));
+  strlcpy(nick->nick, client->name, sizeof(nick->nick));
+
+  client->nickname = nick;
+  if(db_register_nick(client, parv[1], parv[2]) >= 0)
+  {
+    if(IsOper(client))
+      client->service_handler = OPER_HANDLER;
+    else
+      client->service_handler = REG_HANDLER;
+    reply_user(service, client, "Nick registered sucessfully.");
+    return;
+  }
+
+  reply_user(service, client, "Failed to register your nick.");
+}

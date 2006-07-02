@@ -698,8 +698,17 @@ m_ignore(struct Client *client, struct Client *source, int parc, char *parv[])
 }
 
 void
-m_servignore(struct Service *client, struct Client *source, int parc, char *parv[])
+m_servignore(struct Service *service, struct Client *source, int parc, 
+    char *parv[])
 {
+}
+
+void
+m_alreadyreg(struct Service *service, struct Client *source, int parc, 
+    char *parv[])
+{
+  reply_user(service, source, "%s is already registered dumbass.", 
+      source->name);
 }
 
 void
@@ -708,7 +717,7 @@ process_privmsg(struct Client *client, struct Client *source,
 {
   struct Service *service;
   struct ServiceMessage *mptr;
-  char  *s;
+  char  *s, *ch;
   int i;
 
   service = find_service(parv[1]);
@@ -718,6 +727,9 @@ process_privmsg(struct Client *client, struct Client *source,
         source->name);
     return;
   }
+
+  for (ch = parv[2]; *ch == ' '; ch++) /* skip spaces */
+    /* null statement */ ;
 
   if ((s = strchr(parv[2], ' ')) != NULL)
     *s++ = '\0';
@@ -733,7 +745,13 @@ process_privmsg(struct Client *client, struct Client *source,
 
   servpara[0] = source->name;
 
-  i = string_to_array(parv[2], servpara);
+  if(s != NULL)
+    i = string_to_array(s, servpara);
+  else
+  {
+    i = 0;
+    parv[1] = NULL;
+  }
 
-  handle_services_command(mptr, service, source, i, para);
+  handle_services_command(mptr, service, source, i, servpara);
 }

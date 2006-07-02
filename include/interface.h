@@ -2,15 +2,17 @@
 #define INTERFACE_H
 
 struct Service;
+struct Client;
+
 extern dlink_list services_list;
 extern struct Callback *newuser_cb;
 extern struct Callback *privmsg_cb;
 extern struct Callback *notice_cb;
 extern struct Callback *gnotice_cb;
 
-struct Service *make_service(char *name);
-void introduce_service(struct Service *service);
-void reply_user(struct Service *service, struct Client *client, char *text);
+struct Service *make_service(char *);
+void introduce_service(struct Service *);
+void reply_user(struct Service *, struct Client *, const char *, ...);
 void global_notice(struct Service *service, char *text, ...);
 void init_interface();
 

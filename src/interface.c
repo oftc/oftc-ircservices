@@ -56,9 +56,15 @@ tell_user(struct Service *service, struct Client *client, char *text)
 }
 
 void
-reply_user(struct Service *service, struct Client *client, char *text)
+reply_user(struct Service *service, struct Client *client, const char *fmt, ...)
 {
-  execute_callback(notice_cb, me.uplink, service->name, client->name, text);
+  char buf[IRC_BUFSIZE+1];
+  va_list ap;
+  
+  va_start(ap, fmt);
+  vsnprintf(buf, IRC_BUFSIZE, fmt, ap);
+  va_end(ap);
+  execute_callback(notice_cb, me.uplink, service->name, client->name, buf);
 }
 
 void

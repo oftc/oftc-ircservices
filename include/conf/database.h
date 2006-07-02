@@ -21,12 +21,16 @@
  *  $Id$
  */
 
+#include <dbi/dbi.h>
+
 struct DatabaseConf
 {
   char *driver;
   char *dbname;
   char *username;
   char *password;
+  dbi_conn conn;
+  dbi_driver driv;
 };
 
 EXTERN struct DatabaseConf Database;

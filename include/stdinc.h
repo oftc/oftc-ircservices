@@ -32,3 +32,4 @@
 #include "channel.h"
 #include "hostmask.h"
 #include "interface.h"
+#include "nickserv.h"
