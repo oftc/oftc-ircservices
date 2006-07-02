@@ -70,7 +70,7 @@ db_find_nick(const char *nick)
   
   snprintf(querybuffer, 1024, "SELECT id, nick, password, "
       "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
-      "FROM %s WHERE nick=%s", "nicknames", escnick);
+      "FROM %s WHERE nick=%s", "nickname", escnick);
 
   MyFree(escnick);
   printf("db: query: %s\n", querybuffer);
@@ -139,7 +139,7 @@ db_register_nick(struct Client *client, const char *email)
   }
   
   snprintf(querybuffer, 1024, "INSERT INTO %s (nick, password, email, reg_time,"
-      " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nicknames", 
+      " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nickname", 
       escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime);
 
   MyFree(escnick);
