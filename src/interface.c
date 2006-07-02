@@ -71,14 +71,18 @@ void
 global_notice(struct Service *service, char *text, ...)
 {
   va_list arg;
-  char buf[4096]; //extra buffer, check?
+  char buf[IRC_BUFFER];
+  char buf2[IRC_BUFFER];
   
   va_start(arg, text);
-  vsnprintf(buf, 4096, text, arg);
+  vsnprintf(buf, IRC_BUFFER, text, arg);
   va_end(arg);
 
-  if (service == NULL)
-    execute_callback(gnotice_cb, me.uplink, me.name, buf);
+  if (service != NULL)
+  {
+    snprintf(buf2, IRC_BUFFER, "[%s] %s", service->name, buf);
+    execute_callback(gnotice_cb, me.uplink, me.name, buf2);
+  }
   else
-    execute_callback(gnotice_cb, me.uplink, service->name, buf);
+    execute_callback(gnotice_cb, me.uplink, me.name, buf);
 }
