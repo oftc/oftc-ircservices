@@ -4,6 +4,7 @@ dlink_list services_list = { 0 };
 struct Callback *newuser_cb;
 struct Callback *privmsg_cb;
 struct Callback *notice_cb;
+struct Callback *gnotice_cb;
 static BlockHeap *services_heap  = NULL;
 
 void
@@ -13,6 +14,7 @@ init_interface()
   newuser_cb = register_callback("introduce user", NULL);
   privmsg_cb = register_callback("message user", NULL);
   notice_cb  = register_callback("NOTICE user", NULL);
+  gnotice_cb = register_callback("Global Notice", NULL);
 }
 
 struct Service *
@@ -57,4 +59,16 @@ void
 reply_user(struct Service *service, struct Client *client, char *text)
 {
   execute_callback(notice_cb, me.uplink, service->name, client->name, text);
+}
+
+void
+global_notice(struct Service *service, char *text, ...)
+{
+  va_list arg;
+  char buf[4096]; //extra buffer, check?
+  
+  va_start(arg, text);
+  vsnprintf(buf, 4096, text, arg);
+  va_end(arg);
+  execute_callback(gnotice_cb, me.uplink, service->name, buf);
 }

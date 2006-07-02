@@ -31,16 +31,45 @@ m_mod(struct Service *service, struct Client *client,
 {
   char *action = parv[1];
   char *parm = NULL;
+  char *mbn;
 
   if (parc == 2) {
     parm = parv[2];
   }
+  
   // FIXME insecure strcmp
   if (strcmp(action, "LOAD") == 0)
   {
-  } else if (strcmp(action, "UNLOAD") == 0)
+    mbn = basename(parm);
+
+    if (find_module(mbn, 0) != NULL)
+    {
+      reply_user(service, client, "Module already loaded");
+      return;
+    }
+
+    if (parm == NULL)
+    {
+      reply_user(service, client, "You need to specify the modules name");
+      return;
+    }
+
+    global_notice(service, "Loading %s by request of %s",
+      parm, client->name);
+    if (load_module(parm) == 1)
+    {
+      global_notice(service, "Module %s loaded", parm);
+    }
+    else
+    {
+      global_notice(service, "Module %s could not be loaded!", parm);
+    }
+  } 
+  else if (strcmp(action, "UNLOAD") == 0)
   {
-  } else if (strcmp(action, "LIST") == 0)
+    // unload_module(parm);
+  } 
+  else if (strcmp(action, "LIST") == 0)
   {
   }
   else
