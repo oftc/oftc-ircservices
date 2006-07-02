@@ -70,5 +70,9 @@ global_notice(struct Service *service, char *text, ...)
   va_start(arg, text);
   vsnprintf(buf, 4096, text, arg);
   va_end(arg);
-  execute_callback(gnotice_cb, me.uplink, service->name, buf);
+
+  if (service == NULL)
+    execute_callback(gnotice_cb, me.uplink, me.name, buf);
+  else
+    execute_callback(gnotice_cb, me.uplink, service->name, buf);
 }

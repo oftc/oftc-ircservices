@@ -187,7 +187,8 @@ irc_sendmsg_gnotice(va_list args)
   char          *source = va_arg(args, char *);
   char          *text   = va_arg(args, char *);
   
-  sendto_server(client, ":%s GNOTICE 0 :%s", source, text);
+  // 1 is UMODE_ALL, aka UMODE_SERVERNOTICE
+  sendto_server(client, ":%s GNOTICE 1 :%s", source, text);
   return NULL;
 }
 
@@ -500,14 +501,14 @@ part_one_client(struct Client *client, struct Client *source, char *name)
 
   if ((chptr = hash_find_channel(name)) == NULL)
   {
-    printf("Trying to part %s from %s which doesnt exist\n", source->name,
+    global_notice(NULL, "Trying to part %s from %s which doesnt exist", source->name,
         name);
     return;
   }
 
   if ((ms = find_channel_link(source, chptr)) == NULL)
   {
-    printf("Trying to part %s from %s which they aren't on\n", source->name,
+    global_notice(NULL, "Trying to part %s from %s which they aren't on", source->name,
         chptr->chname);
     return;
   }
@@ -530,7 +531,7 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
     irc_sendmsg_ping(client, me.name, me.name);
     SetServer(client);
     hash_add_client(client);
-    printf("Completed server connection to %s\n", source->name);
+    global_notice(NULL, "Completed server connection to %s", source->name);
     ClearConnecting(client);
     client->servptr = &me;
     dlinkAdd(client, &client->lnode, &me.server_list);
@@ -1002,7 +1003,7 @@ m_nick(struct Client *client_p, struct Client *source_p,
 
     if (server_p == NULL)
     {
-      printf("Invalid server %s from %s for NICK %s",
+      global_notice(NULL, "Invalid server %s from %s for NICK %s",
           nserver, source_p->name, nick);
       return;
     }
@@ -1014,7 +1015,7 @@ m_nick(struct Client *client_p, struct Client *source_p,
 
     /* check the length of the clients gecos */
     if (strlen(parv[8]) > REALLEN)
-      printf("Long realname from server %s for %s", nserver, nnick);
+      global_notice(NULL, "Long realname from server %s for %s", nserver, nnick);
 
     if (IsServer(source_p))
       newts = atol(nts);
@@ -1130,7 +1131,7 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 
   if ((chptr = hash_find_channel(parv[1])) == NULL)
   {
-    printf("Mode for unknown channel %s\n", parv[1]);
+    global_notice(NULL, "Mode for unknown channel %s", parv[1]);
     return;
   }
 

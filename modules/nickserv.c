@@ -35,7 +35,7 @@ static void
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  printf("ZOMG %s wants to register with %s\n", client->name, service->name);
+  global_notice(service, "ZOMG %s wants to register with %s\n", client->name, service->name);
   if (ns_find_nick(client->name) != NULL)
   {
     reply_user(service, client, "NICK EXISTS");
