@@ -5,16 +5,18 @@ struct Callback *newuser_cb;
 struct Callback *privmsg_cb;
 struct Callback *notice_cb;
 struct Callback *gnotice_cb;
+struct Callback *umode_cb;
 static BlockHeap *services_heap  = NULL;
 
 void
 init_interface()
 {
   services_heap = BlockHeapCreate("services", sizeof(struct Service), SERVICES_HEAP_SIZE);
-  newuser_cb = register_callback("introduce user", NULL);
-  privmsg_cb = register_callback("message user", NULL);
-  notice_cb  = register_callback("NOTICE user", NULL);
-  gnotice_cb = register_callback("Global Notice", NULL);
+  newuser_cb    = register_callback("introduce user", NULL);
+  privmsg_cb    = register_callback("message user", NULL);
+  notice_cb     = register_callback("NOTICE user", NULL);
+  gnotice_cb    = register_callback("Global Notice", NULL);
+  umode_cb      = register_callback("Set UMODE", NULL);
 }
 
 struct Service *
@@ -65,6 +67,12 @@ reply_user(struct Service *service, struct Client *client, const char *fmt, ...)
   vsnprintf(buf, IRC_BUFSIZE, fmt, ap);
   va_end(ap);
   execute_callback(notice_cb, me.uplink, service->name, client->name, buf);
+}
+
+void
+send_umode(struct Service *service, struct Client *client, const char *mode)
+{
+  execute_callback(umode_cb, me.uplink, client->name, mode);
 }
 
 void

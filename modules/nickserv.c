@@ -32,6 +32,19 @@ CLEANUP_MODULE
 {
 }
 
+static void
+identify_user(struct Client *client)
+{
+  if(IsOper(client))
+    client->service_handler = OPER_HANDLER;
+  else
+    client->service_handler = REG_HANDLER;
+
+  SetRegistered(client);
+
+  send_umode(nickserv, client, "+R");
+}
+
 static void 
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -51,10 +64,7 @@ m_register(struct Service *service, struct Client *client,
   client->nickname = nick;
   if(db_register_nick(client, parv[2]) >= 0)
   {
-    if(IsOper(client))
-      client->service_handler = OPER_HANDLER;
-    else
-      client->service_handler = REG_HANDLER;
+    identify_user(client);
     reply_user(service, client, "Nick registered sucessfully.");
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
         client->username, client->host, nick->nick);
@@ -79,10 +89,10 @@ m_identify(struct Service *service, struct Client *client,
   if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), sizeof(nick->pass)) == 0)
   {
     reply_user(service, client, "You identified.  Bravo.");
+    identify_user(client);
   }
   else
   {
-    printf("%s %s\n", nick->pass, servcrypt(parv[1], nick->pass));
     reply_user(service, client, "Access Denied.");
   }
 }

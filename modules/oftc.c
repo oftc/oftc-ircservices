@@ -1,7 +1,9 @@
 #include "stdinc.h"
 
 static void *irc_sendmsg_gnotice(va_list);
+static void *irc_sendmsg_svsmode(va_list args);
 static dlink_node *gnotice_hook;
+static dlink_node *umode_hook;
 
 struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, MFLG_SLOW, 0,
@@ -11,6 +13,7 @@ struct Message gnotice_msgtab = {
 INIT_MODULE(oftc, "$Revision: 470 $")
 {
   gnotice_hook = install_hook(gnotice_cb, irc_sendmsg_gnotice);
+  umode_hook = install_hook(umode_cb, irc_sendmsg_svsmode);
   mod_add_cmd(&gnotice_msgtab);
 }
 
@@ -39,10 +42,14 @@ irc_sendmsg_svscloak(struct Client *client, struct Client *target,
     me.name, target->name, cloakstring);
 }
 
-static void
-irc_sendmsg_svsmode(struct Client *client, char *target, char *modes)
+static void *
+irc_sendmsg_svsmode(va_list args)
 {
-  sendto_server(client, ":%s SVSMODE %s :%s", me.name, target, modes);
+  struct Client *client = va_arg(args, struct Client*);
+  char          *target = va_arg(args, char *);
+  char          *mode   = va_arg(args, char *);
+
+  sendto_server(client, ":%s SVSMODE %s :%s", me.name, target, mode);
 }
 
 static void

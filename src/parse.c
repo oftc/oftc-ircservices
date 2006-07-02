@@ -732,12 +732,12 @@ process_privmsg(struct Client *client, struct Client *source,
   for (ch = parv[2]; *ch == ' '; ch++) /* skip spaces */
     /* null statement */ ;
 
-  if ((s = strchr(parv[2], ' ')) != NULL)
+  if ((s = strchr(ch, ' ')) != NULL)
     *s++ = '\0';
 
-  if ((mptr = find_services_command(parv[2], &service->msg_tree)) == NULL)
+  if ((mptr = find_services_command(ch, &service->msg_tree)) == NULL)
   {
-    printf("Unknown Message: %s %s for service %s from %s\n", parv[2], s, 
+    printf("Unknown Message: %s %s for service %s from %s\n", ch, s, 
         parv[1], source->name);
     return;
   }
