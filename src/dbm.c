@@ -158,7 +158,5 @@ db_register_nick(struct Client *client, const char *email)
 
   dbi_result_free(result);
 
-  global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, client->username,
-      client->host, nick->nick);
   return 0;
 }

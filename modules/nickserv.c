@@ -48,6 +48,9 @@ m_register(struct Service *service, struct Client *client,
     else
       client->service_handler = REG_HANDLER;
     reply_user(service, client, "Nick registered sucessfully.");
+    global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
+        client->username, client->host, nick->nick);
+
     return;
   }
 
