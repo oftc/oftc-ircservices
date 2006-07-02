@@ -25,6 +25,7 @@ struct Service
 
   char name[NICKLEN+1];
   struct ServiceMessageTree msg_tree;
+  char *language_table[LANG_LAST][LANG_TABLE_SIZE];
 };
 
 

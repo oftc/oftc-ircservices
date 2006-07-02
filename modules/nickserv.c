@@ -23,6 +23,7 @@ INIT_MODULE(nickserv, "$Revision: 470 $")
   dlinkAdd(nickserv, &nickserv->node, &services_list);
   hash_add_service(nickserv);
   introduce_service(nickserv);
+  load_language(nickserv, "en");
 
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &identify_msgtab);
@@ -53,7 +54,7 @@ m_register(struct Service *service, struct Client *client,
   
   if (db_find_nick(client->name) != NULL)
   {
-    reply_user(service, client, "This nick is registered already numbnuts.");
+    reply_user(service, client, _N(client, NS_ALREADY_REG), client->name); 
     return;
   }
 
@@ -65,13 +66,13 @@ m_register(struct Service *service, struct Client *client,
   if(db_register_nick(client, parv[2]) >= 0)
   {
     identify_user(client);
-    reply_user(service, client, "Nick registered sucessfully.");
+    reply_user(service, client, _N(client, NS_REG_COMPLETE), client->name);
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
         client->username, client->host, nick->nick);
 
     return;
   }
-  reply_user(service, client, "Failed to register your nick.");
+  reply_user(service, client, _N(client, NS_REG_FAIL), client->name);
 }
 
 static void
@@ -82,17 +83,19 @@ m_identify(struct Service *service, struct Client *client,
 
   if((nick = db_find_nick(client->name)) == NULL)
   {
-    reply_user(service, client, "Register your nickname first, ass.");
+    reply_user(service, client, _N(client, NS_REG_FIRST), client->name);
     return;
   }
 
+  client->nickname = nick;
+
   if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), sizeof(nick->pass)) == 0)
   {
-    reply_user(service, client, "You identified.  Bravo.");
+    reply_user(service, client, _N(client, NS_IDENTIFIED), client->name);
     identify_user(client);
   }
   else
   {
-    reply_user(service, client, "Access Denied.");
+    reply_user(service, client, _N(client, NS_IDENT_FAIL), client->name);
   }
 }

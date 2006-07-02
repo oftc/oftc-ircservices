@@ -50,6 +50,8 @@ irc_sendmsg_svsmode(va_list args)
   char          *mode   = va_arg(args, char *);
 
   sendto_server(client, ":%s SVSMODE %s :%s", me.name, target, mode);
+
+  return NULL;
 }
 
 static void

@@ -4,6 +4,7 @@
 #define ETCPATH     SERVICES_PREFIX "/etc/"
 #define AUTOMODPATH SERVICES_PREFIX "/modules/autoload/"
 #define MODPATH     SERVICES_PREFIX "/modules/"
+#define LANGPATH    SERVICES_PREFIX "/languages/"
 
 #define CPATH       ETCPATH "services.conf"
 #define DPATH       SERVICES_PREFIX

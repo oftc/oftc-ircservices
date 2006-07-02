@@ -1,0 +1,7 @@
+0 English
+NS_ALREADY_REG    Nickname %s is already registered.
+NS_REG_COMPLETE   Nickname %s is registered.
+NS_REG_FAIL       Nickname %s failed to register.
+NS_REG_FIRST      Nickname %s is not registtered.
+NS_IDENTIFIED     You are sucessfully identified as %s.
+NS_IDENT_FAIL     Identify failed as %s

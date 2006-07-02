@@ -17,4 +17,18 @@ struct Nick
   time_t last_quit_time;
 };
 
+/* Language defines */
+
+#define NS_ALREADY_REG    0
+#define NS_REG_COMPLETE   1
+#define NS_REG_FAIL       2
+#define NS_REG_FIRST      3
+#define NS_IDENTIFIED     4
+#define NS_IDENT_FAIL     5
+#define NS_LAST           6
+
+#define _N(c, m) ((c)->nickname == NULL) ? \
+            nickserv->language_table[(c)->nickname->language][(m)] : \
+            nickserv->language_table[0][(m)]
+
 #endif

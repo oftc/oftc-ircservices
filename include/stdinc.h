@@ -31,6 +31,7 @@
 #include "channel_mode.h"
 #include "channel.h"
 #include "hostmask.h"
+#include "language.h"
 #include "interface.h"
 #include "nickserv.h"
 #include "crypt.h"
