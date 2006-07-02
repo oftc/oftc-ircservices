@@ -1,5 +1,5 @@
 CREATE TABLE nickname (
-  id              INTEGER PRIMARY KEY,
+  id              INTEGER PRIMARY KEY auto_increment,
   nick            VARCHAR(30) NOT NULL default '',
   password        VARCHAR(34) NOT NULL default '',
   url             VARCHAR(255) NOT NULL default '',
