@@ -32,6 +32,7 @@ m_mod(struct Service *service, struct Client *client,
   char *action = parv[1];
   char *parm = NULL;
   char *mbn;
+  struct Module *module;
 
   if (parc == 2) {
     parm = parv[2];
@@ -67,7 +68,16 @@ m_mod(struct Service *service, struct Client *client,
   } 
   else if (strcmp(action, "UNLOAD") == 0)
   {
-    // unload_module(parm);
+    mbn = basename(parm);
+    module = find_module(mbn, 0);
+    if (module == NULL)
+    {
+      global_notice(service, 
+        "Module %s unload requested by %s, but failed because not loaded", 
+        parm, client->name);
+    }
+    global_notice(service, "Unloading %s by request of %s", parm, client->name);
+    unload_module(module);
   } 
   else if (strcmp(action, "LIST") == 0)
   {
