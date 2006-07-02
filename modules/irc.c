@@ -161,7 +161,9 @@ irc_sendmsg_nick(va_list args)
   char          *info   = va_arg(args, char *);
   char          *umode  = va_arg(args, char *);
   
-  sendto_server(client, "NICK %s 1 0 +%s %s %s %s :%s", nick, umode, user, host, me.name, info);
+  // NICK who hop ts umode user host server info
+  sendto_server(client, "NICK %s 1 666 +%s %s %s %s :%s", 
+    nick, umode, user, host, me.name, info);
 
   return NULL;
 }
