@@ -31,8 +31,9 @@ CPPFLAGS	= ${INCLUDES} @CPPFLAGS@
 
 SRCS =       \
   irc.c \
-	oftc.c \
-	nickserv.c
+  oftc.c \
+  nickserv.c \
+  operserv.c
 
 ALL_SRCS = $(CORE_SRCS) $(SRCS) @SSL_SRCS_ENABLE@
 
