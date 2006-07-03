@@ -2,6 +2,7 @@
 
 static struct Service *operserv = NULL;
 
+static void m_raw(struct Service *, struct Client *, int, char *[]);
 static void m_mod(struct Service *, struct Client *, int, char *[]);
 static void m_mod_list(struct Service *, struct Client *, int, char *[]);
 static void m_mod_load(struct Service *, struct Client *, int, char *[]);
@@ -16,9 +17,15 @@ static struct SubMessage mod_subs[4] = {
   { "UNLOAD", 0, 1, -1, -1, m_mod_unload },
   { NULL, 0, 0, 0, 0, NULL }
 };
+
 static struct ServiceMessage mod_msgtab = {
   mod_subs, "MOD", 0, 1, -1, -1,
   { m_mod, m_servignore, m_servignore, m_servignore }
+};
+
+static struct ServiceMessage raw_msgtab = {
+  NULL, "RAW", 1, 1, -1, -1,
+  { m_raw, m_servignore, m_servignore, m_servignore }
 };
 
 INIT_MODULE(operserv, "$Revision: 0 $")
@@ -30,6 +37,7 @@ INIT_MODULE(operserv, "$Revision: 0 $")
   introduce_service(operserv);
 
   mod_add_servcmd(&operserv->msg_tree, &mod_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
 }
 
 CLEANUP_MODULE
@@ -106,4 +114,24 @@ m_mod_unload(struct Service *service, struct Client *client,
   global_notice(service, "Unloading %s by request of %s", parm, client->name);
   reply_user(service, client, "Unloading %s", parm, client->name);
   unload_module(module);
+}
+
+static void
+m_raw(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  char buffer[IRC_BUFSIZE+1];
+  int i;
+
+  memset(buffer, 0, sizeof(buffer));
+  
+  for(i = 1; i <= parc; i++)
+  {
+    strlcat(buffer, parv[i], sizeof(buffer));
+    strlcat(buffer, " ", sizeof(buffer));
+  }
+  if(buffer[strlen(buffer)-1] == ' ')
+    buffer[strlen(buffer)-1] = '\0';
+  sendto_server(me.uplink, buffer);
+  printf("\"%s\"\n", buffer);
 }
