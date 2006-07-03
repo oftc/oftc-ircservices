@@ -174,7 +174,6 @@ exit_one_client(struct Client *source_p)
     dlinkDelete(&source_p->node, &global_client_list);
 
   printf("exited: %s\n", source_p->name);
-
 }
 
 /*
@@ -281,6 +280,11 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
   if (IsServer(source_p))
   {
     remove_dependents(source_p, from->from, comment);
+  }
+    
+  if(IsMe(source_p->from))
+  {
+    sendto_server(me.uplink, ":%s QUIT :%s", source_p->name, comment);
   }
 
   exit_one_client(source_p);

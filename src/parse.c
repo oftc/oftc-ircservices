@@ -202,7 +202,8 @@ parse(struct Client *client, char *pbuffer, char *bufend)
 
       if (from->from != client)
       {
-        printf("from from is not client %s %s %s\n", from->from->name, client->name, sender);
+        printf("from from is not client %s %s %s %s %s\n", 
+            from->from->name, client->name, sender, ch, s);
         return;
       }
     }

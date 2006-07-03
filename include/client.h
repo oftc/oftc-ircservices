@@ -52,12 +52,13 @@ extern dlink_list global_server_list;
 
 #define ClearConnecting(x)      ((x)->flags &= ~FLAGS_CONNECTING)
 
-#define IsServer(x)             ((x)->status == STAT_SERVER)
-#define IsClient(x)             ((x)->status == STAT_CLIENT)
-#define IsMe(x)                 ((x)->status == STAT_ME)
+#define IsServer(x)             ((x)->status & STAT_SERVER)
+#define IsClient(x)             ((x)->status & STAT_CLIENT)
+#define IsMe(x)                 ((x)->status & STAT_ME)
 
 #define SetServer(x)            ((x)->status |= STAT_SERVER)
 #define SetClient(x)            ((x)->status |= STAT_CLIENT)
+#define SetMe(x)                ((x)->status |= STAT_ME)
 
 #define IsOper(x)               ((x)->umodes & UMODE_OPER)
 #define IsRegistered(x)         ((x)->umodes & UMODE_REGISTERED)

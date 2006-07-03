@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
   dlinkAdd(&me, &me.node, &global_client_list);
   hash_add_client(&me);
 
+  SetMe(&me);
 
   db_load_driver();
 #ifndef STATIC_MODULES

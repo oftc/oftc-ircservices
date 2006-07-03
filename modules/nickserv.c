@@ -43,6 +43,7 @@ INIT_MODULE(nickserv, "$Revision: 470 $")
   introduce_service(nickserv);
   load_language(nickserv, "nickserv.en");
   load_language(nickserv, "nickserv.rude");
+  load_language(nickserv, "nickserv.de");
 
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &identify_msgtab);
@@ -52,6 +53,9 @@ INIT_MODULE(nickserv, "$Revision: 470 $")
 
 CLEANUP_MODULE
 {
+  exit_client(find_client(nickserv->name), &me, "Service unloaded");
+  hash_del_service(nickserv);
+  dlinkDelete(&nickserv->node, &services_list);
 }
 
 static void
