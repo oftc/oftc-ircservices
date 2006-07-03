@@ -44,10 +44,21 @@ CLEANUP_MODULE
 static void
 identify_user(struct Client *client)
 {
-  if(IsOper(client))
+  if(IsOper(client) && IsServAdmin(client))
+  {
+    client->service_handler = ADMIN_HANDLER;
+    printf("Admin\n");
+  }
+  else if(IsOper(client))
+  {
+    printf("Oper\n");
     client->service_handler = OPER_HANDLER;
+  }
   else
+  {
+    printf("Normal\n");
     client->service_handler = REG_HANDLER;
+  }
 
   SetRegistered(client);
 

@@ -17,6 +17,11 @@ struct Nick
   time_t last_quit_time;
 };
 
+/* Nick flags */
+#define NS_FLAG_ADMIN     0x1
+
+#define IsServAdmin(x)    (x)->nickname->flags & NS_FLAG_ADMIN
+
 /* Language defines */
 
 #define NS_ALREADY_REG    0
