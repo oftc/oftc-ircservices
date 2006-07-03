@@ -160,3 +160,25 @@ db_register_nick(struct Client *client, const char *email)
 
   return 0;
 }
+
+int
+db_set_language(struct Client *client, int language)
+{
+  dbi_result result;
+
+  snprintf(querybuffer, 1024, "UPDATE %s SET language=%d WHERE id=%d", 
+      "nickname", language, client->nickname->id);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return -1;
+  }
+
+  client->nickname->language = language;
+  dbi_result_free(result);
+
+  return 0;
+}

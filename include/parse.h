@@ -9,6 +9,7 @@ struct Message *find_command(const char *, struct MessageTree*);
 void parse(struct Client *, char *, char *);
 extern void m_ignore(struct Client *, struct Client *, int, char *[]);
 extern void m_servignore(struct Service *, struct Client *, int, char *[]);
+extern void m_unreg(struct Service *, struct Client *, int, char *[]);
 extern void m_alreadyreg(struct Service *, struct Client *, int, char *[]);
 
 void mod_add_cmd(struct Message *);

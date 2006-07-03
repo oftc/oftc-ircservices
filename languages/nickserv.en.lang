@@ -11,3 +11,6 @@ NS_HELP_REG_SHORT Registers a nickname for your usage.
 NS_HELP_REG_LONG  Registers a nickname for your usage.
 NS_HELP_ID_SHORT  Identify your nickname.
 NS_HELP_ID_LONG   Identify your nickname.
+NS_CURR_LANGUAGE  Current language is %s(%d).
+NS_AVAIL_LANGUAGE Available languages are:
+NS_LANGUAGE_SET   Language set to %s(%d).

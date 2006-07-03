@@ -1,0 +1,35 @@
+# $Id: Makefile.in 229 2003-08-14 07:51:22Z stu $
+
+INSTALL		= @INSTALL@
+INSTALL_DATA	= @INSTALL_DATA@
+MV		= @MV@
+RM		= @RM@
+
+# no whitespace here, test will mess up
+CLOBBER=@CLOBBER@
+
+prefix		= @prefix@
+langdir	= $(prefix)/languages
+exec_prefix	= @exec_prefix@
+
+DISTFILES	= nickserv.en.lang \
+	nickserv.rude.lang
+
+all:
+
+install:
+	@if test $(langdir) = `pwd`; then exit; fi; \
+	mkdir -p $(langdir); \
+	for i in $(DISTFILES); do \
+		if test -f $(langdir)/$$i -a -z "$(CLOBBER)"; then \
+			echo $(MV) $(langdir)/$$i $(langdir)/$$i.old; \
+			$(MV) $(langdir)/$$i $(langdir)/$$i.old; \
+		fi; \
+		echo $(INSTALL_DATA) $$i $(langdir); \
+		$(INSTALL_DATA) $$i $(langdir); \
+	done
+
+distclean:
+	${RM} -f Makefile
+
+.PHONY: install distclean

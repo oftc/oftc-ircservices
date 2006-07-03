@@ -5,6 +5,9 @@ static struct Service *nickserv = NULL;
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
+static void m_set(struct Service *, struct Client *, int, char *[]);
+
+static void m_set_language(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, NS_HELP_REG_SHORT, NS_HELP_REG_LONG,
@@ -21,6 +24,15 @@ static struct ServiceMessage help_msgtab = {
   { m_help, m_help, m_help, m_help }
 };
 
+static struct SubMessage set_sub[2] = {
+  { "LANGUAGE", 0, 0, -1, -1, m_set_language },
+  { "NULL", 0, 0, 0, 0, NULL }
+};
+
+static struct ServiceMessage set_msgtab = {
+  set_sub, "SET",  0, 0, NS_HELP_SHORT, NS_HELP_LONG,
+  { m_unreg, m_set, m_set, m_set }
+};
 
 INIT_MODULE(nickserv, "$Revision: 470 $")
 {
@@ -29,12 +41,13 @@ INIT_MODULE(nickserv, "$Revision: 470 $")
   dlinkAdd(nickserv, &nickserv->node, &services_list);
   hash_add_service(nickserv);
   introduce_service(nickserv);
-  load_language(nickserv, "en");
+  load_language(nickserv, "nickserv.en");
+  load_language(nickserv, "nickserv.rude");
 
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &identify_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &help_msgtab);
-
+  mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
 }
 
 CLEANUP_MODULE
@@ -124,4 +137,41 @@ m_help(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   do_help(service, client, parv[1], parc, parv);
+}
+
+static void
+m_set(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  reply_user(service, client, "Unknown SET option");
+}
+
+static void
+m_set_language(struct Service *service, struct Client *client,
+        int parc, char *parv[])
+{
+  /* No paramters, list languages */
+  if(parc == 0)
+  {
+    int i;
+
+    reply_user(service, client, _L(nickserv, client, NS_CURR_LANGUAGE),
+        service->language_table[client->nickname->language][0],
+        client->nickname->language);
+
+    reply_user(service, client, _L(nickserv, client, NS_AVAIL_LANGUAGE));
+
+    for(i = 0; i < LANG_LAST; i++)
+    {
+      reply_user(service, client, "%d: %s", i, service->language_table[i][0]);
+    }
+  }
+  else
+  {
+    int lang = atoi(parv[1]);
+    
+    db_set_language(client, lang);
+    reply_user(service, client, _L(nickserv, client, NS_LANGUAGE_SET),
+        service->language_table[lang][0], lang); 
+  }
 }

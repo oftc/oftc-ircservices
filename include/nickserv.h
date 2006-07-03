@@ -24,18 +24,21 @@ struct Nick
 
 /* Language defines */
 
-#define NS_ALREADY_REG    0
-#define NS_REG_COMPLETE   1
-#define NS_REG_FAIL       2
-#define NS_REG_FIRST      3
-#define NS_IDENTIFIED     4
-#define NS_IDENT_FAIL     5
-#define NS_HELP_SHORT     6
-#define NS_HELP_LONG      7
-#define NS_HELP_REG_SHORT 8
-#define NS_HELP_REG_LONG  9
-#define NS_HELP_ID_SHORT  10
-#define NS_HELP_ID_LONG   11
-#define NS_LAST           12
+#define NS_ALREADY_REG    1
+#define NS_REG_COMPLETE   2
+#define NS_REG_FAIL       3
+#define NS_REG_FIRST      4
+#define NS_IDENTIFIED     5
+#define NS_IDENT_FAIL     6
+#define NS_HELP_SHORT     7
+#define NS_HELP_LONG      8
+#define NS_HELP_REG_SHORT 9
+#define NS_HELP_REG_LONG  10
+#define NS_HELP_ID_SHORT  11
+#define NS_HELP_ID_LONG   12
+#define NS_CURR_LANGUAGE  13
+#define NS_AVAIL_LANGUAGE 14
+#define NS_LANGUAGE_SET   15
+#define NS_LAST           16
 
 #endif

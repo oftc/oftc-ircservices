@@ -744,6 +744,14 @@ m_alreadyreg(struct Service *service, struct Client *source, int parc,
 }
 
 void
+m_unreg(struct Service *service, struct Client *source,
+    int parc, char *parv[])
+{
+  reply_user(service, source, "You are not identified.",
+        source->name);
+}
+
+void
 process_privmsg(struct Client *client, struct Client *source, 
     int parc, char *parv[])
 {
@@ -813,6 +821,11 @@ process_privmsg(struct Client *client, struct Client *source,
         }
         else
         {
+          if(mptr->handlers[source->service_handler] == m_unreg)
+          {
+            m_unreg(service, source, (i == 0) ? i : i-1, servpara);
+            return;
+          }
           (*sub->handler)(service, source, (i == 0) ? i : i-1, servpara);
           return;
         }

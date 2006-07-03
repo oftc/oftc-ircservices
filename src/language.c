@@ -26,9 +26,14 @@ load_language(struct Service *service, const char *langfile)
     return;
   }
 
-  *s = '\0';
+  *s++ = '\0';
   lang = atoi(buffer);
-
+ 
+  if(s[strlen(s) - 1] == '\n')
+    s[strlen(s) - 1] = '\0';
+  
+  DupString(service->language_table[lang][i++], s);
+  
   printf("Loading language %d(%s) for service %s\n", lang, langfile,
       service->name);
 
@@ -47,6 +52,8 @@ load_language(struct Service *service, const char *langfile)
     while(*s == ' ')
       s++;
 
+    if(s[strlen(s) - 1] == '\n')
+      s[strlen(s) - 1] = '\0';
     DupString(service->language_table[lang][i++], s);
   }
 }

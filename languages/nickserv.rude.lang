@@ -1,0 +1,16 @@
+1 Rude English
+NS_ALREADY_REG    %s is already registered, fool.
+NS_REG_COMPLETE   Hey, services works.  Nickname %s managed to get registered somehow.
+NS_REG_FAIL       You broke services you boon, %s failed to register.
+NS_REG_FIRST      %s needs to be registered first silly.
+NS_IDENTIFIED     Bravo.  You got your password for %s right.  Well done.
+NS_IDENT_FAIL     Access denied on %s.  You no take candle.
+NS_HELP_SHORT     Shows this help.
+NS_HELP_LONG      Shows this help message.  Use HELP <command> for help with a commmand.
+NS_HELP_REG_SHORT Registers a nickname for your usage.
+NS_HELP_REG_LONG  Registers a nickname for your usage.
+NS_HELP_ID_SHORT  Identify your nickname.
+NS_HELP_ID_LONG   Identify your nickname.
+NS_CURR_LANGUAGE  Your idiotic self has set language %s(%d).
+NS_AVAIL_LANGUAGE If you set any of these languages I'll beat you:
+NS_LANGUAGE_SET   Sucker.  Language set to %s(%d).

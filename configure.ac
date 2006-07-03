@@ -1050,6 +1050,7 @@ AC_CONFIG_FILES(		  \
   etc/Makefile        \
   src/Makefile        \
   modules/Makefile    \
+  languages/Makefile  \
 	libio/Makefile		  \
 	libio/comm/Makefile	\
 	libio/mem/Makefile	\
