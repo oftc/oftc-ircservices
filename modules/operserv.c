@@ -6,7 +6,7 @@ static void m_mod(struct Service *, struct Client *, int, char *[]);
 
 // FIXME wrong type of clients may execute
 static struct ServiceMessage mod_msgtab = {
-  "MOD", 0, 1,
+  "MOD", 0, 1, -1, -1,
   { m_mod, m_servignore, m_servignore, m_servignore }
 };
 

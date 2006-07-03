@@ -651,6 +651,37 @@ find_services_command(const char *cmd, struct ServiceMessageTree *msg_tree)
   return serv_msg_tree_parse(cmd, msg_tree);
 }
 
+static void
+recurse_help_messages(struct Service *service, struct Client *client,
+    struct ServiceMessageTree *mtree)
+{
+  int i;
+
+  if (mtree->msg != NULL)
+  {
+    reply_user(service, client, "\002%s\002: %s",
+        mtree->msg->cmd, _L(service, client, mtree->msg->help_short));
+  }
+  for (i = 0; i < MAXPTRLEN; i++)
+  {
+    if (mtree->pointers[i] != NULL)
+      recurse_help_messages(service, client, mtree->pointers[i]);
+  }
+}
+
+void
+do_serv_help_messages(struct Service *service, struct Client *client)
+{
+  struct ServiceMessageTree *mtree = &service->msg_tree;
+  int i;
+
+  for (i = 0; i < MAXPTRLEN; i++)
+  {
+    if (mtree->pointers[i] != NULL)
+      recurse_help_messages(service, client, mtree->pointers[i]);
+  }
+}
+
 #if 0
 /* report_messages()
  *

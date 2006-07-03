@@ -25,10 +25,12 @@ struct Nick
 #define NS_REG_FIRST      3
 #define NS_IDENTIFIED     4
 #define NS_IDENT_FAIL     5
-#define NS_LAST           6
-
-#define _N(c, m) ((c)->nickname == NULL) ? \
-            nickserv->language_table[(c)->nickname->language][(m)] : \
-            nickserv->language_table[0][(m)]
+#define NS_HELP_SHORT     6
+#define NS_HELP_LONG      7
+#define NS_HELP_REG_SHORT 8
+#define NS_HELP_REG_LONG  9
+#define NS_HELP_ID_SHORT  10
+#define NS_HELP_ID_LONG   11
+#define NS_LAST           12
 
 #endif

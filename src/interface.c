@@ -94,3 +94,25 @@ global_notice(struct Service *service, char *text, ...)
   else
     execute_callback(gnotice_cb, me.uplink, me.name, buf);
 }
+
+void
+do_help(struct Service *service, struct Client *client, 
+    const char *command, int parc, char *parv[])
+{
+  struct ServiceMessage *msg;
+  struct ServiceMessageTree *mtree = &service->msg_tree;
+  int i = 0;
+ 
+  /* Command specific help, show the long entry. */
+  if(command != NULL)
+  {
+    unsigned int langid;
+    msg = find_services_command(command, &service->msg_tree);
+    /* Not possible */
+    assert(msg != NULL);
+
+    reply_user(service, client, _L(service, client, msg->help_long));
+    return;
+  }
+  do_serv_help_messages(service, client);
+}

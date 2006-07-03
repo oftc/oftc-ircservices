@@ -7,4 +7,8 @@
 
 #define LANG_TABLE_SIZE 128
 
+#define _L(s, c, m) ((c)->nickname != NULL) ? \
+          (s)->language_table[(c)->nickname->language][(m)] : \
+          (s)->language_table[0][(m)]
+
 #endif

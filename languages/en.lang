@@ -4,4 +4,10 @@ NS_REG_COMPLETE   Nickname %s is registered.
 NS_REG_FAIL       Nickname %s failed to register.
 NS_REG_FIRST      Nickname %s is not registtered.
 NS_IDENTIFIED     You are sucessfully identified as %s.
-NS_IDENT_FAIL     Identify failed as %s
+NS_IDENT_FAIL     Identify failed as %s.
+NS_HELP_SHORT     Shows this help.
+NS_HELP_LONG      Shows this help message.  Use HELP <command> for help with a commmand.
+NS_HELP_REG_SHORT Registers a nickname for your usage.
+NS_HELP_REG_LONG  Registers a nickname for your usage.
+NS_HELP_ID_SHORT  Identify your nickname.
+NS_HELP_ID_LONG   Identify your nickname.

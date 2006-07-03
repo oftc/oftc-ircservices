@@ -4,15 +4,21 @@ static struct Service *nickserv = NULL;
 
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
+static void m_help(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
-  "REGISTER", 0, 2,
+  "REGISTER", 0, 2, NS_HELP_REG_SHORT, NS_HELP_REG_LONG,
   { m_register, m_alreadyreg, m_alreadyreg, m_alreadyreg}
 };
 
 static struct ServiceMessage identify_msgtab = {
-  "IDENTIFY", 0, 1,
+  "IDENTIFY", 0, 1, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
   { m_identify, m_identify, m_identify, m_identify }
+};
+
+static struct ServiceMessage help_msgtab = {
+  "HELP", 0, 0, NS_HELP_SHORT, NS_HELP_LONG,
+  { m_help, m_help, m_help, m_help }
 };
 
 
@@ -27,6 +33,8 @@ INIT_MODULE(nickserv, "$Revision: 470 $")
 
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &identify_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &help_msgtab);
+
 }
 
 CLEANUP_MODULE
@@ -54,7 +62,7 @@ m_register(struct Service *service, struct Client *client,
   
   if (db_find_nick(client->name) != NULL)
   {
-    reply_user(service, client, _N(client, NS_ALREADY_REG), client->name); 
+    reply_user(service, client, _L(nickserv, client, NS_ALREADY_REG), client->name); 
     return;
   }
 
@@ -66,13 +74,13 @@ m_register(struct Service *service, struct Client *client,
   if(db_register_nick(client, parv[2]) >= 0)
   {
     identify_user(client);
-    reply_user(service, client, _N(client, NS_REG_COMPLETE), client->name);
+    reply_user(service, client, _L(nickserv, client, NS_REG_COMPLETE), client->name);
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
         client->username, client->host, nick->nick);
 
     return;
   }
-  reply_user(service, client, _N(client, NS_REG_FAIL), client->name);
+  reply_user(service, client, _L(nickserv, client, NS_REG_FAIL), client->name);
 }
 
 static void
@@ -83,7 +91,7 @@ m_identify(struct Service *service, struct Client *client,
 
   if((nick = db_find_nick(client->name)) == NULL)
   {
-    reply_user(service, client, _N(client, NS_REG_FIRST), client->name);
+    reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), client->name);
     return;
   }
 
@@ -91,11 +99,18 @@ m_identify(struct Service *service, struct Client *client,
 
   if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), sizeof(nick->pass)) == 0)
   {
-    reply_user(service, client, _N(client, NS_IDENTIFIED), client->name);
+    reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
     identify_user(client);
   }
   else
   {
-    reply_user(service, client, _N(client, NS_IDENT_FAIL), client->name);
+    reply_user(service, client, _L(nickserv, client, NS_IDENT_FAIL), client->name);
   }
+}
+
+static void
+m_help(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  do_help(service, client, parv[1], parc, parv);
 }
