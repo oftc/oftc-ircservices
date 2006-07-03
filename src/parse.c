@@ -774,6 +774,49 @@ process_privmsg(struct Client *client, struct Client *source,
   }
 
   assert(mptr->cmd != NULL);
+  parv[3] = s;
+
+  if(mptr->sub != NULL && parv[3] != NULL)
+  {
+    /* Process sub commands */
+    struct SubMessage *sub;
+
+    sub = mptr->sub;
+    servpara[0] = source->name;
+    for (ch = parv[3]; *ch == ' '; ch++) /* skip spaces */
+      /* null statement */ ;
+    if ((s = strchr(ch, ' ')) != NULL)
+      *s++ = '\0';
+
+    if(s != NULL)
+      i = string_to_array(s, servpara);
+    else
+    {
+      i = 0;
+      servpara[1] = NULL;
+    }
+    
+    while(sub->cmd != NULL)
+    {
+      if(irccmp(sub->cmd, ch) == 0)
+      {
+        sub->count++;
+        if (i < sub->parameters)
+        {
+          reply_user(service, client, "Insufficient Parameters");
+          printf("%s sent services a sub command %s with too few paramters\n",
+              client->name, sub->cmd);
+          return;
+        }
+        else
+        {
+          (*sub->handler)(service, source, (i == 0) ? i : i-1, servpara);
+          return;
+        }
+      }
+      sub++;
+    }
+  }
 
   servpara[0] = source->name;
 
@@ -782,7 +825,7 @@ process_privmsg(struct Client *client, struct Client *source,
   else
   {
     i = 0;
-    parv[1] = NULL;
+    servpara[1] = NULL;
   }
 
   handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);

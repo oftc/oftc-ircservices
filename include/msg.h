@@ -84,8 +84,23 @@ struct Message
   MessageHandler handlers[LAST_HANDLER_TYPE];
 };
 
+struct SubMessage
+{
+  const char *cmd;
+  unsigned int count;      /* number of times command used */
+  unsigned int parameters; /* at least this many args must be passed
+                              * or an error will be sent to the user
+                              * before the m_func is even called
+                            */
+  unsigned int help_short;  /* Help index to show in generic HELP */
+  unsigned int help_long;   /* Help index to show in HELP command */
+
+  ServiceMessageHandler handler;
+};
+
 struct ServiceMessage
 {
+  struct SubMessage *sub; 
   const char *cmd;
   unsigned int count;      /* number of times command used */
   unsigned int parameters; /* at least this many args must be passed

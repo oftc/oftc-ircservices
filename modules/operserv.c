@@ -3,10 +3,16 @@
 static struct Service *operserv = NULL;
 
 static void m_mod(struct Service *, struct Client *, int, char *[]);
+static void m_mod_list(struct Service *, struct Client *, int, char *[]);
 
 // FIXME wrong type of clients may execute
+//
+static struct SubMessage mod_subs[2] = {
+  { "LIST", 0, 0, -1, -1, m_mod_list },
+  { NULL, 0, 0, 0, 0, NULL }
+};
 static struct ServiceMessage mod_msgtab = {
-  "MOD", 0, 1, -1, -1,
+  mod_subs, "MOD", 0, 1, -1, -1,
   { m_mod, m_servignore, m_servignore, m_servignore }
 };
 
@@ -88,3 +94,9 @@ m_mod(struct Service *service, struct Client *client,
   }
 }
 
+static void
+m_mod_list(struct Service *service, struct Client *client,
+        int parc, char *parv[])
+{
+  reply_user(service, client, "ROFFLE");
+}

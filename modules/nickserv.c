@@ -7,17 +7,17 @@ static void m_identify(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
-  "REGISTER", 0, 2, NS_HELP_REG_SHORT, NS_HELP_REG_LONG,
-  { m_register, m_alreadyreg, m_alreadyreg, m_alreadyreg}
+  NULL, "REGISTER", 0, 2, NS_HELP_REG_SHORT, NS_HELP_REG_LONG,
+  { m_register, m_alreadyreg, m_alreadyreg, m_alreadyreg }
 };
 
 static struct ServiceMessage identify_msgtab = {
-  "IDENTIFY", 0, 1, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
+  NULL, "IDENTIFY", 0, 1, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
   { m_identify, m_identify, m_identify, m_identify }
 };
 
 static struct ServiceMessage help_msgtab = {
-  "HELP", 0, 0, NS_HELP_SHORT, NS_HELP_LONG,
+  NULL, "HELP", 0, 0, NS_HELP_SHORT, NS_HELP_LONG,
   { m_help, m_help, m_help, m_help }
 };
 
