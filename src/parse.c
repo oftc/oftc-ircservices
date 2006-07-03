@@ -749,7 +749,7 @@ process_privmsg(struct Client *client, struct Client *source,
 {
   struct Service *service;
   struct ServiceMessage *mptr;
-  char  *s, *ch;
+  char  *s, *s2, *ch, *ch2;
   int i;
 
   service = find_service(parv[1]);
@@ -770,6 +770,7 @@ process_privmsg(struct Client *client, struct Client *source,
   {
     printf("Unknown Message: %s %s for service %s from %s\n", ch, s, 
         parv[1], source->name);
+    reply_user(service, source, "Unknown command");
     return;
   }
 
@@ -782,28 +783,30 @@ process_privmsg(struct Client *client, struct Client *source,
     struct SubMessage *sub;
 
     sub = mptr->sub;
-    servpara[0] = source->name;
-    for (ch = parv[3]; *ch == ' '; ch++) /* skip spaces */
-      /* null statement */ ;
-    if ((s = strchr(ch, ' ')) != NULL)
-      *s++ = '\0';
 
-    if(s != NULL)
-      i = string_to_array(s, servpara);
-    else
-    {
-      i = 0;
-      servpara[1] = NULL;
-    }
-    
+    for (ch2 = parv[3]; *ch2 == ' '; ch2++) /* skip spaces */
+      ;
+    if ((s2 = strchr(ch2, ' ')) != NULL)
+      *s2++ = '\0';
+
     while(sub->cmd != NULL)
     {
-      if(irccmp(sub->cmd, ch) == 0)
+      if(irccmp(sub->cmd, ch2) == 0)
       {
+        servpara[0] = source->name;
+
+        if(s2 != NULL)
+          i = string_to_array(s2, servpara);
+        else
+        {
+          i = 0;
+          servpara[1] = NULL;
+        }
+
         sub->count++;
         if (i < sub->parameters)
         {
-          reply_user(service, client, "Insufficient Parameters");
+          reply_user(service, source, "Insufficient Parameters");
           printf("%s sent services a sub command %s with too few paramters\n",
               client->name, sub->cmd);
           return;
