@@ -20,6 +20,8 @@ INIT_MODULE(oftc, "$Revision: 470 $")
 CLEANUP_MODULE
 {
   mod_del_cmd(&gnotice_msgtab);
+  uninstall_hook(gnotice_cb, irc_sendmsg_gnotice);
+  uninstall_hook(umode_cb, irc_sendmsg_svsmode);
 }
 
 static void *
