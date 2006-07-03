@@ -10,7 +10,7 @@ struct Nick
   char pass[35];
   unsigned int status;
   unsigned int flags;
-  unsigned short language;
+  unsigned int language;
   time_t reg_time;
   time_t last_seen;
   time_t last_used;

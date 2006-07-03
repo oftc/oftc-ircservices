@@ -92,7 +92,7 @@ db_find_nick(const char *nick)
   nick_p = MyMalloc(sizeof(struct Nick));
   dbi_result_first_row(result);
   dbi_result_get_fields(result, "id.%ui nick.%S password.%S last_quit_time.%l "
-      "reg_time.%l last_seen.%l last_used.%l status.%ui flags.%ui language.%uh",
+      "reg_time.%l last_seen.%l last_used.%l status.%ui flags.%ui language.%ui",
       &nick_p->id, &findnick, &findpass, &nick_p->last_quit_time,
       &nick_p->reg_time, &nick_p->last_seen, &nick_p->last_used, 
       &nick_p->status, &nick_p->flags, &nick_p->language);
