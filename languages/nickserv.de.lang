@@ -1,0 +1,16 @@
+0 English
+NS_ALREADY_REG    Nickname %s ist bereits registristiert.
+NS_REG_COMPLETE   Nickname %s wurde registriert.
+NS_REG_FAIL       Nickname %s konnte nicht registriert werden.
+NS_REG_FIRST      Nickname %s ist nicht registriert.
+NS_IDENTIFIED     Erfolgreich als %s angemeldet.
+NS_IDENT_FAIL     Anmeldung als %s fehlgeschlagen.
+NS_HELP_SHORT     Zeigt diese Hilfe.
+NS_HELP_LONG      Zeigt diese Hilfe. Benutze HELP <command> um Hilfe für ein bestimmtes Kommando zu erhalten.
+NS_HELP_REG_SHORT Registriert einen Nicknamen für dich.
+NS_HELP_REG_LONG  Registriert einen Nicknamen für dich.
+NS_HELP_ID_SHORT  Dich unter deinem Nicknamen anmelden.
+NS_HELP_ID_LONG   Dich unter deinem Nicknamen anmelden.
+NS_CURR_LANGUAGE  Momentane Spracheinstellung: %s(%d).
+NS_AVAIL_LANGUAGE Verfügbare Sprachen sind:
+NS_LANGUAGE_SET   Sprache auf %s(%d) gewechselt.
