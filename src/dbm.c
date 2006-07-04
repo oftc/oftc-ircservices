@@ -5,7 +5,7 @@
 static char querybuffer[1025];
 
 void
-db_init()
+init_db()
 {
   int num_drivers = dbi_initialize(NULL);
 

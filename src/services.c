@@ -16,12 +16,13 @@ int main(int argc, char *argv[])
   connected_cb = register_callback("server connected", server_connected);
   iosend_cb = register_callback("iosend", iosend_default);
       
-  db_init();
-  channel_init();
+  init_db();
+  init_channel();
   init_conf();
   init_client();
   init_interface();
   init_parser();
+  init_channel_modes();
 
   read_services_conf(TRUE);
 

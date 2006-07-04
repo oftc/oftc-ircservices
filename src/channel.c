@@ -9,7 +9,7 @@ BlockHeap *ban_heap            = NULL;
 dlink_list global_channel_list = { NULL, NULL, 0 };
 
 void
-channel_init(void)
+init_channel(void)
 {
   channel_heap = BlockHeapCreate("channel", sizeof(struct Channel), CHANNEL_HEAP_SIZE);
   ban_heap = BlockHeapCreate("ban", sizeof(struct Ban), BAN_HEAP_SIZE);
