@@ -182,3 +182,103 @@ db_set_language(struct Client *client, int language)
 
   return 0;
 }
+
+struct RegChannel *
+db_find_channel(const char *channel)
+{
+  dbi_result result;
+  char *escchannel = NULL;
+  char *findchannel; char *findfounder;
+  struct RegChannel *channel_p;
+  
+  assert(channel != NULL);
+
+  if(dbi_driver_quote_string_copy(Database.driv, channel, &escchannel) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return NULL;
+  }
+  
+  snprintf(querybuffer, 1024, "SELECT id, channel, nickname.nick "
+      "FROM %s WHERE channel=%s"
+	  "INNER JOIN %s ON %s.founder=%s.id",
+	  "channel", escchannel, "nickname", "channel", "nickname");
+
+  MyFree(escchannel);
+  printf("db: query: %s\n", querybuffer);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return NULL;
+  }
+
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    printf("db: Channel %s not found\n", channel);
+    return NULL;
+  }
+
+  channel_p = MyMalloc(sizeof(struct RegChannel));
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "id.%ui channel.%S nickname.nick.%S",
+      &channel_p->id, &findchannel, &findfounder);
+
+  strlcpy(channel_p->channel, findchannel, sizeof(channel_p->channel));
+  strlcpy(channel_p->founder, findfounder, sizeof(channel_p->founder));
+
+  MyFree(findchannel);
+  MyFree(findfounder);
+
+  return channel_p;
+}
+
+int
+db_register_channel(struct Client *client, char *channelname)
+{
+  struct RegChannel *channel;
+  char *escchannel = NULL;
+  char *escfounder = NULL;
+  dbi_result result;
+  
+  assert(channel != NULL);
+
+  if(dbi_driver_quote_string_copy(Database.driv, channelname, &escchannel) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    MyFree(escchannel);
+    return -1;
+  }
+
+  if(dbi_driver_quote_string_copy(Database.driv, client->name, &escfounder) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    MyFree(escchannel);
+    MyFree(escfounder);
+    return -1;
+  }
+  
+  snprintf(querybuffer, 1024, "INSERT INTO %s (channel, founder)"
+      "VALUES(%s, (SELECT id FROM nickname WHERE nick=%s))", 
+	  "channel", escchannel, escfounder);
+
+  MyFree(escchannel);
+  MyFree(escfounder);
+  
+  printf("db: query: %s\n", querybuffer);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return -1;
+  }  
+
+  dbi_result_free(result);
+
+  return 0;
+}
+

@@ -34,4 +34,5 @@
 #include "language.h"
 #include "interface.h"
 #include "nickserv.h"
+#include "chanserv.h"
 #include "crypt.h"

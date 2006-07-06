@@ -1,0 +1,5 @@
+0 English
+NS_HELP_REG_SHORT Registers a channel for your usage.
+NS_HELP_REG_LONG  Registers a channel for your usage.
+NS_HELP_SHORT     Shows this help.
+NS_HELP_LONG      Shows this help message.  Use HELP <command> for help with a commmand.

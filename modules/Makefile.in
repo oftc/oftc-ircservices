@@ -33,7 +33,8 @@ SRCS =       \
   irc.c \
   oftc.c \
   nickserv.c \
-  operserv.c
+  operserv.c \
+  chanserv.c
 
 ALL_SRCS = $(CORE_SRCS) $(SRCS) @SSL_SRCS_ENABLE@
 
