@@ -31,6 +31,51 @@ struct Message away_msgtab = {
   { m_ignore, m_ignore }
 };
 
+struct Message admin_msgtab = {
+  "ADMIN", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
+struct Message version_msgtab = {
+  "VERSION", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
+struct Message trace_msgtab = {
+  "TRACE", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
+struct Message stats_msgtab = {
+  "STATS", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
+struct Message whois_msgtab = {
+  "WHOIS", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
+struct Message whowas_msgtab = {
+  "WHOWAS", 0, 0, 0 ,0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
+struct Message invite_msgtab = {
+  "INVITE", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
+struct Message lusers_msgtab = {
+  "LUSERS", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
+struct Message motd_msgtab = {
+  "MOTD", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
 struct Message part_msgtab = {
   "PART", 0, 0, 2, 0, MFLG_SLOW, 0,
   { m_part, m_ignore }
@@ -109,6 +154,15 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&pong_msgtab);
   mod_add_cmd(&privmsg_msgtab);
   mod_add_cmd(&away_msgtab);
+  mod_add_cmd(&admin_msgtab);
+  mod_add_cmd(&whois_msgtab);
+  mod_add_cmd(&whowas_msgtab);
+  mod_add_cmd(&invite_msgtab);
+  mod_add_cmd(&lusers_msgtab);
+  mod_add_cmd(&motd_msgtab);
+  mod_add_cmd(&version_msgtab);
+  mod_add_cmd(&trace_msgtab);
+  mod_add_cmd(&stats_msgtab);
 }
 
 CLEANUP_MODULE
@@ -126,6 +180,15 @@ CLEANUP_MODULE
   mod_del_cmd(&pong_msgtab);
   mod_del_cmd(&privmsg_msgtab);
   mod_del_cmd(&away_msgtab);
+  mod_del_cmd(&admin_msgtab);
+  mod_del_cmd(&whois_msgtab);
+  mod_del_cmd(&whowas_msgtab);
+  mod_del_cmd(&invite_msgtab);
+  mod_del_cmd(&lusers_msgtab);
+  mod_del_cmd(&motd_msgtab);
+  mod_del_cmd(&version_msgtab);
+  mod_del_cmd(&trace_msgtab);
+  mod_del_cmd(&stats_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
