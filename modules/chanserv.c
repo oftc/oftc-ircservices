@@ -33,6 +33,9 @@ INIT_MODULE(chanserv, "$Revision: 470 $")
 
 CLEANUP_MODULE
 {
+  exit_client(find_client(chanserv->name), &me, "Service unloaded");
+  hash_del_service(chanserv);
+  dlinkDelete(&chanserv->node, &services_list);
 }
 
 static void 
