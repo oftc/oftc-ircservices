@@ -26,6 +26,11 @@ static const char *para[MAXMODEPARAMS];
 static char *mbuf;
 static int pargs;
 
+struct Message away_msgtab = {
+  "AWAY", 0, 0, 0, 0, MFLG_SLOW, 0,
+  { m_ignore, m_ignore }
+};
+
 struct Message part_msgtab = {
   "PART", 0, 0, 2, 0, MFLG_SLOW, 0,
   { m_part, m_ignore }
@@ -103,6 +108,7 @@ INIT_MODULE(irc, "$Revision: 470 $")
   mod_add_cmd(&mode_msgtab);
   mod_add_cmd(&pong_msgtab);
   mod_add_cmd(&privmsg_msgtab);
+  mod_add_cmd(&away_msgtab);
 }
 
 CLEANUP_MODULE
@@ -119,6 +125,7 @@ CLEANUP_MODULE
   mod_del_cmd(&mode_msgtab);
   mod_del_cmd(&pong_msgtab);
   mod_del_cmd(&privmsg_msgtab);
+  mod_del_cmd(&away_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
