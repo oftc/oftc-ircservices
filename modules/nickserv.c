@@ -100,13 +100,14 @@ m_register(struct Service *service, struct Client *client,
   strlcpy(nick->nick, client->name, sizeof(nick->nick));
   strlcpy(nick->pass, crypt_pass(parv[1]), sizeof(nick->pass));
 
-  client->nickname = nick;
   if(db_register_nick(client, parv[2]) >= 0)
   {
     identify_user(client);
     reply_user(service, client, _L(nickserv, client, NS_REG_COMPLETE), client->name);
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
         client->username, client->host, nick->nick);
+
+    client->nickname = nick;
 
     return;
   }
