@@ -199,7 +199,7 @@ db_set_password(struct Client *client, char *pwd)
     return -1;
   }
 
-  client->nickname->password = pwd;
+  strlcpy(client->nickname->pass, pwd, sizeof(client->nickname->pass));
   dbi_result_free(result);
 
   return 0;

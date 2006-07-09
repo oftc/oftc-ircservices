@@ -31,6 +31,7 @@ CPPFLAGS	= ${INCLUDES} @CPPFLAGS@
 
 SRCS =       \
   irc.c \
+	hybridts6.c \
   oftc.c \
   nickserv.c \
   operserv.c \
