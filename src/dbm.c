@@ -183,6 +183,28 @@ db_set_language(struct Client *client, int language)
   return 0;
 }
 
+int
+db_set_password(struct Client *client, char *pwd)
+{
+  dbi_result result;
+
+  snprintf(querybuffer, 1024, "UPDATE %s SET password=%s WHERE id=%d", 
+      "nickname", pwd, client->nickname->id);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return -1;
+  }
+
+  client->nickname->password = pwd;
+  dbi_result_free(result);
+
+  return 0;
+}
+
 struct RegChannel *
 db_find_channel(const char *channel)
 {

@@ -40,5 +40,7 @@ struct Nick
 #define NS_AVAIL_LANGUAGE 14
 #define NS_LANGUAGE_SET   15
 #define NS_LAST           16
+#define NS_SET_SUCCESS    17
+#define NS_SET_FAILED     18
 
 #endif

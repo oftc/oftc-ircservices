@@ -8,6 +8,7 @@ static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
+static void m_set_password(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, NS_HELP_REG_SHORT, NS_HELP_REG_LONG,
@@ -24,8 +25,9 @@ static struct ServiceMessage help_msgtab = {
   { m_help, m_help, m_help, m_help }
 };
 
-static struct SubMessage set_sub[2] = {
+static struct SubMessage set_sub[3] = {
   { "LANGUAGE", 0, 0, -1, -1, m_set_language },
+  { "PASSWORD", 0, 2, -1, -1, m_set_password },
   { "NULL", 0, 0, 0, 0, NULL }
 };
 
@@ -123,12 +125,11 @@ m_identify(struct Service *service, struct Client *client,
     return;
   }
 
-  client->nickname = nick;
-
   if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), sizeof(nick->pass)) == 0)
   {
     reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
     identify_user(client);
+    client->nickname = nick;
   }
   else
   {
@@ -148,6 +149,37 @@ m_set(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   reply_user(service, client, "Unknown SET option");
+}
+
+static void
+m_set_password(struct Service *service, struct Client *client,
+        int parc, char *parv[])
+{
+  struct Nick *nick;
+  char cryptpass[255]; // XXX
+  
+  if (client->nickname == NULL) {
+    reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), client->name);
+    return;
+  }
+
+  nick = client->nickname;
+
+  if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), sizeof(nick->pass)) != 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), client->name);
+    return;
+  }
+
+  strlcpy(cryptpass, crypt_pass(parv[2]), sizeof(cryptpass));
+  if(db_set_password(client, cryptpass) >= 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS), client->name);
+  }
+  else
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), client->name);
+  }
 }
 
 static void
