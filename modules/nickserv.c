@@ -167,18 +167,18 @@ m_set_password(struct Service *service, struct Client *client,
 
   if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), sizeof(nick->pass)) != 0)
   {
-    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), client->name);
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED));
     return;
   }
 
   strlcpy(cryptpass, crypt_pass(parv[2]), sizeof(cryptpass));
   if(db_set_password(client, cryptpass) >= 0)
   {
-    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS), client->name);
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS));
   }
   else
   {
-    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), client->name);
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED));
   }
 }
 
