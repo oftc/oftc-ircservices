@@ -90,9 +90,10 @@ m_register(struct Service *service, struct Client *client,
 {
   struct Nick *nick;
   
-  if (db_find_nick(client->name) != NULL)
+  if((nick = db_find_nick(client->name)) != NULL)
   {
     reply_user(service, client, _L(nickserv, client, NS_ALREADY_REG), client->name); 
+    MyFree(nick);
     return;
   }
 
