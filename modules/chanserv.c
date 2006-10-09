@@ -42,6 +42,37 @@ static void
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
+  struct RegChannel *chan;
+
+  if (client->nickname == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_REG_NS_FIRST));
+  }
+
+  if ( *parv[1] != '#' )
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NAMESTART_HASH));
+  }
+
+  chan = db_find_channel(parv[1]);
+  if (chan != NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_ALREADY_REG), parv[1]);
+    // XXX free chan here please.
+    return;
+  }
+
+  if (db_register_chan(client, parv[1]))
+  {
+    // XXX attach RegChannel to Channel
+    reply_user(service, client, _L(chanserv, client, CS_REG_SUCCESS), parv[1]);
+    global_notice(NULL, "%s (%s@%s) registered channel %s", 
+      client->name, client->username, client->host, parv[1]);
+  }
+  else
+  {
+    reply_user(service, client, _L(chanserv, client, CS_REG_FAIL), parv[1]);
+  }
 }
 
 static void
