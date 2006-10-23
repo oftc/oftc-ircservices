@@ -3,3 +3,8 @@ CS_HELP_REG_SHORT Registers a channel for your usage.
 CS_HELP_REG_LONG  Registers a channel for your usage.
 CS_HELP_SHORT     Shows this help.
 CS_HELP_LONG      Shows this help message.  Use HELP <command> for help with a commmand.
+CS_REG_NS_FIRST   Before registering Channels you need to register your nick.
+CS_ALREADY_REG    Channel %s is already registered.
+CS_REG_SUCCESS    Channel %s successfully registered.
+CS_REG_FAIL       Failed to register Channel %s.
+CS_NAMESTART_HASH Channelname needs to start with a hash
