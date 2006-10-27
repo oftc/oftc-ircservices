@@ -1045,6 +1045,36 @@ dnl a custom prefix with a trailing slash
 	
 fi
 
+dnl Ruby configure-fu
+
+dnl --------------------------------------------
+dnl       dertermine location of RUBY (auto)
+dnl --------------------------------------------
+
+dnl determine location of ruby
+AC_PATH_PROG(ruby_path, ruby, no)
+if test $ruby_path = no ; then
+  AC_MSG_ERROR(Cannot find Ruby! This program requires Ruby-1.8.0)
+fi
+
+dnl determine if the installed Ruby is suitable for us
+if `$ruby_path -e 'exit 1 if VERSION >= "1.8.0"'` ; then
+  AC_MSG_ERROR(Your Ruby is too old! At least Ruby-1.8.0 is required)
+fi
+
+dnl locate "ruby.h", "intern.h"
+ruby_h_dir=`$ruby_path -r mkmf -e 'print Config::CONFIG[["archdir"]]'`
+RUBY_CFLAGS="-I$ruby_h_dir"
+
+dnl locate libruby-static.a + extra libraries (libcrypt)
+ruby_lib=`$ruby_path -r mkmf -e 'c=Config::CONFIG; libs=c[["libdir"]]+"/"+c[["LIBRUBY"]]+" "+c[["LIBS"]]; print libs'`
+
+RUBY_LIBS=$ruby_lib
+
+AC_SUBST(RUBY_CFLAGS)
+AC_SUBST(RUBY_LIBS)
+
+
 AC_CONFIG_FILES(		  \
 	Makefile		        \
   etc/Makefile        \

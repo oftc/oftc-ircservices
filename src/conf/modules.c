@@ -26,6 +26,7 @@
 #include "conf/conf.h"
 #include <sys/types.h>
 #include <dirent.h>
+#include <ruby.h>
 
 dlink_list loaded_modules = {NULL, NULL, 0};
 
@@ -136,10 +137,33 @@ load_shared_module(const char *name, const char *dir, const char *fname)
 {
   char path[PATH_MAX];
   char sym[PATH_MAX];
+  char tmpext[PATH_MAX];
+  char tmp;
+  char *ext;
   void *handle, *base;
   struct Module *mod;
 
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
+
+  /* Check what type of module this is and pass it off to the appropriate
+   * loader.
+   */
+  ext = strchr(fname, '.');
+  if(ext != NULL)
+  {
+    tmp = *ext;
+    *ext = '\0';
+    ext++;
+    strlcpy(tmpext, ext, sizeof(tmpext));
+    ext--;
+    *ext = tmp;
+    if(strcmp(tmpext, "rb") == 0)
+    {
+      return load_ruby_module(name, dir, fname);
+    }
+  }
+
+  
   if (!(handle = modload(path, &base)))
   {
     printf("Failed to load %s: %s\n", path, dlerror());
@@ -165,6 +189,30 @@ load_shared_module(const char *name, const char *dir, const char *fname)
   return 1;
 }
 #endif
+
+static int 
+load_ruby_module(const char *name, const char *dir, const char *fname)
+{
+  int status;
+  char path[PATH_MAX];
+  
+  snprintf(path, sizeof(path), "%s/%s", dir, fname);
+  
+  printf("Loading ruby module: %s\n", path);
+  rb_protect((VALUE (*)())rb_load_file, (VALUE)path, &status);
+  if(status != 0) 
+  {
+    rb_p(ruby_errinfo);
+    return 0;
+  }
+  status = ruby_exec();
+  if(status != 0)
+  {
+    rb_p(ruby_errinfo);
+    return 0;
+  }
+  return 1;
+}
 
 /*
  * load_module()
@@ -220,8 +268,7 @@ load_module(const char *filename)
   }
 
   ilog(L_CRIT, "Cannot locate module %s", filename);
-  printf("Cannot locate module %s",
-                       filename);
+  printf("Cannot locate module %s", filename);
   return 0;
 }
 

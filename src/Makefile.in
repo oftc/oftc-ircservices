@@ -18,6 +18,8 @@ RM		= @RM@
 SED		= @SED@
 YACC		= @YACC@
 LEX		= @LEX@
+RUBY_CFLAGS = @RUBY_CFLAGS@
+RUBY_LIBS = @RUBY_LIBS@
 
 prefix		= @prefix@
 exec_prefix	= $(DESTDIR)@exec_prefix@
@@ -88,7 +90,7 @@ all: .depend services
 build: all
 
 services: @MODULES_LIBS@ ../libio/libio.a lex.yy.o y.tab.o $(OBJS)
-	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} y.tab.o lex.yy.o ${IRCDLIBS}
+	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} y.tab.o lex.yy.o ${IRCDLIBS} ${RUBY_LIBS}
 
 ../libio/libio.a:
 	cd ../libio && ${MAKE} ${MFLAGS}
@@ -109,7 +111,7 @@ install: install-mkdirs build
 
 # this is really the default rule for c files
 .c.o:
-	${CC} ${CPPFLAGS} ${CFLAGS} -c -o ${<:.c=.o} $<
+	${CC} ${CPPFLAGS} ${CFLAGS} ${RUBY_CFLAGS} -c -o ${<:.c=.o} $<
 
 .depend:
 	${MKDEP} ${CPPFLAGS} ${SRCS} ${STDOUT}
