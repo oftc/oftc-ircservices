@@ -9,8 +9,8 @@ CC		= @CC@
 INSTALL		= @INSTALL@
 INSTALL_BIN	= @INSTALL_PROGRAM@
 INSTALL_DATA	= @INSTALL_DATA@
-CFLAGS		= @IRCSERVICES_CFLAGS@
-LDFLAGS   	= @LDFLAGS@
+CFLAGS		= @IRCSERVICES_CFLAGS@ `perl -MExtUtils::Embed -e ccopts`
+LDFLAGS   	= @LDFLAGS@ 
 MKDEP		= @MKDEP@
 STDOUT		= @STDOUT@
 MV		= @MV@
@@ -90,7 +90,7 @@ all: .depend services
 build: all
 
 services: @MODULES_LIBS@ ../libio/libio.a lex.yy.o y.tab.o $(OBJS)
-	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} y.tab.o lex.yy.o ${IRCDLIBS} ${RUBY_LIBS}
+	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} y.tab.o lex.yy.o ${IRCDLIBS} ${RUBY_LIBS} `perl -MExtUtils::Embed -e ldopts`
 
 ../libio/libio.a:
 	cd ../libio && ${MAKE} ${MFLAGS}

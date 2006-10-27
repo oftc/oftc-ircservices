@@ -21,12 +21,30 @@
  *
  *  $Id$
  */
+typedef        struct crypt_data {     /* straight from /usr/include/crypt.h */
+      /* From OSF, Not needed in AIX
+       *        char C[28], D[28];
+       *            */
+      char E[48];
+          char KS[16][48];
+              char block[66];
+                  char iobuf[16];
+} CRYPTD;
 
 #include "stdinc.h"
 #include "conf/conf.h"
 #include <sys/types.h>
 #include <dirent.h>
 #include <ruby.h>
+#undef ANY
+#include <crypt.h>
+#include <EXTERN.h>
+#include <perl.h>
+#undef load_module
+#undef my_perl
+#undef opendir
+#undef readdir
+#undef strerror
 
 dlink_list loaded_modules = {NULL, NULL, 0};
 
@@ -42,6 +60,8 @@ static struct Module builtin_mods[] = {BUILTIN_MODULES, NULL};
 static dlink_list mod_paths = {NULL, NULL, 0};
 static dlink_list mod_extra = {NULL, NULL, 0};
 static dlink_node *hreset, *hpass;
+
+extern PerlInterpreter *perl;
 
 //
 // Windows ignores case in file names, so using M_PART for m_part
@@ -161,6 +181,10 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     {
       return load_ruby_module(name, dir, fname);
     }
+    else if(strcmp(tmpext, "pl") == 0)
+    {
+      return load_perl_module(name, dir, fname);
+    }
   }
 
   
@@ -211,6 +235,26 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
     rb_p(ruby_errinfo);
     return 0;
   }
+  return 1;
+}
+
+static int
+load_perl_module(const char *name, const char *dir, const char *fname)
+{
+  int status;
+  char path[PATH_MAX];
+  char *embedding[] = { "",  path };
+
+  snprintf(path, sizeof(path), "%s/%s", dir, fname);
+
+  printf("Loading perl module: %s\n", path);
+  status = perl_parse(perl, NULL, 2, embedding, NULL);
+  if(status != 0)
+    return 0;
+  status = perl_run(perl);
+  if(status != 0)
+    return 0;
+
   return 1;
 }
 

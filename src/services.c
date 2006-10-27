@@ -1,9 +1,24 @@
+typedef        struct crypt_data {     /* straight from /usr/include/crypt.h */
+  /* From OSF, Not needed in AIX
+   *        char C[28], D[28];
+   *            */
+  char E[48];
+  char KS[16][48];
+  char block[66];
+  char iobuf[16];
+} CRYPTD;
+
+
 #include "stdinc.h"
 #include "conf.h"
 #include "conf/conf.h"
 #include <ruby.h>
+#undef ANY
+#include <EXTERN.h>
+#include <perl.h>
 
 struct Client me;
+PerlInterpreter *perl;
 
 int main(int argc, char *argv[])
 {
@@ -49,6 +64,9 @@ int main(int argc, char *argv[])
   ruby_show_version();
   ruby_init_loadpath();
   ruby_script(argv[0]);
+
+  perl = perl_alloc();
+  perl_construct(perl);
 
   boot_modules(1);
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */
