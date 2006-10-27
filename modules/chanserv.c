@@ -54,7 +54,7 @@ m_register(struct Service *service, struct Client *client,
     reply_user(service, client, _L(chanserv, client, CS_NAMESTART_HASH));
   }
 
-  chan = db_find_channel(parv[1]);
+  chan = db_find_chan(parv[1]);
   if (chan != NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_ALREADY_REG), parv[1]);

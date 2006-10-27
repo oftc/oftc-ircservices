@@ -24,23 +24,25 @@ struct Nick
 
 /* Language defines */
 
-#define NS_ALREADY_REG    1
-#define NS_REG_COMPLETE   2
-#define NS_REG_FAIL       3
-#define NS_REG_FIRST      4
-#define NS_IDENTIFIED     5
-#define NS_IDENT_FAIL     6
-#define NS_HELP_SHORT     7
-#define NS_HELP_LONG      8
-#define NS_HELP_REG_SHORT 9
-#define NS_HELP_REG_LONG  10
-#define NS_HELP_ID_SHORT  11
-#define NS_HELP_ID_LONG   12
-#define NS_CURR_LANGUAGE  13
-#define NS_AVAIL_LANGUAGE 14
-#define NS_LANGUAGE_SET   15
-#define NS_LAST           16
-#define NS_SET_SUCCESS    17
-#define NS_SET_FAILED     18
+#define NS_ALREADY_REG      0x1
+#define NS_REG_COMPLETE     0x2
+#define NS_REG_FAIL         0x3
+#define NS_REG_FIRST        0x4
+#define NS_IDENTIFIED       0x5
+#define NS_IDENT_FAIL       0x6
+#define NS_HELP_SHORT       0x7
+#define NS_HELP_LONG        0x8
+#define NS_HELP_REG_SHORT   0x9
+#define NS_HELP_REG_LONG    0xa
+#define NS_HELP_ID_SHORT    0xb
+#define NS_HELP_ID_LONG     0xc
+#define NS_CURR_LANGUAGE    0xd
+#define NS_AVAIL_LANGUAGE   0xe
+#define NS_LANGUAGE_SET     0xf
+#define NS_LAST             0x10
+#define NS_SET_SUCCESS      0x11
+#define NS_SET_FAILED       0x12
+#define NS_HELP_DROP_SHORT  0x13
+#define NS_HELP_DROP_LONG   0x14
 
 #endif

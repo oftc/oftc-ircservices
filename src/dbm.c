@@ -206,7 +206,7 @@ db_set_password(struct Client *client, char *pwd)
 }
 
 struct RegChannel *
-db_find_channel(const char *channel)
+db_find_chan(const char *channel)
 {
   dbi_result result;
   char *escchannel = NULL;
@@ -221,10 +221,9 @@ db_find_channel(const char *channel)
     return NULL;
   }
   
-  snprintf(querybuffer, 1024, "SELECT id, channel, nickname.nick "
-      "FROM %s WHERE channel=%s"
-	  "INNER JOIN %s ON %s.founder=%s.id",
-	  "channel", escchannel, "nickname", "channel", "nickname");
+  snprintf(querybuffer, 1024, "SELECT %s.id, channel, nickname.nick "
+      "FROM %s INNER JOIN %s ON %s.founder=%s.id WHERE channel=%s", "channel",
+	  "channel", "nickname", "channel", "nickname", escchannel);
 
   MyFree(escchannel);
   printf("db: query: %s\n", querybuffer);
@@ -258,7 +257,7 @@ db_find_channel(const char *channel)
 }
 
 int
-db_register_channel(struct Client *client, char *channelname)
+db_register_chan(struct Client *client, char *channelname)
 {
   struct RegChannel *channel;
   char *escchannel = NULL;
@@ -303,4 +302,3 @@ db_register_channel(struct Client *client, char *channelname)
 
   return 0;
 }
-

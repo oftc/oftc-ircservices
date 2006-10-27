@@ -2,9 +2,10 @@
 
 static struct Service *nickserv = NULL;
 
-static void m_register(struct Service *, struct Client *, int, char *[]);
-static void m_identify(struct Service *, struct Client *, int, char *[]);
+static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
+static void m_identify(struct Service *, struct Client *, int, char *[]);
+static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
@@ -23,6 +24,11 @@ static struct ServiceMessage identify_msgtab = {
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, NS_HELP_SHORT, NS_HELP_LONG,
   { m_help, m_help, m_help, m_help }
+};
+
+static struct ServiceMessage drop_msgtab = {
+  NULL, "DROP", 0, 0, NS_HELP_DROP_SHORT, NS_HELP_DROP_LONG,
+  { m_identify, m_drop, m_drop, m_drop }
 };
 
 static struct SubMessage set_sub[3] = {
@@ -47,9 +53,10 @@ INIT_MODULE(nickserv, "$Revision: 470 $")
   load_language(nickserv, "nickserv.rude");
   load_language(nickserv, "nickserv.de");
 
-  mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &drop_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &identify_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &help_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
 }
 
@@ -115,14 +122,21 @@ m_register(struct Service *service, struct Client *client,
 }
 
 static void
-m_identify(struct Service *service, struct Client *client,
+m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
+{
+}
+
+static void
+m_identify(struct Service *service, struct Client *client,
+    int parc, char *parv[])
 {
   struct Nick *nick;
 
   if((nick = db_find_nick(client->name)) == NULL)
   {
     reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), client->name);
+    MyFree(nick);
     return;
   }
 
