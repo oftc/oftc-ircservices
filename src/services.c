@@ -15,11 +15,9 @@ typedef        struct crypt_data {     /* straight from /usr/include/crypt.h */
 #undef ANY
 #include <EXTERN.h>
 #include <perl.h>
-#include <lua5.1/lua.h>
 
 struct Client me;
 PerlInterpreter *perl;
-lua_State *lua = NULL;
 
 int main(int argc, char *argv[])
 {
@@ -61,6 +59,8 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
+  init_lua();
+
   ruby_init();
   ruby_show_version();
   ruby_init_loadpath();
@@ -68,11 +68,6 @@ int main(int argc, char *argv[])
 
   perl = perl_alloc();
   perl_construct(perl);
-
-  lua = lua_open();
-  luaopen_base(lua);
-  luaopen_string(lua);
-  luaopen_math(lua);
 
   boot_modules(1);
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */

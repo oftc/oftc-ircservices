@@ -22,13 +22,13 @@
  *  $Id$
  */
 typedef        struct crypt_data {     /* straight from /usr/include/crypt.h */
-      /* From OSF, Not needed in AIX
-       *        char C[28], D[28];
-       *            */
-      char E[48];
-          char KS[16][48];
-              char block[66];
-                  char iobuf[16];
+  /* From OSF, Not needed in AIX
+   *        char C[28], D[28];
+   *            */
+  char E[48];
+  char KS[16][48];
+  char block[66];
+  char iobuf[16];
 } CRYPTD;
 
 #include "stdinc.h"
@@ -225,6 +225,8 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 {
   int status;
   char path[PATH_MAX];
+  char *classname = "MooServ";
+  VALUE klass, self;
   
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
   
@@ -236,11 +238,9 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
     return 0;
   }
   status = ruby_exec();
-  if(status != 0)
-  {
-    rb_p(ruby_errinfo);
-    return 0;
-  }
+  klass = rb_const_get(rb_cObject, rb_intern(classname));
+  self = rb_class_new_instance(0, NULL, klass); 
+  rb_funcall(self, rb_intern("moo"), 0, NULL);
   return 1;
 }
 
@@ -259,20 +259,6 @@ load_perl_module(const char *name, const char *dir, const char *fname)
     return 0;
   status = perl_run(perl);
   if(status != 0)
-    return 0;
-
-  return 1;
-}
-
-static int
-load_lua_module(const char *name, const char *dir, const char *fname)
-{
-  int status;
-  char path[PATH_MAX];
-
-  snprintf(path, sizeof(path), "%s/%s", dir, fname);
-  printf("Loading LUA  module: %s\n", path);
-  if(luaL_loadfile(lua, path) || lua_pcall(lua, 0, 0, 0))
     return 0;
 
   return 1;

@@ -76,6 +76,7 @@ SRCS = 								\
  hostmask.c						\
  interface.c					\
  language.c						\
+ lua_module.c					\
  m_error.c						\
  packet.c							\
  parse.c							\
