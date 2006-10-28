@@ -45,6 +45,7 @@ typedef        struct crypt_data {     /* straight from /usr/include/crypt.h */
 #undef opendir
 #undef readdir
 #undef strerror
+#include <lua5.1/lua.h>
 
 dlink_list loaded_modules = {NULL, NULL, 0};
 
@@ -62,6 +63,7 @@ static dlink_list mod_extra = {NULL, NULL, 0};
 static dlink_node *hreset, *hpass;
 
 extern PerlInterpreter *perl;
+extern lua_State *lua;
 
 //
 // Windows ignores case in file names, so using M_PART for m_part
@@ -185,6 +187,10 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     {
       return load_perl_module(name, dir, fname);
     }
+    else if(strcmp(tmpext, "lua") == 0)
+    {
+      return load_lua_module(name, dir, fname);
+    }
   }
 
   
@@ -253,6 +259,20 @@ load_perl_module(const char *name, const char *dir, const char *fname)
     return 0;
   status = perl_run(perl);
   if(status != 0)
+    return 0;
+
+  return 1;
+}
+
+static int
+load_lua_module(const char *name, const char *dir, const char *fname)
+{
+  int status;
+  char path[PATH_MAX];
+
+  snprintf(path, sizeof(path), "%s/%s", dir, fname);
+  printf("Loading LUA  module: %s\n", path);
+  if(luaL_loadfile(lua, path) || lua_pcall(lua, 0, 0, 0))
     return 0;
 
   return 1;
