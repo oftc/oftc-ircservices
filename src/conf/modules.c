@@ -21,21 +21,10 @@
  *
  *  $Id$
  */
-typedef        struct crypt_data {     /* straight from /usr/include/crypt.h */
-  /* From OSF, Not needed in AIX
-   *        char C[28], D[28];
-   *            */
-  char E[48];
-  char KS[16][48];
-  char block[66];
-  char iobuf[16];
-} CRYPTD;
-
 #include "stdinc.h"
 #include "conf/conf.h"
 #include <sys/types.h>
 #include <dirent.h>
-#include <ruby.h>
 
 dlink_list loaded_modules = {NULL, NULL, 0};
 
