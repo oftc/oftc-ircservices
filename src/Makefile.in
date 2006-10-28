@@ -80,6 +80,7 @@ SRCS = 								\
  m_error.c						\
  packet.c							\
  parse.c							\
+ perl_module.c				\
  services.c						\
  send.c								\
  user.c

@@ -36,16 +36,6 @@ typedef        struct crypt_data {     /* straight from /usr/include/crypt.h */
 #include <sys/types.h>
 #include <dirent.h>
 #include <ruby.h>
-#undef ANY
-#include <crypt.h>
-#include <EXTERN.h>
-#include <perl.h>
-#undef load_module
-#undef my_perl
-#undef opendir
-#undef readdir
-#undef strerror
-#include <lua5.1/lua.h>
 
 dlink_list loaded_modules = {NULL, NULL, 0};
 
@@ -61,9 +51,6 @@ static struct Module builtin_mods[] = {BUILTIN_MODULES, NULL};
 static dlink_list mod_paths = {NULL, NULL, 0};
 static dlink_list mod_extra = {NULL, NULL, 0};
 static dlink_node *hreset, *hpass;
-
-extern PerlInterpreter *perl;
-extern lua_State *lua;
 
 //
 // Windows ignores case in file names, so using M_PART for m_part
@@ -241,26 +228,6 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   klass = rb_const_get(rb_cObject, rb_intern(classname));
   self = rb_class_new_instance(0, NULL, klass); 
   rb_funcall(self, rb_intern("moo"), 0, NULL);
-  return 1;
-}
-
-static int
-load_perl_module(const char *name, const char *dir, const char *fname)
-{
-  int status;
-  char path[PATH_MAX];
-  char *embedding[] = { "",  path };
-
-  snprintf(path, sizeof(path), "%s/%s", dir, fname);
-
-  printf("Loading perl module: %s\n", path);
-  status = perl_parse(perl, NULL, 2, embedding, NULL);
-  if(status != 0)
-    return 0;
-  status = perl_run(perl);
-  if(status != 0)
-    return 0;
-
   return 1;
 }
 

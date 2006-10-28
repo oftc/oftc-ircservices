@@ -7,6 +7,18 @@ static lua_State *L;
 
 static int register_lua_module(lua_State *L)
 {
+  int n = lua_gettop(L);
+  struct Service *lua_service;
+  char *service_name = lua_tolstring(L, 1, NULL);
+
+  printf("register_lua_module: Called with %d args and %s as a name\n",
+      n, service_name);
+
+  lua_service = make_service(service_name);
+  dlinkAdd(lua_service, &lua_service->node, &services_list);
+  hash_add_service(lua_service);
+  introduce_service(lua_service);
+  
   return 0;
 }
 
