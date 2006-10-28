@@ -39,7 +39,7 @@ SRCS =       \
 
 ALL_SRCS = $(CORE_SRCS) $(SRCS) @SSL_SRCS_ENABLE@
 
-SH_OBJS = ${SRCS:.c=.so}
+SH_OBJS = ${SRCS:.c=.so} luaserv.lua
 SH_CORE_OBJS = ${CORE_SRCS:.c=.so}
 
 HPUX_OBJS = ${SH_OBJS:.so=.sl}

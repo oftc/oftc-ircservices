@@ -10,7 +10,6 @@ struct Service *lua_service;
 static void
 m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  printf("m_lua: %s %s\n", service->name, service->last_command);
   lua_getfield(L, LUA_GLOBALSINDEX, service->name);
   lua_getfield(L, -1, "handle_command");
   lua_getfield(L, LUA_GLOBALSINDEX, service->name);
@@ -23,9 +22,6 @@ static int register_lua_module(lua_State *L)
 {
   int n = lua_gettop(L);
   char *service_name = lua_tolstring(L, 1, NULL);
-
-  printf("register_lua_module: Called with %d args and %s as a name\n",
-      n, service_name);
 
   lua_service = make_service(service_name);
   dlinkAdd(lua_service, &lua_service->node, &services_list);
@@ -47,18 +43,18 @@ static int register_lua_module(lua_State *L)
 int
 register_lua_command(lua_State *L)
 { 
-  struct ServiceMessage handler_msgtab = {
-      NULL, NULL, 0, 0, 0, 0, { m_lua, m_lua, m_lua, m_lua }
-  };
-  int n = lua_gettop(L);
+  struct ServiceMessage *handler_msgtab;
   char *command = lua_tolstring(L, 1, NULL); 
+  int i;
+  int n = lua_gettop(L);
 
-  handler_msgtab.cmd = command;
-
-  printf("Registering handler for %s on service %s\n", handler_msgtab.cmd, 
-      lua_service->name);
+  handler_msgtab = MyMalloc(sizeof(struct ServiceMessage));
   
-  mod_add_servcmd(&lua_service->msg_tree, &handler_msgtab);
+  handler_msgtab->cmd = command;
+  for(i = 0; i < SERVICES_LAST_HANDLER_TYPE; i++)
+    handler_msgtab->handlers[i] = m_lua;
+
+  mod_add_servcmd(&lua_service->msg_tree, handler_msgtab);
 }
 
 int
@@ -68,7 +64,7 @@ load_lua_module(const char *name, const char *dir, const char *fname)
   char path[PATH_MAX];
 
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
-  printf("Loading LUA  module: %s\n", path);
+  printf("Loading LUA module: %s\n", path);
   if(luaL_dofile(L, path))
     return 0;
 
