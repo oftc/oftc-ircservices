@@ -318,7 +318,10 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
         from->name, mptr->cmd);
   }
   else
+  {
+    service->last_command = mptr->cmd;
     (*handler)(service, from, i, hpara);
+  }
 }
 
 /* clear_tree_parse()
