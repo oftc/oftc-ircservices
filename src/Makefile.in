@@ -81,6 +81,7 @@ SRCS = 								\
  packet.c							\
  parse.c							\
  perl_module.c				\
+ ruby_module.c				\
  services.c						\
  send.c								\
  user.c

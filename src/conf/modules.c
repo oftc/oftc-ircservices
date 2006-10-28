@@ -207,30 +207,6 @@ load_shared_module(const char *name, const char *dir, const char *fname)
 }
 #endif
 
-static int 
-load_ruby_module(const char *name, const char *dir, const char *fname)
-{
-  int status;
-  char path[PATH_MAX];
-  char *classname = "MooServ";
-  VALUE klass, self;
-  
-  snprintf(path, sizeof(path), "%s/%s", dir, fname);
-  
-  printf("Loading ruby module: %s\n", path);
-  rb_protect((VALUE (*)())rb_load_file, (VALUE)path, &status);
-  if(status != 0) 
-  {
-    rb_p(ruby_errinfo);
-    return 0;
-  }
-  status = ruby_exec();
-  klass = rb_const_get(rb_cObject, rb_intern(classname));
-  self = rb_class_new_instance(0, NULL, klass); 
-  rb_funcall(self, rb_intern("moo"), 0, NULL);
-  return 1;
-}
-
 /*
  * load_module()
  *

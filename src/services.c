@@ -1,7 +1,6 @@
 #include "stdinc.h"
 #include "conf.h"
 #include "conf/conf.h"
-#include <ruby.h>
 
 struct Client me;
 
@@ -47,11 +46,7 @@ int main(int argc, char *argv[])
 
   init_lua();
   init_perl();
-
-  ruby_init();
-  ruby_show_version();
-  ruby_init_loadpath();
-  ruby_script(argv[0]);
+  init_ruby();
 
   boot_modules(1);
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */
