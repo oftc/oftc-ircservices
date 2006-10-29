@@ -6,18 +6,34 @@
 static lua_State *L;
 static void m_lua(struct Service *, struct Client *, int, char *[]);
 struct Service *lua_service;
+int client_to_string(lua_State *);
+int set_client(lua_State *);
+int get_client(lua_State *);
+
+static const struct luaL_reg client_m[] = {
+  {"set", set_client},
+  {"get", get_client},
+  {"__tostring", client_to_string},
+  {NULL, NULL}
+};
 
 static void
 m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   char param[IRC_BUFSIZE+1];
+  struct Client **ptr;
 
   memset(param, 0, sizeof(param));
   
   lua_getfield(L, LUA_GLOBALSINDEX, service->name);
   lua_getfield(L, -1, "handle_command");
   lua_getfield(L, LUA_GLOBALSINDEX, service->name);
-  lua_pushlightuserdata(L, client);
+  ptr = (struct Client **)lua_newuserdata(L, sizeof(struct Client));
+  *ptr = client;
+
+  luaL_getmetatable(L, "OFTC.client");
+  lua_setmetatable(L, -2);
+  
   lua_pushstring(L, service->last_command);
   
   join_params(param, parc, &parv[1]);
@@ -103,9 +119,8 @@ int
 lua_reply_user(lua_State *L)
 {
   char *message;
-  struct Client *client;
+  struct Client *client = check_client(L);
 
-  client = (struct Client*) lua_touserdata(L, 1);
   message = lua_tolstring(L, 2, NULL);
   
   reply_user(lua_service, client, message);
@@ -136,6 +151,78 @@ lua_L(lua_State *L)
   return 1;
 }
 
+int
+lua_register_client_struct(lua_State *L)
+{
+  luaL_newmetatable(L, "OFTC.client");
+  luaL_openlib(L, "client", client_m, 0);
+
+  lua_pushstring(L, "__index");
+  lua_pushstring(L, "get");
+  lua_gettable(L, 2);
+  lua_settable(L, 1);
+
+  lua_pushstring(L, "__newindex");
+  lua_pushstring(L, "set");
+
+  lua_gettable(L, 2);
+  lua_settable(L, 1);
+
+  return 0;
+}
+
+static struct Client *
+check_client(lua_State *L)
+{
+  void *ud = luaL_checkudata(L, 1, "OFTC.client");
+  struct Client **ptr = (struct Client **)ud;
+  luaL_argcheck(L, ud != NULL, 1, "'client' expected");
+
+  return *ptr;
+}
+
+int
+get_client(lua_State *L)
+{
+  struct Client *client = check_client(L);
+  char *index = luaL_checkstring(L, 2);
+
+  if(strcmp(index, "name") == 0)
+    lua_pushstring(L, client->name);
+  else
+  { 
+    lua_pushfstring(L, "index %s is not supported", index);
+    lua_error(L);
+  }
+  
+  return 1;
+}
+
+int
+set_client(lua_State *L)
+{
+  struct Client *client = check_client(L);
+  
+  if(strcmp(index, "name") == 0)
+  {
+    strlcpy(client->name, luaL_checkstring(L, 1), sizeof(client->name));
+  }
+  else
+  {
+    lua_pushfstring(L, "index %s is not supported", index);
+    lua_error(L);
+  }
+  printf("setclient says hi.\n");
+  return 0;
+}
+
+int
+client_to_string(lua_State *L)
+{
+  struct Client *client = check_client(L);
+  lua_pushfstring(L, "Client: %p", client);
+}
+
 void
 init_lua()
 {
@@ -148,4 +235,6 @@ init_lua()
   lua_register(L, "register_module", register_lua_module);
   lua_register(L, "register_command", register_lua_command);
   lua_register(L, "reply_user", lua_reply_user);
+
+  lua_register_client_struct(L);
 }

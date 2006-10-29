@@ -26,6 +26,7 @@ end
 function NickServ:handle_command(client, cmd, param)
   local params = {}
   local i = 0
+  print("Handling message ".. cmd.. " from ".. client.name)
   
   for w in string.gmatch(param, "(%a+)") do
     params[i] = w
