@@ -23,7 +23,12 @@ m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
   join_params(param, parc, &parv[1]);
   lua_pushstring(L, param);
   
-  lua_call(L, 4, 0);
+  if(lua_pcall(L, 4, 0, 0))
+  {
+    printf("m_lua: LUA ERROR: %s\n", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    reply_user(service, client, "You broke teh lua.");
+  }
 }
 
 static int 
@@ -33,10 +38,6 @@ register_lua_module(lua_State *L)
   char *service_name = lua_tolstring(L, 1, NULL);
 
   lua_service = make_service(service_name);
-  dlinkAdd(lua_service, &lua_service->node, &services_list);
-  hash_add_service(lua_service);
-  introduce_service(lua_service);
-
   /* 
    * find the object with the same name as the service and call its init
    * function.
@@ -44,7 +45,19 @@ register_lua_module(lua_State *L)
   lua_getfield(L, LUA_GLOBALSINDEX, service_name);
   lua_getfield(L, -1, "init");
   lua_getfield(L, LUA_GLOBALSINDEX, service_name);
-  lua_call(L, 1, 0);
+  if(lua_pcall(L, 1, 0, 0))
+  {
+    printf("register_lua_module: LUA_ERROR: %s\n", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    /* XXX Unregister any sucessfully registered command handlers here. */
+    MyFree(lua_service);
+    lua_service = NULL;
+    return 0;
+  }
+
+  dlinkAdd(lua_service, &lua_service->node, &services_list);
+  hash_add_service(lua_service);
+  introduce_service(lua_service);
   
   return 0;
 }
@@ -77,7 +90,11 @@ load_lua_module(const char *name, const char *dir, const char *fname)
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
   printf("Loading LUA module: %s\n", path);
   if(luaL_dofile(L, path))
+  {
+    printf("Failed to load LUA module: %s\n", lua_tostring(L, -1));
+    lua_pop(L, 1);
     return 0;
+  }
 
   return 1;
 }
