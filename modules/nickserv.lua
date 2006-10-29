@@ -1,6 +1,7 @@
 NickServ = {};
 
 function NickServ:init()
+  self.service_name = "NickServ"
   self.handlers = {
     help = {
       name = "help",
@@ -17,10 +18,10 @@ function NickServ:init()
   }
 
   for _, command in pairs(self.handlers) do 
-    register_command(command.name) 
+    register_command(self.service_name, command.name) 
   end
 
-  load_language("nickserv.en")
+  load_language(self.service_name, "nickserv.en")
 end
 
 function NickServ:handle_command(client, cmd, param)
@@ -37,9 +38,9 @@ end
 
 function NickServ:help(client, param)
   if(param[0] == nil or param[0] == "" or self.handlers[param[0]] == nil) then
-    reply_user(client, _L(client, self.handlers["help"].help_long)) 
+    reply_user(self.service_name, client, _L(self.service_name, client, self.handlers["help"].help_long)) 
   else
-    reply_user(client, _L(client, self.handlers[param[0]].help_short))
+    reply_user(self.service_name, client, _L(self.service_name, client, self.handlers[param[0]].help_short))
   end
 end
 

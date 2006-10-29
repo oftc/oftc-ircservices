@@ -5,7 +5,6 @@
 
 static lua_State *L;
 static void m_lua(struct Service *, struct Client *, int, char *[]);
-struct Service *lua_service;
 int client_to_string(lua_State *);
 int set_client(lua_State *);
 int get_client(lua_State *);
@@ -52,8 +51,11 @@ register_lua_module(lua_State *L)
 {
   int n = lua_gettop(L);
   char *service_name = lua_tolstring(L, 1, NULL);
+  struct Service *lua_service;
 
   lua_service = make_service(service_name);
+  dlinkAdd(lua_service, &lua_service->node, &services_list);
+  hash_add_service(lua_service);
   /* 
    * find the object with the same name as the service and call its init
    * function.
@@ -71,8 +73,6 @@ register_lua_module(lua_State *L)
     return 0;
   }
 
-  dlinkAdd(lua_service, &lua_service->node, &services_list);
-  hash_add_service(lua_service);
   introduce_service(lua_service);
   
   return 0;
@@ -82,7 +82,9 @@ int
 register_lua_command(lua_State *L)
 { 
   struct ServiceMessage *handler_msgtab;
-  char *command = lua_tolstring(L, 1, NULL); 
+  struct Service *lua_service;
+  char *command = lua_tolstring(L, 2, NULL); 
+  char *service = lua_tolstring(L, 1, NULL);
   int i;
   int n = lua_gettop(L);
 
@@ -91,6 +93,14 @@ register_lua_command(lua_State *L)
   handler_msgtab->cmd = command;
   for(i = 0; i < SERVICES_LAST_HANDLER_TYPE; i++)
     handler_msgtab->handlers[i] = m_lua;
+
+  lua_service = find_service(service);
+  if(lua_service == NULL)
+  {
+    lua_pushfstring(L, "service '%s' does not exist.", service);
+    lua_error(L);
+    return 0;
+  }
 
   mod_add_servcmd(&lua_service->msg_tree, handler_msgtab);
 
@@ -118,10 +128,14 @@ load_lua_module(const char *name, const char *dir, const char *fname)
 int
 lua_reply_user(lua_State *L)
 {
-  char *message;
-  struct Client *client = check_client(L);
+  char *message, *service;
+  struct Client *client = check_client(L, 2);
+  struct Service *lua_service;
 
-  message = lua_tolstring(L, 2, NULL);
+  service = lua_tolstring(L, 1, NULL);
+  message = lua_tolstring(L, 3, NULL);
+  
+  lua_service = find_service(service);
   
   reply_user(lua_service, client, message);
 
@@ -131,7 +145,12 @@ lua_reply_user(lua_State *L)
 int
 lua_load_language(lua_State *L)
 {
-  char *language = lua_tolstring(L, 1, NULL);
+  char *service = lua_tolstring(L, 1, NULL);
+  char *language = lua_tolstring(L, 2, NULL);
+  struct Service *lua_service;
+  
+  lua_service = find_service(service);
+  
   load_language(lua_service, language);
 
   return 0;
@@ -142,9 +161,13 @@ lua_L(lua_State *L)
 {
   struct Client *client;
   int message;
+  char *service = lua_tolstring(L, 1, NULL);
+  struct Service *lua_service;
 
-  client = (struct Client*) lua_touserdata(L, 1);
-  message = lua_tointeger(L, 2);
+  lua_service = find_service(service);
+  
+  client = (struct Client*) lua_touserdata(L, 2);
+  message = lua_tointeger(L, 3);
 
   lua_pushstring(L, _L(lua_service, client, message));
 
@@ -172,11 +195,11 @@ lua_register_client_struct(lua_State *L)
 }
 
 static struct Client *
-check_client(lua_State *L)
+check_client(lua_State *L, int index)
 {
-  void *ud = luaL_checkudata(L, 1, "OFTC.client");
+  void *ud = luaL_checkudata(L, index, "OFTC.client");
   struct Client **ptr = (struct Client **)ud;
-  luaL_argcheck(L, ud != NULL, 1, "'client' expected");
+  luaL_argcheck(L, ud != NULL, index, "'client' expected");
 
   return *ptr;
 }
@@ -184,7 +207,7 @@ check_client(lua_State *L)
 int
 get_client(lua_State *L)
 {
-  struct Client *client = check_client(L);
+  struct Client *client = check_client(L, 1);
   char *index = luaL_checkstring(L, 2);
 
   if(strcmp(index, "name") == 0)
@@ -201,7 +224,7 @@ get_client(lua_State *L)
 int
 set_client(lua_State *L)
 {
-  struct Client *client = check_client(L);
+  struct Client *client = check_client(L, 1);
   
   if(strcmp(index, "name") == 0)
   {
@@ -219,7 +242,7 @@ set_client(lua_State *L)
 int
 client_to_string(lua_State *L)
 {
-  struct Client *client = check_client(L);
+  struct Client *client = check_client(L, 1);
   lua_pushfstring(L, "Client: %p", client);
 }
 

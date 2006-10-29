@@ -2,6 +2,7 @@ LuaServ = {};
 
 
 function LuaServ:init()
+  self.service_name = "LuaServ"
   LuaServ.handlers = {
     test = {
       name = "test",
@@ -15,7 +16,7 @@ function LuaServ:init()
 
   for _, command in pairs(self.handlers) do 
     print (command.name)
-    register_command(command.name) 
+    register_command(self.service_name, command.name) 
   end
 end
 
@@ -24,11 +25,11 @@ function LuaServ:handle_command(client, cmd)
 end
 
 function LuaServ:test(client)
-  reply_user(client, "Yup, it works.")
+  reply_user(self.service_name, client, "Yup, it works.")
 end
 
 function LuaServ:help(client)
-  reply_user(client, "HELP and TEST are the only two commands supported.");
+  reply_user(self.service_name, client, "HELP and TEST are the only two commands supported.");
 end
   
 register_module("LuaServ")
