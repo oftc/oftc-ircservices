@@ -9,7 +9,7 @@ CC		= @CC@
 INSTALL		= @INSTALL@
 INSTALL_BIN	= @INSTALL_PROGRAM@
 INSTALL_DATA	= @INSTALL_DATA@
-CFLAGS		= @IRCSERVICES_CFLAGS@ `perl -MExtUtils::Embed -e ccopts`
+CFLAGS		= @IRCSERVICES_CFLAGS@ #`perl -MExtUtils::Embed -e ccopts`
 LDFLAGS   	= @LDFLAGS@ -llua5.1
 MKDEP		= @MKDEP@
 STDOUT		= @STDOUT@
@@ -80,7 +80,6 @@ SRCS = 								\
  m_error.c						\
  packet.c							\
  parse.c							\
- perl_module.c				\
  ruby_module.c				\
  services.c						\
  send.c								\
@@ -93,7 +92,7 @@ all: .depend services
 build: all
 
 services: @MODULES_LIBS@ ../libio/libio.a lex.yy.o y.tab.o $(OBJS)
-	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} y.tab.o lex.yy.o ${IRCDLIBS} ${RUBY_LIBS} `perl -MExtUtils::Embed -e ldopts`
+	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} y.tab.o lex.yy.o ${IRCDLIBS} ${RUBY_LIBS} #`perl -MExtUtils::Embed -e ldopts`
 
 ../libio/libio.a:
 	cd ../libio && ${MAKE} ${MFLAGS}

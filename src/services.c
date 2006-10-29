@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   }
 
   init_lua();
-  init_perl();
+//  init_perl();
   init_ruby();
 
   boot_modules(1);
