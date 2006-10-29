@@ -5,6 +5,7 @@
 
 VALUE mOftc;
 VALUE cModule;
+VALUE cClientStruct;
 
 char *strupr(char *s)
 {
@@ -13,13 +14,21 @@ char *strupr(char *s)
 	return c;
 }
 
+struct Client* rbclient2client(VALUE client)
+{
+	struct Client* out;
+	Data_Get_Struct(client, struct Client, out);
+	return out;
+}
+
+
 static void
 m_generic(struct Service *service, struct Client *client,
 		    int parc, char *parv[])
 {
 	char *command = strdup(service->last_command);
 	VALUE rbparams, rbclient, rbparv;
-	VALUE cClientStruct, class;
+	VALUE class, real_client;
 	int i;
 
 	strupr(command);
@@ -32,10 +41,11 @@ m_generic(struct Service *service, struct Client *client,
 	for (i = 1; i <= parc; ++i)
 		rb_ary_push(rbparv, rb_str_new2(parv[i]));
 
-	cClientStruct = rb_path2class("ClientStruct");
 	rbclient = Data_Wrap_Struct(rb_cObject, 0, free, client);
 
-	rb_ary_push(rbparams, rbclient);
+	real_client = rb_funcall2(cClientStruct, rb_intern("new"), 1, &rbclient);
+
+	rb_ary_push(rbparams, real_client);
 	rb_ary_push(rbparams, rbparv);
 	
 	rb_funcall2(class, rb_intern(command), RARRAY(rbparams)->len, RARRAY(rbparams)->ptr);
@@ -83,13 +93,17 @@ VALUE Module_reply_user(int argc, VALUE *argv, VALUE class)
 {
 	struct Client *client;
 	struct Service *service;
+	VALUE rbclient;
 	
 	service = find_service(StringValueCStr(argv[0]));
 	
-	Data_Get_Struct(argv[1], struct Client, client);
+	rbclient = rb_iv_get(argv[1], "@realptr");
+	
+	client = rbclient2client(rbclient);
 	char *message = StringValueCStr(argv[2]);
 
 	reply_user(service, client, message);
+	return Qnil;
 }
 
 void Init_Module(void)
@@ -98,6 +112,71 @@ void Init_Module(void)
 	cModule = rb_define_class_under(mOftc,"ModuleServer", rb_cObject);
 	rb_define_singleton_method(cModule, "register", Module_register, -1);
 	rb_define_singleton_method(cModule, "reply_user", Module_reply_user, -1);
+}
+
+VALUE
+ClientStruct_Initialize(VALUE self, VALUE client)
+{
+	rb_iv_set(self, "@realptr", client);
+	return self;
+}
+
+VALUE
+ClientStruct_Name(VALUE self)
+{
+	VALUE clientstruct = rb_iv_get(self, "@realptr");
+	return rb_str_new2(rbclient2client(clientstruct)->name);
+}
+
+VALUE
+ClientStruct_Host(VALUE self)
+{
+	VALUE clientstruct = rb_iv_get(self, "@realptr");
+	return rb_str_new2(rbclient2client(clientstruct)->host);
+}
+
+VALUE
+ClientStruct_ID(VALUE self)
+{
+	VALUE clientstruct = rb_iv_get(self, "@realptr");
+	return rb_str_new2(rbclient2client(clientstruct)->id);
+}
+
+VALUE
+ClientStruct_Info(VALUE self)
+{
+	VALUE clientstruct = rb_iv_get(self, "@realptr");
+	return rb_str_new2(rbclient2client(clientstruct)->info);
+}
+
+VALUE
+ClientStruct_Username(VALUE self)
+{
+	VALUE clientstruct = rb_iv_get(self, "@realptr");
+	return rb_str_new2(rbclient2client(clientstruct)->username);
+}
+
+VALUE
+ClientStruct_Umodes(VALUE self)
+{
+	VALUE clientstruct = rb_iv_get(self, "@realptr");
+	return INT2NUM(rbclient2client(clientstruct)->umodes);
+}
+
+void
+Init_ClientStruct(void)
+{
+	cClientStruct = rb_define_class_under(mOftc, "ClientStruct", rb_cObject);
+	
+	rb_define_class_variable(cClientStruct, "@@realptr", Qnil);
+
+	rb_define_method(cClientStruct, "initialize", ClientStruct_Initialize, 1);
+	rb_define_method(cClientStruct, "name", ClientStruct_Name, 0);
+	rb_define_method(cClientStruct, "host", ClientStruct_Host, 0);
+	rb_define_method(cClientStruct, "id", ClientStruct_ID, 0);
+	rb_define_method(cClientStruct, "info", ClientStruct_Info, 0);
+	rb_define_method(cClientStruct, "username", ClientStruct_Username, 0);
+	rb_define_method(cClientStruct, "umodes", ClientStruct_Umodes, 0);
 }
 
 int
@@ -145,6 +224,7 @@ init_ruby(void)
 	ruby_show_version();
 	ruby_init_loadpath();
 	Init_Module();
+	Init_ClientStruct();
 	signal(SIGINT, SIG_DFL);
 	signal(SIGHUP, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
