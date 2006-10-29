@@ -10,15 +10,24 @@ struct Service *lua_service;
 static void
 m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
 {
+  char param[IRC_BUFSIZE+1];
+
+  memset(param, 0, sizeof(param));
+  
   lua_getfield(L, LUA_GLOBALSINDEX, service->name);
   lua_getfield(L, -1, "handle_command");
   lua_getfield(L, LUA_GLOBALSINDEX, service->name);
   lua_pushlightuserdata(L, client);
   lua_pushstring(L, service->last_command);
-  lua_call(L, 3, 0);
+  
+  join_params(param, parc, &parv[1]);
+  lua_pushstring(L, param);
+  
+  lua_call(L, 4, 0);
 }
 
-static int register_lua_module(lua_State *L)
+static int 
+register_lua_module(lua_State *L)
 {
   int n = lua_gettop(L);
   char *service_name = lua_tolstring(L, 1, NULL);
@@ -55,6 +64,8 @@ register_lua_command(lua_State *L)
     handler_msgtab->handlers[i] = m_lua;
 
   mod_add_servcmd(&lua_service->msg_tree, handler_msgtab);
+
+  return 0;
 }
 
 int
@@ -81,6 +92,31 @@ lua_reply_user(lua_State *L)
   message = lua_tolstring(L, 2, NULL);
   
   reply_user(lua_service, client, message);
+
+  return 0;
+}
+
+int
+lua_load_language(lua_State *L)
+{
+  char *language = lua_tolstring(L, 1, NULL);
+  load_language(lua_service, language);
+
+  return 0;
+}
+
+int
+lua_L(lua_State *L)
+{
+  struct Client *client;
+  int message;
+
+  client = (struct Client*) lua_touserdata(L, 1);
+  message = lua_tointeger(L, 2);
+
+  lua_pushstring(L, _L(lua_service, client, message));
+
+  return 1;
 }
 
 void
@@ -90,6 +126,8 @@ init_lua()
   
   luaL_openlibs(L);
 
+  lua_register(L, "_L", lua_L);
+  lua_register(L, "load_language", lua_load_language);
   lua_register(L, "register_module", register_lua_module);
   lua_register(L, "register_command", register_lua_command);
   lua_register(L, "reply_user", lua_reply_user);

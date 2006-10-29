@@ -850,3 +850,20 @@ process_privmsg(struct Client *client, struct Client *source,
 
   handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
 }
+
+size_t
+join_params(char *target, int parc, char *parv[])
+{
+  size_t length = 0;
+  int i;
+
+  if(parv[0] != NULL)
+    length += strlcpy(target, parv[0], IRC_BUFSIZE);
+  for(i = 1; i < parc; i++)
+  {
+    length += strlcat(target, " ", IRC_BUFSIZE);
+    length += strlcat(target, parv[i], IRC_BUFSIZE);
+  }
+
+  return length;
+}

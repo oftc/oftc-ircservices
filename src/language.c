@@ -12,8 +12,8 @@ load_language(struct Service *service, const char *langfile)
 
   if((file = fbopen(buffer, "r")) == NULL)
   {
-    printf("Failed to open language file %s for service %s\n", langfile,
-        service->name);
+    printf("Failed to open language file %s for service %s(%s)\n", langfile,
+        service->name, buffer);
     return;
   }
   

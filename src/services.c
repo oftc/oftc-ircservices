@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
   init_lua();
   init_perl();
-  init_ruby();
+  //init_ruby();
 
   boot_modules(1);
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */
