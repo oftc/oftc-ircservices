@@ -26,6 +26,9 @@
 
 static struct Service *chanserv = NULL;
 
+static dlink_node *cs_cmode_hook;
+
+static void *s_cmode(va_list);
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_set(struct Service *, struct Client *, int, char *[]);
@@ -53,6 +56,8 @@ INIT_MODULE(chanserv, "$Revision$")
 
   mod_add_servcmd(&chanserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &help_msgtab);
+  
+  cs_cmode_hook = install_hook(cmode_hook, s_cmode);
 }
 
 CLEANUP_MODULE
@@ -113,3 +118,16 @@ m_set(struct Service *service, struct Client *client,
   reply_user(service, client, "Unknown SET option");
 }
 
+static void *
+s_cmode(va_list args) {
+    struct Client  *client_p = va_arg(args, struct Client*);
+    struct Client  *source_p = va_arg(args, struct Client*);
+    struct Channel *chptr    = va_arg(args, struct Channel*);
+    int             parc     = va_arg(args, int);
+    char           **parv    = va_arg(args, char **);
+
+    // ... actually do stuff    
+
+    // last function to call in this func
+    pass_callback(cs_cmode_hook);
+}

@@ -11,6 +11,9 @@ extern struct Callback *notice_cb;
 extern struct Callback *gnotice_cb;
 extern struct Callback *umode_cb;
 
+extern struct Callback *umode_hook;
+extern struct Callback *cmode_hook;
+
 struct Service *make_service(char *);
 void introduce_service(struct Service *);
 void reply_user(struct Service *, struct Client *, const char *, ...);

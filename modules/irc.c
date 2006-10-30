@@ -1207,6 +1207,7 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
   {
     /* if here, it has to be a non-channel name */
     set_user_mode(client_p, source_p, parc, parv);
+    chain_umode(client_p, source_p, parc, parv);
     return;
   }
 
@@ -1232,6 +1233,7 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
   {
     set_channel_mode(client_p, source_p, chptr, NULL, parc - 2, parv + 2,
                      chptr->chname);
+    chain_cmode(client_p, source_p, chptr, parc - 2, parv + 2);
   }
   else
   {
@@ -1242,6 +1244,7 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
       /* Finish the flood grace period... */
       set_channel_mode(client_p, source_p, chptr, member, parc - 2, parv + 2,
                        chptr->chname);
+      chain_cmode(client_p, source_p, chptr, parc - 2, parv + 2);
     }
   }
 }

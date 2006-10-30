@@ -30,6 +30,9 @@
 
 static struct Service *nickserv = NULL;
 
+static dlink_node *ns_umode_hook;
+
+static void *s_umode(va_list);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
@@ -86,6 +89,8 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &help_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
+  
+  ns_umode_hook = install_hook(umode_hook, s_umode);
 }
 
 CLEANUP_MODULE
@@ -253,4 +258,17 @@ m_set_language(struct Service *service, struct Client *client,
     reply_user(service, client, _L(nickserv, client, NS_LANGUAGE_SET),
         service->language_table[lang][0], lang); 
   }
+}
+
+static void*
+s_umode(va_list args) {
+    struct Client *client_p = va_arg(args, struct Client*);
+    struct Client *source_p = va_arg(args, struct Client*);
+    int            parc     = va_arg(args, int);
+    char         **parv     = va_arg(args, char**);
+    
+    /// actually do stuff....
+    
+    // last function to call to pass the hook further to other hooks
+    pass_callback(ns_umode_hook);
 }

@@ -32,6 +32,13 @@ struct Callback *gnotice_cb;
 struct Callback *umode_cb;
 static BlockHeap *services_heap  = NULL;
 
+struct Callback *nick_hook;
+struct Callback *join_hook;
+struct Callback *part_hook;
+struct Callback *quit_hook;
+struct Callback *umode_hook;
+struct Callback *cmode_hook;
+
 void
 init_interface()
 {
@@ -41,6 +48,12 @@ init_interface()
   notice_cb     = register_callback("NOTICE user", NULL);
   gnotice_cb    = register_callback("Global Notice", NULL);
   umode_cb      = register_callback("Set UMODE", NULL);
+  nick_hook     = register_callback("Propagate NICK", NULL);
+  join_hook     = register_callback("Propagate JOIN", NULL);
+  part_hook     = register_callback("Propagate PART", NULL);
+  quit_hook     = register_callback("Propagate QUIT", NULL);
+  umode_hook    = register_callback("Propagate UMODE", NULL);
+  cmode_hook    = register_callback("Propagate CMODE", NULL);
 }
 
 struct Service *
@@ -139,4 +152,16 @@ do_help(struct Service *service, struct Client *client,
     return;
   }
   do_serv_help_messages(service, client);
+}
+
+void
+chain_umode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+    execute_callback(umode_hook, client_p, source_p, parc, parv);
+}
+
+void
+chain_cmode(struct Client *client_p, struct Client *source_p, struct Channel *chptr, int parc, char *parv[])
+{
+    execute_callback(cmode_hook, client_p, source_p, chptr, parc, parv);
 }
