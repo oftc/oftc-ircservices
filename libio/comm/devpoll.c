@@ -20,7 +20,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: devpoll.c 281 2005-11-24 10:29:09Z adx $
+ *  $Id$
  */
 
 #include "libioinc.h"

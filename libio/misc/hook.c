@@ -20,7 +20,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: hook.c 156 2005-10-18 06:32:44Z adx $
+ *  $Id$
  */
 
 #include "libioinc.h"

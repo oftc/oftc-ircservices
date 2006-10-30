@@ -20,7 +20,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf_parser.y,v 1.4 2003/08/16 18:06:07 adx Exp $
+ *  $Id$
  */
 
 %{

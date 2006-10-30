@@ -20,7 +20,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf_lexer.l,v 1.5 2003/10/14 16:18:56 adx Exp $
+ *  $Id$
  */
 
 %option case-insensitive

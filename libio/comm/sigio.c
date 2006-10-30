@@ -21,7 +21,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: sigio.c 71 2005-10-04 18:05:45Z knight $
+ *  $Id$
  */
 
 #ifndef _GNU_SOURCE

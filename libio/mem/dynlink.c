@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: dynlink.c 466 2006-02-13 16:33:18Z adx $
+ *  $Id$
  */
 
 #include "libioinc.h"

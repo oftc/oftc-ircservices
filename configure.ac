@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 582 2006-05-29 15:58:29Z stu $
+dnl $Id$
 dnl Process this file with autoconf to produce a configure script.
 
 dnl TODO: clean up all the OpenSSL and shared module checking stuff;
@@ -8,7 +8,7 @@ dnl said functions need to be just about as complex as they already are.
 AC_PREREQ(2.57)
 
 dnl Sneaky way to get an Id tag into the configure script
-AC_COPYRIGHT([$Id: configure.ac 582 2006-05-29 15:58:29Z stu $])
+AC_COPYRIGHT([$Id$])
 
 AC_INIT([oftc-ircservices],[0.1])
 

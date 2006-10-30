@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: $
+ *  $Id$
  */
 
 #include "stdinc.h"
@@ -70,7 +70,7 @@ static struct ServiceMessage set_msgtab = {
   { m_unreg, m_set, m_set, m_set }
 };
 
-INIT_MODULE(nickserv, "$Revision: 470 $")
+INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
   clear_serv_tree_parse(&nickserv->msg_tree);

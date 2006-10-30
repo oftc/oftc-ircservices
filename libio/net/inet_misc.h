@@ -2,7 +2,7 @@
  *	and definitions required to build ircd on some		*
  *	exotic platforms.					*
  *								*
- *	$Id: inet_misc.h 153 2005-10-17 21:20:34Z adx $							*
+ *	$Id$							*
  *
  * Copyright (c) 1980, 1983, 1988, 1993
  *      The Regents of the University of California.  All rights reserved.

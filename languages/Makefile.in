@@ -1,4 +1,4 @@
-# $Id: Makefile.in 229 2003-08-14 07:51:22Z stu $
+# $Id$
 
 INSTALL		= @INSTALL@
 INSTALL_DATA	= @INSTALL_DATA@

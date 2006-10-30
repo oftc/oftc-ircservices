@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: misc.c 362 2006-01-07 05:06:18Z metalrock $
+ *  $Id$
  */
 
 #define IN_MISC_C

@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: $
+ *  $Id$
  */
 
 #include "stdinc.h"
@@ -160,7 +160,7 @@ static dlink_node *newuser_hook;
 static dlink_node *privmsg_hook;
 static dlink_node *notice_hook;
 
-INIT_MODULE(irc, "$Revision: 470 $")
+INIT_MODULE(irc, "$Revision$")
 {
   connected_hook = install_hook(connected_cb, irc_server_connected);
   newuser_hook = install_hook(newuser_cb, irc_sendmsg_nick);

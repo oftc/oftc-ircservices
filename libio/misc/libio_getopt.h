@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: libio_getopt.h 648 2006-06-07 15:16:38Z michael $
+ *  $Id$
  */
 
 #ifndef __GETOPT_H_INCLUDED__

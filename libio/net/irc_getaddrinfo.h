@@ -26,7 +26,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *  $Id: irc_getaddrinfo.h 153 2005-10-17 21:20:34Z adx $
+ *  $Id$
  */
 
 LIBIO_EXTERN int irc_getaddrinfo(const char *hostname, const char *servname,

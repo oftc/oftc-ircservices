@@ -1,7 +1,7 @@
 #
 # Makefile.in for modules
 #
-# $Id: Makefile.in 513 2006-03-05 08:28:01Z michael $
+# $Id$
 #
 CC		= @CC@
 AR		= @AR@

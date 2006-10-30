@@ -1,7 +1,7 @@
 /*
  * include/irc_reslib.h (C)opyright 1992 Darren Reed.
  *
- * $Id: reslib.h 446 2006-02-12 02:46:54Z db $
+ * $Id$
  */
 
 /* Here we define some values lifted from nameser.h */

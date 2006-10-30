@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: hostmask.h 539 2006-03-25 10:17:25Z michael $
+ *  $Id$
  */
 
 #ifndef INCLUDE_hostmask_h

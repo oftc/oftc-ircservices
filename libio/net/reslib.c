@@ -87,7 +87,7 @@
 #define DNS_LABELTYPE_BITSTRING 0x41
 #define MAXLINE 128
 
-/* $Id: reslib.c 177 2005-10-22 09:05:05Z michael $ */
+/* $Id$ */
 
 struct irc_ssaddr irc_nsaddr_list[IRCD_MAXNS];
 int irc_nscount = 0;

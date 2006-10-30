@@ -18,7 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: channel_mode.h 227 2005-11-03 18:29:22Z db $
+ *  $Id$
  */
 
 

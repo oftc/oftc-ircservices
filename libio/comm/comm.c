@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: comm.c 649 2006-06-07 17:57:52Z michael $
+ *  $Id$
  */
 
 #include "stdinc.h"

@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: $
+ *  $Id$
  */
 
 #include "stdinc.h"
@@ -56,7 +56,7 @@ static struct ServiceMessage raw_msgtab = {
   { m_raw, m_servignore, m_servignore, m_servignore }
 };
 
-INIT_MODULE(operserv, "$Revision: 0 $")
+INIT_MODULE(operserv, "$Revision$")
 {
   operserv = make_service("OperServ");
   clear_serv_tree_parse(&operserv->msg_tree);

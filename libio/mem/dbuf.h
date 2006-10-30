@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: dbuf.h 153 2005-10-17 21:20:34Z adx $
+ *  $Id$
  */
 
 #define DBUF_BLOCK_SIZE 1024  /* this is also our MTU used for sending */

@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: fdlist.c 437 2006-02-11 21:44:07Z michael $
+ *  $Id$
  */
 #include "libioinc.h"
 #include "rlimits.h"

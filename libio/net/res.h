@@ -1,7 +1,7 @@
 /*
  * res.h for referencing functions in libio/net/res.c
  *
- * $Id: res.h 364 2006-01-08 15:39:24Z michael $
+ * $Id$
  */
 
 /* Maximum number of nameservers in /etc/resolv.conf we care about */

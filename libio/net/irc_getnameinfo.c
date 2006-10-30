@@ -43,7 +43,7 @@
 
 #include "libioinc.h"
 
-/*  $Id: irc_getnameinfo.c 71 2005-10-04 18:05:45Z knight $ */
+/*  $Id$ */
 
 static const struct afd {
   int a_af;

@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: $
+ *  $Id$
  */
 
 #include "stdinc.h"
@@ -38,7 +38,7 @@ struct Message gnotice_msgtab = {
   { m_ignore, m_ignore }
 };
 
-INIT_MODULE(oftc, "$Revision: 470 $")
+INIT_MODULE(oftc, "$Revision$")
 {
   gnotice_hook = install_hook(gnotice_cb, irc_sendmsg_gnotice);
   umode_hook = install_hook(umode_cb, irc_sendmsg_svsmode);

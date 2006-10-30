@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: memory.h 254 2005-11-12 11:26:07Z michael $
+ *  $Id$
  */
 
 LIBIO_EXTERN void (* outofmemory) (void);

@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: irc_string.h 641 2006-06-07 10:51:31Z michael $
+ *  $Id$
  */
 
 LIBIO_EXTERN int ircd_pcre_exec(const pcre *, const char *);

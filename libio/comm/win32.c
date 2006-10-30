@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: win32.c 153 2005-10-17 21:20:34Z adx $
+ *  $Id$
  */
 
 #include "libioinc.h"
