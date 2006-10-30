@@ -1,7 +1,12 @@
 /*
- *  channel_mode.c: Controls modes on channels.
+ *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  channel_mode.c: Channel mode functions
  *
- *  Copyright (C) 2005 by the past and present ircd coders, and others.
+ *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
+ *
+ *  Some parts:
+ *
+ *  Copyright (C) 2002 by the past and present ircd coders, and others.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: channel_mode.c 607 2006-05-16 08:12:00Z michael $
+ *  $Id: $
  */
 
 #include "stdinc.h"

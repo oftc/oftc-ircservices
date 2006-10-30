@@ -1,5 +1,10 @@
 /*
- *  hash.c: Maintains hashtables.
+ *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  hash.c: Maintains hash tables
+ *
+ *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
+ *
+ *  Some parts:
  *
  *  Copyright (C) 2002 by the past and present ircd coders, and others.
  *
@@ -18,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: hash.c 470 2006-02-17 05:07:43Z db $
+ *  $Id: $
  */
 
 #include "stdinc.h"

@@ -1,5 +1,10 @@
 /*
- *  parse.c: The message parser.
+ *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  parse.c: The message parser
+ *
+ *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
+ *
+ *  Some parts:
  *
  *  Copyright (C) 2002 by the past and present ircd coders, and others.
  *
@@ -18,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: parse.c 534 2006-03-21 19:06:29Z michael $
+ *  $Id: $
  */
 
 #include "stdinc.h"

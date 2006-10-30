@@ -1,5 +1,10 @@
 /*
- *  m_error.c: Handles error messages from the other end.
+ *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  m_error.c: Handles the ERROR function
+ *
+ *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
+ *
+ *  Some parts:
  *
  *  Copyright (C) 2002 by the past and present ircd coders, and others.
  *
@@ -18,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: m_error.c 605 2006-06-08 21:26:01Z stu $
+ *  $Id: $
  */
 
 #include "stdinc.h"

@@ -1,4 +1,5 @@
 /*
+ *  oftc-ircservices: an exstensible and flexible IRC Services package
  *  hostmask.c: Code to efficiently find IP & hostmask based configs.
  *
  *  Copyright (C) 2005 by the past and present ircd coders, and others.
@@ -18,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: hostmask.c 539 2006-03-25 10:17:25Z michael $
+ *  $Id: $
  */
 
 #include "stdinc.h"
