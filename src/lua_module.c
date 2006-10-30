@@ -6,13 +6,25 @@
 static lua_State *L;
 static void m_lua(struct Service *, struct Client *, int, char *[]);
 int client_to_string(lua_State *);
-int set_client(lua_State *);
-int get_client(lua_State *);
+int client_set(lua_State *);
+int client_get(lua_State *);
+int nick_get(lua_State *);
+int nick_set(lua_State *);
+int nick_to_string(lua_State *);
+int nick_new(lua_State *);
 
 static const struct luaL_reg client_m[] = {
-  {"set", set_client},
-  {"get", get_client},
+  {"set", client_set},
+  {"get", client_get},
   {"__tostring", client_to_string},
+  {NULL, NULL}
+};
+
+static const struct luaL_reg nick_m[] = {
+  {"set", nick_set},
+  {"get", nick_get},
+  {"new", nick_new},
+  {"__tostring", nick_to_string},
   {NULL, NULL}
 };
 
@@ -180,18 +192,77 @@ lua_register_client_struct(lua_State *L)
   luaL_newmetatable(L, "OFTC.client");
   luaL_openlib(L, "client", client_m, 0);
 
-  lua_pushstring(L, "__index");
-  lua_pushstring(L, "get");
-  lua_gettable(L, 2);
-  lua_settable(L, 1);
-
-  lua_pushstring(L, "__newindex");
-  lua_pushstring(L, "set");
-
-  lua_gettable(L, 2);
-  lua_settable(L, 1);
+  lua_pushcfunction(L, client_get);
+  lua_setfield(L, 1, "__index");
 
   return 0;
+}
+
+int
+lua_register_nick_struct(lua_State *L)
+{
+  luaL_newmetatable(L, "OFTC.nick");
+  luaL_openlib(L, "nick", nick_m, 0);
+
+  lua_pushcfunction(L, nick_get);
+  lua_setfield(L, 1, "__index");
+
+  return 0;
+}
+
+static struct Nick *
+check_nick(lua_State *L, int index)
+{
+  void *ud = luaL_checkudata(L, index, "OFTC.nick");
+  luaL_argcheck(L, ud != NULL, index, "'nick' expected");
+
+  return ud;
+}
+
+int
+nick_get(lua_State *L)
+{
+  struct Nick *nick = check_nick(L, 1);
+  char *index = luaL_checkstring(L, 2);
+
+  printf("pushing error for: %s\n", index);
+
+  lua_pushfstring(L, "index %s is not supported", index);
+  lua_error(L);
+
+  return 1;
+}
+
+int
+nick_set(lua_State *L)
+{
+  struct Nick *nick = check_nick(L, 1);
+  char *index = luaL_checkstring(L, 2);
+
+  lua_pushfstring(L, "index %s is not supported", index);
+  lua_error(L);
+
+  return 0;
+}
+
+int
+nick_to_string(lua_State *L)
+{
+  struct Nick *nick = check_nick(L, 1);
+  lua_pushfstring(L, "Nick: %p", nick);
+
+  return 1;
+}
+             
+int
+nick_new(lua_State *L)
+{
+  struct Nick *nick = (struct Nick*)lua_newuserdata(L, sizeof(struct Nick));
+
+  luaL_getmetatable(L, "OFTC.nick");
+  lua_setmetatable(L, -2);
+
+  return 1;  
 }
 
 static struct Client *
@@ -205,7 +276,7 @@ check_client(lua_State *L, int index)
 }
 
 int
-get_client(lua_State *L)
+client_get(lua_State *L)
 {
   struct Client *client = check_client(L, 1);
   char *index = luaL_checkstring(L, 2);
@@ -222,7 +293,7 @@ get_client(lua_State *L)
 }
 
 int
-set_client(lua_State *L)
+client_set(lua_State *L)
 {
   struct Client *client = check_client(L, 1);
   
@@ -244,6 +315,8 @@ client_to_string(lua_State *L)
 {
   struct Client *client = check_client(L, 1);
   lua_pushfstring(L, "Client: %p", client);
+
+  return 1;
 }
 
 void
@@ -260,4 +333,5 @@ init_lua()
   lua_register(L, "reply_user", lua_reply_user);
 
   lua_register_client_struct(L);
+  lua_register_nick_struct(L);
 }
