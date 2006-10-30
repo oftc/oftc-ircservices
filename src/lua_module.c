@@ -37,6 +37,7 @@ int nick_get(lua_State *);
 int nick_set(lua_State *);
 int nick_to_string(lua_State *);
 int nick_new(lua_State *);
+static struct Client *check_client(lua_State *L, int index);
 
 static const struct luaL_reg client_m[] = {
   {"set", client_set},
@@ -342,6 +343,12 @@ client_to_string(lua_State *L)
   lua_pushfstring(L, "Client: %p", client);
 
   return 1;
+}
+
+LUALIB_API int luaopen_oftc(lua_State *L)
+{
+  luaL_newmetatable(L, "OFTC");
+
 }
 
 void
