@@ -1075,6 +1075,18 @@ AC_SUBST(RUBY_CFLAGS)
 AC_SUBST(RUBY_LIBS)
 
 
+dnl lua stuff
+AC_CHECK_HEADER(lua5.1/lua.h, [
+	AC_CHECK_LIB(lua5.1, lua_load,
+	[
+		LDFLAGS="${LDFLAGS} -llua5.1"
+		AC_DEFINE(HAVE_LUA_51, 1, [Define to 1 if lua is found.])
+	], AC_MSG_ERROR(We need LUA))
+], AC_MSG_ERROR(We need LUA))
+
+
+dnl Go ahead!
+
 AC_CONFIG_FILES(		  \
 	Makefile		        \
   etc/Makefile        \
