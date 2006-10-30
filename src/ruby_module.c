@@ -3,6 +3,8 @@
 #include <signal.h>
 #include "stdinc.h"
 
+#define RB_CALLBACK(x) (VALUE (*)())(x)
+
 VALUE mOftc;
 VALUE cModule;
 VALUE cClientStruct;
@@ -21,6 +23,55 @@ struct Client* rbclient2client(VALUE client)
 	return out;
 }
 
+void
+ruby_script_error() {
+	VALUE lasterr, array;
+	char *err;
+	int i;
+
+	if(!NIL_P(ruby_errinfo))
+	{
+		lasterr = rb_gv_get("$!");
+		err = RSTRING(rb_obj_as_string(lasterr))->ptr;
+		
+		printf("RUBY ERROR: Error while executing Ruby Script: %s\n", err);
+		array = rb_funcall(ruby_errinfo, rb_intern("backtrace"), 0);
+		printf("RUBY ERROR: BACKTRACE\n");
+		for (i = 0; i < RARRAY(array)->len; ++i)
+			printf("RUBY ERROR:   %s\n", RSTRING(RARRAY(array)->ptr[i])->ptr);
+	}
+}
+
+int
+ruby_handle_error(int status)
+{
+	if(status)
+	{
+		ruby_script_error();
+		ruby_cleanup(status);
+	}
+	return status;
+}
+
+int
+do_ruby(VALUE (*func)(), VALUE args)
+{
+	int status;
+
+	rb_protect(func, args, &status);
+
+	if(ruby_handle_error(status))
+		return 0;
+
+	return 1;
+}
+
+VALUE
+rb_singleton_call(VALUE data)
+{
+	VALUE *args = (VALUE *)data;
+	return rb_funcall2(args[0], args[1], args[2], args[3]);
+}
 
 static void
 m_generic(struct Service *service, struct Client *client,
@@ -29,9 +80,12 @@ m_generic(struct Service *service, struct Client *client,
 	char *command = strdup(service->last_command);
 	VALUE rbparams, rbclient, rbparv;
 	VALUE class, real_client;
-	int i;
+	VALUE fc2params[4];
+	ID class_command;
+	int i, status;
 
 	strupr(command);
+	class_command = rb_intern(command);
 
 	class = rb_path2class(service->name);
 		
@@ -43,12 +97,34 @@ m_generic(struct Service *service, struct Client *client,
 
 	rbclient = Data_Wrap_Struct(rb_cObject, 0, free, client);
 
-	real_client = rb_funcall2(cClientStruct, rb_intern("new"), 1, &rbclient);
+	fc2params[0] = cClientStruct;
+	fc2params[1] = rb_intern("new");
+	fc2params[2] = 1;
+	fc2params[3] = &rbclient;
+
+	real_client = rb_protect(RB_CALLBACK(rb_singleton_call), fc2params, &status);
+
+	if(ruby_handle_error(status))
+	{
+		reply_user(service, client, "An error has occurred, please be patient and report this bug");
+		global_notice(service, "Ruby Failed To Create ClientStruct");
+		printf("RUBY ERROR: Ruby Failed To Create ClientStruct\n");
+	}
 
 	rb_ary_push(rbparams, real_client);
 	rb_ary_push(rbparams, rbparv);
+
+	fc2params[0] = class;
+	fc2params[1] = class_command;
+	fc2params[2] = RARRAY(rbparams)->len;
+	fc2params[3] = RARRAY(rbparams)->ptr;
 	
-	rb_funcall2(class, rb_intern(command), RARRAY(rbparams)->len, RARRAY(rbparams)->ptr);
+	if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
+	{
+		reply_user(service, client, "An error has occurred, please be patient and report this bug");
+		global_notice(service, "Ruby Failed to Execute Command: %s by %s", command, client->name);
+		printf("RUBY ERROR: Ruby Failed to Execute Command: %s by %s\n", command, client->name);
+	}
 }
 
 VALUE Module_register(int argc, VALUE *argv, VALUE class)
@@ -96,12 +172,9 @@ VALUE Module_reply_user(int argc, VALUE *argv, VALUE class)
 	VALUE rbclient;
 	
 	service = find_service(StringValueCStr(argv[0]));
-	
 	rbclient = rb_iv_get(argv[1], "@realptr");
-	
 	client = rbclient2client(rbclient);
 	char *message = StringValueCStr(argv[2]);
-
 	reply_user(service, client, message);
 	return Qnil;
 }
@@ -186,36 +259,48 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 	char path[PATH_MAX];
 	char classname[PATH_MAX];
 	VALUE klass, self;
+	VALUE params[4];
 	
 	snprintf(path, sizeof(path), "%s/%s", dir, fname);
 	
-	printf("Loading ruby module: %s\n", path);
-	rb_protect((VALUE (*)())rb_load_file, (VALUE)path, &status);
+	printf("RUBY INFO: Loading ruby module: %s\n", path);
 	
-	if(status != 0)
-	{
-		rb_p(ruby_errinfo);
+	if(!do_ruby(RB_CALLBACK(rb_load_file), (VALUE)path))
 		return 0;
-	}
 	
-	status = ruby_exec();
+	ruby_exec();
 	
 	strncpy(classname, fname, strlen(fname)-3);
 	
-	klass = rb_protect((VALUE (*)())rb_path2class, (VALUE)(classname), &status);
+	klass = rb_protect(RB_CALLBACK(rb_path2class), (VALUE)(classname), &status);
 	
-	if(status != 0)
-	{
-		rb_p(ruby_errinfo);
+	if(ruby_handle_error(status))
 		return 0;
-	}
+
+	printf("RUBY INFO: Loaded Class %s\n", classname);
 	
-	self = rb_funcall2(klass, rb_intern("new"), 0, NULL);
+	params[0] = klass;
+	params[1] = rb_intern("new");
+	params[2] = 0;
+	params[3] = NULL;
+	
+	self = rb_protect(RB_CALLBACK(rb_singleton_call), (VALUE)params, &status);
+
+	if(ruby_handle_error(status))
+		return 0;
+
+	printf("RUBY INFO: Initialized Class %s\n", classname);
 	
 	return 1;
 }
 
-void sigabrt() { printf("We've encountered a SIGABRT\n"); rb_p(ruby_errinfo); }
+void 
+sigabrt() 
+{
+	signal(SIGABRT, sigabrt);
+	printf("We've encountered a SIGABRT\n");
+	ruby_script_error();
+}
 
 void
 init_ruby(void)
