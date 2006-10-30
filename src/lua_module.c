@@ -40,16 +40,15 @@ int nick_new(lua_State *);
 static struct Client *check_client(lua_State *L, int index);
 
 static const struct luaL_reg client_m[] = {
-  {"set", client_set},
-  {"get", client_get},
+  {"__newindex", client_set},
+  {"__index", client_get},
   {"__tostring", client_to_string},
   {NULL, NULL}
 };
 
 static const struct luaL_reg nick_m[] = {
-  {"set", nick_set},
-  {"get", nick_get},
-  {"new", nick_new},
+  {"__newindex", nick_set},
+  {"__index", nick_get},
   {"__tostring", nick_to_string},
   {NULL, NULL}
 };
@@ -216,10 +215,7 @@ int
 lua_register_client_struct(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC.client");
-  luaL_openlib(L, "client", client_m, 0);
-
-  lua_pushcfunction(L, client_get);
-  lua_setfield(L, 1, "__index");
+  luaL_register(L, NULL, client_m);
 
   return 0;
 }
@@ -228,10 +224,9 @@ int
 lua_register_nick_struct(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC.nick");
-  luaL_openlib(L, "nick", nick_m, 0);
+  luaL_register(L, NULL, nick_m);
 
-  lua_pushcfunction(L, nick_get);
-  lua_setfield(L, 1, "__index");
+  lua_register(L, "nick", nick_new);
 
   return 0;
 }
@@ -309,6 +304,8 @@ client_get(lua_State *L)
 
   if(strcmp(index, "name") == 0)
     lua_pushstring(L, client->name);
+  else if(strcmp(index, "registered") == 0)
+    lua_pushboolean(L, IsRegistered(client));
   else
   { 
     lua_pushfstring(L, "index %s is not supported", index);
@@ -349,6 +346,8 @@ LUALIB_API int luaopen_oftc(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC");
 
+  lua_register_client_struct(L);
+  lua_register_nick_struct(L);
 }
 
 void
@@ -364,6 +363,7 @@ init_lua()
   lua_register(L, "register_command", register_lua_command);
   lua_register(L, "reply_user", lua_reply_user);
 
-  lua_register_client_struct(L);
-  lua_register_nick_struct(L);
+  /* This can be removed when its made a module and loaded from LUA */
+  luaopen_oftc(L);
+
 }

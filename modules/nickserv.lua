@@ -27,10 +27,8 @@ end
 function NickServ:handle_command(client, cmd, param)
   local params = {}
   local i = 0
---  print("Handling message ".. cmd.. " from ".. client.name)
+  print("Handling message ".. cmd.. " from ".. client.name)
 
-  for n in pairs(_G) do print(n) end
-  
   for w in string.gmatch(param, "(%a+)") do
     params[i] = w
     i = i+1
@@ -47,17 +45,13 @@ function NickServ:help(client, param)
 end
 
 function NickServ:register(c, param)
-  local n = nick.new()
-  for k,v in pairs(getmetatable(n)) do print(k,v) print "moo" end
-  for k,v in pairs(getmetatable(c)) do print(k,v) print "moo" end
+  local n = nick()
 
---  print(n)
-  --print(n.moo)
---  if(c.registered) then
-  --  reply_user(self.service_name, _L(self.service_name, c, 1))
-    --return
---  end
-  reply_user(c, "Yeah, right.  You wish.")
+  if(c.registered) then
+    reply_user(self.service_name, _L(self.service_name, c, 1))
+    return
+  end
+  reply_user(self.service_name, c, "Yeah, right.  You wish.")
 end
 
 register_module("NickServ")
