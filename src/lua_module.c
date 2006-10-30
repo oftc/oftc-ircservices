@@ -30,13 +30,13 @@
 
 static lua_State *L;
 static void m_lua(struct Service *, struct Client *, int, char *[]);
-int client_to_string(lua_State *);
-int client_set(lua_State *);
-int client_get(lua_State *);
-int nick_get(lua_State *);
-int nick_set(lua_State *);
-int nick_to_string(lua_State *);
-int nick_new(lua_State *);
+static int client_to_string(lua_State *);
+static int client_set(lua_State *);
+static int client_get(lua_State *);
+static int nick_get(lua_State *);
+static int nick_set(lua_State *);
+static int nick_to_string(lua_State *);
+static int nick_new(lua_State *);
 static struct Client *check_client(lua_State *L, int index);
 
 static const struct luaL_reg client_m[] = {
@@ -115,7 +115,7 @@ register_lua_module(lua_State *L)
   return 0;
 }
 
-int
+static int
 register_lua_command(lua_State *L)
 { 
   struct ServiceMessage *handler_msgtab;
@@ -162,7 +162,7 @@ load_lua_module(const char *name, const char *dir, const char *fname)
   return 1;
 }
 
-int
+static int
 lua_reply_user(lua_State *L)
 {
   char *message, *service;
@@ -179,7 +179,7 @@ lua_reply_user(lua_State *L)
   return 0;
 }
 
-int
+static int
 lua_load_language(lua_State *L)
 {
   char *service = lua_tolstring(L, 1, NULL);
@@ -193,7 +193,7 @@ lua_load_language(lua_State *L)
   return 0;
 }
 
-int
+static int
 lua_L(lua_State *L)
 {
   struct Client *client;
@@ -211,7 +211,7 @@ lua_L(lua_State *L)
   return 1;
 }
 
-int
+static int
 lua_register_client_struct(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC.client");
@@ -220,7 +220,7 @@ lua_register_client_struct(lua_State *L)
   return 0;
 }
 
-int
+static int
 lua_register_nick_struct(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC.nick");
@@ -240,7 +240,7 @@ check_nick(lua_State *L, int index)
   return ud;
 }
 
-int
+static int
 nick_get(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
@@ -254,7 +254,7 @@ nick_get(lua_State *L)
   return 1;
 }
 
-int
+static int
 nick_set(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
@@ -266,7 +266,7 @@ nick_set(lua_State *L)
   return 0;
 }
 
-int
+static int
 nick_to_string(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
@@ -275,7 +275,7 @@ nick_to_string(lua_State *L)
   return 1;
 }
              
-int
+static int
 nick_new(lua_State *L)
 {
   struct Nick *nick = (struct Nick*)lua_newuserdata(L, sizeof(struct Nick));
@@ -295,7 +295,7 @@ check_client(lua_State *L, int index)
   return (struct Client *)ud;
 }
 
-int
+static int
 client_get(lua_State *L)
 {
   struct Client *client = check_client(L, 1);
@@ -314,7 +314,7 @@ client_get(lua_State *L)
   return 1;
 }
 
-int
+static int
 client_set(lua_State *L)
 {
   struct Client *client = check_client(L, 1);
@@ -332,7 +332,7 @@ client_set(lua_State *L)
   return 0;
 }
 
-int
+static int
 client_to_string(lua_State *L)
 {
   struct Client *client = check_client(L, 1);
