@@ -57,15 +57,15 @@ static void
 m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   char param[IRC_BUFSIZE+1];
-  struct Client **ptr;
+  struct Client *ptr;
 
   memset(param, 0, sizeof(param));
   
   lua_getfield(L, LUA_GLOBALSINDEX, service->name);
   lua_getfield(L, -1, "handle_command");
   lua_getfield(L, LUA_GLOBALSINDEX, service->name);
-  ptr = (struct Client **)lua_newuserdata(L, sizeof(struct Client));
-  *ptr = client;
+  ptr = (struct Client *)lua_newuserdata(L, sizeof(struct Client));
+  memcpy(ptr, client, sizeof(struct Client));
 
   luaL_getmetatable(L, "OFTC.client");
   lua_setmetatable(L, -2);
@@ -290,10 +290,9 @@ static struct Client *
 check_client(lua_State *L, int index)
 {
   void *ud = luaL_checkudata(L, index, "OFTC.client");
-  struct Client **ptr = (struct Client **)ud;
   luaL_argcheck(L, ud != NULL, index, "'client' expected");
 
-  return *ptr;
+  return (struct Client *)ud;
 }
 
 int
