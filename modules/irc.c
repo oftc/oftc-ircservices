@@ -1120,7 +1120,7 @@ m_nick(struct Client *client_p, struct Client *source_p,
   if (!(target_p = find_client(nick)))
   {
     nick_from_server(client_p, source_p, parc, parv, newts, nick, ngecos);
-	chain_nick(client_p, source_p, parc, parv, newts, nick, ngecos);
+    chain_nick(client_p, source_p, parc, parv, newts, nick, ngecos);
     return;
   }
 
@@ -1130,7 +1130,7 @@ m_nick(struct Client *client_p, struct Client *source_p,
     {
       /* client changing case of nick */
       nick_from_server(client_p, source_p, parc, parv, newts, nick, ngecos);
-	  chain_nick(client_p, source_p, parc, parv, newts, nick, ngecos);
+      chain_nick(client_p, source_p, parc, parv, newts, nick, ngecos);
       return;
     }
     else
@@ -1149,7 +1149,7 @@ m_part(struct Client *client, struct Client *source, int parc, char *parv[])
   while (name)
   {
     part_one_client(client, source, name);
-	chain_part(client, source, name);
+    chain_part(client, source, name);
     name = strtoken(&p, NULL, ",");
   }
 }
