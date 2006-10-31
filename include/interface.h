@@ -25,6 +25,13 @@ void global_notice(struct Service *, char *, ...);
 void send_umode(struct Service *, struct Client *, const char *);
 void init_interface();
 
+void chain_umode(struct Client *, struct Client *, int, char **);
+void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
+void chain_squit(struct Client *, struct Client *, char *);
+void chain_quit(struct Client *, char *);
+void chain_part(struct Client *, struct Client *, char *);
+void chain_nick(struct Client *, struct Client *, int, char **, int, char *, char *);
+
 struct Service
 {
   dlink_node node;
