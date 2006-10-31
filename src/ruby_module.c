@@ -420,6 +420,7 @@ rb_umode_hdlr(va_list args)
 		ID command_id;
 		int i;
 
+		params = rb_ary_new();
 		rb_ary_push(params, rb_cclient2rbclient(client_p));
 		rb_ary_push(params, rb_cclient2rbclient(source_p));
 		rb_ary_push(params, rb_carray2rbarray(parc, parv));
