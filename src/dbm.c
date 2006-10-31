@@ -131,9 +131,8 @@ db_find_nick(const char *nick)
 }
 
 int
-db_register_nick(struct Client *client, const char *email)
+db_register_nick(const char *nick, const char *password, const char *email)
 {
-  struct Nick *nick = client->nickname;
   char *escnick = NULL;
   char *escemail = NULL;
   char *escpass = NULL;
@@ -141,7 +140,7 @@ db_register_nick(struct Client *client, const char *email)
   
   assert(nick != NULL);
 
-  if(dbi_driver_quote_string_copy(Database.driv, nick->nick, &escnick) == 0)
+  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
   {
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     return -1;
@@ -154,7 +153,7 @@ db_register_nick(struct Client *client, const char *email)
     return -1;
   }
 
-  if(dbi_driver_quote_string_copy(Database.driv, nick->pass, &escpass) == 0)
+  if(dbi_driver_quote_string_copy(Database.driv, password, &escpass) == 0)
   {
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     MyFree(escnick);
