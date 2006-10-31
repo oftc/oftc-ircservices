@@ -29,8 +29,7 @@
 
 #define RB_CALLBACK(x) (VALUE (*)())(x)
 
-VALUE mOftc;
-VALUE cModule;
+VALUE cServiceModule;
 VALUE cClientStruct;
 
 char *strupr(char *s)
@@ -103,7 +102,7 @@ m_generic(struct Service *service, struct Client *client,
 {
 	char *command = strdup(service->last_command);
 	VALUE rbparams, rbclient, rbparv;
-	VALUE class, real_client;
+	VALUE class, real_client, self;
 	VALUE fc2params[4];
 	ID class_command;
 	int i, status;
@@ -112,7 +111,7 @@ m_generic(struct Service *service, struct Client *client,
 	class_command = rb_intern(command);
 
 	class = rb_path2class(service->name);
-		
+	
 	rbparams = rb_ary_new();
 	rbparv = rb_ary_new();
 
@@ -138,10 +137,14 @@ m_generic(struct Service *service, struct Client *client,
 	rb_ary_push(rbparams, real_client);
 	rb_ary_push(rbparams, rbparv);
 
-	fc2params[0] = class;
+	self = (VALUE)service->data;
+
+	fc2params[0] = self;
 	fc2params[1] = class_command;
 	fc2params[2] = RARRAY(rbparams)->len;
 	fc2params[3] = RARRAY(rbparams)->ptr;
+
+	printf("RUBY INFO: Calling Command: %s From %s\n", command, client->name);
 	
 	if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
 	{
@@ -151,34 +154,32 @@ m_generic(struct Service *service, struct Client *client,
 	}
 }
 
-VALUE Module_register(int argc, VALUE *argv, VALUE class)
+VALUE
+ServiceModule_register(VALUE self, VALUE commands)
 {
 	struct Service *ruby_service;
 	struct ServiceMessage *generic_msgtab;
-	VALUE aryCommands, command;
+	VALUE command, service_name;
 	long i;
 	int n;
 
-	ruby_service = make_service(StringValueCStr(argv[0]));
+	service_name = rb_iv_get(self, "@ServiceName");
+
+	ruby_service = make_service(StringValueCStr(service_name));
+
 	clear_serv_tree_parse(&ruby_service->msg_tree);
 	dlinkAdd(ruby_service, &ruby_service->node, &services_list);
 	hash_add_service(ruby_service);
 	introduce_service(ruby_service);
 
-	/*load_language(chanserv, "chanserv.en");
-	load_language(chanserv, "chanserv.rude");
-	load_language(chanserv, "chanserv.de");*/
+	Check_Type(commands, T_ARRAY);
 	
-	Check_Type(argv[1], T_ARRAY);
-	
-	aryCommands = argv[1];
-	
-	for(i = RARRAY(aryCommands)->len-1; i >= 0; --i)
+	for(i = RARRAY(commands)->len-1; i >= 0; --i)
 	{
 		generic_msgtab = MyMalloc(sizeof(struct ServiceMessage));
-		command = rb_ary_shift(aryCommands);
+		command = rb_ary_shift(commands);
 		generic_msgtab->cmd = StringValueCStr(command);
-		rb_ary_push(aryCommands, command);
+		rb_ary_push(commands, command);
 
 		for(n = 0; n < SERVICES_LAST_HANDLER_TYPE; n++)
 			generic_msgtab->handlers[n] = m_generic;
@@ -189,26 +190,39 @@ VALUE Module_register(int argc, VALUE *argv, VALUE class)
 	return Qnil;
 }
 
-VALUE Module_reply_user(int argc, VALUE *argv, VALUE class)
+VALUE 
+ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE rbmessage)
 {
 	struct Client *client;
 	struct Service *service;
-	VALUE rbclient;
+	VALUE inner_client, service_name;
 	
-	service = find_service(StringValueCStr(argv[0]));
-	rbclient = rb_iv_get(argv[1], "@realptr");
-	client = rbclient2client(rbclient);
-	char *message = StringValueCStr(argv[2]);
+	service_name = rb_iv_get(self, "@ServiceName");
+	service = find_service(StringValueCStr(service_name));
+	
+	inner_client = rb_iv_get(rbclient, "@realptr");
+	client = rbclient2client(inner_client);
+	
+	char *message = StringValueCStr(rbmessage);
+	
 	reply_user(service, client, message);
 	return Qnil;
 }
 
-void Init_Module(void)
+VALUE
+ServiceModule_service_name(VALUE self, VALUE name)
 {
-	mOftc = rb_define_module("Oftc");
-	cModule = rb_define_class_under(mOftc,"ModuleServer", rb_cObject);
-	rb_define_singleton_method(cModule, "register", Module_register, -1);
-	rb_define_singleton_method(cModule, "reply_user", Module_reply_user, -1);
+	return rb_iv_set(self, "@ServiceName", name);
+}
+
+void
+Init_Module(void)
+{
+	cServiceModule = rb_define_class("ServiceModule", rb_cObject);
+	rb_define_class_variable(cServiceModule, "@@ServiceName", rb_str_new2(""));
+	rb_define_method(cServiceModule, "register", ServiceModule_register, 1);
+	rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, 2);
+	rb_define_method(cServiceModule, "service_name", ServiceModule_service_name, 1);
 }
 
 VALUE
@@ -263,7 +277,7 @@ ClientStruct_Umodes(VALUE self)
 void
 Init_ClientStruct(void)
 {
-	cClientStruct = rb_define_class_under(mOftc, "ClientStruct", rb_cObject);
+	cClientStruct = rb_define_class("ClientStruct", rb_cObject);
 	
 	rb_define_class_variable(cClientStruct, "@@realptr", Qnil);
 
@@ -284,6 +298,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 	char classname[PATH_MAX];
 	VALUE klass, self;
 	VALUE params[4];
+	struct Service *service;
 	
 	snprintf(path, sizeof(path), "%s/%s", dir, fname);
 	
@@ -312,8 +327,10 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
 	if(ruby_handle_error(status))
 		return 0;
-
 	printf("RUBY INFO: Initialized Class %s\n", classname);
+
+	service = find_service(classname);
+	service->data = (void *)self;
 	
 	return 1;
 }

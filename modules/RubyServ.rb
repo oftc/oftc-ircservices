@@ -1,13 +1,14 @@
-class RubyServ
+class RubyServ < ServiceModule
 	def initialize
-		Oftc::ModuleServer.register('RubyServ', ["HELP", "SAY"])
+		service_name("RubyServ")
+		register(["HELP", "SAY"])
 	end
-	def RubyServ.HELP(client, parv = [])
+	def HELP(client, parv = [])
 		puts "RubyServ::Help"
 	end
-	def RubyServ.SAY(client, parv = [])
+	def SAY(client, parv = [])
 		message = parv.join(" ")
-		Oftc::ModuleServer.reply_user('RubyServ', client, client.name + " Said: "+message)
+		reply_user(client, client.name + " Said: "+message)
 	end
 end
 
