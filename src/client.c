@@ -236,27 +236,6 @@ static void
 remove_dependents(struct Client *source_p, struct Client *from,
                   const char *comment)
 {
-  struct Client *to;
-  struct ConfItem *conf;
-  struct AccessItem *aconf;
-  static char myname[HOSTLEN+1];
-  dlink_node *ptr;
-
-/*  DLINK_FOREACH(ptr, serv_list.head)
-  {
-    to = ptr->data;
-
-    if ((conf = to->serv->sconf) != NULL)
-    {
-      aconf = &conf->conf.AccessItem;
-      strlcpy(myname, my_name_for_link(aconf), sizeof(myname));
-    }
-    else
-      strlcpy(myname, me.name, sizeof(myname));
-    recurse_send_quits(source_p, source_p, from, to,
-                       comment, splitstr, myname);
-  }
-*/
   recurse_remove_clients(source_p);
 }
 
@@ -282,8 +261,6 @@ remove_dependents(struct Client *source_p, struct Client *from,
 void
 exit_client(struct Client *source_p, struct Client *from, const char *comment)
 {
-  dlink_node *m = NULL;
-
   if (source_p->server != NULL)
   {
     /*

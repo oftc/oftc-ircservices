@@ -23,8 +23,11 @@
  */
 #include "stdinc.h"
 #include "conf/conf.h"
+#include "lua_module.h"
+#include "ruby_module.h"
 #include <sys/types.h>
 #include <dirent.h>
+#include <dlfcn.h>
 
 dlink_list loaded_modules = {NULL, NULL, 0};
 

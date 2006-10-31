@@ -324,7 +324,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   }
   else
   {
-    service->last_command = mptr->cmd;
+    service->last_command = (char *)mptr->cmd;
     (*handler)(service, from, i, hpara);
   }
 }

@@ -44,6 +44,7 @@ static int lua_reply_user(lua_State *);
 static int lua_load_language(lua_State *);
 static int lua_register_command(lua_State *);
 static struct Client *check_client(lua_State *L, int index);
+static struct Service *check_service(lua_State *L, int index);
 
 static const struct luaL_reg client_m[] = {
   {"__newindex", client_set},
@@ -107,7 +108,7 @@ lua_register_command(lua_State *L)
 { 
   struct ServiceMessage *handler_msgtab;
   struct Service *lua_service = check_service(L, 1);;
-  char *command = lua_tolstring(L, 2, NULL); 
+  const char *command = luaL_checkstring(L, 2); 
   int i;
 
   handler_msgtab = MyMalloc(sizeof(struct ServiceMessage));
@@ -124,7 +125,6 @@ lua_register_command(lua_State *L)
 int
 load_lua_module(const char *name, const char *dir, const char *fname)
 {
-  int status;
   char path[PATH_MAX];
 
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
@@ -143,7 +143,7 @@ static int
 lua_find_nick(lua_State *L)
 {
   struct Nick *nick, *n;
-  char *nickname = luaL_checkstring(L, 2);
+  const char *nickname = luaL_checkstring(L, 2);
 
   nick = db_find_nick(nickname);
   if(nick == NULL)
@@ -165,10 +165,10 @@ lua_find_nick(lua_State *L)
 static int
 lua_reply_user(lua_State *L)
 {
-  char *message;
+  const char *message;
   struct Service *lua_service = check_service(L, 1);
   struct Client *client = check_client(L, 2);
-  char *param = luaL_checkstring(L, 4);
+  const char *param = luaL_checkstring(L, 4);
 
   message = luaL_checkstring(L, 3);
   
@@ -181,7 +181,7 @@ static int
 lua_load_language(lua_State *L)
 {
   struct Service *lua_service = check_service(L, 1);
-  char *language = luaL_checkstring(L, 2);
+  const char *language = luaL_checkstring(L, 2);
   
   load_language(lua_service, language);
 
@@ -213,6 +213,8 @@ lua_register_service(lua_State *L)
   luaL_register(L, NULL, service_m);
 
   lua_register(L, "register_service", service_new);
+
+  return 0;
 }
 
 static int
@@ -249,7 +251,7 @@ service_new(lua_State *L)
 {
   struct Service *service = 
     (struct Service*)lua_newuserdata(L, sizeof(struct Service));
-  char *service_name = luaL_checkstring(L, 1);
+  const char *service_name = luaL_checkstring(L, 1);
 
   memset(service, 0, sizeof(struct Service));
 
@@ -281,7 +283,9 @@ static int
 nick_get(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
-  char *index = luaL_checkstring(L, 2);
+  const char *index = luaL_checkstring(L, 2);
+
+  nick = nick;
 
   printf("pushing error for: %s\n", index);
 
@@ -295,7 +299,9 @@ static int
 nick_set(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
-  char *index = luaL_checkstring(L, 2);
+  const char *index = luaL_checkstring(L, 2);
+
+  nick = nick;
 
   lua_pushfstring(L, "index %s is not supported", index);
   lua_error(L);
@@ -317,6 +323,8 @@ nick_new(lua_State *L)
 {
   struct Nick *nick = (struct Nick*)lua_newuserdata(L, sizeof(struct Nick));
 
+  memset(nick, 0, sizeof(struct Nick));
+
   luaL_getmetatable(L, "OFTC.nick");
   lua_setmetatable(L, -2);
 
@@ -336,7 +344,7 @@ static int
 client_get(lua_State *L)
 {
   struct Client *client = check_client(L, 1);
-  char *index = luaL_checkstring(L, 2);
+  const char *index = luaL_checkstring(L, 2);
 
   if(strcmp(index, "name") == 0)
     lua_pushstring(L, client->name);
@@ -355,10 +363,11 @@ static int
 client_set(lua_State *L)
 {
   struct Client *client = check_client(L, 1);
+  const char *index = luaL_checkstring(L, 2);
   
   if(strcmp(index, "name") == 0)
   {
-    strlcpy(client->name, luaL_checkstring(L, 1), sizeof(client->name));
+    strlcpy(client->name, luaL_checkstring(L, 3), sizeof(client->name));
   }
   else
   {
@@ -385,6 +394,8 @@ LUALIB_API int luaopen_oftc(lua_State *L)
   lua_register_service(L);
   lua_register_client_struct(L);
   lua_register_nick_struct(L);
+
+  return 0;
 }
 
 void

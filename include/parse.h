@@ -6,6 +6,7 @@ struct ServiceMessageTree;
 struct ServiceMessage;
 
 struct Message *find_command(const char *, struct MessageTree*);
+struct ServiceMessage *find_services_command(const char *cmd, struct ServiceMessageTree *msg_tree);
 void parse(struct Client *, char *, char *);
 extern void m_ignore(struct Client *, struct Client *, int, char *[]);
 extern void m_servignore(struct Service *, struct Client *, int, char *[]);
@@ -20,6 +21,8 @@ void process_privmsg(struct Client *, struct Client *, int, char *[]);
 void clear_tree_parse(struct MessageTree *);
 void clear_serv_tree_parse(struct ServiceMessageTree *);
 void init_parser();
+void do_serv_help_messages(struct Service *service, struct Client *client);
+size_t join_params(char *target, int parc, char *parv[]);
 
 #define MAXPTRLEN    32
         /* Must be a power of 2, and

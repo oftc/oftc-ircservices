@@ -29,7 +29,7 @@ static int try_parse_v6_netmask(const char *, struct irc_ssaddr *, int *);
 static unsigned long hash_ipv6(const struct irc_ssaddr *, int);
 #endif
 static int try_parse_v4_netmask(const char *, struct irc_ssaddr *, int *);
-static unsigned long hash_ipv4(const struct irc_ssaddr *, int);
+//static unsigned long hash_ipv4(const struct irc_ssaddr *, int);
 
 #define DigitParse(ch) do { \
                        if (ch >= '0' && ch <= '9') \
@@ -335,6 +335,10 @@ init_host_hash(void)
   memset(&atable, 0, sizeof(atable));
 }
 
+#if 0
+
+XXX Not used atm.
+
 /* unsigned long hash_ipv4(struct irc_ssaddr*)
  * Input: An IP address.
  * Output: A hash value of the IP address.
@@ -353,6 +357,8 @@ hash_ipv4(const struct irc_ssaddr *addr, int bits)
 
   return 0;
 }
+
+#endif
 
 /* unsigned long hash_ipv6(struct irc_ssaddr*)
  * Input: An IP address.
@@ -386,6 +392,7 @@ hash_ipv6(const struct irc_ssaddr *addr, int bits)
 }
 #endif
 
+#if 0
 /* int hash_text(const char *start)
  * Input: The start of the text to hash.
  * Output: The hash of the string between 1 and (TH_MAX-1)
@@ -402,6 +409,11 @@ hash_text(const char *start)
 
   return h & (ATABLE_SIZE - 1);
 }
+#endif
+
+#if 0
+
+XXX Not used atm. 
 
 /* unsigned long get_hash_mask(const char *)
  * Input: The text to hash.
@@ -421,4 +433,5 @@ get_mask_hash(const char *text)
       hp = p + 1;
   return hash_text(text);
 }
+#endif
 

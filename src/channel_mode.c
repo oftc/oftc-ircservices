@@ -288,6 +288,9 @@ channel_modes(struct Channel *chptr, struct Client *client_p,
   *mbuf = '\0';
 }
 
+#if 0
+
+XXX This isnt used yet
 /* fix_key()
  * 
  * inputs       - pointer to key to clean up
@@ -311,6 +314,7 @@ fix_key(char *arg)
   *t = '\0';
   return arg;
 }
+#endif
 
 /* fix_key_old()
  * 

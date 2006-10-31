@@ -25,6 +25,8 @@
 #include "stdinc.h"
 #include "conf.h"
 #include "conf/conf.h"
+#include "lua_module.h"
+#include "ruby_module.h"
 
 struct Client me;
 
