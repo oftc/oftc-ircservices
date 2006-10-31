@@ -49,12 +49,12 @@ function NickServ:register(c, param)
   local n = nick()
 
   if(c.registered) then
-    self.s:reply_user(c, self.s:_L(c, 1))
+    self.s:reply(c, self.s:_L(c, 1))
     return
   end
   
-  if(s.db_findnick(c.name)) then
-    self.s:reply_user(c, self.s:_L(c, 1))
+  if(self.s:db_findnick(c.name)) then
+    self.s:reply(c, self.s:_L(c, 1), c.name)
     return
   end
 

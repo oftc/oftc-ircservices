@@ -143,7 +143,7 @@ static int
 lua_find_nick(lua_State *L)
 {
   struct Nick *nick, *n;
-  char *nickname = luaL_checkstring(L, 1);
+  char *nickname = luaL_checkstring(L, 2);
 
   nick = db_find_nick(nickname);
   if(nick == NULL)
@@ -165,13 +165,14 @@ lua_find_nick(lua_State *L)
 static int
 lua_reply_user(lua_State *L)
 {
-  char *message, *service;
+  char *message;
   struct Service *lua_service = check_service(L, 1);
   struct Client *client = check_client(L, 2);
+  char *param = luaL_checkstring(L, 4);
 
   message = luaL_checkstring(L, 3);
   
-  reply_user(lua_service, client, message);
+  reply_user(lua_service, client, message, param);
 
   return 0;
 }
