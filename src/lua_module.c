@@ -37,6 +37,11 @@ static int nick_get(lua_State *);
 static int nick_set(lua_State *);
 static int nick_to_string(lua_State *);
 static int nick_new(lua_State *);
+static int lua_L(lua_State *);
+static int lua_find_nick(lua_State *);
+static int lua_reply_user(lua_State *);
+static int lua_load_language(lua_State *);
+static int lua_register_command(lua_State *);
 static struct Client *check_client(lua_State *L, int index);
 
 static const struct luaL_reg client_m[] = {
@@ -58,6 +63,7 @@ static const struct luaL_reg service_f[] = {
   {"load_language", lua_load_language},
   {"register_command", lua_register_command},
   {"reply",  lua_reply_user},
+  {"db_findnick", lua_find_nick},
   {NULL, NULL}
 };
 
@@ -95,40 +101,8 @@ m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
   }
 }
 
-static int 
-register_lua_module(lua_State *L)
-{
-  int n = lua_gettop(L);
-  char *service_name = lua_tolstring(L, 1, NULL);
-  struct Service *lua_service;
-
-  lua_service = make_service(service_name);
-  dlinkAdd(lua_service, &lua_service->node, &services_list);
-  hash_add_service(lua_service);
-  /* 
-   * find the object with the same name as the service and call its init
-   * function.
-   */
-  lua_getfield(L, LUA_GLOBALSINDEX, service_name);
-  lua_getfield(L, -1, "init");
-  lua_getfield(L, LUA_GLOBALSINDEX, service_name);
-  if(lua_pcall(L, 1, 0, 0))
-  {
-    printf("register_lua_module: LUA_ERROR: %s\n", lua_tostring(L, -1));
-    lua_pop(L, 1);
-    /* XXX Unregister any sucessfully registered command handlers here. */
-    MyFree(lua_service);
-    lua_service = NULL;
-    return 0;
-  }
-
-  introduce_service(lua_service);
-  
-  return 0;
-}
-
 static int
-register_lua_command(lua_State *L)
+lua_register_command(lua_State *L)
 { 
   struct ServiceMessage *handler_msgtab;
   struct Service *lua_service = check_service(L, 1);;
@@ -160,6 +134,29 @@ load_lua_module(const char *name, const char *dir, const char *fname)
     lua_pop(L, 1);
     return 0;
   }
+
+  return 1;
+}
+
+static int
+lua_find_nick(lua_State *L)
+{
+  struct Nick *nick, *n;
+  char *nickname = luaL_checkstring(L, 1);
+
+  nick = db_find_nick(nickname);
+  if(nick == NULL)
+  {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  n = (struct Nick*)lua_newuserdata(L, sizeof(struct Nick));
+  memcpy(n, nick, sizeof(struct Nick));
+  MyFree(nick);
+
+  luaL_getmetatable(L, "OFTC.nick");
+  lua_setmetatable(L, -2);
 
   return 1;
 }
@@ -202,6 +199,18 @@ lua_L(lua_State *L)
   lua_pushstring(L, _L(lua_service, client, message));
 
   return 1;
+}
+
+static int
+lua_register_service(lua_State *L)
+{
+  luaL_newmetatable(L, "OFTC.service");
+  lua_newtable(L);
+  luaL_register(L, NULL, service_f);
+  lua_setfield(L, -2, "__index");
+  luaL_register(L, NULL, service_m);
+
+  lua_register(L, "register_service", service_new);
 }
 
 static int

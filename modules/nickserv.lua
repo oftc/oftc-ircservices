@@ -52,6 +52,12 @@ function NickServ:register(c, param)
     self.s:reply_user(c, self.s:_L(c, 1))
     return
   end
+  
+  if(s.db_findnick(c.name)) then
+    self.s:reply_user(c, self.s:_L(c, 1))
+    return
+  end
+
   self.s:reply(c, "Yeah, right.  You wish.")
 end
 
