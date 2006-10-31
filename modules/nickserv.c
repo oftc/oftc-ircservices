@@ -31,6 +31,7 @@
 static struct Service *nickserv = NULL;
 
 static dlink_node *ns_umode_hook;
+static dlink_node *ns_nick_hook;
 
 static void *s_umode(va_list);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
@@ -91,6 +92,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
   
   ns_umode_hook = install_hook(umode_hook, s_umode);
+  ns_nick_hook  = install_hook(nick_hook, s_nick);
 }
 
 CLEANUP_MODULE
@@ -261,14 +263,34 @@ m_set_language(struct Service *service, struct Client *client,
 }
 
 static void*
-s_umode(va_list args) {
-    struct Client *client_p = va_arg(args, struct Client*);
-    struct Client *source_p = va_arg(args, struct Client*);
-    int            parc     = va_arg(args, int);
-    char         **parv     = va_arg(args, char**);
+s_umode(va_list args) 
+{
+  struct Client *client_p = va_arg(args, struct Client*);
+  struct Client *source_p = va_arg(args, struct Client*);
+  int            parc     = va_arg(args, int);
+  char         **parv     = va_arg(args, char**);
     
-    /// actually do stuff....
+  /// actually do stuff....
     
-    // last function to call to pass the hook further to other hooks
-    pass_callback(ns_umode_hook);
+  // last function to call to pass the hook further to other hooks
+  pass_callback(ns_umode_hook);
+}
+
+static void *
+s_nick(va_list args)
+{
+  struct Client *client_p = va_arg(args, struct Client*);
+  struct Client *source_p = va_arg(args, struct Client*);
+  int            parc     = va_arg(args, int);
+  char         **parv     = va_arg(args, char**);
+  int            newts    = va_arg(args, int);
+  char          *nick     = va_arg(args, char*);
+  char          *gecos    = va_arg(args, char*);
+
+  if (IsRegistered(client_p) )
+  {
+    client->service_handler = UNREG_HANDLER;
+    ClearRegister(client_p);
+    send_umode(nickserv, client_p, "-R");
+  }
 }
