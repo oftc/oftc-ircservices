@@ -49,6 +49,11 @@ init_perl()
   perl_construct(P);
 }
 
+void destroy_perl() {
+  perl_destruct(P);
+  perl_free(P);
+}
+
 int
 load_perl_module(const char *name, const char *dir, const char *fname)
 {

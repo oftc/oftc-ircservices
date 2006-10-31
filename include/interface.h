@@ -13,6 +13,10 @@ extern struct Callback *umode_cb;
 
 extern struct Callback *umode_hook;
 extern struct Callback *cmode_hook;
+extern struct Callback *squit_hook;
+extern struct Callback *quit_hook;
+extern struct Callback *part_hook;
+extern struct Callback *nick_hook;
 
 struct Service *make_service(char *);
 void introduce_service(struct Service *);

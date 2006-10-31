@@ -38,6 +38,7 @@ struct Callback *part_hook;
 struct Callback *quit_hook;
 struct Callback *umode_hook;
 struct Callback *cmode_hook;
+struct Callback *squit_hook;
 
 void
 init_interface()
@@ -54,6 +55,7 @@ init_interface()
   quit_hook     = register_callback("Propagate QUIT", NULL);
   umode_hook    = register_callback("Propagate UMODE", NULL);
   cmode_hook    = register_callback("Propagate CMODE", NULL);
+  squit_hook    = register_callback("Propagate SQUIT", NULL);
 }
 
 struct Service *
@@ -164,4 +166,29 @@ void
 chain_cmode(struct Client *client_p, struct Client *source_p, struct Channel *chptr, int parc, char *parv[])
 {
     execute_callback(cmode_hook, client_p, source_p, chptr, parc, parv);
+}
+
+void 
+chain_squit(struct Client *client, struct Client *source, char *comment)
+{
+    execute_callback(squit_hook, client, source, comment);
+}
+
+void
+chain_quit(struct Client *source, char *comment)
+{
+    execute_callback(quit_hook, source, comment);
+}
+
+void
+chain_part(struct Client *client, struct Client *source, char *name)
+{
+    execute_callback(part_hook, client, source, name);
+}
+
+void
+chain_nick(struct Client *client_p, struct Client *source_p, 
+           int parc, char **parv, int newts, char *nick, char *gecos)
+{
+    execute_callback(nick_hook, client_p, source_p, parc, parv, newts, nick, gecos);
 }
