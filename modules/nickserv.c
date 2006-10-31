@@ -34,6 +34,7 @@ static dlink_node *ns_umode_hook;
 static dlink_node *ns_nick_hook;
 
 static void *s_umode(va_list);
+static void *s_nick(va_list);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
@@ -289,7 +290,7 @@ s_nick(va_list args)
 
   if (IsRegistered(client_p) )
   {
-    client->service_handler = UNREG_HANDLER;
+    client_p->service_handler = UNREG_HANDLER;
     ClearRegister(client_p);
     send_umode(nickserv, client_p, "-R");
   }
