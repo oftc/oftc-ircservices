@@ -37,6 +37,7 @@ static int nick_get(lua_State *);
 static int nick_set(lua_State *);
 static int nick_to_string(lua_State *);
 static int nick_new(lua_State *);
+static int service_new(lua_State *L);
 static int lua_L(lua_State *);
 static int lua_find_nick(lua_State *);
 static int lua_reply_user(lua_State *);
