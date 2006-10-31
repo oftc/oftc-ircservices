@@ -24,6 +24,7 @@ void reply_user(struct Service *, struct Client *, const char *, ...);
 void global_notice(struct Service *, char *, ...);
 void send_umode(struct Service *, struct Client *, const char *);
 void init_interface();
+void do_help(struct Service *, struct Client *, const char *, int, char **);
 
 void chain_umode(struct Client *, struct Client *, int, char **);
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);

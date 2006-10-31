@@ -119,15 +119,19 @@ m_set(struct Service *service, struct Client *client,
 }
 
 static void *
-s_cmode(va_list args) {
-    struct Client  *client_p = va_arg(args, struct Client*);
-    struct Client  *source_p = va_arg(args, struct Client*);
-    struct Channel *chptr    = va_arg(args, struct Channel*);
-    int             parc     = va_arg(args, int);
-    char           **parv    = va_arg(args, char **);
+s_cmode(va_list args) 
+{
+  struct Client  *client_p = va_arg(args, struct Client*);
+  struct Client  *source_p = va_arg(args, struct Client*);
+  struct Channel *chptr    = va_arg(args, struct Channel*);
+  int             parc     = va_arg(args, int);
+  char           **parv    = va_arg(args, char **);
 
-    // ... actually do stuff    
+  // ... actually do stuff    
 
-    // last function to call in this func
-    pass_callback(cs_cmode_hook);
+  // last function to call in this func
+  pass_callback(cs_cmode_hook);
+  return NULL;
 }
+
+
