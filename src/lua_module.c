@@ -53,6 +53,18 @@ static const struct luaL_reg nick_m[] = {
   {NULL, NULL}
 };
 
+static const struct luaL_reg service_f[] = {
+  {"_L", lua_L}, 
+  {"load_language", lua_load_language},
+  {"register_command", lua_register_command},
+  {"reply",  lua_reply_user},
+  {NULL, NULL}
+};
+
+static const struct luaL_reg service_m[] = {
+  {NULL, NULL}
+};
+
 static void
 m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
 {
@@ -119,25 +131,15 @@ static int
 register_lua_command(lua_State *L)
 { 
   struct ServiceMessage *handler_msgtab;
-  struct Service *lua_service;
+  struct Service *lua_service = check_service(L, 1);;
   char *command = lua_tolstring(L, 2, NULL); 
-  char *service = lua_tolstring(L, 1, NULL);
   int i;
-  int n = lua_gettop(L);
 
   handler_msgtab = MyMalloc(sizeof(struct ServiceMessage));
   
   handler_msgtab->cmd = command;
   for(i = 0; i < SERVICES_LAST_HANDLER_TYPE; i++)
     handler_msgtab->handlers[i] = m_lua;
-
-  lua_service = find_service(service);
-  if(lua_service == NULL)
-  {
-    lua_pushfstring(L, "service '%s' does not exist.", service);
-    lua_error(L);
-    return 0;
-  }
 
   mod_add_servcmd(&lua_service->msg_tree, handler_msgtab);
 
@@ -166,13 +168,10 @@ static int
 lua_reply_user(lua_State *L)
 {
   char *message, *service;
+  struct Service *lua_service = check_service(L, 1);
   struct Client *client = check_client(L, 2);
-  struct Service *lua_service;
 
-  service = lua_tolstring(L, 1, NULL);
-  message = lua_tolstring(L, 3, NULL);
-  
-  lua_service = find_service(service);
+  message = luaL_checkstring(L, 3);
   
   reply_user(lua_service, client, message);
 
@@ -182,11 +181,8 @@ lua_reply_user(lua_State *L)
 static int
 lua_load_language(lua_State *L)
 {
-  char *service = lua_tolstring(L, 1, NULL);
-  char *language = lua_tolstring(L, 2, NULL);
-  struct Service *lua_service;
-  
-  lua_service = find_service(service);
+  struct Service *lua_service = check_service(L, 1);
+  char *language = luaL_checkstring(L, 2);
   
   load_language(lua_service, language);
 
@@ -197,14 +193,11 @@ static int
 lua_L(lua_State *L)
 {
   struct Client *client;
+  struct Service *lua_service = check_service(L, 1);
   int message;
-  char *service = lua_tolstring(L, 1, NULL);
-  struct Service *lua_service;
 
-  lua_service = find_service(service);
-  
-  client = (struct Client*) lua_touserdata(L, 2);
-  message = lua_tointeger(L, 3);
+  client = (struct Client*) luaL_checkudata(L, 2, "OFTC.client");
+  message = luaL_checkinteger(L, 3);
 
   lua_pushstring(L, _L(lua_service, client, message));
 
@@ -231,13 +224,46 @@ lua_register_nick_struct(lua_State *L)
   return 0;
 }
 
+static struct Service *
+check_service(lua_State *L, int index)
+{
+  void *ud = luaL_checkudata(L, index, "OFTC.service");
+  luaL_argcheck(L, ud != NULL, index, "'service' expected");
+
+  return (struct Service *)ud;
+}
+
+static int
+service_new(lua_State *L)
+{
+  struct Service *service = 
+    (struct Service*)lua_newuserdata(L, sizeof(struct Service));
+  char *service_name = luaL_checkstring(L, 1);
+
+  memset(service, 0, sizeof(struct Service));
+
+  luaL_getmetatable(L, "OFTC.service");
+  lua_setmetatable(L, -2);
+  
+  
+
+  strlcpy(service->name, service_name, sizeof(service->name));
+
+  dlinkAdd(service, &service->node, &services_list);
+  hash_add_service(service);
+
+  introduce_service(service);
+
+  return 1;
+}
+
 static struct Nick *
 check_nick(lua_State *L, int index)
 {
   void *ud = luaL_checkudata(L, index, "OFTC.nick");
   luaL_argcheck(L, ud != NULL, index, "'nick' expected");
 
-  return ud;
+  return (struct Nick *)ud;
 }
 
 static int
@@ -345,6 +371,7 @@ LUALIB_API int luaopen_oftc(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC");
 
+  lua_register_service(L);
   lua_register_client_struct(L);
   lua_register_nick_struct(L);
 }
@@ -355,12 +382,6 @@ init_lua()
   L = lua_open();
   
   luaL_openlibs(L);
-
-  lua_register(L, "_L", lua_L);
-  lua_register(L, "load_language", lua_load_language);
-  lua_register(L, "register_module", register_lua_module);
-  lua_register(L, "register_command", register_lua_command);
-  lua_register(L, "reply_user", lua_reply_user);
 
   /* This can be removed when its made a module and loaded from LUA */
   luaopen_oftc(L);

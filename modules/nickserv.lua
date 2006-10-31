@@ -1,7 +1,6 @@
 NickServ = {};
 
-function NickServ:init()
-  self.service_name = "NickServ"
+function NickServ:init(name)
   self.handlers = {
     help = {
       name = "help",
@@ -17,11 +16,13 @@ function NickServ:init()
     }
   }
 
+  self.s = register_service(name)
+
   for _, command in pairs(self.handlers) do 
-    register_command(self.service_name, command.name) 
+    self.s:register_command(command.name) 
   end
 
-  load_language(self.service_name, "nickserv.en")
+  self.s:load_language("nickserv.en")
 end
 
 function NickServ:handle_command(client, cmd, param)
@@ -38,9 +39,9 @@ end
 
 function NickServ:help(client, param)
   if(param[0] == nil or param[0] == "" or self.handlers[param[0]] == nil) then
-    reply_user(self.service_name, client, _L(self.service_name, client, self.handlers["help"].help_long)) 
+  self.s:reply(client, self.s:_L(client, self.handlers["help"].help_long)) 
   else
-    reply_user(self.service_name, client, _L(self.service_name, client, self.handlers[param[0]].help_short))
+    self.s:reply(client, self.s:_L(client, self.handlers[param[0]].help_short))
   end
 end
 
@@ -48,10 +49,10 @@ function NickServ:register(c, param)
   local n = nick()
 
   if(c.registered) then
-    reply_user(self.service_name, _L(self.service_name, c, 1))
+    self.s:reply_user(c, self.s:_L(c, 1))
     return
   end
-  reply_user(self.service_name, c, "Yeah, right.  You wish.")
+  self.s:reply(c, "Yeah, right.  You wish.")
 end
 
-register_module("NickServ")
+NickServ:init("NickServ")
