@@ -291,7 +291,7 @@ s_nick(va_list args)
   if (IsRegistered(client_p) )
   {
     client_p->service_handler = UNREG_HANDLER;
-    ClearRegister(client_p);
+    ClearRegistered(client_p);
     send_umode(nickserv, client_p, "-R");
   }
 }
