@@ -7,12 +7,14 @@ function NickServ:init(name)
       func = self.help,
       help_short = 7,
       help_long = 8,
+      num_args = 0,
     },
     register = {
       name = "register",
       func = self.register,
       help_short = 9,
-      help_long = 10
+      help_long = 10,
+      num_args = 2,
     }
   }
 
@@ -34,7 +36,13 @@ function NickServ:handle_command(client, cmd, param)
     params[i] = w
     i = i+1
   end
-  self.handlers[cmd].func(self, client, params)
+
+  if(i < self.handlers[cmd].num_args) then
+    self.s:reply(client, "Insufficient Parameters: \002".. cmd.. 
+      "\002. Got " .. i.. ", wanted ".. self.handlers[cmd].num_args.. ".", "")
+  else
+    self.handlers[cmd].func(self, client, params)
+  end
 end
 
 function NickServ:help(client, param)
