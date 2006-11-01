@@ -56,7 +56,7 @@ static struct ServiceMessage register_msgtab = {
 
 static struct ServiceMessage identify_msgtab = {
   NULL, "IDENTIFY", 0, 1, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
-  { m_identify, m_identify, m_identify, m_identify }
+  { m_identify, m_alreadyreg, m_alreadyreg, m_alreadyreg }
 };
 
 static struct ServiceMessage help_msgtab = {
@@ -66,7 +66,7 @@ static struct ServiceMessage help_msgtab = {
 
 static struct ServiceMessage drop_msgtab = {
   NULL, "DROP", 0, 0, NS_HELP_DROP_SHORT, NS_HELP_DROP_LONG,
-  { m_identify, m_drop, m_drop, m_drop }
+  { m_unreg, m_drop, m_drop, m_drop }
 };
 
 static struct SubMessage set_sub[5] = {
