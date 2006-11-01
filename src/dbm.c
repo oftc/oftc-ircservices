@@ -130,7 +130,7 @@ db_find_nick(const char *nick)
   return nick_p;
 }
 
-int
+struct Nick *
 db_register_nick(const char *nick, const char *password, const char *email)
 {
   char *escnick = NULL;
@@ -143,14 +143,14 @@ db_register_nick(const char *nick, const char *password, const char *email)
   if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
   {
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return -1;
+    return NULL;
   }
 
   if(dbi_driver_quote_string_copy(Database.driv, email, &escemail) == 0)
   {
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     MyFree(escnick);
-    return -1;
+    return NULL;
   }
 
   if(dbi_driver_quote_string_copy(Database.driv, password, &escpass) == 0)
@@ -158,17 +158,13 @@ db_register_nick(const char *nick, const char *password, const char *email)
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     MyFree(escnick);
     MyFree(escemail);
-    return -1;
+    return NULL;
   }
   
   snprintf(querybuffer, 1024, "INSERT INTO %s (nick, password, email, reg_time,"
       " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nickname", 
       escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime);
 
-  MyFree(escnick);
-  MyFree(escemail);
-  MyFree(escpass);
-  
   printf("db: query: %s\n", querybuffer);
 
   if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
@@ -176,12 +172,16 @@ db_register_nick(const char *nick, const char *password, const char *email)
     const char *error;
     dbi_conn_error(Database.conn, &error);
     printf("db: Failed to query: %s\n", error);
-    return -1;
+    return NULL;
   }  
+
+  MyFree(escnick);
+  MyFree(escemail);
+  MyFree(escpass);
 
   dbi_result_free(result);
 
-  return 0;
+  return db_find_nick(nick); 
 }
 
 int

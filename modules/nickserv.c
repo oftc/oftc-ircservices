@@ -161,11 +161,8 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  nick = MyMalloc(sizeof(struct Nick));
-  strlcpy(nick->nick, client->name, sizeof(nick->nick));
-  strlcpy(nick->pass, crypt_pass(parv[1]), sizeof(nick->pass));
-
-  if(db_register_nick(nick->nick, nick->pass, parv[2]) >= 0)
+  nick = db_register_nick(client->name, crypt_pass(parv[1]), parv[2]);
+  if(nick != NULL)
   {
     client->nickname = nick;
     identify_user(client);
