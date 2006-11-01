@@ -161,6 +161,9 @@ static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
+  if (!IsRegistered(client)) {
+    reply_user(service, client, _L(nickserv, client, NS_NEED_IDENTIFY), client->name);
+  }
 }
 
 static void

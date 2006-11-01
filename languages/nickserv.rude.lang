@@ -14,5 +14,9 @@ NS_HELP_ID_LONG   Identify your nickname.
 NS_CURR_LANGUAGE  Your idiotic self has set language %s(%d).
 NS_AVAIL_LANGUAGE If you set any of these languages I'll beat you:
 NS_LANGUAGE_SET   Sucker.  Language set to %s(%d).
+NS_LAST           --
 NS_SET_SUCCESS    Yea. You really managed it to SET something.
 NS_SET_FAILED     Dont go whining, but something really went wrong.
+NS_HELP_DROP_SHORT --
+NS_HELP_DROP_LONG  --
+NS_NEED_IDENTIFY  Hahaha! You dont have the privs, sucker!

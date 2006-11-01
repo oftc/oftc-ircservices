@@ -44,5 +44,6 @@ struct Nick
 #define NS_SET_FAILED       0x12
 #define NS_HELP_DROP_SHORT  0x13
 #define NS_HELP_DROP_LONG   0x14
+#define NS_NEED_IDENTIFY    0x15
 
 #endif
