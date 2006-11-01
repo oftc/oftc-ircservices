@@ -103,6 +103,11 @@ CLEANUP_MODULE
   dlinkDelete(&nickserv->node, &services_list);
 }
 
+/**
+ * do all the necessary work to consider a client identified.
+ * Note: at this point it has to already verified that the client
+ * is allowed to do so.
+ */
 static void
 identify_user(struct Client *client)
 {
@@ -127,6 +132,10 @@ identify_user(struct Client *client)
   send_umode(nickserv, client, "+R");
 }
 
+
+/**
+ * Someone wants to register with nickserv
+ */
 static void 
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -157,6 +166,10 @@ m_register(struct Service *service, struct Client *client,
   reply_user(service, client, _L(nickserv, client, NS_REG_FAIL), client->name);
 }
 
+
+/**
+ * someone wants to drop a nick
+ */
 static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
@@ -165,7 +178,7 @@ m_drop(struct Service *service, struct Client *client,
     reply_user(service, client, _L(nickserv, client, NS_NEED_IDENTIFY), client->name);
   }
 
-  // add some safetynet here
+  // XXX add some safetynet here XXX
 
   if (db_delete_nick(client) == 0) {
     client->service_handler = UNREG_HANDLER;
@@ -181,6 +194,9 @@ m_drop(struct Service *service, struct Client *client,
   }
 }
 
+/**
+ * someone wants to identify with services
+ */
 static void
 m_identify(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -279,6 +295,17 @@ m_set_language(struct Service *service, struct Client *client,
     reply_user(service, client, _L(nickserv, client, NS_LANGUAGE_SET),
         service->language_table[lang][0], lang); 
   }
+}
+
+static void
+m_set_url(struct Service *service, struct Client *client,
+        int parc, char *parv[])
+{
+  char *url;
+  strlcpy(url, parv[1], 200);
+    
+  db_set_url(client, url);
+  reply_user(service, client, _L(nickserv, client, NS_URL_SET), url);
 }
 
 static void*

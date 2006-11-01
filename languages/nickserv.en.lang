@@ -20,3 +20,4 @@ NS_SET_FAILED     Your SET command failed.
 NS_HELP_DROP_SHORT --
 NS_HELP_DROP_LONG  --
 NS_NEED_IDENTIFY  You need to identify to Nickserv first.
+NS_URL_SET        Your URL has been updated to %s

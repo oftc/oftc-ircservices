@@ -20,3 +20,4 @@ NS_SET_FAILED     Dein SET ist fehlgeschlagen.
 NS_HELP_DROP_SHORT --
 NS_HELP_DROP_LONG  --
 NS_NEED_IDENTIFY  Du musst bei Nickserv identifiziert sein.
+NS_URL_SET        Deine URL wurde auf %s geaendert.

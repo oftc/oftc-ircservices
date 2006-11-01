@@ -251,6 +251,27 @@ db_set_password(struct Client *client, char *pwd)
   return 0;
 }
 
+int
+db_set_url(struct Client *client, char *url)
+{
+  dbi_result result;
+
+  snprintf(querybuffer, 1024, "UPDATE %s SET url=%s WHERE id=%d", 
+      "nickname", url, client->nickname->id);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return -1;
+  }
+
+  dbi_result_free(result);
+
+  return 0;
+}
+
 struct RegChannel *
 db_find_chan(const char *channel)
 {

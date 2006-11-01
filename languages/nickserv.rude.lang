@@ -20,3 +20,4 @@ NS_SET_FAILED     Dont go whining, but something really went wrong.
 NS_HELP_DROP_SHORT --
 NS_HELP_DROP_LONG  --
 NS_NEED_IDENTIFY  Hahaha! You dont have the privs, sucker!
+NS_URL_SET        w00t! you have something like a homepage? blog? w00t!
