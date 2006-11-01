@@ -357,11 +357,11 @@ s_nick(va_list args)
   char          *nick     = va_arg(args, char*);
   char          *gecos    = va_arg(args, char*);
 
-  if (IsRegistered(client_p) )
+  if (IsRegistered(source_p) )
   {
-    client_p->service_handler = UNREG_HANDLER;
-    ClearRegistered(client_p);
-    send_umode(nickserv, client_p, "-R");
+    source_p->service_handler = UNREG_HANDLER;
+    ClearRegistered(source_p);
+    send_umode(nickserv, source_p, "-R");
   }
   pass_callback(ns_nick_hook);
   return NULL;
