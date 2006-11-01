@@ -185,6 +185,29 @@ db_register_nick(const char *nick, const char *password, const char *email)
 }
 
 int
+db_delete_nick(struct Client *client_p)
+{
+  dbi_result result;
+  
+  snprintf(querybuffer, 1024, "DELETE FROM %s WHERE nick='%s'",
+      "nickname", client->name);
+
+  printf("db: query: %s\n", querybuffer);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return -1;
+  }  
+
+  dbi_result_free(result);
+
+  return 0;
+}
+
+int
 db_set_language(struct Client *client, int language)
 {
   dbi_result result;
