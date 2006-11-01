@@ -14,5 +14,6 @@ CREATE TABLE nickname (
   status          INTEGER NOT NULL default '0',
   flags           INTEGER NOT NULL default '0',
   language        INTEGER NOT NULL default '0',
+  cloak           VARCHAR(255) default NULL,
   UNIQUE (nick)
 );
