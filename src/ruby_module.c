@@ -65,6 +65,18 @@ static VALUE ServiceModule_reply_user(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_service_name(VALUE, VALUE);
 static VALUE ServiceModule_cmode_hook(VALUE, VALUE);
 static VALUE ServiceModule_umode_hook(VALUE, VALUE);
+/* DB Prototypes */
+static VALUE ServiceModule_find_nick(VALUE, VALUE);
+static VALUE ServiceModule_register_nick(VALUE, VALUE, VALUE, VALUE);
+static VALUE ServiceModule_set_language(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_set_password(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_find_chan(VALUE, VALUE);
+static VALUE ServiceModule_register_chan(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_delete_nick(VALUE, VALUE);
+static VALUE ServiceModule_set_url(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_set_email(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_set_cloak(VALUE, VALUE, VALUE);
+/* DB Prototypes */
 static void Init_ServiceModule(void);
 
 static VALUE ClientStruct_Initialize(VALUE, VALUE);
@@ -74,7 +86,7 @@ static VALUE ClientStruct_ID(VALUE);
 static VALUE ClientStruct_Info(VALUE);
 static VALUE ClientStruct_Username(VALUE);
 static VALUE ClientStruct_Umodes(VALUE);
-static void Init_ServiceModule(void);
+static void Init_ClientStruct(void);
 
 static VALUE ChannelStruct_Initialize(VALUE, VALUE);
 static VALUE ChannelStruct_Name(VALUE);
@@ -360,6 +372,56 @@ ServiceModule_umode_hook(VALUE self, VALUE hook)
   return Qnil;
 }
 
+static VALUE ServiceModule_find_nick(VALUE self, VALUE nick)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_register_nick(VALUE self, VALUE nick, VALUE password, VALUE email)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_set_language(VALUE self, VALUE client, VALUE language)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_set_password(VALUE self, VALUE client, VALUE password)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_find_chan(VALUE self, VALUE channel)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_register_chan(VALUE self, VALUE client, VALUE chan_name)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_delete_nick(VALUE self, VALUE client)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_set_url(VALUE self, VALUE client, VALUE url)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_set_email(VALUE self, VALUE client, VALUE email)
+{
+  return Qnil;
+}
+
+static VALUE ServiceModule_set_cloak(VALUE self, VALUE nick, VALUE cloakstring)
+{
+  return Qnil;
+}
+
 static void
 Init_ServiceModule(void)
 {
@@ -370,6 +432,16 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "service_name", ServiceModule_service_name, 1);
   rb_define_method(cServiceModule, "add_cmode_hook", ServiceModule_cmode_hook, 1);
   rb_define_method(cServiceModule, "add_umode_hook", ServiceModule_umode_hook, 1);
+  rb_define_method(cServiceModule, "find_nick", ServiceModule_find_nick, 1);
+  rb_define_method(cServiceModule, "register_nick", ServiceModule_register_nick, 3);
+  rb_define_method(cServiceModule, "set_language", ServiceModule_set_language, 2);
+  rb_define_method(cServiceModule, "set_password", ServiceModule_set_password, 2);
+  rb_define_method(cServiceModule, "find_chan", ServiceModule_find_chan, 1);
+  rb_define_method(cServiceModule, "register_chan", ServiceModule_register_chan, 2);
+  rb_define_method(cServiceModule, "delete_nick", ServiceModule_delete_nick, 1);
+  rb_define_method(cServiceModule, "set_url", ServiceModule_set_url, 2);
+  rb_define_method(cServiceModule, "set_email", ServiceModule_set_email, 2);
+  rb_define_method(cServiceModule, "set_cloak", ServiceModule_set_cloak, 2);
 }
 
 static VALUE
