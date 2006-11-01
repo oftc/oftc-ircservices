@@ -22,3 +22,4 @@ NS_HELP_DROP_LONG  --
 NS_NEED_IDENTIFY  You need to identify to Nickserv first.
 NS_URL_SET        Your URL has been updated to %s
 NS_EMAIL_SET      Your eMail Adress has been changed to %s
+NS_NICK_DROPPED   Your nick has been deleted.

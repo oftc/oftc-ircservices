@@ -13,6 +13,7 @@ CREATE TABLE nickname (
   last_used       INTEGER NOT NULL default '0',
   status          INTEGER NOT NULL default '0',
   flags           INTEGER NOT NULL default '0',
+  cloak           VARCHAR(255) default NULL,
   language        INTEGER NOT NULL default '0',
   UNIQUE (nick)
 )ENGINE=MyISAM;

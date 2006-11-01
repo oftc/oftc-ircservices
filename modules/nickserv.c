@@ -44,6 +44,9 @@ static void m_set(struct Service *, struct Client *, int, char *[]);
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
 
+static void cloak_user(struct Client *);
+
+
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, NS_HELP_REG_SHORT, NS_HELP_REG_LONG,
   { m_register, m_alreadyreg, m_alreadyreg, m_alreadyreg }
@@ -128,8 +131,13 @@ identify_user(struct Client *client)
   }
 
   SetRegistered(client);
-
   send_umode(nickserv, client, "+R");
+  cloak_user(client);
+}
+
+static void
+cloak_user(struct Client *client_p)
+{
 }
 
 
@@ -153,7 +161,7 @@ m_register(struct Service *service, struct Client *client,
   strlcpy(nick->nick, client->name, sizeof(nick->nick));
   strlcpy(nick->pass, crypt_pass(parv[1]), sizeof(nick->pass));
 
-  if(db_register_nick(client, parv[2]) >= 0)
+  if(db_register_nick(nick->nick, nick->pass, parv[2]) >= 0)
   {
     client->nickname = nick;
     identify_user(client);
@@ -316,7 +324,7 @@ m_set_email(struct Service *service, struct Client *client,
   strlcpy(email, parv[1], 200);
     
   db_set_email(client, email);
-  reply_user(service, client, _L(nickserv, client, NS_EMAIL_SET), url);
+  reply_user(service, client, _L(nickserv, client, NS_EMAIL_SET), email);
 }
 
 static void*

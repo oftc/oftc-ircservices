@@ -35,4 +35,5 @@
 #include "interface.h"
 #include "nickserv.h"
 #include "chanserv.h"
+#include "operserv.h"
 #include "crypt.h"

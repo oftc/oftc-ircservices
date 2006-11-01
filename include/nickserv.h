@@ -47,5 +47,6 @@ struct Nick
 #define NS_NEED_IDENTIFY    0x15
 #define NS_URL_SET          0x16
 #define NS_EMAIL_SET        0x17
+#define NS_NICK_DROPPED     0x18
 
 #endif

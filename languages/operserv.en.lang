@@ -1,0 +1,6 @@
+0 English
+OS_NICK_NOT_REG    Nickname %s is not registered
+OS_CLOAK_SET       Set Cloak %s for %s
+OS_CLOAK_FAILED    Could not set Cloak for %s
+OS_SET_SHORT       Help for set
+OS_SET_LONG        Help for set (long)
