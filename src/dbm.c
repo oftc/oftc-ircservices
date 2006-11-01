@@ -165,6 +165,10 @@ db_register_nick(const char *nick, const char *password, const char *email)
       " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nickname", 
       escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime);
 
+  MyFree(escnick);
+  MyFree(escemail);
+  MyFree(escpass);
+
   printf("db: query: %s\n", querybuffer);
 
   if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
@@ -174,10 +178,6 @@ db_register_nick(const char *nick, const char *password, const char *email)
     printf("db: Failed to query: %s\n", error);
     return NULL;
   }  
-
-  MyFree(escnick);
-  MyFree(escemail);
-  MyFree(escpass);
 
   dbi_result_free(result);
 
