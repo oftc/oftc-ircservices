@@ -33,7 +33,7 @@ static void m_quit(struct Client *, struct Client *, int, char*[]);
 static void m_squit(struct Client *, struct Client *, int, char*[]);
 static void m_mode(struct Client *, struct Client *, int, char*[]);
 
-static void do_user_modes(struct Client *client, const char *modes);
+//static void do_user_modes(struct Client *client, const char *modes);
 static void set_final_mode(struct Mode *, struct Mode *);
 static void remove_our_modes(struct Channel *, struct Client *);
 static void remove_a_mode(struct Channel *, struct Client *, int, char);
@@ -42,7 +42,6 @@ static void *irc_sendmsg_nick(va_list);
 static void *irc_sendmsg_privmsg(va_list);
 static void *irc_sendmsg_notice(va_list);
 static void *irc_server_connected(va_list);
-
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
 static char sendbuf[MODEBUFLEN];
@@ -288,6 +287,9 @@ irc_sendmsg_notice(va_list args)
 }
 
 
+#if 0
+
+XXX Unused as yet
 /** Change nick of one of our introduced fake clients
  * DO NOT use for remote clients or it will cause havoc, use SVSNICK instead
  * @param
@@ -322,6 +324,7 @@ irc_sendmsg_squit(struct Client *client, char *source, char *target, char *reaso
 {
   sendto_server(client, ":%s SQUIT %s :%s", source, target, reason);
 }
+#endif
 
 /** Send a PING to a remote client
  * @param
@@ -334,6 +337,8 @@ irc_sendmsg_ping(struct Client *client, char *source, char *target)
   sendto_server(client, ":%s PING :%s", source, target);
 }
 
+#if 0
+XXX Not used right now
 /** Let a client join a channel
  * @param
  * source who's joining?
@@ -368,6 +373,8 @@ irc_sendmsg_mode(struct Client *client, char *source, char *target, char *mode)
   sendto_server(client, ":%s MODE %s %s", source, target, mode);
 }
 
+#endif
+
 static void *
 irc_server_connected(va_list args)
 {
@@ -393,6 +400,8 @@ irc_server_connected(va_list args)
   return NULL;
 }
 
+#if 0
+XXX Not used ATM
 static void
 do_user_modes(struct Client *client, const char *modes)
 {
@@ -422,6 +431,8 @@ do_user_modes(struct Client *client, const char *modes)
     ch++;
   }
 }
+
+#endif
 
 /* set_final_mode
  *

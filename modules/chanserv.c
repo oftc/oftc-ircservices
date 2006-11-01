@@ -31,7 +31,7 @@ static dlink_node *cs_cmode_hook;
 static void *s_cmode(va_list);
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
-static void m_set(struct Service *, struct Client *, int, char *[]);
+//static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, CS_HELP_REG_SHORT, CS_HELP_REG_LONG,
@@ -106,6 +106,8 @@ m_help(struct Service *service, struct Client *client,
   do_help(service, client, parv[1], parc, parv);
 }
 
+#if 0
+XXX not used atm
 static void
 m_set(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -113,15 +115,17 @@ m_set(struct Service *service, struct Client *client,
   reply_user(service, client, "Unknown SET option");
 }
 
+#endif
+
 static void *
 s_cmode(va_list args) 
 {
-  struct Client  *client_p = va_arg(args, struct Client*);
+/*  struct Client  *client_p = va_arg(args, struct Client*);
   struct Client  *source_p = va_arg(args, struct Client*);
   struct Channel *chptr    = va_arg(args, struct Channel*);
   int             parc     = va_arg(args, int);
   char           **parv    = va_arg(args, char **);
-
+*/
   // ... actually do stuff    
 
   // last function to call in this func

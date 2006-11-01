@@ -64,6 +64,8 @@ irc_sendmsg_gnotice(va_list args)
   return NULL;
 }
 
+#if 0
+XXX Unused atm
 static void 
 irc_sendmsg_svscloak(struct Client *client, struct Client *target, 
     char *cloakstring) 
@@ -71,6 +73,7 @@ irc_sendmsg_svscloak(struct Client *client, struct Client *target,
   sendto_server(client, ":%s SVSCLOAK %s :%s", 
     me.name, target->name, cloakstring);
 }
+#endif
 
 static void *
 irc_sendmsg_svsmode(va_list args)
@@ -84,8 +87,12 @@ irc_sendmsg_svsmode(va_list args)
   return NULL;
 }
 
+#if 0
+XXX unused atm
 static void
 irc_sendmsg_svsnick(struct Client *client, struct Client *target, char *newnick)
 {
   sendto_server(client, ":%s SVSNICK %s :%s", me.name, target->name, newnick);
 }
+
+#endif

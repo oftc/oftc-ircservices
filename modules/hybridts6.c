@@ -25,7 +25,7 @@
 
 #include "stdinc.h"
 
-static void m_mode(struct Client *, struct Client *, int, char*[]);
+//static void m_mode(struct Client *, struct Client *, int, char*[]);
 
 static void *irc_sendmsg_nick(va_list);
 static void *irc_sendmsg_privmsg(va_list);
@@ -130,6 +130,8 @@ irc_sendmsg_notice(va_list args)
 }
 
 
+#if 0
+XXX Not used atm
 /** Change nick of one of our introduced fake clients
  * DO NOT use for remote clients or it will cause havoc, use SVSNICK instead
  * @param
@@ -164,6 +166,7 @@ irc_sendmsg_squit(struct Client *client, char *source, char *target, char *reaso
 {
   sendto_server(client, ":%s SQUIT %s :%s", source, target, reason);
 }
+
 
 /** Send a PING to a remote client
  * @param
@@ -209,6 +212,7 @@ irc_sendmsg_mode(struct Client *client, char *source, char *target, char *mode)
 {
   sendto_server(client, ":%s MODE %s %s", source, target, mode);
 }
+#endif
 
 static void *
 irc_server_connected(va_list args)
