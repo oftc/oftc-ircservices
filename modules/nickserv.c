@@ -183,13 +183,15 @@ static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  if (!IsRegistered(client)) {
+  if (!IsRegistered(client)) 
+  {
     reply_user(service, client, _L(nickserv, client, NS_NEED_IDENTIFY), client->name);
   }
 
   // XXX add some safetynet here XXX
 
-  if (db_delete_nick(client) == 0) {
+  if (db_delete_nick(client->name) == 0) 
+  {
     client->service_handler = UNREG_HANDLER;
     ClearRegistered(client);
     send_umode(nickserv, client, "-R");
@@ -197,9 +199,12 @@ m_drop(struct Service *service, struct Client *client,
     reply_user(service, client, _L(nickserv, client, NS_NICK_DROPPED), client->name);
     global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
       client->username, client->host, client->name);
-  } else {
+  } 
+  else
+  {
     global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", client->name, 
       client->username, client->host, client->name);
+    reply_user(service, client, _L(nickserv, client, NS_NICK_DROPFAIL), client->name);
   }
 }
 

@@ -185,12 +185,22 @@ db_register_nick(const char *nick, const char *password, const char *email)
 }
 
 int
-db_delete_nick(struct Client *client_p)
+db_delete_nick(const char *nick)
 {
   dbi_result result;
+  char *escnick;
+
+  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
+  {
+    printf("db: Failed to delete nick: dbi_driver_quote_string_copy\n");
+    return 0;
+  }
+
   
-  snprintf(querybuffer, 1024, "DELETE FROM %s WHERE nick='%s'",
-      "nickname", client_p->name);
+  snprintf(querybuffer, 1024, "DELETE FROM %s WHERE nick=%s",
+      "nickname", escnick);
+
+  MyFree(escnick);
 
   printf("db: query: %s\n", querybuffer);
 
@@ -199,12 +209,12 @@ db_delete_nick(struct Client *client_p)
     const char *error;
     dbi_conn_error(Database.conn, &error);
     printf("db: Failed to query: %s\n", error);
-    return -1;
+    return 0;
   }  
 
   dbi_result_free(result);
 
-  return 0;
+  return 1;
 }
 
 int

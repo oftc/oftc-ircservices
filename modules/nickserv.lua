@@ -2,6 +2,13 @@ NickServ = {};
 
 function NickServ:init(name)
   self.handlers = {
+    drop = {
+      name = "drop",
+      func = self.drop,
+      help_short = 19,
+      help_long = 20,
+      num_args = 0,
+    },
     help = {
       name = "help",
       func = self.help,
@@ -42,6 +49,14 @@ function NickServ:handle_command(client, cmd, param)
       "\002. Got " .. i.. ", wanted ".. self.handlers[cmd].num_args.. ".", "")
   else
     self.handlers[cmd].func(self, client, params)
+  end
+end
+
+function NickServ:drop(client, param)
+  if(nick.db_drop(client.name)) then
+    self.s:reply(client, self.s:_L(client, 24), client.name)
+  else
+    self.s:reply(client, self.s:_L(client, 25), client.name)
   end
 end
 

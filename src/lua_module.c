@@ -41,6 +41,7 @@ static int service_new(lua_State *L);
 static int lua_L(lua_State *);
 static int lua_find_nick(lua_State *);
 static int lua_register_nick(lua_State *);
+static int lua_drop_nick(lua_State *);
 static int lua_reply_user(lua_State *);
 static int lua_load_language(lua_State *);
 static int lua_register_command(lua_State *);
@@ -58,6 +59,7 @@ static const struct luaL_reg nick_m[] = {
   {"__newindex", nick_set},
   {"__index", nick_get},
   {"__tostring", nick_to_string},
+  {"db_drop", lua_drop_nick},
   {"db_find", lua_find_nick},
   {"db_register", lua_register_nick},
   {NULL, NULL}
@@ -187,6 +189,27 @@ lua_find_nick(lua_State *L)
 
   luaL_getmetatable(L, "OFTC.nick");
   lua_setmetatable(L, -2);
+
+  return 1;
+}
+
+static int
+lua_drop_nick(lua_State *L)
+{
+  struct Client *client;
+  const char *nick = luaL_checkstring(L, 1);
+
+  if(db_delete_nick(nick) == 0)
+  {
+    lua_pushboolean(L, FALSE);
+    return 1;
+  }
+
+  client = find_client(nick);
+  client->service_handler = UNREG_HANDLER;
+  ClearRegistered(client);
+
+  lua_pushboolean(L, TRUE);
 
   return 1;
 }
