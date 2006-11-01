@@ -30,7 +30,7 @@ function NickServ:handle_command(client, cmd, param)
   local i = 0
   print("Handling message ".. cmd.. " from ".. client.name)
 
-  for w in string.gmatch(param, "(%a+)") do
+  for w in string.gmatch(param, "(%S+)") do
     params[i] = w
     i = i+1
   end
@@ -39,7 +39,7 @@ end
 
 function NickServ:help(client, param)
   if(param[0] == nil or param[0] == "" or self.handlers[param[0]] == nil) then
-  self.s:reply(client, self.s:_L(client, self.handlers["help"].help_long), "") 
+    self.s:reply(client, self.s:_L(client, self.handlers["help"].help_long), "") 
   else
     self.s:reply(client, self.s:_L(client, self.handlers[param[0]].help_short), "")
   end
