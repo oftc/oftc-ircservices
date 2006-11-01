@@ -20,7 +20,7 @@ class RubyServ < ServiceModule
 	end
 	def cmode(clientp, sourcep, channel, params)
 		puts "Made it to CMODE"
-		puts "CMODE clientp.name: "+ clientp.name + " sourcep.name: "+ sourcep.name
+		puts "CMODE clientp.name: "+ clientp.name + " sourcep.name: "+ sourcep.name + " in channel.name: " + channel.name
 		puts params.join(" ")
 	end
 end

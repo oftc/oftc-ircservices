@@ -23,6 +23,13 @@
  */
 
 #include <ruby.h>
+/* Umm, it sucks but ruby defines these and so do we */
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#undef EXTERN
 #include <ctype.h>
 #include <signal.h>
 #include "stdinc.h"
@@ -31,6 +38,7 @@
 
 VALUE cServiceModule = Qnil;
 VALUE cClientStruct = Qnil;
+VALUE cChannelStruct = Qnil;
 
 VALUE ruby_server_hooks = Qnil;
 
@@ -47,6 +55,8 @@ static int do_ruby(VALUE(*)(), VALUE);
 static struct Client* rb_rbclient2cclient(VALUE);
 static VALUE rb_cclient2rbclient(struct Client*);
 static VALUE rb_carray2rbarray(int, char **);
+static struct Channel* rb_rbchannel2cchannel(VALUE);
+static VALUE rb_cchannel2rbchannel(struct Channel*);
 
 static VALUE rb_singleton_call(VALUE);
 
@@ -65,6 +75,13 @@ static VALUE ClientStruct_Info(VALUE);
 static VALUE ClientStruct_Username(VALUE);
 static VALUE ClientStruct_Umodes(VALUE);
 static void Init_ServiceModule(void);
+
+static VALUE ChannelStruct_Initialize(VALUE, VALUE);
+static VALUE ChannelStruct_Name(VALUE);
+static VALUE ChannelStruct_Topic(VALUE);
+static VALUE ChannelStruct_TopicInfo(VALUE);
+static VALUE ChannelStruct_Mode(VALUE);
+static void Init_ChannelStruct(void);
 
 static void m_generic(struct Service *, struct Client *, int, char**);
 
@@ -122,8 +139,12 @@ do_ruby(VALUE (*func)(), VALUE args)
 static VALUE
 rb_singleton_call(VALUE data)
 {
-  VALUE *args = (VALUE *)data;
-  return rb_funcall2(args[0], args[1], args[2], args[3]);
+  VALUE recv, id, argc, argv;
+  recv = rb_ary_entry(data, 0);
+  id = rb_ary_entry(data, 1);
+  argc = rb_ary_entry(data, 2);
+  argv = rb_ary_entry(data, 3);
+  return rb_funcall2(recv, id, argc, (VALUE *)argv);
 }
 
 static struct Client* rb_rbclient2cclient(VALUE client)
@@ -136,15 +157,16 @@ static struct Client* rb_rbclient2cclient(VALUE client)
 static VALUE
 rb_cclient2rbclient(struct Client *client)
 {
-  VALUE fc2params[4], rbclient, real_client;
+  VALUE fc2params, rbclient, real_client;
   int status;
 
   rbclient = Data_Wrap_Struct(rb_cObject, 0, free, client);
 
-  fc2params[0] = cClientStruct;
-  fc2params[1] = rb_intern("new");
-  fc2params[2] = 1;
-  fc2params[3] = &rbclient;
+  fc2params = rb_ary_new();
+  rb_ary_push(fc2params, cClientStruct);
+  rb_ary_push(fc2params, rb_intern("new"));
+  rb_ary_push(fc2params, 1);
+  rb_ary_push(fc2params, (VALUE)&rbclient);
 
   real_client = rb_protect(RB_CALLBACK(rb_singleton_call), fc2params, &status);
 
@@ -155,6 +177,38 @@ rb_cclient2rbclient(struct Client *client)
   }
 
   return real_client;
+}
+
+static struct Channel* rb_rbchannel2cchannel(VALUE channel)
+{
+  struct Channel* out;
+  Data_Get_Struct(channel, struct Channel, out);
+  return out;
+}
+
+static VALUE
+rb_cchannel2rbchannel(struct Channel *channel)
+{
+  VALUE fc2params, rbchannel, real_channel;
+  int status;
+
+  rbchannel = Data_Wrap_Struct(rb_cObject, 0, free, channel);
+
+  fc2params = rb_ary_new();
+  rb_ary_push(fc2params, cChannelStruct);
+  rb_ary_push(fc2params, rb_intern("new"));
+  rb_ary_push(fc2params, 1);
+  rb_ary_push(fc2params, (VALUE)&rbchannel);
+
+  real_channel = rb_protect(RB_CALLBACK(rb_singleton_call), fc2params, &status);
+
+  if(ruby_handle_error(status))
+  {
+    printf("RUBY ERROR: Ruby Failed To Create ChannelStruct\n");
+    return Qnil;
+  }
+
+  return real_channel;
 }
 
 static VALUE
@@ -186,7 +240,7 @@ m_generic(struct Service *service, struct Client *client,
   char *command = strdup(service->last_command);
   VALUE rbparams, rbparv;
   VALUE class, real_client, self;
-  VALUE fc2params[4];
+  VALUE fc2params;
   ID class_command;
 
   strupr(command);
@@ -204,14 +258,15 @@ m_generic(struct Service *service, struct Client *client,
 
   self = (VALUE)service->data;
 
-  fc2params[0] = self;
-  fc2params[1] = class_command;
-  fc2params[2] = RARRAY(rbparams)->len;
-  fc2params[3] = RARRAY(rbparams)->ptr;
+  fc2params = rb_ary_new();
+  rb_ary_push(fc2params, self);
+  rb_ary_push(fc2params, class_command);
+  rb_ary_push(fc2params, RARRAY(rbparams)->len);
+  rb_ary_push(fc2params, (VALUE)RARRAY(rbparams)->ptr);
 
   printf("RUBY INFO: Calling Command: %s From %s\n", command, client->name);
 
-  if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
+  if(!do_ruby(RB_CALLBACK(rb_singleton_call), fc2params))
   {
     reply_user(service, client, "An error has occurred, please be patient and report this bug");
     global_notice(service, "Ruby Failed to Execute Command: %s by %s", command, client->name);
@@ -382,6 +437,58 @@ Init_ClientStruct(void)
   rb_define_method(cClientStruct, "umodes", ClientStruct_Umodes, 0);
 }
 
+static VALUE
+ChannelStruct_Initialize(VALUE self, VALUE channel)
+{
+  rb_iv_set(self, "@realptr", channel);
+  return self;
+}
+
+static VALUE ChannelStruct_Name(VALUE self)
+{
+  VALUE channelstruct = rb_iv_get(self, "@realptr");
+  return rb_str_new2(rb_rbchannel2cchannel(channelstruct)->chname);
+}
+
+static VALUE ChannelStruct_Topic(VALUE self)
+{
+  VALUE channelstruct = rb_iv_get(self, "@realptr");
+  return rb_str_new2(rb_rbchannel2cchannel(channelstruct)->topic);
+}
+
+static VALUE ChannelStruct_TopicInfo(VALUE self)
+{
+  VALUE channelstruct = rb_iv_get(self, "@realptr");
+  return rb_str_new2(rb_rbchannel2cchannel(channelstruct)->topic_info);
+}
+
+static VALUE ChannelStruct_Mode(VALUE self)
+{
+  VALUE modeary = rb_ary_new();
+  VALUE channelstruct = rb_iv_get(self, "@realptr");
+
+  struct Channel *channel = rb_rbchannel2cchannel(channelstruct);
+  rb_ary_push(modeary, INT2NUM(channel->mode.mode));
+  rb_ary_push(modeary, INT2NUM(channel->mode.limit));
+  rb_ary_push(modeary, rb_str_new2(channel->mode.key));
+
+  return modeary;
+}
+
+static void
+Init_ChannelStruct(void)
+{
+  cChannelStruct = rb_define_class("ChannelStruct", rb_cObject);
+
+  rb_define_class_variable(cChannelStruct, "@@realptr", Qnil);
+
+  rb_define_method(cChannelStruct, "initialize", ChannelStruct_Initialize, 1);
+  rb_define_method(cChannelStruct, "name", ChannelStruct_Name, 0);
+  rb_define_method(cChannelStruct, "topic", ChannelStruct_Topic, 0);
+  rb_define_method(cChannelStruct, "topic_info", ChannelStruct_TopicInfo, 0);
+  rb_define_method(cChannelStruct, "mode", ChannelStruct_Mode, 0);
+}
+
 static void *
 rb_cmode_hdlr(va_list args)
 {
@@ -396,7 +503,7 @@ rb_cmode_hdlr(va_list args)
   if(RARRAY(hooks)->len)
   {
     VALUE params, current, service_name, self, command;
-    VALUE fc2params[4];
+    VALUE fc2params;
 
     ID command_id;
     int i;
@@ -405,9 +512,7 @@ rb_cmode_hdlr(va_list args)
 
     rb_ary_push(params, rb_cclient2rbclient(client_p));
     rb_ary_push(params, rb_cclient2rbclient(source_p));
-    //printf("RUBY INFO: Get channel\n");
-    //rb_ary_push(params,rb_cchannel2rbchannel(chptr));
-    rb_ary_push(params, Qnil);
+    rb_ary_push(params, rb_cchannel2rbchannel(chptr));
     rb_ary_push(params, rb_carray2rbarray(parc, parv));
 
     for(i = 0; i < RARRAY(hooks)->len; ++i)
@@ -418,12 +523,13 @@ rb_cmode_hdlr(va_list args)
       command = rb_ary_entry(current, 2);
       command_id = rb_intern(StringValueCStr(command));
 
-      fc2params[0] = self;
-      fc2params[1] = command_id;
-      fc2params[2] = RARRAY(params)->len;
-      fc2params[3] = RARRAY(params)->ptr;
+      fc2params = rb_ary_new();
+      rb_ary_push(fc2params, self);
+      rb_ary_push(fc2params, command_id);
+      rb_ary_push(fc2params, RARRAY(params)->len);
+      rb_ary_push(fc2params, (VALUE)RARRAY(params)->ptr);
 
-      if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
+      if(!do_ruby(RB_CALLBACK(rb_singleton_call), fc2params))
       {
         printf("RUBY ERROR: Failed to call: %s\n", StringValueCStr(command));
       }
@@ -431,6 +537,7 @@ rb_cmode_hdlr(va_list args)
   }
 
   pass_callback(ruby_cmode_hook);
+  return (void *)0;
 }
 
 static void*
@@ -446,7 +553,7 @@ rb_umode_hdlr(va_list args)
   if(RARRAY(hooks)->len)
   {
     VALUE params, current, service_name, self, command;
-    VALUE fc2params[4];
+    VALUE fc2params;
     ID command_id;
     int i;
 
@@ -463,10 +570,11 @@ rb_umode_hdlr(va_list args)
       command = rb_ary_entry(current, 2);
       command_id = rb_intern(StringValueCStr(command));
 
-      fc2params[0] = self;
-      fc2params[1] = command_id;
-      fc2params[2] = RARRAY(params)->len;
-      fc2params[3] = RARRAY(params)->ptr;
+      fc2params = rb_ary_new();
+      rb_ary_push(fc2params, self);
+      rb_ary_push(fc2params, command_id);
+      rb_ary_push(fc2params, RARRAY(params)->len);
+      rb_ary_push(fc2params, (VALUE)RARRAY(params)->ptr);
 
       if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
       {
@@ -476,6 +584,7 @@ rb_umode_hdlr(va_list args)
   }
 
   pass_callback(ruby_umode_hook);
+  return (void *)0;
 }
 
 int
@@ -485,7 +594,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   char path[PATH_MAX];
   char classname[PATH_MAX];
   VALUE klass, self;
-  VALUE params[4];
+  VALUE params;
   struct Service *service;
 
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
@@ -506,12 +615,13 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   printf("RUBY INFO: Loaded Class %s\n", classname);
 
-  params[0] = klass;
-  params[1] = rb_intern("new");
-  params[2] = 0;
-  params[3] = NULL;
+  params = rb_ary_new();
+  rb_ary_push(params, klass);
+  rb_ary_push(params, rb_intern("new"));
+  rb_ary_push(params, 0);
+  rb_ary_push(params, (VALUE)NULL);
 
-  self = rb_protect(RB_CALLBACK(rb_singleton_call), (VALUE)params, &status);
+  self = rb_protect(RB_CALLBACK(rb_singleton_call), params, &status);
 
   if(ruby_handle_error(status))
     return 0;
@@ -542,6 +652,7 @@ init_ruby(void)
   ruby_init_loadpath();
   Init_ServiceModule();
   Init_ClientStruct();
+  Init_ChannelStruct();
   signal(SIGINT, SIG_DFL);
   signal(SIGHUP, SIG_DFL);
   signal(SIGQUIT, SIG_DFL);
