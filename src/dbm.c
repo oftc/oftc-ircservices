@@ -353,7 +353,7 @@ db_find_chan(const char *channel)
 
   channel_p = MyMalloc(sizeof(struct RegChannel));
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui channel.%S nickname.nick.%S",
+  dbi_result_get_fields(result, "id.%ui channel.%S nick.%S",
       &channel_p->id, &findchannel, &findfounder);
 
   strlcpy(channel_p->channel, findchannel, sizeof(channel_p->channel));

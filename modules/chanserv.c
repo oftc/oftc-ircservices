@@ -73,11 +73,6 @@ m_register(struct Service *service, struct Client *client,
 {
   struct RegChannel *chan;
 
-  if (client->nickname == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_REG_NS_FIRST));
-  }
-
   if ( *parv[1] != '#' )
   {
     reply_user(service, client, _L(chanserv, client, CS_NAMESTART_HASH));
