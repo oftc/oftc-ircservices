@@ -272,6 +272,27 @@ db_set_url(struct Client *client, char *url)
   return 0;
 }
 
+int
+db_set_email(struct Client *client, char *email)
+{
+  dbi_result result;
+
+  snprintf(querybuffer, 1024, "UPDATE %s SET email=%s WHERE id=%d", 
+      "nickname", email, client->nickname->id);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return -1;
+  }
+
+  dbi_result_free(result);
+
+  return 0;
+}
+
 struct RegChannel *
 db_find_chan(const char *channel)
 {

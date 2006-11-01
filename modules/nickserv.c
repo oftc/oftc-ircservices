@@ -301,11 +301,22 @@ static void
 m_set_url(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  char *url;
+  char url[255];
   strlcpy(url, parv[1], 200);
     
   db_set_url(client, url);
   reply_user(service, client, _L(nickserv, client, NS_URL_SET), url);
+}
+
+static void
+m_set_email(struct Service *service, struct Client *client,
+        int parc, char *parv[])
+{
+  char email[255];
+  strlcpy(email, parv[1], 200);
+    
+  db_set_email(client, email);
+  reply_user(service, client, _L(nickserv, client, NS_EMAIL_SET), url);
 }
 
 static void*

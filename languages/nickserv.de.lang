@@ -21,3 +21,4 @@ NS_HELP_DROP_SHORT --
 NS_HELP_DROP_LONG  --
 NS_NEED_IDENTIFY  Du musst bei Nickserv identifiziert sein.
 NS_URL_SET        Deine URL wurde auf %s geaendert.
+NS_EMAIL_SET      Deine Email Adresse wurde auf %s geändert.
