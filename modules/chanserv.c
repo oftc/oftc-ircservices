@@ -35,7 +35,7 @@ static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, CS_HELP_REG_SHORT, CS_HELP_REG_LONG,
-  { m_register, m_alreadyreg, m_alreadyreg, m_alreadyreg }
+  { m_unreg, m_register, m_register, m_register }
 };
 
 static struct ServiceMessage help_msgtab = {
