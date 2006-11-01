@@ -1212,6 +1212,7 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
   {
     /* if here, it has to be a non-channel name */
     set_user_mode(client_p, source_p, parc, parv);
+    printf("%s %s\n", client_p->name, source_p->name);
     chain_umode(client_p, source_p, parc, parv);
     return;
   }

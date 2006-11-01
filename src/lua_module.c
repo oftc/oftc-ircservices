@@ -40,6 +40,7 @@ static int nick_new(lua_State *);
 static int service_new(lua_State *L);
 static int lua_L(lua_State *);
 static int lua_find_nick(lua_State *);
+static int lua_register_nick(lua_State *);
 static int lua_reply_user(lua_State *);
 static int lua_load_language(lua_State *);
 static int lua_register_command(lua_State *);
@@ -57,6 +58,8 @@ static const struct luaL_reg nick_m[] = {
   {"__newindex", nick_set},
   {"__index", nick_get},
   {"__tostring", nick_to_string},
+  {"db_find", lua_find_nick},
+  {"db_register", lua_register_nick},
   {NULL, NULL}
 };
 
@@ -65,7 +68,6 @@ static const struct luaL_reg service_f[] = {
   {"load_language", lua_load_language},
   {"register_command", lua_register_command},
   {"reply",  lua_reply_user},
-  {"db_findnick", lua_find_nick},
   {NULL, NULL}
 };
 
@@ -135,6 +137,19 @@ load_lua_module(const char *name, const char *dir, const char *fname)
     lua_pop(L, 1);
     return 0;
   }
+
+  return 1;
+}
+
+static int
+lua_register_nick(lua_State *L)
+{
+  const char *nick, *password;
+
+  nick = luaL_checkstring(L, 1);
+  password = luaL_checkstring(L, 2);
+
+  lua_pushboolean(L, 1);
 
   return 1;
 }
