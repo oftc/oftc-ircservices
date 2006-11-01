@@ -304,7 +304,7 @@ handle_command(struct Message *mptr, struct Client *client,
     exit_client(client, client, "Not enough arguments to server command.");
   }
   else
-    (*handler)(client, from, i, hpara);
+    (*handler)(from, client, i, hpara);
 }
 
 static void
