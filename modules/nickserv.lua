@@ -39,26 +39,31 @@ end
 
 function NickServ:help(client, param)
   if(param[0] == nil or param[0] == "" or self.handlers[param[0]] == nil) then
-  self.s:reply(client, self.s:_L(client, self.handlers["help"].help_long)) 
+  self.s:reply(client, self.s:_L(client, self.handlers["help"].help_long), "") 
   else
-    self.s:reply(client, self.s:_L(client, self.handlers[param[0]].help_short))
+    self.s:reply(client, self.s:_L(client, self.handlers[param[0]].help_short), "")
   end
 end
 
 function NickServ:register(c, param)
-  local n = nick()
-
+  local n
+  
   if(c.registered) then
     self.s:reply(c, self.s:_L(c, 1))
     return
   end
   
-  if(self.s:db_findnick(c.name)) then
+  if(nick.db_find(c.name)) then
     self.s:reply(c, self.s:_L(c, 1), c.name)
     return
   end
 
-  self.s:reply(c, "Yeah, right.  You wish.")
+  n = nick.db_register(c.name, param[0], param[1])
+  if(n) then
+    self.s:reply(c, self.s:_L(c, 2), c.name)
+  else
+    self.s:reply(c, self.s:_L(c, 3), c.name)
+  end
 end
 
 NickServ:init("NickServ")

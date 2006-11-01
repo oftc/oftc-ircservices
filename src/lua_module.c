@@ -36,7 +36,7 @@ static int client_get(lua_State *);
 static int nick_get(lua_State *);
 static int nick_set(lua_State *);
 static int nick_to_string(lua_State *);
-static int nick_new(lua_State *);
+//static int nick_new(lua_State *);
 static int service_new(lua_State *L);
 static int lua_L(lua_State *);
 static int lua_find_nick(lua_State *);
@@ -144,12 +144,26 @@ load_lua_module(const char *name, const char *dir, const char *fname)
 static int
 lua_register_nick(lua_State *L)
 {
-  const char *nick, *password;
+  const char *nick, *password, *email;
+  struct Nick *nick_p, *n;
 
   nick = luaL_checkstring(L, 1);
   password = luaL_checkstring(L, 2);
+  email = luaL_checkstring(L, 3);
 
-  lua_pushboolean(L, 1);
+  nick_p = db_register_nick(nick, password, email);
+  if(nick_p == NULL)
+  {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  n = (struct Nick*)lua_newuserdata(L, sizeof(struct Nick));
+  memcpy(n, nick_p, sizeof(struct Nick));
+  MyFree(nick_p);
+
+  luaL_getmetatable(L, "OFTC.nick");
+  lua_setmetatable(L, -2);
 
   return 1;
 }
@@ -158,7 +172,7 @@ static int
 lua_find_nick(lua_State *L)
 {
   struct Nick *nick, *n;
-  const char *nickname = luaL_checkstring(L, 2);
+  const char *nickname = luaL_checkstring(L, 1);
 
   nick = db_find_nick(nickname);
   if(nick == NULL)
@@ -180,12 +194,12 @@ lua_find_nick(lua_State *L)
 static int
 lua_reply_user(lua_State *L)
 {
-  const char *message;
+  const char *message, *param;
   struct Service *lua_service = check_service(L, 1);
   struct Client *client = check_client(L, 2);
-  const char *param = luaL_checkstring(L, 4);
-
+  
   message = luaL_checkstring(L, 3);
+  param = luaL_checkstring(L, 4);
   
   reply_user(lua_service, client, message, param);
 
@@ -213,6 +227,7 @@ lua_L(lua_State *L)
   client = (struct Client*) luaL_checkudata(L, 2, "OFTC.client");
   message = luaL_checkinteger(L, 3);
 
+  printf("returning: %s\n", _L(lua_service, client, message));
   lua_pushstring(L, _L(lua_service, client, message));
 
   return 1;
@@ -245,9 +260,7 @@ static int
 lua_register_nick_struct(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC.nick");
-  luaL_register(L, NULL, nick_m);
-
-  lua_register(L, "nick", nick_new);
+  luaL_register(L, "nick", nick_m);
 
   return 0;
 }
@@ -333,7 +346,7 @@ nick_to_string(lua_State *L)
   return 1;
 }
              
-static int
+/*static int
 nick_new(lua_State *L)
 {
   struct Nick *nick = (struct Nick*)lua_newuserdata(L, sizeof(struct Nick));
@@ -345,6 +358,7 @@ nick_new(lua_State *L)
 
   return 1;  
 }
+*/
 
 static struct Client *
 check_client(lua_State *L, int index)
