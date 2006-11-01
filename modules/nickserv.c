@@ -43,6 +43,8 @@ static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
+static void m_set_url(struct Service *, struct Client *, int, char *[]);
+static void m_set_email(struct Service *, struct Client *, int, char *[]);
 
 static void cloak_user(struct Client *);
 
@@ -67,10 +69,12 @@ static struct ServiceMessage drop_msgtab = {
   { m_identify, m_drop, m_drop, m_drop }
 };
 
-static struct SubMessage set_sub[3] = {
+static struct SubMessage set_sub[5] = {
   { "LANGUAGE", 0, 0, -1, -1, m_set_language },
   { "PASSWORD", 0, 2, -1, -1, m_set_password },
-  { "NULL", 0, 0, 0, 0, NULL }
+  { "URL"     , 0, 2, -1, -1, m_set_url},
+  { "EMAIL"   , 0, 2, -1, -1, m_set_email},
+  { "NULL"    , 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage set_msgtab = {
