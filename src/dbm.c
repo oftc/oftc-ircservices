@@ -411,3 +411,4 @@ db_register_chan(struct Client *client, char *channelname)
 
   return 0;
 }
+

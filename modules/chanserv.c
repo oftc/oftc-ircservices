@@ -91,7 +91,7 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  if (db_register_chan(client, parv[1]))
+  if (db_register_chan(client, parv[1]) == 0)
   {
     // XXX attach RegChannel to Channel
     reply_user(service, client, _L(chanserv, client, CS_REG_SUCCESS), parv[1]);
