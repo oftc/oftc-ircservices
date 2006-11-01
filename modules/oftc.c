@@ -30,9 +30,8 @@
 
 static void *irc_sendmsg_gnotice(va_list);
 static void *irc_sendmsg_svsmode(va_list args);
-static dlink_node *gnotice_hook;
-// name clash to be fixed
-// static dlink_node *umode_hook;
+static dlink_node *oftc_gnotice_cb;
+static dlink_node *oftc_umode_cb;
 
 struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, MFLG_SLOW, 0,
@@ -41,9 +40,8 @@ struct Message gnotice_msgtab = {
 
 INIT_MODULE(oftc, "$Revision$")
 {
-  gnotice_hook = install_hook(gnotice_cb, irc_sendmsg_gnotice);
-// name clash to be fixed
-//  umode_hook = install_hook(umode_cb, irc_sendmsg_svsmode);
+  oftc_gnotice_cb = install_hook(gnotice_cb, irc_sendmsg_gnotice);
+  oftc_umode_cb   = install_hook(umode_cb, irc_sendmsg_svsmode);
   mod_add_cmd(&gnotice_msgtab);
 }
 
@@ -51,7 +49,7 @@ CLEANUP_MODULE
 {
   mod_del_cmd(&gnotice_msgtab);
   uninstall_hook(gnotice_cb, irc_sendmsg_gnotice);
-  //uninstall_hook(umode_cb, irc_sendmsg_svsmode);
+  uninstall_hook(umode_cb, irc_sendmsg_svsmode);
 }
 
 static void *
