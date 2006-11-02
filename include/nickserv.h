@@ -50,5 +50,6 @@ struct Nick
 #define NS_NICK_DROPPED     24
 #define NS_NICK_DROPFAIL    25
 #define NS_NICK_SET_EMAIL   26
+#define NS_NICK_EMAIL       27
 
 #endif

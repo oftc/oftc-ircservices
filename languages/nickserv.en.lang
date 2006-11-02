@@ -25,3 +25,4 @@ NS_EMAIL_SET      Your eMail Adress has been changed to %s.
 NS_NICK_DROPPED   Nickname %s has been DROPped.
 NS_NICK_DROPFAIL  DROP failed on Nickname %s.
 NS_NICK_SET_EMAIL eMail set to %s on Nickname %s.
+NS_NICK_EMAIL     Your eMail is set to: %s.
