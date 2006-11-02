@@ -37,7 +37,7 @@ extern dlink_list global_server_list;
 /* user information flags, only settable by remote mode or local oper */
 #define UMODE_OPER         0x40000 /* Operator */
 #define UMODE_ADMIN        0x80000 /* Admin on server */
-#define UMODE_REGISTERED  0x100000 /* Registered with nickserv */
+#define UMODE_IDENTIFIED  0x100000 /* Registered with nickserv */
 #define UMODE_ALL    UMODE_SERVNOTICE
 
 #define IsConnecting(x)         ((x)->flags & FLAGS_CONNECTING)
@@ -61,13 +61,13 @@ extern dlink_list global_server_list;
 #define SetMe(x)                ((x)->status |= STAT_ME)
 
 #define IsOper(x)               ((x)->umodes & UMODE_OPER)
-#define IsRegistered(x)         ((x)->umodes & UMODE_REGISTERED)
+#define IsIdentified(x)         ((x)->umodes & UMODE_IDENTIFIED)
 
 #define SetOper(x)              ((x)->umodes |= UMODE_OPER)
-#define SetRegistered(x)        ((x)->umodes |= UMODE_REGISTERED)
+#define SetIdentified(x)        ((x)->umodes |= UMODE_IDENTIFIED)
 
 #define ClearOper(x)            ((x)->umodes &= ~UMODE_OPER)
-#define ClearRegistered(x)      ((x)->umodes &= ~UMODE_REGISTERED)
+#define ClearIdentified(x)      ((x)->umodes &= ~UMODE_IDENTIFIED)
 
 #define IDLEN           12 /* this is the maximum length, not the actual
                               generated length; DO NOT CHANGE! */

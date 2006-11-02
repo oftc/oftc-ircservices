@@ -110,34 +110,6 @@ CLEANUP_MODULE
   dlinkDelete(&nickserv->node, &services_list);
 }
 
-/**
- * do all the necessary work to consider a client identified.
- * Note: at this point it has to already be verified that the client
- * is allowed to do so.
- */
-static void
-identify_user(struct Client *client)
-{
-  if(IsOper(client) && IsServAdmin(client))
-  {
-    client->service_handler = ADMIN_HANDLER;
-    printf("Admin\n");
-  }
-  else if(IsOper(client))
-  {
-    printf("Oper\n");
-    client->service_handler = OPER_HANDLER;
-  }
-  else
-  {
-    printf("Normal\n");
-    client->service_handler = REG_HANDLER;
-  }
-
-  SetRegistered(client);
-  send_umode(nickserv, client, "+R");
-}
-
 static void
 cloak_user(struct Client *client_p)
 {
@@ -172,8 +144,13 @@ m_register(struct Service *service, struct Client *client,
   nick = db_register_nick(client->name, crypt_pass(parv[1]), parv[2]);
   if(nick != NULL)
   {
-    client->nickname = nick;
-    identify_user(client);
+    int error;
+    
+    /* XXX The best way to do this? hmm.. */
+    MyFree(nick);
+    nick = identify_user(client, parv[1], &error);
+    send_umode(nickserv, client, "+R");
+
     reply_user(service, client, _L(nickserv, client, NS_REG_COMPLETE), client->name);
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
         client->username, client->host, nick->nick);
@@ -225,24 +202,20 @@ m_identify(struct Service *service, struct Client *client,
 {
   struct Nick *nick;
 
-  if((nick = db_find_nick(client->name)) == NULL)
+  switch(identify_user(client, parv[1]))
   {
-    reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), client->name);
-    MyFree(nick);
-    return;
-  }
+    case ERR_ID_NONICK:
+      reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), 
+          client->name);
+      return;
+    case ERR_ID_WRONGPASS:
+      reply_user(service, client, _L(nickserv, client, NS_IDENT_FAIL), 
+          client->name);
+      return;
 
-  if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), sizeof(nick->pass)) == 0)
-  {
-    client->nickname = nick;
-    reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
-    identify_user(client);
-    cloak_user(client);
   }
-  else
-  {
-    reply_user(service, client, _L(nickserv, client, NS_IDENT_FAIL), client->name);
-  }
+  cloak_user(client);
+  reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
 }
 
 static void

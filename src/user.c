@@ -334,3 +334,32 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
   strcpy(source_p->name, nick);
   hash_add_client(source_p);
 }
+
+int
+identify_user(struct Client *client, const char *password)
+{
+  struct Nick *nick;
+
+  if((nick = db_find_nick(client->name)) == NULL)
+    return ERR_ID_NONICK; 
+
+  if(strncmp(nick->pass, servcrypt(password, nick->pass), 
+    sizeof(nick->pass)) != 0)
+  {
+    MyFree(nick);
+    return ERR_ID_WRONGPASS;
+  }
+
+  client->nickname = nick;
+
+  if(IsOper(client) && IsServAdmin(client))
+    client->service_handler = ADMIN_HANDLER;
+  else if(IsOper(client))
+    client->service_handler = OPER_HANDLER;
+  else
+    client->service_handler = REG_HANDLER;
+
+  SetIdentified(client);
+
+  return ERR_ID_NOERROR;
+}

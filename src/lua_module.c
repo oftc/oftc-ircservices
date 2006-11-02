@@ -36,11 +36,11 @@ static int client_get(lua_State *);
 static int nick_get(lua_State *);
 static int nick_set(lua_State *);
 static int nick_to_string(lua_State *);
-//static int nick_new(lua_State *);
 static int service_new(lua_State *L);
 static int lua_L(lua_State *);
 static int lua_find_nick(lua_State *);
 static int lua_register_nick(lua_State *);
+static int lua_identify_nick(lua_State *);
 static int lua_drop_nick(lua_State *);
 static int lua_reply_user(lua_State *);
 static int lua_load_language(lua_State *);
@@ -62,6 +62,7 @@ static const struct luaL_reg nick_m[] = {
   {"db_drop", lua_drop_nick},
   {"db_find", lua_find_nick},
   {"db_register", lua_register_nick},
+  {"identify", lua_identify_nick},
   {NULL, NULL}
 };
 
@@ -171,6 +172,36 @@ lua_register_nick(lua_State *L)
 }
 
 static int
+lua_identify_nick(lua_State *L)
+{
+  struct Nick *nick;
+  struct Client *client = check_client(L, 1);
+  const char *password = luaL_checkstring(L, 2);
+  int error;
+
+  error = identify_user(client, password);
+  
+  lua_pushinteger(L, error);
+
+  if(nick == NULL || error != NULL)
+  {
+    lua_pushnil(L);
+    return 2;
+  }
+ 
+  nick = client->nickname;
+  client->nickname = (struct Nick*)lua_newuserdata(L, sizeof(struct Nick));
+  memcpy(client->nickname, nick, sizeof(struct Nick));
+
+  MyFree(nick);
+
+  luaL_getmetatable(L, "OFTC.nick");
+  lua_setmetatable(L, -2);
+  
+  return 2;
+}
+
+static int
 lua_find_nick(lua_State *L)
 {
   struct Nick *nick, *n;
@@ -207,7 +238,7 @@ lua_drop_nick(lua_State *L)
 
   client = find_client(nick);
   client->service_handler = UNREG_HANDLER;
-  ClearRegistered(client);
+  ClearIdentified(client);
 
   lua_pushboolean(L, TRUE);
 
@@ -369,20 +400,6 @@ nick_to_string(lua_State *L)
   return 1;
 }
              
-/*static int
-nick_new(lua_State *L)
-{
-  struct Nick *nick = (struct Nick*)lua_newuserdata(L, sizeof(struct Nick));
-
-  memset(nick, 0, sizeof(struct Nick));
-
-  luaL_getmetatable(L, "OFTC.nick");
-  lua_setmetatable(L, -2);
-
-  return 1;  
-}
-*/
-
 static struct Client *
 check_client(lua_State *L, int index)
 {
@@ -400,8 +417,8 @@ client_get(lua_State *L)
 
   if(strcmp(index, "name") == 0)
     lua_pushstring(L, client->name);
-  else if(strcmp(index, "registered") == 0)
-    lua_pushboolean(L, IsRegistered(client));
+  else if(strcmp(index, "identified") == 0)
+    lua_pushboolean(L, IsIdentified(client));
   else
   { 
     lua_pushfstring(L, "index %s is not supported", index);

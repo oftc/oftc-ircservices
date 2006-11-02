@@ -37,3 +37,4 @@
 #include "chanserv.h"
 #include "operserv.h"
 #include "crypt.h"
+#include "user.h"

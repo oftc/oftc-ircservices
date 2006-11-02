@@ -3,48 +3,65 @@ NickServ = {};
 function NickServ:init(name)
   self.handlers = {
     drop = {
-      name = "drop",
       func = self.drop,
       help_short = 19,
       help_long = 20,
       num_args = 0,
     },
     help = {
-      name = "help",
       func = self.help,
       help_short = 7,
       help_long = 8,
       num_args = 0,
     },
+    identify = {
+      func = self.identify,
+      help_short = 11,
+      help_short = 12,
+      num_args = 1,
+    },
     register = {
-      name = "register",
       func = self.register,
       help_short = 9,
       help_long = 10,
       num_args = 2,
     },
     set = {
-      name = "set",
       func = self.set,
       help_short = 0,
       help_long = 0,
       num_args = 1,
       options = {
         email = {
-          name = "email",
           func = self.set_email,
-        }
+        },
+        enforce = {
+          func = self.set_enforce,
+        },
+        language = {
+          func = self.set_language
+        },
+        password = {
+          func = self.set_password,
+        },
+        secure = {
+          func = self.set_secure,
+        },
+        url = {
+          func = self.set_url,
+        },
       }
     }
   }
 
   self.s = register_service(name)
 
-  for _, command in pairs(self.handlers) do 
-    self.s:register_command(command.name) 
+  for name, command in pairs(self.handlers) do 
+    self.s:register_command(name) 
   end
 
   self.s:load_language("nickserv.en")
+  self.s:load_language("nickserv.rude")
 end
 
 function NickServ:handle_command(client, cmd, param)
@@ -69,6 +86,11 @@ function NickServ:set(client, param)
   table.remove(param, 0)
   local option = self.handlers["set"].options[param[0]]
 
+  if not(self.n) then
+    self.s:reply(client, self.s:_L(client, 21), client.name)
+    return
+  end
+
   if(option) then
     option.func(self, client, param) 
   else
@@ -92,29 +114,51 @@ function NickServ:help(client, param)
   end
 end
 
-function NickServ:register(c, param)
-  local n
-  
-  if(c.registered) then
-    self.s:reply(c, self.s:_L(c, 1))
+function NickServ:register(client, param)
+  if(client.identified) then
+    self.s:reply(client, self.s:_L(client, 1))
     return
   end
   
-  if(nick.db_find(c.name)) then
-    self.s:reply(c, self.s:_L(c, 1), c.name)
+  if(nick.db_find(client.name)) then
+    self.s:reply(client, self.s:_L(client, 1), client.name)
     return
   end
 
-  n = nick.db_register(c.name, param[0], param[1])
-  if(n) then
-    self.s:reply(c, self.s:_L(c, 2), c.name)
+  self.n = nick.db_register(client.name, param[0], param[1])
+  if(self.n) then
+    self.s:reply(client, self.s:_L(client, 2), client.name)
   else
-    self.s:reply(c, self.s:_L(c, 3), c.name)
+    self.s:reply(client, self.s:_L(client, 3), client.name)
   end
 end
 
+function NickServ:identify(client, param)
+  if(client.identified) then
+    self.s:reply(client, self.s:_L(client, 1), client.name)
+    return
+  end
+
+  err, self.n = nick.identify(client, param[0])
+  if not(self.n) then
+    if(err == 1) then
+      self.s:reply(client, self.s:_L(client, 4), client.name)
+      return
+    elseif(err == 2) then
+      self.s:reply(client, self.s:_L(client, 6), client.name)
+      return
+    end
+    return
+  end
+  self.s:reply(client, self.s:_L(client, 5), client.name)
+end
+
 function NickServ:set_email(client, param)
-  print "hi"
+  if(param[0] == "" or not param[0]) then
+    self.s:reply(c, self.s:_L(c, 27), self.n.email)
+  else 
+    self.n:db_setemail(param[0])
+  end
 end
 
 NickServ:init("NickServ")
