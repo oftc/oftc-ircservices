@@ -69,9 +69,10 @@ irc_sendmsg_gnotice(va_list args)
   return NULL;
 }
 
-static void 
+static void *
 irc_sendmsg_svscloak(va_list args)
 {
+  struct Client *client = va_arg(args, struct Client *);
   char *target_name = va_arg(args, char *);
   char *cloakstring = va_arg(args, char *);
 

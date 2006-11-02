@@ -146,7 +146,7 @@ cloak_user(struct Client *client_p)
   cloak = db_find_cloak(client_p->name);
   if (cloak != NULL)
   {
-    svscloak_user(client_p->name, cloak);
+    svscloak_user(client, client_p->name, cloak);
   }
 
   MyFree(cloak);
