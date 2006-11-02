@@ -333,7 +333,7 @@ db_find_cloak(char *name)
 
   if(dbi_result_get_numrows(result) == 0)
   {
-    printf("db: Cloak %s not found\n", channel);
+    printf("db: Cloak not found\n");
     return NULL;
   }
 
