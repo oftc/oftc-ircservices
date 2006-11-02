@@ -22,6 +22,19 @@ function NickServ:init(name)
       help_short = 9,
       help_long = 10,
       num_args = 2,
+    },
+    set = {
+      name = "set",
+      func = self.set,
+      help_short = 0,
+      help_long = 0,
+      num_args = 1,
+      options = {
+        email = {
+          name = "email",
+          func = self.set_email,
+        }
+      }
     }
   }
 
@@ -46,9 +59,20 @@ function NickServ:handle_command(client, cmd, param)
 
   if(i < self.handlers[cmd].num_args) then
     self.s:reply(client, "Insufficient Parameters: \002".. cmd.. 
-      "\002. Got " .. i.. ", wanted ".. self.handlers[cmd].num_args.. ".", "")
+      "\002. Got " .. i.. ", wanted at least ".. self.handlers[cmd].num_args.. ".", "")
   else
     self.handlers[cmd].func(self, client, params)
+  end
+end
+
+function NickServ:set(client, param)
+  table.remove(param, 0)
+  local option = self.handlers["set"].options[param[0]]
+
+  if(option) then
+    option.func(self, client, param) 
+  else
+    self.s:reply(client, "Unknown \002SET\002 option: %s.", param[0])
   end
 end
 
@@ -87,6 +111,10 @@ function NickServ:register(c, param)
   else
     self.s:reply(c, self.s:_L(c, 3), c.name)
   end
+end
+
+function NickServ:set_email(client, param)
+  print "hi"
 end
 
 NickServ:init("NickServ")
