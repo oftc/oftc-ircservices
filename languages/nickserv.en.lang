@@ -20,7 +20,8 @@ NS_SET_FAILED     Your SET command failed.
 NS_HELP_DROP_SHORT --
 NS_HELP_DROP_LONG  --
 NS_NEED_IDENTIFY  You need to identify to Nickserv first.
-NS_URL_SET        Your URL has been updated to %s.
-NS_EMAIL_SET      Your eMail Adress has been changed to %s.
+NS_URL_SET        Your URL has been updated to %s.
+NS_EMAIL_SET      Your eMail Adress has been changed to %s.
 NS_NICK_DROPPED   Nickname %s has been DROPped.
 NS_NICK_DROPFAIL  DROP failed on Nickname %s.
+NS_NICK_SET_EMAIL eMail set to %s on Nickname %s.
