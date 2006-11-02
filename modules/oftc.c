@@ -29,9 +29,12 @@
 #include "stdinc.h"
 
 static void *irc_sendmsg_gnotice(va_list);
-static void *irc_sendmsg_svsmode(va_list args);
+static void *irc_sendmsg_svsmode(va_list);
+static void *irc_sendmsg_svscloak(va_list);
+
 static dlink_node *oftc_gnotice_cb;
 static dlink_node *oftc_umode_cb;
+static dlink_node *oftc_svscloak_cb;
 
 struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, MFLG_SLOW, 0,
@@ -42,6 +45,7 @@ INIT_MODULE(oftc, "$Revision$")
 {
   oftc_gnotice_cb = install_hook(gnotice_cb, irc_sendmsg_gnotice);
   oftc_umode_cb   = install_hook(umode_cb, irc_sendmsg_svsmode);
+  oftc_svscloak_cb = install_hook(cloak_cb, irc_sendmsg_svscloak);
   mod_add_cmd(&gnotice_msgtab);
 }
 
@@ -50,6 +54,7 @@ CLEANUP_MODULE
   mod_del_cmd(&gnotice_msgtab);
   uninstall_hook(gnotice_cb, irc_sendmsg_gnotice);
   uninstall_hook(umode_cb, irc_sendmsg_svsmode);
+  uninstall_hook(cloak_cb, irc_sendmsg_svscloak);
 }
 
 static void *
@@ -64,16 +69,17 @@ irc_sendmsg_gnotice(va_list args)
   return NULL;
 }
 
-#if 0
-XXX Unused atm
 static void 
-irc_sendmsg_svscloak(struct Client *client, struct Client *target, 
-    char *cloakstring) 
+irc_sendmsg_svscloak(va_list args)
 {
+  char *target_name = va_arg(args, char *);
+  char *cloakstring = va_arg(args, char *);
+
   sendto_server(client, ":%s SVSCLOAK %s :%s", 
-    me.name, target->name, cloakstring);
+    me.name, target_name, cloakstring);
+  
+  return NULL;
 }
-#endif
 
 static void *
 irc_sendmsg_svsmode(va_list args)

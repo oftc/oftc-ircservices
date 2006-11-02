@@ -303,6 +303,46 @@ db_set_email(struct Client *client, char *email)
   return 0;
 }
 
+char *
+db_find_cloak(char *name)
+{
+  dbi_result result;
+  char *escname;
+  char *cloak;
+
+  assert(name != NULL);
+
+  if(dbi_driver_quote_string_copy(Database.driv, name, &escname) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return NULL;
+  }
+  
+  snprintf(querybuffer, 1024, "SELECT cloak FROM %s WHERE nick=%s", "nickname", escname);
+  
+  MyFree(escname);
+  printf("db: query: %s\n", querybuffer);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return NULL;
+  }
+
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    printf("db: Cloak %s not found\n", channel);
+    return NULL;
+  }
+
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "cloak.%S", &cloak);
+
+  return cloak;
+}
+
 int
 db_set_cloak(struct Nick *nick_p, char *cloak)
 {

@@ -10,6 +10,7 @@ extern struct Callback *privmsg_cb;
 extern struct Callback *notice_cb;
 extern struct Callback *gnotice_cb;
 extern struct Callback *umode_cb;
+extern struct Callback *cloak_cb;
 
 extern struct Callback *umode_hook;
 extern struct Callback *cmode_hook;
@@ -22,6 +23,7 @@ struct Service *make_service(char *);
 void introduce_service(struct Service *);
 void reply_user(struct Service *, struct Client *, const char *, ...);
 void global_notice(struct Service *, char *, ...);
+void cloak_user(char *, char *);
 void send_umode(struct Service *, struct Client *, const char *);
 void init_interface();
 void do_help(struct Service *, struct Client *, const char *, int, char **);

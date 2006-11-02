@@ -112,7 +112,7 @@ CLEANUP_MODULE
 
 /**
  * do all the necessary work to consider a client identified.
- * Note: at this point it has to already verified that the client
+ * Note: at this point it has to already be verified that the client
  * is allowed to do so.
  */
 static void
@@ -136,12 +136,20 @@ identify_user(struct Client *client)
 
   SetRegistered(client);
   send_umode(nickserv, client, "+R");
-  cloak_user(client);
 }
 
 static void
 cloak_user(struct Client *client_p)
 {
+  char *cloak;
+
+  cloak = db_find_cloak(client_p->name);
+  if (cloak != NULL)
+  {
+    svscloak_user(client_p->name, cloak);
+  }
+
+  MyFree(cloak);
 }
 
 
@@ -229,6 +237,7 @@ m_identify(struct Service *service, struct Client *client,
     client->nickname = nick;
     reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
     identify_user(client);
+    cloak_user(client);
   }
   else
   {

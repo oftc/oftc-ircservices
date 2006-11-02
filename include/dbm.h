@@ -13,5 +13,6 @@ int db_delete_nick(const char*);
 int db_set_url(struct Client *, char *);
 int db_set_email(struct Client *, char *);
 int db_set_cloak(struct Nick *, char *);
+char * db_find_cloak(char *);
 
 #endif

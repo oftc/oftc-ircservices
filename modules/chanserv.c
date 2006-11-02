@@ -99,6 +99,7 @@ m_register(struct Service *service, struct Client *client,
   }
 }
 
+
 static void
 m_help(struct Service *service, struct Client *client,
     int parc, char *parv[])

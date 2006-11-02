@@ -30,6 +30,7 @@ struct Callback *privmsg_cb;
 struct Callback *notice_cb;
 struct Callback *gnotice_cb;
 struct Callback *umode_cb;
+struct Callback *cloak_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *nick_hook;
@@ -49,6 +50,7 @@ init_interface()
   notice_cb     = register_callback("NOTICE user", NULL);
   gnotice_cb    = register_callback("Global Notice", NULL);
   umode_cb      = register_callback("Set UMODE", NULL);
+  cloak_cb      = register_callback("Cloak an user", NULL);
   nick_hook     = register_callback("Propagate NICK", NULL);
   join_hook     = register_callback("Propagate JOIN", NULL);
   part_hook     = register_callback("Propagate PART", NULL);
@@ -112,6 +114,12 @@ void
 send_umode(struct Service *service, struct Client *client, const char *mode)
 {
   execute_callback(umode_cb, me.uplink, client->name, mode);
+}
+
+void
+cloak_user(char *name, char *cloak)
+{
+  execute_callback(cloak_cb, name, cloak);
 }
 
 void
