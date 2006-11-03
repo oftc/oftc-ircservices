@@ -183,7 +183,7 @@ lua_identify_nick(lua_State *L)
   
   lua_pushinteger(L, error);
 
-  if(nick == NULL || error != NULL)
+  if(nick == NULL || error != 0)
   {
     lua_pushnil(L);
     return 2;
