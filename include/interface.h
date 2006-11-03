@@ -27,6 +27,7 @@ void cloak_user(struct Client *, char *);
 void send_umode(struct Service *, struct Client *, const char *);
 void init_interface();
 void do_help(struct Service *, struct Client *, const char *, int, char **);
+int identify_user(struct Client *, const char *);
 
 void chain_umode(struct Client *, struct Client *, int, char **);
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
@@ -47,5 +48,11 @@ struct Service
   void *data;
 };
 
+enum identify_errors
+{
+  ERR_ID_NOERROR = 0,
+  ERR_ID_NONICK,
+  ERR_ID_WRONGPASS
+};
 
 #endif
