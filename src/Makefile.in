@@ -82,8 +82,7 @@ SRCS = 								\
  parse.c							\
  ruby_module.c				\
  services.c						\
- send.c								\
- user.c
+ send.c								
 
 OBJS = ${SRCS:.c=.o}
 
