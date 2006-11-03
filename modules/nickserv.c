@@ -46,9 +46,6 @@ static void m_set_password(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 
-static void cloak_user(struct Client *);
-
-
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, NS_HELP_REG_SHORT, NS_HELP_REG_LONG,
   { m_register, m_alreadyreg, m_alreadyreg, m_alreadyreg }
@@ -110,21 +107,6 @@ CLEANUP_MODULE
   dlinkDelete(&nickserv->node, &services_list);
 }
 
-static void
-cloak_user(struct Client *client_p)
-{
-  char *cloak;
-
-  cloak = db_find_cloak(client_p->name);
-  if (cloak != NULL)
-  {
-    svscloak_user(client, client_p->name, cloak);
-  }
-
-  MyFree(cloak);
-}
-
-
 /**
  * Someone wants to register with nickserv
  */
@@ -133,6 +115,7 @@ m_register(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick;
+  int error;
   
   if((nick = db_find_nick(client->name)) != NULL)
   {
@@ -148,7 +131,7 @@ m_register(struct Service *service, struct Client *client,
     
     /* XXX The best way to do this? hmm.. */
     MyFree(nick);
-    nick = identify_user(client, parv[1], &error);
+    error = identify_user(client, parv[1]);
     send_umode(nickserv, client, "+R");
 
     reply_user(service, client, _L(nickserv, client, NS_REG_COMPLETE), client->name);
@@ -168,7 +151,7 @@ static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  if (!IsRegistered(client)) 
+  if (!IsIdentified(client)) 
   {
     reply_user(service, client, _L(nickserv, client, NS_NEED_IDENTIFY), client->name);
   }
@@ -178,7 +161,7 @@ m_drop(struct Service *service, struct Client *client,
   if (db_delete_nick(client->name) == 0) 
   {
     client->service_handler = UNREG_HANDLER;
-    ClearRegistered(client);
+    ClearIdentified(client);
     send_umode(nickserv, client, "-R");
 
     reply_user(service, client, _L(nickserv, client, NS_NICK_DROPPED), client->name);
@@ -200,7 +183,7 @@ static void
 m_identify(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct Nick *nick;
+  char *cloak;
 
   switch(identify_user(client, parv[1]))
   {
@@ -214,7 +197,9 @@ m_identify(struct Service *service, struct Client *client,
       return;
 
   }
-  cloak_user(client);
+  cloak = db_find_cloak(client->name);
+  cloak_user(client, cloak); 
+  MyFree(cloak);
   reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
 }
 

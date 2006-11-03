@@ -73,11 +73,10 @@ static void *
 irc_sendmsg_svscloak(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
-  char *target_name = va_arg(args, char *);
   char *cloakstring = va_arg(args, char *);
 
   sendto_server(client, ":%s SVSCLOAK %s :%s", 
-    me.name, target_name, cloakstring);
+    me.name, client->name, cloakstring);
   
   return NULL;
 }

@@ -117,9 +117,9 @@ send_umode(struct Service *service, struct Client *client, const char *mode)
 }
 
 void
-cloak_user(char *name, char *cloak)
+cloak_user(struct Client *client, char *cloak)
 {
-  execute_callback(cloak_cb, name, cloak);
+  execute_callback(cloak_cb, client, cloak);
 }
 
 void
