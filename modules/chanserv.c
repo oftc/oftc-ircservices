@@ -57,7 +57,7 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &help_msgtab);
   
-  cs_cmode_hook = install_hook(cmode_hook, s_cmode);
+  cs_cmode_hook = install_hook(on_cmode_change_cb, s_cmode);
 }
 
 CLEANUP_MODULE

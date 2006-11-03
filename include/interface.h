@@ -6,18 +6,19 @@ struct Client;
 
 extern dlink_list services_list;
 extern struct Callback *newuser_cb;
-extern struct Callback *privmsg_cb;
-extern struct Callback *notice_cb;
-extern struct Callback *gnotice_cb;
-extern struct Callback *umode_cb;
-extern struct Callback *cloak_cb;
+extern struct Callback *send_privmsg_cb;
+extern struct Callback *send_notice_cb;
+extern struct Callback *send_gnotice_cb;
+extern struct Callback *send_umode_cb;
+extern struct Callback *send_cloak_cb;
 
-extern struct Callback *umode_hook;
-extern struct Callback *cmode_hook;
-extern struct Callback *squit_hook;
-extern struct Callback *quit_hook;
-extern struct Callback *part_hook;
-extern struct Callback *nick_hook;
+extern struct Callback *on_umode_change_cb;
+extern struct Callback *on_cmode_change_cb;
+extern struct Callback *on_squit_cb;
+extern struct Callback *on_quit_cb;
+extern struct Callback *on_part_cb;
+extern struct Callback *on_nick_change_cb;
+extern struct Callback *on_identify_cb;
 
 struct Service *make_service(char *);
 void introduce_service(struct Service *);

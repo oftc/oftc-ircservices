@@ -702,8 +702,8 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   service = find_service(classname);
   service->data = (void *)self;
 
-  ruby_cmode_hook = install_hook(cmode_hook, rb_cmode_hdlr);
-  ruby_umode_hook = install_hook(umode_hook, rb_umode_hdlr);
+  ruby_cmode_hook = install_hook(on_cmode_change_cb, rb_cmode_hdlr);
+  ruby_umode_hook = install_hook(on_umode_change_cb, rb_umode_hdlr);
 
   return 1;
 }

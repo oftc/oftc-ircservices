@@ -96,8 +96,8 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
   
-  ns_umode_hook = install_hook(umode_hook, s_umode);
-  ns_nick_hook  = install_hook(nick_hook, s_nick);
+  ns_umode_hook = install_hook(on_umode_change_cb, s_umode);
+  ns_nick_hook  = install_hook(on_nick_change_cb, s_nick);
 }
 
 CLEANUP_MODULE

@@ -163,8 +163,8 @@ INIT_MODULE(irc, "$Revision$")
 {
   connected_hook = install_hook(connected_cb, irc_server_connected);
   newuser_hook = install_hook(newuser_cb, irc_sendmsg_nick);
-  privmsg_hook = install_hook(privmsg_cb, irc_sendmsg_privmsg);
-  notice_hook  = install_hook(notice_cb, irc_sendmsg_notice);
+  privmsg_hook = install_hook(send_privmsg_cb, irc_sendmsg_privmsg);
+  notice_hook  = install_hook(send_notice_cb, irc_sendmsg_notice);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);

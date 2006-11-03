@@ -26,38 +26,42 @@
 
 dlink_list services_list = { 0 };
 struct Callback *newuser_cb;
-struct Callback *privmsg_cb;
-struct Callback *notice_cb;
-struct Callback *gnotice_cb;
-struct Callback *umode_cb;
-struct Callback *cloak_cb;
+struct Callback *send_privmsg_cb;
+struct Callback *send_notice_cb;
+struct Callback *send_gnotice_cb;
+struct Callback *send_umode_cb;
+struct Callback *send_cloak_cb;
 static BlockHeap *services_heap  = NULL;
 
-struct Callback *nick_hook;
-struct Callback *join_hook;
-struct Callback *part_hook;
-struct Callback *quit_hook;
-struct Callback *umode_hook;
-struct Callback *cmode_hook;
-struct Callback *squit_hook;
+struct Callback *on_nick_change_cb;
+struct Callback *on_join_cb;
+struct Callback *on_part_cb;
+struct Callback *on_quit_cb;
+struct Callback *on_umode_change_cb;
+struct Callback *on_cmode_change_cb;
+struct Callback *on_squit_cb;
+
+struct Callback *on_identify_cb;
 
 void
 init_interface()
 {
-  services_heap = BlockHeapCreate("services", sizeof(struct Service), SERVICES_HEAP_SIZE);
-  newuser_cb    = register_callback("introduce user", NULL);
-  privmsg_cb    = register_callback("message user", NULL);
-  notice_cb     = register_callback("NOTICE user", NULL);
-  gnotice_cb    = register_callback("Global Notice", NULL);
-  umode_cb      = register_callback("Set UMODE", NULL);
-  cloak_cb      = register_callback("Cloak an user", NULL);
-  nick_hook     = register_callback("Propagate NICK", NULL);
-  join_hook     = register_callback("Propagate JOIN", NULL);
-  part_hook     = register_callback("Propagate PART", NULL);
-  quit_hook     = register_callback("Propagate QUIT", NULL);
-  umode_hook    = register_callback("Propagate UMODE", NULL);
-  cmode_hook    = register_callback("Propagate CMODE", NULL);
-  squit_hook    = register_callback("Propagate SQUIT", NULL);
+  services_heap       = BlockHeapCreate("services", sizeof(struct Service), SERVICES_HEAP_SIZE);
+  /* XXX some of these should probably have default callbacks */
+  newuser_cb          = register_callback("introduce user", NULL);
+  send_privmsg_cb     = register_callback("message user", NULL);
+  send_notice_cb      = register_callback("NOTICE user", NULL);
+  send_gnotice_cb     = register_callback("Global Notice", NULL);
+  send_umode_cb       = register_callback("Set UMODE", NULL);
+  send_cloak_cb       = register_callback("Cloak an user", NULL);
+  on_nick_change_cb   = register_callback("Propagate NICK", NULL);
+  on_join_cb          = register_callback("Propagate JOIN", NULL);
+  on_part_cb          = register_callback("Propagate PART", NULL);
+  on_quit_cb          = register_callback("Propagate QUIT", NULL);
+  on_umode_change_cb  = register_callback("Propagate UMODE", NULL);
+  on_cmode_change_cb  = register_callback("Propagate CMODE", NULL);
+  on_quit_cb          = register_callback("Propagate SQUIT", NULL);
+  on_identify_cb      = register_callback("Identify Callback", NULL);
 }
 
 struct Service *
@@ -95,7 +99,7 @@ introduce_service(struct Service *service)
 void
 tell_user(struct Service *service, struct Client *client, char *text)
 {
-  execute_callback(privmsg_cb, me.uplink, service->name, client->name, text);
+  execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, text);
 }
 
 void
@@ -107,13 +111,13 @@ reply_user(struct Service *service, struct Client *client, const char *fmt, ...)
   va_start(ap, fmt);
   vsnprintf(buf, IRC_BUFSIZE, fmt, ap);
   va_end(ap);
-  execute_callback(notice_cb, me.uplink, service->name, client->name, buf);
+  execute_callback(send_notice_cb, me.uplink, service->name, client->name, buf);
 }
 
 void
 send_umode(struct Service *service, struct Client *client, const char *mode)
 {
-  execute_callback(umode_cb, me.uplink, client->name, mode);
+  execute_callback(send_umode_cb, me.uplink, client->name, mode);
 }
   
 int
@@ -142,13 +146,15 @@ identify_user(struct Client *client, const char *password)
 
   SetIdentified(client);
 
+  execute_callback(on_identify_cb, me.uplink, client);
+
   return ERR_ID_NOERROR;
 }
 
 void
 cloak_user(struct Client *client, char *cloak)
 {
-  execute_callback(cloak_cb, client, cloak);
+  execute_callback(send_cloak_cb, client, cloak);
 }
 
 void
@@ -165,10 +171,10 @@ global_notice(struct Service *service, char *text, ...)
   if (service != NULL)
   {
     ircsprintf(buf2, "[%s] %s", service->name, buf);
-    execute_callback(gnotice_cb, me.uplink, me.name, buf2);
+    execute_callback(send_gnotice_cb, me.uplink, me.name, buf2);
   }
   else
-    execute_callback(gnotice_cb, me.uplink, me.name, buf);
+    execute_callback(send_gnotice_cb, me.uplink, me.name, buf);
 }
 
 void
@@ -176,7 +182,7 @@ do_help(struct Service *service, struct Client *client,
     const char *command, int parc, char *parv[])
 {
   struct ServiceMessage *msg;
- 
+
   /* Command specific help, show the long entry. */
   if(command != NULL)
   {
@@ -193,36 +199,36 @@ do_help(struct Service *service, struct Client *client,
 void
 chain_umode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
-    execute_callback(umode_hook, client_p, source_p, parc, parv);
+  execute_callback(on_umode_change_cb, client_p, source_p, parc, parv);
 }
 
 void
 chain_cmode(struct Client *client_p, struct Client *source_p, struct Channel *chptr, int parc, char *parv[])
 {
-    execute_callback(cmode_hook, client_p, source_p, chptr, parc, parv);
+  execute_callback(on_cmode_change_cb, client_p, source_p, chptr, parc, parv);
 }
 
 void 
 chain_squit(struct Client *client, struct Client *source, char *comment)
 {
-    execute_callback(squit_hook, client, source, comment);
+  execute_callback(on_quit_cb, client, source, comment);
 }
 
 void
 chain_quit(struct Client *source, char *comment)
 {
-    execute_callback(quit_hook, source, comment);
+  execute_callback(on_quit_cb, source, comment);
 }
 
 void
 chain_part(struct Client *client, struct Client *source, char *name)
 {
-    execute_callback(part_hook, client, source, name);
+  execute_callback(on_part_cb, client, source, name);
 }
 
 void
 chain_nick(struct Client *client_p, struct Client *source_p, 
-           int parc, char **parv, int newts, char *nick, char *gecos)
+    int parc, char **parv, int newts, char *nick, char *gecos)
 {
-    execute_callback(nick_hook, client_p, source_p, parc, parv, newts, nick, gecos);
+  execute_callback(on_nick_change_cb, client_p, source_p, parc, parv, newts, nick, gecos);
 }
