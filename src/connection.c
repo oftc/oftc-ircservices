@@ -64,7 +64,7 @@ connect_server()
   struct Client *client = make_client(NULL);
   struct Server *server = make_server(client);
 
-  memcpy(server->pass, Connect.password, 20);
+  strlcpy(server->pass, Connect.password, 19);
   strlcpy(client->name, Connect.name, sizeof(client->name));
   strlcpy(client->host, Connect.host, sizeof(client->host));
 

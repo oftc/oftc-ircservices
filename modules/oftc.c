@@ -89,8 +89,10 @@ oftc_sendmsg_svscloak(va_list args)
   struct Client *client = va_arg(args, struct Client *);
   char *cloakstring = va_arg(args, char *);
 
-  sendto_server(client, ":%s SVSCLOAK %s :%s", 
-    me.name, client->name, cloakstring);
+  if (cloakstring != NULL) {
+    sendto_server(client, ":%s SVSCLOAK %s :%s", 
+      me.name, client->name, cloakstring);
+  }
   
   return pass_callback(oftc_svscloak_hook);
 }

@@ -32,4 +32,3 @@ function LuaServ:help(client)
   reply_user(self.service_name, client, "HELP and TEST are the only two commands supported.");
 end
   
-register_module("LuaServ")
