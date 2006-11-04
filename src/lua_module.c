@@ -42,11 +42,12 @@ static int lua_find_nick(lua_State *);
 static int lua_register_nick(lua_State *);
 static int lua_identify_nick(lua_State *);
 static int lua_drop_nick(lua_State *);
+static int lua_nick_set_email(lua_State *);
 static int lua_reply_user(lua_State *);
 static int lua_load_language(lua_State *);
 static int lua_register_command(lua_State *);
-static struct Client *check_client(lua_State *L, int index);
-static struct Service *check_service(lua_State *L, int index);
+static struct Client *check_client(lua_State *, int);
+static struct Service *check_service(lua_State *, int);
 
 static const struct luaL_reg client_m[] = {
   {"__newindex", client_set},
@@ -56,9 +57,14 @@ static const struct luaL_reg client_m[] = {
 };
 
 static const struct luaL_reg nick_m[] = {
-  {"__newindex", nick_set},
   {"__index", nick_get},
+  {"__newindex", nick_set},
   {"__tostring", nick_to_string},
+  {"db_setemail", lua_nick_set_email},
+  {NULL, NULL}
+};
+
+static const struct luaL_reg nick_f[] = {
   {"db_drop", lua_drop_nick},
   {"db_find", lua_find_nick},
   {"db_register", lua_register_nick},
@@ -246,6 +252,13 @@ lua_drop_nick(lua_State *L)
 }
 
 static int
+lua_nick_set_email(lua_State *L)
+{
+  printf("moo\n");
+  return 0;
+}
+
+static int
 lua_reply_user(lua_State *L)
 {
   const char *message, *param;
@@ -281,7 +294,6 @@ lua_L(lua_State *L)
   client = (struct Client*) luaL_checkudata(L, 2, "OFTC.client");
   message = luaL_checkinteger(L, 3);
 
-  printf("returning: %s\n", _L(lua_service, client, message));
   lua_pushstring(L, _L(lua_service, client, message));
 
   return 1;
@@ -314,7 +326,12 @@ static int
 lua_register_nick_struct(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC.nick");
-  luaL_register(L, "nick", nick_m);
+
+  lua_pushstring(L, "__index");
+  lua_pushvalue(L, -2); 
+  lua_settable(L, -3);  
+  luaL_register(L, NULL, nick_m);
+  luaL_register(L, "nick", nick_f);
 
   return 0;
 }
@@ -340,8 +357,6 @@ service_new(lua_State *L)
   luaL_getmetatable(L, "OFTC.service");
   lua_setmetatable(L, -2);
   
-  
-
   strlcpy(service->name, service_name, sizeof(service->name));
 
   dlinkAdd(service, &service->node, &services_list);
@@ -367,9 +382,11 @@ nick_get(lua_State *L)
   struct Nick *nick = check_nick(L, 1);
   const char *index = luaL_checkstring(L, 2);
 
-  nick = nick;
-
-  printf("pushing error for: %s\n", index);
+  if(strcmp(index, "email") == 0)
+  {
+    lua_pushstring(L, nick->email);
+    return 1;
+  }
 
   lua_pushfstring(L, "index %s is not supported", index);
   lua_error(L);

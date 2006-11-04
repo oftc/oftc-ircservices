@@ -63,6 +63,9 @@ oftc_identify(va_list args)
   struct Client *uplink = va_arg(args, struct Client *);
   struct Client *client = va_arg(args, struct Client *);
 
+  /* XXX */
+  uplink = uplink;
+  
   send_umode(NULL, client, "+R");
 
   return pass_callback(oftc_identify_hook);

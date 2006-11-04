@@ -83,7 +83,6 @@ function NickServ:handle_command(client, cmd, param)
 end
 
 function NickServ:set(client, param)
-  table.remove(param, 0)
   local option = self.handlers["set"].options[param[0]]
 
   if not(self.n) then
@@ -134,11 +133,6 @@ function NickServ:register(client, param)
 end
 
 function NickServ:identify(client, param)
-  if(client.identified) then
-    self.s:reply(client, self.s:_L(client, 1), client.name)
-    return
-  end
-
   err, self.n = nick.identify(client, param[0])
   if not(self.n) then
     if(err == 1) then
@@ -154,10 +148,11 @@ function NickServ:identify(client, param)
 end
 
 function NickServ:set_email(client, param)
-  if(param[0] == "" or not param[0]) then
-    self.s:reply(c, self.s:_L(c, 27), self.n.email)
+  print(param[1])
+  if(param[1] == "" or not param[1]) then
+    self.s:reply(client, self.s:_L(client, 27), self.n.email)
   else 
-    self.n:db_setemail(param[0])
+    self.n:db_setemail(param[1])
   end
 end
 

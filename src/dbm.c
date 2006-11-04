@@ -81,7 +81,7 @@ db_find_nick(const char *nick)
 {
   dbi_result result;
   char *escnick = NULL;
-  char *findnick, *findpass;
+  char *findnick, *findpass, *findemail;
   struct Nick *nick_p;
   
   assert(nick != NULL);
@@ -92,7 +92,7 @@ db_find_nick(const char *nick)
     return NULL;
   }
   
-  snprintf(querybuffer, 1024, "SELECT id, nick, password, "
+  snprintf(querybuffer, 1024, "SELECT id, nick, password, email, "
       "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
       "FROM %s WHERE nick=%s", "nickname", escnick);
 
@@ -115,17 +115,19 @@ db_find_nick(const char *nick)
 
   nick_p = MyMalloc(sizeof(struct Nick));
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui nick.%S password.%S last_quit_time.%l "
+  dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S last_quit_time.%l "
       "reg_time.%l last_seen.%l last_used.%l status.%ui flags.%ui language.%ui",
-      &nick_p->id, &findnick, &findpass, &nick_p->last_quit_time,
+      &nick_p->id, &findnick, &findpass, &findemail, &nick_p->last_quit_time,
       &nick_p->reg_time, &nick_p->last_seen, &nick_p->last_used, 
       &nick_p->status, &nick_p->flags, &nick_p->language);
 
   strlcpy(nick_p->nick, findnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, findpass, sizeof(nick_p->pass));
+  strlcpy(nick_p->email, findemail, sizeof(nick_p->email));
 
   MyFree(findnick);
   MyFree(findpass);
+  MyFree(findemail);
 
   return nick_p;
 }
