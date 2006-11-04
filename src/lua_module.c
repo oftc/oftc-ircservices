@@ -56,19 +56,19 @@ static const struct luaL_reg client_m[] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg nick_m[] = {
+static const struct luaL_reg nick_f[] = {
   {"__index", nick_get},
   {"__newindex", nick_set},
   {"__tostring", nick_to_string},
-  {"db_setemail", lua_nick_set_email},
-  {NULL, NULL}
-};
-
-static const struct luaL_reg nick_f[] = {
   {"db_drop", lua_drop_nick},
   {"db_find", lua_find_nick},
   {"db_register", lua_register_nick},
   {"identify", lua_identify_nick},
+  {NULL, NULL}
+};
+
+static const struct luaL_reg nick_m[] = {
+  {"__index", nick_get},
   {NULL, NULL}
 };
 
@@ -254,7 +254,6 @@ lua_drop_nick(lua_State *L)
 static int
 lua_nick_set_email(lua_State *L)
 {
-  printf("moo\n");
   return 0;
 }
 
@@ -326,10 +325,6 @@ static int
 lua_register_nick_struct(lua_State *L)
 {
   luaL_newmetatable(L, "OFTC.nick");
-
-  lua_pushstring(L, "__index");
-  lua_pushvalue(L, -2); 
-  lua_settable(L, -3);  
   luaL_register(L, NULL, nick_m);
   luaL_register(L, "nick", nick_f);
 
@@ -385,6 +380,11 @@ nick_get(lua_State *L)
   if(strcmp(index, "email") == 0)
   {
     lua_pushstring(L, nick->email);
+    return 1;
+  }
+  else if(strcmp(index, "db_setemail") == 0)
+  {
+    lua_pushcfunction(L, lua_nick_set_email);
     return 1;
   }
 

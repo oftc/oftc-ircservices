@@ -242,55 +242,23 @@ db_set_language(struct Client *client, int language)
 }
 
 int
-db_set_password(struct Client *client, char *pwd)
+db_nick_set_string(unsigned int id, const char *key, const char *value)
 {
   dbi_result result;
+  char *escvalue;
 
-  snprintf(querybuffer, 1024, "UPDATE %s SET password=%s WHERE id=%d", 
-      "nickname", pwd, client->nickname->id);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if(dbi_driver_quote_string_copy(Database.driv, value, &escvalue) == 0)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     return -1;
   }
+  
+  snprintf(querybuffer, 1024, "UPDATE %s SET %s=%s WHERE id=%d", 
+      "nickname", key, escvalue, id);
 
-  strlcpy(client->nickname->pass, pwd, sizeof(client->nickname->pass));
-  dbi_result_free(result);
+  printf("db: query: %s\n", querybuffer);
 
-  return 0;
-}
-
-int
-db_set_url(struct Client *client, char *url)
-{
-  dbi_result result;
-
-  snprintf(querybuffer, 1024, "UPDATE %s SET url=%s WHERE id=%d", 
-      "nickname", url, client->nickname->id);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
-  {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
-    return -1;
-  }
-
-  dbi_result_free(result);
-
-  return 0;
-}
-
-int
-db_set_email(struct Client *client, char *email)
-{
-  dbi_result result;
-
-  snprintf(querybuffer, 1024, "UPDATE %s SET email=%s WHERE id=%d", 
-      "nickname", email, client->nickname->id);
+  MyFree(escvalue);
 
   if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
   {
@@ -306,23 +274,24 @@ db_set_email(struct Client *client, char *email)
 }
 
 char *
-db_find_cloak(char *name)
+db_nick_get_string(unsigned int id, const char *key)
 {
   dbi_result result;
-  char *escname;
-  char *cloak;
+  char *esckey;
+  char *value;
 
-  assert(name != NULL);
-
-  if(dbi_driver_quote_string_copy(Database.driv, name, &escname) == 0)
+  assert(key != NULL);
+  
+  if(dbi_driver_quote_string_copy(Database.driv, key, &esckey) == 0)
   {
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     return NULL;
   }
+   
+  snprintf(querybuffer, 1024, "SELECT %s FROM %s WHERE id=%d", 
+      esckey, "nickname", id);
   
-  snprintf(querybuffer, 1024, "SELECT cloak FROM %s WHERE nick=%s", "nickname", escname);
-  
-  MyFree(escname);
+  MyFree(esckey);
   printf("db: query: %s\n", querybuffer);
 
   if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
@@ -335,35 +304,16 @@ db_find_cloak(char *name)
 
   if(dbi_result_get_numrows(result) == 0)
   {
-    printf("db: Cloak not found\n");
+    printf("db: %s not found\n", key);
     return NULL;
   }
 
+  snprintf(querybuffer, 1024, "%s.%%S", key);
+
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "cloak.%S", &cloak);
+  dbi_result_get_fields(result, querybuffer, &value);
 
-  return cloak;
-}
-
-int
-db_set_cloak(struct Nick *nick_p, char *cloak)
-{
-  dbi_result result;
-
-  snprintf(querybuffer, 1024, "UPDATE %s SET cloak=%s WHERE id=%d", 
-      "nickname", cloak, nick_p->id);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
-  {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
-    return -1;
-  }
-
-  dbi_result_free(result);
-
-  return 0;
+  return value;
 }
 
 struct RegChannel *

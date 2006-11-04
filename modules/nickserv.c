@@ -115,7 +115,6 @@ m_register(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick;
-  int error;
   
   if((nick = db_find_nick(client->name)) != NULL)
   {
@@ -197,7 +196,7 @@ m_identify(struct Service *service, struct Client *client,
       return;
 
   }
-  cloak = db_find_cloak(client->name);
+  cloak = db_nick_get_string(client->nickname->id, "cloak");
   cloak_user(client, cloak); 
   MyFree(cloak);
   reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
@@ -238,7 +237,7 @@ m_set_password(struct Service *service, struct Client *client,
   }
 
   strlcpy(cryptpass, crypt_pass(parv[2]), sizeof(cryptpass));
-  if(db_set_password(client, cryptpass) >= 0)
+  if(db_nick_set_string(client->nickname->id, "password", cryptpass) >= 0)
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS));
   }
@@ -285,7 +284,7 @@ m_set_url(struct Service *service, struct Client *client,
   char url[255];
   strlcpy(url, parv[1], 200);
     
-  db_set_url(client, url);
+  db_nick_set_string(client->nickname->id, "url", url);
   reply_user(service, client, _L(nickserv, client, NS_URL_SET), url);
 }
 
@@ -296,18 +295,18 @@ m_set_email(struct Service *service, struct Client *client,
   char email[255];
   strlcpy(email, parv[1], 200);
     
-  db_set_email(client, email);
+  db_nick_set_string(client->nickname->id, "email", email);
   reply_user(service, client, _L(nickserv, client, NS_EMAIL_SET), email);
 }
 
 static void*
 s_umode(va_list args) 
 {
-  struct Client *client_p = va_arg(args, struct Client*);
+/*  struct Client *client_p = va_arg(args, struct Client*);
   struct Client *source_p = va_arg(args, struct Client*);
   int            parc     = va_arg(args, int);
   char         **parv     = va_arg(args, char**);
-    
+  */  
   /// actually do stuff....
     
   // last function to call to pass the hook further to other hooks

@@ -148,11 +148,11 @@ function NickServ:identify(client, param)
 end
 
 function NickServ:set_email(client, param)
-  print(param[1])
   if(param[1] == "" or not param[1]) then
     self.s:reply(client, self.s:_L(client, 27), self.n.email)
   else 
     self.n:db_setemail(param[1])
+    self.s:reply(client, self.s:_L(client, 26), self.n.email)
   end
 end
 
