@@ -151,8 +151,11 @@ function NickServ:set_email(client, param)
   if(param[1] == "" or not param[1]) then
     self.s:reply(client, self.s:_L(client, 27), self.n.email)
   else 
-    self.n:db_setemail(param[1])
-    self.s:reply(client, self.s:_L(client, 26), self.n.email)
+    if(self.n:db_setemail(param[1])) then 
+      self.s:reply(client, self.s:_L(client, 26), self.n.email, client.name)
+    else
+      print("set email went boo boo")
+    end
   end
 end
 

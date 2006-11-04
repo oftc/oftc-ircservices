@@ -47,6 +47,7 @@ static int lua_reply_user(lua_State *);
 static int lua_load_language(lua_State *);
 static int lua_register_command(lua_State *);
 static struct Client *check_client(lua_State *, int);
+static struct Nick *check_nick(lua_State *, int);
 static struct Service *check_service(lua_State *, int);
 
 static const struct luaL_reg client_m[] = {
@@ -254,7 +255,19 @@ lua_drop_nick(lua_State *L)
 static int
 lua_nick_set_email(lua_State *L)
 {
-  return 0;
+  struct Nick *nick = check_nick(L, 1);
+  const char *email = luaL_checkstring(L, 2);
+  int ret = db_nick_set_string(nick->id, "email", email);
+
+  if(ret == 0)
+  {
+    strlcpy(nick->email, email, sizeof(nick->email));
+    lua_pushboolean(L, 1);
+  }
+  else
+    lua_pushboolean(L, 0);
+  
+  return 1;
 }
 
 static int
