@@ -43,8 +43,10 @@ static int lua_register_nick(lua_State *);
 static int lua_identify_nick(lua_State *);
 static int lua_drop_nick(lua_State *);
 static int lua_nick_set_email(lua_State *);
+static int lua_nick_set_language(lua_State *);
 static int lua_reply_user(lua_State *);
 static int lua_load_language(lua_State *);
+static int lua_language_name(lua_State *);
 static int lua_register_command(lua_State *);
 static struct Client *check_client(lua_State *, int);
 static struct Nick *check_nick(lua_State *, int);
@@ -76,6 +78,7 @@ static const struct luaL_reg nick_m[] = {
 static const struct luaL_reg service_f[] = {
   {"_L", lua_L}, 
   {"load_language", lua_load_language},
+  {"language_name", lua_language_name},
   {"register_command", lua_register_command},
   {"reply",  lua_reply_user},
   {NULL, NULL}
@@ -271,6 +274,24 @@ lua_nick_set_email(lua_State *L)
 }
 
 static int
+lua_nick_set_language(lua_State *L)
+{
+  struct Nick *nick = check_nick(L, 1);
+  const int lang = luaL_checkinteger(L, 2);
+  int ret = db_nick_set_number(nick->id, "language", lang);
+
+  if(ret == 0)
+  {
+    nick->language = lang;
+    lua_pushboolean(L, 1);
+  }
+  else
+    lua_pushboolean(L, 0);
+  
+  return 1;
+}
+
+static int
 lua_reply_user(lua_State *L)
 {
   const char *message, *param;
@@ -294,6 +315,17 @@ lua_load_language(lua_State *L)
   load_language(lua_service, language);
 
   return 0;
+}
+
+static int
+lua_language_name(lua_State *L)
+{
+  struct Service *lua_service = check_service(L, 1);
+  const int language = luaL_checkinteger(L, 2);
+
+  lua_pushstring(L, lua_service->language_table[language][0]);
+
+  return 1;
 }
 
 static int
@@ -391,18 +423,18 @@ nick_get(lua_State *L)
   const char *index = luaL_checkstring(L, 2);
 
   if(strcmp(index, "email") == 0)
-  {
     lua_pushstring(L, nick->email);
-    return 1;
-  }
+  else if(strcmp(index, "language") == 0)
+    lua_pushinteger(L, nick->language);
   else if(strcmp(index, "db_setemail") == 0)
-  {
     lua_pushcfunction(L, lua_nick_set_email);
-    return 1;
+  else if(strcmp(index, "db_setlanguage") == 0)
+    lua_pushcfunction(L, lua_nick_set_language);
+  else
+  {
+    lua_pushfstring(L, "index %s is not supported", index);
+    lua_error(L);
   }
-
-  lua_pushfstring(L, "index %s is not supported", index);
-  lua_error(L);
 
   return 1;
 }

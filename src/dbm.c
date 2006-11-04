@@ -58,7 +58,6 @@ db_load_driver()
 
   printf("db: Driver %s loaded\n", Database.driver);
 
-
   dbi_conn_set_option(Database.conn, "username", Database.username);
   dbi_conn_set_option(Database.conn, "password", Database.password);
   dbi_conn_set_option(Database.conn, "dbname", Database.dbname);
@@ -68,7 +67,6 @@ db_load_driver()
     const char *error;
     dbi_conn_error(Database.conn, &error);
     printf("db: Failed to connect to database %s\n", error);
-   // exit(-1);
   }
   else
     printf("db: Database connection succeeded.\n");
@@ -220,28 +218,6 @@ db_delete_nick(const char *nick)
 }
 
 int
-db_set_language(struct Client *client, int language)
-{
-  dbi_result result;
-
-  snprintf(querybuffer, 1024, "UPDATE %s SET language=%d WHERE id=%d", 
-      "nickname", language, client->nickname->id);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
-  {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
-    return -1;
-  }
-
-  client->nickname->language = language;
-  dbi_result_free(result);
-
-  return 0;
-}
-
-int
 db_nick_set_string(unsigned int id, const char *key, const char *value)
 {
   dbi_result result;
@@ -259,6 +235,29 @@ db_nick_set_string(unsigned int id, const char *key, const char *value)
   printf("db: query: %s\n", querybuffer);
 
   MyFree(escvalue);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return -1;
+  }
+
+  dbi_result_free(result);
+
+  return 0;
+}
+
+int
+db_nick_set_number(unsigned int id, const char *key, const unsigned long value)
+{
+  dbi_result result;
+
+  snprintf(querybuffer, 1024, "UPDATE %s SET %s=%ld WHERE id=%d", 
+      "nickname", key, value, id);
+
+  printf("db: query: %s\n", querybuffer);
 
   if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
   {

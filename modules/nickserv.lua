@@ -159,4 +159,18 @@ function NickServ:set_email(client, param)
   end
 end
 
+function NickServ:set_language(client, param)
+  if(param[1] == "" or not param[1]) then
+    self.s:reply(client, self.s:_L(client, 13), 
+        self.s:language_name(self.n.language))
+  else 
+    if(self.n:db_setlanguage(param[1])) then 
+      self.s:reply(client, self.s:_L(client, 15), 
+          self.s:language_name(self.n.language), client.name)
+    else
+      print("set lang went boo boo")
+    end
+  end
+end
+
 NickServ:init("NickServ")

@@ -271,7 +271,7 @@ m_set_language(struct Service *service, struct Client *client,
   {
     int lang = atoi(parv[1]);
     
-    db_set_language(client, lang);
+    db_nick_set_number(client->nickname->id, "language", lang);
     reply_user(service, client, _L(nickserv, client, NS_LANGUAGE_SET),
         service->language_table[lang][0], lang); 
   }
