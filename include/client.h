@@ -83,7 +83,7 @@ struct Server
   int flags;
   struct dbuf_queue buf_recvq;
   struct dbuf_queue buf_sendq;
-  char pass[20];
+  char pass[PASSLEN+1];
 };
 
 struct Client
