@@ -1,7 +1,7 @@
 CREATE TABLE nickname (
   id              INTEGER PRIMARY KEY auto_increment,
-  nick            VARCHAR(30) NOT NULL default '',
-  password        VARCHAR(34) NOT NULL default '',
+  nick            VARCHAR(255) NOT NULL default '',
+  password        VARCHAR(255) NOT NULL default '',
   url             VARCHAR(255) NOT NULL default '',
   email           VARCHAR(255) NOT NULL default '',
   cloak           VARCHAR(255) NOT NULL default '',
