@@ -68,8 +68,8 @@ static struct ServiceMessage drop_msgtab = {
 
 static struct SubMessage set_sub[5] = {
   { "LANGUAGE", 0, 0, -1, -1, m_set_language },
-  { "PASSWORD", 0, 2, -1, -1, m_set_password },
-  { "URL"     , 0, 2, -1, -1, m_set_url},
+  { "PASSWORD", 0, 1, -1, -1, m_set_password },
+  { "URL"     , 0, 0, -1, -1, m_set_url},
   { "EMAIL"   , 0, 0, -1, -1, m_set_email},
   { "NULL"    , 0, 0, 0, 0, NULL }
 };
@@ -222,30 +222,21 @@ m_set_password(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
   struct Nick *nick;
-  char cryptpass[255]; // XXX
   
-  if (client->nickname == NULL) {
-    reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), client->name);
-    return;
-  }
-
   nick = client->nickname;
 
-  if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), sizeof(nick->pass)) != 0)
+  if(db_nick_set_string(client->nickname->id, "password", 
+        crypt_pass(parv[1])) == 0)
   {
-    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED));
-    return;
-  }
-
-  strlcpy(cryptpass, crypt_pass(parv[2]), sizeof(cryptpass));
-  if(db_nick_set_string(client->nickname->id, "password", cryptpass) >= 0)
-  {
-    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS));
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS), 
+        "PASSWORD", "hidden");
   }
   else
   {
-    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED));
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED),
+        "PASSWORD", "hidden");
   }
+  strlcpy(nick->pass, crypt_pass(parv[1]), sizeof(nick->pass));
 }
 
 static void
@@ -282,11 +273,24 @@ static void
 m_set_url(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  char url[255];
-  strlcpy(url, parv[1], 200);
-    
-  db_nick_set_string(client->nickname->id, "url", url);
-  reply_user(service, client, _L(nickserv, client, NS_URL_SET), url);
+  struct Nick *nick = client->nickname;
+  
+  if(parc == 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), 
+        "URL", nick->url);
+    return;
+  }
+  
+  if(db_nick_set_string(nick->id, "url", parv[1]) == 0)
+  {
+    nick->url = replace_string(nick->url, parv[1]);
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS), "URL",
+        nick->url);
+  }
+  else
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), "URL",
+        parv[1]);
 }
 
 static void
@@ -297,15 +301,20 @@ m_set_email(struct Service *service, struct Client *client,
   
   if(parc == 0)
   {
-    reply_user(service, client, _L(nickserv, client, NS_NICK_EMAIL), 
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "EMAIL", 
         nick->email);
     return;
   }
-  strlcpy(nick->email, parv[1], sizeof(nick->email));
     
-  db_nick_set_string(nick->id, "email", nick->email);
-  reply_user(service, client, _L(nickserv, client, NS_NICK_SET_EMAIL),
-      nick->email);
+  if(db_nick_set_string(nick->id, "email", parv[1]) == 0)
+  {
+    nick->email = replace_string(nick->email, parv[1]);
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
+        "EMAIL", nick->email);
+  }
+  else
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
+        "EMAIL", parv[1]);
 }
 
 static void

@@ -136,8 +136,6 @@ identify_user(struct Client *client)
     cloak_user(client, client->nickname->cloak);
 
   execute_callback(on_identify_cb, me.uplink, client);
-
-  return ERR_ID_NOERROR;
 }
 
 void
@@ -183,6 +181,19 @@ do_help(struct Service *service, struct Client *client,
     return;
   }
   do_serv_help_messages(service, client);
+}
+
+char *
+replace_string(char *str, const char *value)
+{
+  char *ptr;
+  size_t size = strlen(value);
+
+  MyFree(str);
+  ptr = MyMalloc(size+1);
+  strlcpy(ptr, value, size+1);
+
+  return ptr;
 }
 
 void

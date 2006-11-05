@@ -7,8 +7,9 @@ struct Nick
   
   unsigned int id;
   char nick[NICKLEN+1];
-  char pass[35];
-  char email[255];
+  char pass[PASSLEN+1];
+  char *email;
+  char *url;
   char cloak[HOSTLEN+1];
   unsigned int status;
   unsigned int flags;
@@ -41,17 +42,13 @@ struct Nick
 #define NS_CURR_LANGUAGE    13
 #define NS_AVAIL_LANGUAGE   14
 #define NS_LANGUAGE_SET     15
-#define NS_LAST             16
-#define NS_SET_SUCCESS      17
-#define NS_SET_FAILED       18
+#define NS_SET_SUCCESS      16
+#define NS_SET_FAILED       17
+#define NS_SET_VALUE        18
 #define NS_HELP_DROP_SHORT  19
 #define NS_HELP_DROP_LONG   20
 #define NS_NEED_IDENTIFY    21
-#define NS_URL_SET          22
-#define NS_EMAIL_SET        23
-#define NS_NICK_DROPPED     24
-#define NS_NICK_DROPFAIL    25
-#define NS_NICK_SET_EMAIL   26
-#define NS_NICK_EMAIL       27
+#define NS_NICK_DROPPED     22
+#define NS_NICK_DROPFAIL    23
 
 #endif

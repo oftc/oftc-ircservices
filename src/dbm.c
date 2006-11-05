@@ -79,8 +79,8 @@ db_find_nick(const char *nick)
 {
   dbi_result result;
   char *escnick = NULL;
-  char *findnick, *findpass, *findemail, *findcloak;
   struct Nick *nick_p;
+  char *retnick, *retpass, *retcloak;
   
   assert(nick != NULL);
 
@@ -116,19 +116,17 @@ db_find_nick(const char *nick)
   dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
       "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l status.%ui "
       "flags.%ui language.%ui",
-      &nick_p->id, &findnick, &findpass, &findemail, &findcloak, 
+      &nick_p->id, &retnick, &retpass, &nick_p->email, &retcloak, 
       &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen, 
       &nick_p->last_used, &nick_p->status, &nick_p->flags, &nick_p->language);
 
-  strlcpy(nick_p->nick, findnick, sizeof(nick_p->nick));
-  strlcpy(nick_p->pass, findpass, sizeof(nick_p->pass));
-  strlcpy(nick_p->email, findemail, sizeof(nick_p->email));
-  strlcpy(nick_p->cloak, findcloak, sizeof(nick_p->cloak));
+  strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
+  strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
+  strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
 
-  MyFree(findnick);
-  MyFree(findpass);
-  MyFree(findemail);
-  MyFree(findcloak);
+  MyFree(retnick);
+  MyFree(retpass);
+  MyFree(retcloak);
 
   return nick_p;
 }

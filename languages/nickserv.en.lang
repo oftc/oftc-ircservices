@@ -14,15 +14,11 @@ NS_HELP_ID_LONG   Identify your nickname.
 NS_CURR_LANGUAGE  Current language is %s(%d).
 NS_AVAIL_LANGUAGE Available languages are:
 NS_LANGUAGE_SET   Language set to %s(%d).
-NS_LAST            --
-NS_SET_SUCCESS    Your SET command was successful.
-NS_SET_FAILED     Your SET command failed.
+NS_SET_SUCCESS    SET %s to %s.
+NS_SET_FAILED     Failed to SET %s to %s.
+NS_SET_VALUE      %s is SET to: %s.
 NS_HELP_DROP_SHORT --
 NS_HELP_DROP_LONG  --
-NS_NEED_IDENTIFY  You need to identify to Nickserv first.
-NS_URL_SET        Your URL has been updated to %s.
-NS_EMAIL_SET      Your eMail Adress has been changed to %s.
+NS_NEED_IDENTIFY  You need to identify to Nickserv first.
 NS_NICK_DROPPED   Nickname %s has been DROPped.
 NS_NICK_DROPFAIL  DROP failed on Nickname %s.
-NS_NICK_SET_EMAIL eMail set to %s on Nickname %s.
-NS_NICK_EMAIL     Your eMail is set to: %s.

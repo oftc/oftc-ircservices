@@ -37,6 +37,8 @@ void chain_quit(struct Client *, char *);
 void chain_part(struct Client *, struct Client *, char *);
 void chain_nick(struct Client *, struct Client *, int, char **, int, char *, char *);
 
+char *replace_string(char *, const char *);
+
 struct Service
 {
   dlink_node node;
