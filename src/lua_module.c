@@ -187,11 +187,22 @@ lua_identify_nick(lua_State *L)
   struct Nick *nick;
   struct Client *client = check_client(L, 1);
   const char *password = luaL_checkstring(L, 2);
-  int error;
+  int error = 0;
 
-  error = identify_user(client, password);
+  if((nick = db_find_nick(client->name)) == NULL)
+    error = 1;
+  else if(strncmp(nick->pass, servcrypt(password, nick->pass), 
+          sizeof(nick->pass)) != 0)
+  {
+    MyFree(nick);
+    error = 2;
+  }
+
+  client->nickname = nick;
+
+  identify_user(client);
   
-  lua_pushinteger(L, error);
+  lua_pushinteger(L, 0);
 
   if(nick == NULL || error != 0)
   {

@@ -70,7 +70,7 @@ static struct SubMessage set_sub[5] = {
   { "LANGUAGE", 0, 0, -1, -1, m_set_language },
   { "PASSWORD", 0, 2, -1, -1, m_set_password },
   { "URL"     , 0, 2, -1, -1, m_set_url},
-  { "EMAIL"   , 0, 2, -1, -1, m_set_email},
+  { "EMAIL"   , 0, 0, -1, -1, m_set_email},
   { "NULL"    , 0, 0, 0, 0, NULL }
 };
 
@@ -118,7 +118,8 @@ m_register(struct Service *service, struct Client *client,
   
   if((nick = db_find_nick(client->name)) != NULL)
   {
-    reply_user(service, client, _L(nickserv, client, NS_ALREADY_REG), client->name); 
+    reply_user(service, client, _L(nickserv, client, NS_ALREADY_REG), 
+        client->name); 
     MyFree(nick);
     return;
   }
@@ -126,12 +127,8 @@ m_register(struct Service *service, struct Client *client,
   nick = db_register_nick(client->name, crypt_pass(parv[1]), parv[2]);
   if(nick != NULL)
   {
-    int error;
-    
-    /* XXX The best way to do this? hmm.. */
-    MyFree(nick);
-    error = identify_user(client, parv[1]);
-    send_umode(nickserv, client, "+R");
+    client->nickname = nick;
+    identify_user(client);
 
     reply_user(service, client, _L(nickserv, client, NS_REG_COMPLETE), client->name);
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
@@ -182,23 +179,27 @@ static void
 m_identify(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  char *cloak;
+  struct Nick *nick;
 
-  switch(identify_user(client, parv[1]))
+  if((nick = db_find_nick(client->name)) == NULL)
   {
-    case ERR_ID_NONICK:
-      reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), 
-          client->name);
-      return;
-    case ERR_ID_WRONGPASS:
-      reply_user(service, client, _L(nickserv, client, NS_IDENT_FAIL), 
-          client->name);
-      return;
-
+    reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), 
+        client->name);
+    return;
   }
-  cloak = db_nick_get_string(client->nickname->id, "cloak");
-  cloak_user(client, cloak); 
-  MyFree(cloak);
+
+  if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), 
+    sizeof(nick->pass)) != 0)
+  {
+    MyFree(nick);
+    reply_user(service, client, _L(nickserv, client, NS_IDENT_FAIL), 
+        client->name);
+    return;
+  }
+
+  client->nickname = nick;
+
+  identify_user(client);
   reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
 }
 
@@ -292,11 +293,43 @@ static void
 m_set_email(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  char email[255];
-  strlcpy(email, parv[1], 200);
+  struct Nick *nick = client->nickname;
+  
+  if(parc == 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_NICK_EMAIL), 
+        nick->email);
+    return;
+  }
+  strlcpy(nick->email, parv[1], sizeof(nick->email));
     
-  db_nick_set_string(client->nickname->id, "email", email);
-  reply_user(service, client, _L(nickserv, client, NS_EMAIL_SET), email);
+  db_nick_set_string(nick->id, "email", nick->email);
+  reply_user(service, client, _L(nickserv, client, NS_NICK_SET_EMAIL),
+      nick->email);
+}
+
+static void
+m_set_cloak(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+/*
+ * XXX
+ * char *nick = parv[1];
+  char *cloak = parv[2];
+
+  struct Nick *nick_p;
+  nick_p = db_find_nick(nick);
+
+  if (nick_p != NULL) {
+    if (db_set_cloak(nick_p, cloak) == 0) {
+      reply_user(service, client, _L(operserv, client, OS_CLOAK_SET), cloak);
+    } else {
+      reply_user(service, client, _L(operserv, client, OS_CLOAK_FAILED), cloak, nick);
+    }
+    MyFree (nick_p);
+  } else {
+    reply_user(service, client, _L(operserv, client, OS_NICK_NOT_REG), nick);
+  }*/
 }
 
 static void*

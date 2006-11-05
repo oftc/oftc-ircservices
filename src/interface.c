@@ -120,23 +120,9 @@ send_umode(struct Service *service, struct Client *client, const char *mode)
   execute_callback(send_umode_cb, me.uplink, client->name, mode);
 }
   
-int
-identify_user(struct Client *client, const char *password)
+void
+identify_user(struct Client *client)
 {
-  struct Nick *nick;
-
-  if((nick = db_find_nick(client->name)) == NULL)
-    return ERR_ID_NONICK; 
-
-  if(strncmp(nick->pass, servcrypt(password, nick->pass), 
-    sizeof(nick->pass)) != 0)
-  {
-    MyFree(nick);
-    return ERR_ID_WRONGPASS;
-  }
-
-  client->nickname = nick;
-
   if(IsOper(client) && IsServAdmin(client))
     client->service_handler = ADMIN_HANDLER;
   else if(IsOper(client))
@@ -145,6 +131,9 @@ identify_user(struct Client *client, const char *password)
     client->service_handler = REG_HANDLER;
 
   SetIdentified(client);
+
+  if(client->nickname->cloak[0] != '\0')
+    cloak_user(client, client->nickname->cloak);
 
   execute_callback(on_identify_cb, me.uplink, client);
 

@@ -79,7 +79,7 @@ db_find_nick(const char *nick)
 {
   dbi_result result;
   char *escnick = NULL;
-  char *findnick, *findpass, *findemail;
+  char *findnick, *findpass, *findemail, *findcloak;
   struct Nick *nick_p;
   
   assert(nick != NULL);
@@ -90,7 +90,7 @@ db_find_nick(const char *nick)
     return NULL;
   }
   
-  snprintf(querybuffer, 1024, "SELECT id, nick, password, email, "
+  snprintf(querybuffer, 1024, "SELECT id, nick, password, email, cloak, "
       "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
       "FROM %s WHERE nick=%s", "nickname", escnick);
 
@@ -113,19 +113,22 @@ db_find_nick(const char *nick)
 
   nick_p = MyMalloc(sizeof(struct Nick));
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S last_quit_time.%l "
-      "reg_time.%l last_seen.%l last_used.%l status.%ui flags.%ui language.%ui",
-      &nick_p->id, &findnick, &findpass, &findemail, &nick_p->last_quit_time,
-      &nick_p->reg_time, &nick_p->last_seen, &nick_p->last_used, 
-      &nick_p->status, &nick_p->flags, &nick_p->language);
+  dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
+      "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l status.%ui "
+      "flags.%ui language.%ui",
+      &nick_p->id, &findnick, &findpass, &findemail, &findcloak, 
+      &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen, 
+      &nick_p->last_used, &nick_p->status, &nick_p->flags, &nick_p->language);
 
   strlcpy(nick_p->nick, findnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, findpass, sizeof(nick_p->pass));
   strlcpy(nick_p->email, findemail, sizeof(nick_p->email));
+  strlcpy(nick_p->cloak, findcloak, sizeof(nick_p->cloak));
 
   MyFree(findnick);
   MyFree(findpass);
   MyFree(findemail);
+  MyFree(findcloak);
 
   return nick_p;
 }
@@ -193,7 +196,7 @@ db_delete_nick(const char *nick)
   if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
   {
     printf("db: Failed to delete nick: dbi_driver_quote_string_copy\n");
-    return 0;
+    return -1;
   }
 
   
@@ -214,7 +217,7 @@ db_delete_nick(const char *nick)
 
   dbi_result_free(result);
 
-  return 1;
+  return 0;
 }
 
 int

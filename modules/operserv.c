@@ -36,8 +36,6 @@ static void m_mod_list(struct Service *, struct Client *, int, char *[]);
 static void m_mod_load(struct Service *, struct Client *, int, char *[]);
 static void m_mod_unload(struct Service *, struct Client *, int, char *[]);
 
-static void m_set_cloak(struct Service *, struct Client *, int, char *[]);
-
 
 // FIXME wrong type of clients may execute
 //
@@ -58,16 +56,6 @@ static struct ServiceMessage raw_msgtab = {
   { m_raw, m_servignore, m_servignore, m_servignore }
 };
 
-static struct SubMessage set_subs[2] = {
-  { "CLOAK", 0, 0, -1, -1, m_set_cloak },
-  { "NULL",  0, 0,  0,  0, NULL }
-};
-
-static struct ServiceMessage set_msgtab = {
-  set_subs, "SET", 0, 0, OS_SET_SHORT, OS_SET_LONG,
-  { m_unreg, m_unreg, m_set_cloak, m_set_cloak }
-};
-
 INIT_MODULE(operserv, "$Revision$")
 {
   operserv = make_service("OperServ");
@@ -78,7 +66,6 @@ INIT_MODULE(operserv, "$Revision$")
 
   mod_add_servcmd(&operserv->msg_tree, &mod_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
-  mod_add_servcmd(&operserv->msg_tree, &set_msgtab);
 }
 
 CLEANUP_MODULE
@@ -152,6 +139,7 @@ m_mod_unload(struct Service *service, struct Client *client,
     reply_user(service, client,  
         "Module %s unload requested by %s, but failed because not loaded",
         parm, client->name);
+    return;
   }
   global_notice(service, "Unloading %s by request of %s", parm, client->name);
   reply_user(service, client, "Unloading %s", parm, client->name);
@@ -175,27 +163,6 @@ m_raw(struct Service *service, struct Client *client,
   if(buffer[strlen(buffer)-1] == ' ')
     buffer[strlen(buffer)-1] = '\0';
   sendto_server(me.uplink, buffer);
-  printf("\"%s\"\n", buffer);
+  printf("Executing RAW: \"%s\"\n", buffer);
 }
 
-static void
-m_set_cloak(struct Service *service, struct Client *client, 
-    int parc, char *parv[])
-{
-  char *nick = parv[1];
-  char *cloak = parv[2];
-
-  struct Nick *nick_p;
-  nick_p = db_find_nick(nick);
-
-  if (nick_p != NULL) {
-    if (db_set_cloak(nick_p, cloak) == 0) {
-      reply_user(service, client, _L(operserv, client, OS_CLOAK_SET), cloak);
-    } else {
-      reply_user(service, client, _L(operserv, client, OS_CLOAK_FAILED), cloak, nick);
-    }
-    MyFree (nick_p);
-  } else {
-    reply_user(service, client, _L(operserv, client, OS_NICK_NOT_REG), nick);
-  }
-}
