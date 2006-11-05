@@ -173,4 +173,8 @@ function NickServ:set_language(client, param)
   end
 end
 
-NickServ:init("NickServ")
+function NickServ:set_password(client, param)
+
+end
+
+NickServ:init("NickServLUA")
