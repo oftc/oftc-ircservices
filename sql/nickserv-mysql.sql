@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS nickname;
 CREATE TABLE nickname (
   id              INTEGER PRIMARY KEY auto_increment,
   nick            VARCHAR(255) NOT NULL default '',
@@ -17,3 +18,12 @@ CREATE TABLE nickname (
   language        INTEGER NOT NULL default '0',
   UNIQUE (nick)
 )ENGINE=MyISAM;
+
+DROP TABLE IF EXISTS nickname_access;
+CREATE TABLE nickname_access (
+  id              INTEGER PRIMARY KEY auto_increment,
+  nickname_id     INTEGER NOT NULL default '0',
+  entry           VARCHAR(255) NOT NULL default '',
+  UNIQUE KEY id (id),
+  UNIQUE KEY nickname_id (nickname_id, etry)
+) TYPE=MyISAM;
