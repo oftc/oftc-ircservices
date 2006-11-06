@@ -41,6 +41,7 @@ static void m_identify(struct Service *, struct Client *, int, char *[]);
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_set(struct Service *, struct Client *, int, char *[]);
 static void m_access(struct Service *, struct Client *, int, char *[]);
+static void m_ghost(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -95,6 +96,11 @@ static struct ServiceMessage access_msgtab = {
   { m_unreg, m_access, m_access, m_access }
 };
 
+static struct ServiceMessage ghost_msgtab = {
+  NULL, "GHOST", 0, 2, NS_HELP_GHOST_SHORT, NS_HELP_GHOST_LONG,
+  { m_ghost, m_ghost, m_ghost, m_ghost }
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -112,6 +118,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &access_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &ghost_msgtab);
   
   ns_umode_hook = install_hook(on_umode_change_cb, s_umode);
   ns_nick_hook  = install_hook(on_nick_change_cb, s_nick);
@@ -415,7 +422,32 @@ m_access_del(struct Service *service, struct Client *client, int parc,
   printf("del\n");
 }
 
-static void*
+static void
+m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Nick *nick;
+
+  if((nick = db_find_nick(parv[1])) == NULL)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), parv[1]);
+    return;
+  }
+
+  if(strncmp(nick->pass, servcrypt(parv[2], nick->pass),
+        sizeof(nick->pass)) != 0)
+  {
+    MyFree(nick);
+    reply_user(service, client, _L(nickserv, client, NS_GHOST_FAILED), parv[1]);   
+    return;
+  }
+
+  reply_user(service, client, _L(nickserv, client, NS_GHOST_SUCCESS), parv[1]);
+  /* XXX Turn this into send_kill */
+  sendto_server(me.uplink, ":%s KILL %s :%s (GHOST Command recieved from %s)", 
+      service->name, parv[1], "services.oftc.net", client->name);
+}
+
+  static void*
 s_umode(va_list args) 
 {
 /*  struct Client *client_p = va_arg(args, struct Client*);

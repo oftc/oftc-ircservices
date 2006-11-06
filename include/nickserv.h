@@ -50,9 +50,15 @@ struct Nick
 #define NS_NEED_IDENTIFY    21
 #define NS_NICK_DROPPED     22
 #define NS_NICK_DROPFAIL    23
-#define NS_ACCESS_ADD       24 
-#define NS_ACCESS_ADDFAIL   25
-#define NS_ACCESS_START     26
-#define NS_ACCESS_ENTRY     27
+#define NS_ACCESS_HELP_S    24
+#define NS_ACCESS_HELP_LONG 25
+#define NS_ACCESS_ADD       26 
+#define NS_ACCESS_ADDFAIL   27
+#define NS_ACCESS_START     28
+#define NS_ACCESS_ENTRY     29
+#define NS_HELP_GHOST_SHORT 30
+#define NS_HELP_GHOST_LONG  31
+#define NS_GHOST_SUCCESS    32
+#define NS_GHOST_FAILED     33
 
 #endif
