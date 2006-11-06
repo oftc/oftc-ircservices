@@ -451,7 +451,7 @@ db_list_first(const char *table, unsigned int id, struct NickAccess *entry)
 {
   dbi_result result;
     
-  snprintf(querybuffer, 1024, "SELECT (id, entry) FROM %s WHERE parent_id=%d", 
+  snprintf(querybuffer, 1024, "SELECT id, entry FROM %s WHERE parent_id=%d", 
       "nickname_access", id);
   
   printf("db: query: %s\n", querybuffer);
@@ -472,9 +472,7 @@ db_list_first(const char *table, unsigned int id, struct NickAccess *entry)
 
   if(dbi_result_first_row(result))
   {
-    printf("db_list_first: %d results\n", 
-        dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, 
-          &entry->value));
+    dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, &entry->value);
     return result;
   }
 
