@@ -130,8 +130,7 @@ s_cmode(va_list args)
   // ... actually do stuff    
 
   // last function to call in this func
-  pass_callback(cs_cmode_hook);
-  return NULL;
+  return pass_callback(cs_cmode_hook);
 }
 
 

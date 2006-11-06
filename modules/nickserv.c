@@ -352,8 +352,7 @@ s_umode(va_list args)
   /// actually do stuff....
     
   // last function to call to pass the hook further to other hooks
-  pass_callback(ns_umode_hook);
-  return NULL;
+  return pass_callback(ns_umode_hook);
 }
 
 static void *
@@ -373,7 +372,6 @@ s_nick(va_list args)
     ClearIdentified(source_p);
     send_umode(nickserv, source_p, "-R");
   }
-  pass_callback(ns_nick_hook);
-  return NULL;
+  return pass_callback(ns_nick_hook);
 }
 
