@@ -414,3 +414,86 @@ db_register_chan(struct Client *client, char *channelname)
   return 0;
 }
 
+int
+db_list_add(const char *table, unsigned int id, const char *value)
+{
+  char *escvalue;
+  dbi_result result;
+  
+  if(dbi_driver_quote_string_copy(Database.driv, value, &escvalue) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
+
+  snprintf(querybuffer, 1024, "INSERT INTO %s (parent_id, entry)"
+      " VALUES(%d, %s)", table, id, escvalue);
+
+  MyFree(escvalue);
+
+  printf("db: query: %s\n", querybuffer);
+  
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return -1;
+  }  
+
+  dbi_result_free(result);
+  
+  return 0;
+}
+
+void *
+db_list_first(const char *table, unsigned int id, struct NickAccess *entry)
+{
+  dbi_result result;
+    
+  snprintf(querybuffer, 1024, "SELECT (id, entry) FROM %s WHERE parent_id=%d", 
+      "nickname_access", id);
+  
+  printf("db: query: %s\n", querybuffer);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return NULL;
+  }
+
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    printf("db: %d has no access list\n", id);
+    return NULL;
+  }
+
+  if(dbi_result_first_row(result))
+  {
+    printf("db_list_first: %d results\n", 
+        dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, 
+          &entry->value));
+    return result;
+  }
+
+  return NULL;
+}
+
+void *
+db_list_next(void *result, struct NickAccess *entry)
+{
+  if(dbi_result_next_row(result))
+  {
+    dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, &entry->value);
+    return result;
+  }
+  return NULL;
+}
+
+void
+db_list_done(void *result)
+{
+  dbi_result_free(result);
+}

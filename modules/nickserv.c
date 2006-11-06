@@ -40,11 +40,15 @@ static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_set(struct Service *, struct Client *, int, char *[]);
+static void m_access(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
+static void m_access_add(struct Service *, struct Client *, int, char *[]);
+static void m_access_list(struct Service *, struct Client *, int, char *[]);
+static void m_access_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, NS_HELP_REG_SHORT, NS_HELP_REG_LONG,
@@ -79,6 +83,18 @@ static struct ServiceMessage set_msgtab = {
   { m_unreg, m_set, m_set, m_set }
 };
 
+static struct SubMessage access_sub[4] = {
+  { "ADD", 0, 1, -1, -1, m_access_add },
+  { "LIST", 0, 0, -1, -1, m_access_list },
+  { "DEL", 0, 0, -1, -1, m_access_del },
+  { "NULL", 0, 0, 0, 0, NULL }
+};
+
+static struct ServiceMessage access_msgtab = {
+  access_sub, "ACCESS", 0, 0, NS_HELP_SHORT, NS_HELP_LONG,
+  { m_unreg, m_access, m_access, m_access }
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -95,6 +111,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &help_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &access_msgtab);
   
   ns_umode_hook = install_hook(on_umode_change_cb, s_umode);
   ns_nick_hook  = install_hook(on_nick_change_cb, s_nick);
@@ -211,8 +228,7 @@ m_help(struct Service *service, struct Client *client,
 }
 
 static void
-m_set(struct Service *service, struct Client *client,
-    int parc, char *parv[])
+m_set(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   reply_user(service, client, "Unknown SET option");
 }
@@ -339,6 +355,59 @@ m_set_cloak(struct Service *service, struct Client *client,
   } else {
     reply_user(service, client, _L(operserv, client, OS_NICK_NOT_REG), nick);
   }*/
+}
+
+static void
+m_access(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  reply_user(service, client, "Syntax: ACCESS {ADD | DEL | LIST} [mask | list]");
+}
+
+static void
+m_access_add(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Nick *nick = client->nickname;
+  if(db_list_add("nickname_access", nick->id, parv[1]) == 0)
+  {
+    printf("added\n");
+  }
+  else
+  {
+    printf(":(\n");
+  }
+}
+
+static void
+m_access_list(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Nick *nick;
+  struct NickAccess entry;
+  void *listptr;
+
+  nick = client->nickname;
+
+  if((listptr = db_list_first("nickname_access", nick->id, &entry)) == NULL)
+  {
+    printf("boo\n");
+    return;
+  }
+
+  while(listptr != NULL)
+  {
+    printf("%d %s\n", entry.id, entry.value);
+    listptr = db_list_next(listptr, &entry);
+  }
+
+  db_list_done(listptr);
+}
+
+static void
+m_access_del(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  printf("del\n");
 }
 
 static void*

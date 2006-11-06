@@ -1,3 +1,4 @@
+DROP TABLE channel;
 CREATE TABLE channel(
   id              SERIAL PRIMARY KEY,
   channel         VARCHAR(30) NOT NULL default '',
