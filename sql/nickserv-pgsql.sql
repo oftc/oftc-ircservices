@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS nickname;
+DROP TABLE nickname;
 CREATE TABLE nickname (
   id              SERIAL PRIMARY KEY,
   nick            VARCHAR(255) NOT NULL default '',
@@ -19,7 +19,7 @@ CREATE TABLE nickname (
   UNIQUE (nick)
 );
 
-DROP TABLE IF EXISTS nickname_access;
+DROP TABLE nickname_access;
 CREATE TABLE nickname_access (
   id              SERIAL PRIMARY KEY,
   nickname_id     INTEGER REFERENCES nickname(id),
