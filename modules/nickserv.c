@@ -370,11 +370,12 @@ m_access_add(struct Service *service, struct Client *client, int parc,
   struct Nick *nick = client->nickname;
   if(db_list_add("nickname_access", nick->id, parv[1]) == 0)
   {
-    printf("added\n");
+    reply_user(service, client, _L(nickserv, client, NS_ACCESS_ADD), parv[1]);
   }
   else
   {
-    printf(":(\n");
+    reply_user(service, client, _L(nickserv, client, NS_ACCESS_ADDFAIL),
+        parv[1]);
   }
 }
 
@@ -385,18 +386,22 @@ m_access_list(struct Service *service, struct Client *client, int parc,
   struct Nick *nick;
   struct NickAccess entry;
   void *listptr;
+  int i = 1;
 
   nick = client->nickname;
 
   if((listptr = db_list_first("nickname_access", nick->id, &entry)) == NULL)
   {
-    printf("boo\n");
     return;
   }
 
+  reply_user(service, client, _L(nickserv, client, NS_ACCESS_START));
+
   while(listptr != NULL)
   {
-    printf("%d %s\n", entry.id, entry.value);
+    reply_user(service, client, _L(nickserv, client, NS_ACCESS_ENTRY),
+        i++, entry.value);
+    MyFree(entry.value);
     listptr = db_list_next(listptr, &entry);
   }
 

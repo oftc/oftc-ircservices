@@ -17,8 +17,12 @@ NS_LANGUAGE_SET   Language set to %s(%d).
 NS_SET_SUCCESS    SET %s to %s.
 NS_SET_FAILED     Failed to SET %s to %s.
 NS_SET_VALUE      %s is SET to: %s.
-NS_HELP_DROP_SHORT --
-NS_HELP_DROP_LONG  --
+NS_HELP_DROP_SHORT Releases your nickname for use. 
+NS_HELP_DROP_LONG Releases your nickname for use and deletes it from the database.  This cannot be undone.
 NS_NEED_IDENTIFY  You need to identify to Nickserv first.
 NS_NICK_DROPPED   Nickname %s has been DROPped.
 NS_NICK_DROPFAIL  DROP failed on Nickname %s.
+NS_ACCESS_ADD     ACCESS list entry %s added.
+NS_ACCESS_ADDFAIL Failed to add ACCESS list entry %s.
+NS_ACCESS_START   ACCESS list:
+NS_ACCESS_ENTRY   %d  %s
