@@ -14,12 +14,22 @@ NS_HELP_ID_LONG   Dich unter deinem Nicknamen anmelden.
 NS_CURR_LANGUAGE  Momentane Spracheinstellung: %s(%d).
 NS_AVAIL_LANGUAGE Verfügbare Sprachen sind:
 NS_LANGUAGE_SET   Sprache auf %s(%d) gewechselt.
-NS_LAST           --
 NS_SET_SUCCESS    Dein SET war erfolgreich.
 NS_SET_FAILED     Dein SET ist fehlgeschlagen.
-NS_HELP_DROP_SHORT --
-NS_HELP_DROP_LONG  --
+NS_SET_VALUE      %s wurde auf %s gesetzt
+NS_HELP_DROP_SHORT Deregistriert deinen Nicknamen.
+NS_HELP_DROP_LONG  Deregistriert deinen Nicknamen und loescht ihn aus der Datenbank. Dieser Vorgang ist nicht rueckgaengig zu machen.
 NS_NEED_IDENTIFY  Du musst bei Nickserv identifiziert sein.
-NS_URL_SET        Deine URL wurde auf %s geaendert.
-NS_EMAIL_SET      Deine Email Adresse wurde auf %s geändert.
-NS_NICK_DROPPED   Deine NickRegistrierung wurde geloescht
+NS_NICK_DROPPED   Nickname %s wurde deregistriert.
+NS_NICK_DROPFAIL  Nickname %s konnte nicht deregistriert werden.
+NS_ACCESS_HELP_S  Verwaltung der Nickname Zugriffsliste.
+NS_ACCESS_HELP_LONG Verwaltung der Nickname Zugriffsliste
+NS_ACCESS_ADD     Eintrag %s zur Zugriffsliste hinzugefuegt
+NS_ACCESS_ADDFAIL Hinzufuegen des Eintrags %szur Zugriffsliste fehlgeschlagen.
+NS_ACCESS_START   Zugriffsliste:
+NS_ACCESS_ENTRY   %d  %s
+NS_HELP_GHOST_SHORT Terminieren einer verlorenen IRC Sitzung
+NS_HELP_GHOST_LONG Terminieren einer verlorenen IRC Sitzung
+NS_GHOST_SUCCESS  IRC Sitzung fuer %s wurde terminiert
+NS_GHOST_FAILED   Terminierung von %s fehlgeschlagen
+NS_GHOST_NOSELF   Suizid wird nicht unterstuetzt, %s
