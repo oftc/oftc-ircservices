@@ -32,3 +32,4 @@ NS_HELP_GHOST_SHORT Terminate a GHOST IRC session.
 NS_HELP_GHOST_LONG  Terminate a GHOST IRC session.
 NS_GHOST_SUCCESS  GHOST succeed on nickname %s.
 NS_GHOST_FAILED   GHOST failed on nickname %s.
+NS_GHOST_NOSELF   You cannot GHOST yourself, %s.

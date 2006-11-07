@@ -433,6 +433,13 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
+  if(strncmp(client->name, parv[1], NICKLEN) == 0)
+  {
+    MyFree(nick);
+    reply_user(service, client, _L(nickserv, client, NS_GHOST_NOSELF), parv[1]);
+    return;
+  }
+
   if(strncmp(nick->pass, servcrypt(parv[2], nick->pass),
         sizeof(nick->pass)) != 0)
   {

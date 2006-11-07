@@ -60,5 +60,6 @@ struct Nick
 #define NS_HELP_GHOST_LONG  31
 #define NS_GHOST_SUCCESS    32
 #define NS_GHOST_FAILED     33
+#define NS_GHOST_NOSELF     34
 
 #endif
