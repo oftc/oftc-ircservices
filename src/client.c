@@ -746,10 +746,10 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
   /* set the new nick name */
   assert(source_p->name[0]);
 
+  execute_callback(on_nick_change_cb, source_p, nick);
   hash_del_client(source_p);
   strcpy(source_p->name, nick);
   hash_add_client(source_p);
 
-  execute_callback(on_nick_change_cb, source_p, nick);
 }
 
