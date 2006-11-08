@@ -808,10 +808,26 @@ process_privmsg(struct Client *client, struct Client *source,
 
     if(*servpara[1] == '#' && i > 2)
     {
-      printf("Got %s which is possibly a channeli\n", servpara[1]);
+      printf("Got %s which is possibly a channel\n", servpara[1]);
       servpara[0] = servpara[1];
       servpara[1] = servpara[2];
       servpara[2] = servpara[0];
+    }
+
+    if(source->nickname && IsServAdmin(source))
+    {
+      /* It's an admin, if the command lookup fails, try switching
+       * the parameters because they could be using a SET <nick> FOO */
+      while(sub->cmd != NULL)
+      {
+        if(irccmp(sub->cmd, servpara[1]) == 0)
+          break;
+        sub++;
+      }
+      servpara[0] = servpara[1];
+      servpara[1] = servpara[2];
+      servpara[2] = servpara[1];
+      sub = mptr->sub;
     }
 
     while(sub->cmd != NULL)
@@ -822,13 +838,13 @@ process_privmsg(struct Client *client, struct Client *source,
 
         if(i > 2)
         {
-          int i2;
+          int j;
           
-          for(i2 = 2; i2 < i; i2++)
+          for(j = 2; j < i; j++)
           {
-            servpara[i2-1] = servpara[i2];
+            servpara[j-1] = servpara[j];
           }
-          servpara[i2-1] = NULL;
+          servpara[j-1] = NULL;
           i--;
         }
         else
@@ -862,8 +878,17 @@ process_privmsg(struct Client *client, struct Client *source,
 
   servpara[0] = source->name;
 
-  if(s != NULL)
-    i = string_to_array(s, servpara);
+  if(i > 2)
+  {
+    int j;
+
+    for(j = 2; j < i; j++)
+    {
+      servpara[j-1] = servpara[j];
+    }
+    servpara[j-1] = NULL;
+    i--;
+  }
   else
   {
     i = 0;
