@@ -125,4 +125,7 @@ EXTERN void set_channel_mode(struct Client *, struct Client *, struct Channel *,
 EXTERN void clear_ban_cache(struct Channel *);
 EXTERN int has_member_flags(struct Membership *, unsigned int);
 
+#define IsChanop(who, chan)      \
+    has_member_flags(find_channel_link(who, chan), CHFL_CHANOP)
+
 #endif /* INCLUDED_channel_mode_h */

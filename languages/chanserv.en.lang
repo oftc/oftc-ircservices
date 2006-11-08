@@ -8,3 +8,7 @@ CS_ALREADY_REG    Channel %s is already registered.
 CS_REG_SUCCESS    Channel %s successfully registered.
 CS_REG_FAIL       Failed to register Channel %s.
 CS_NAMESTART_HASH Channelname needs to start with a hash
+CS_SET_SHORT      (fixme) set something
+CS_SET_LONG       (fixme) set something more
+CS_NOT_ONCHAN     You are not on that Channel
+CS_NOT_OPPED      You are not opped on that Channel

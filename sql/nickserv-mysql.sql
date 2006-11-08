@@ -25,5 +25,5 @@ CREATE TABLE nickname_access (
   nickname_id     INTEGER NOT NULL default '0',
   entry           VARCHAR(255) NOT NULL default '',
   UNIQUE KEY id (id),
-  UNIQUE KEY nickname_id (nickname_id, etry)
+  UNIQUE KEY nickname_id (nickname_id, entry)
 ) TYPE=MyISAM;

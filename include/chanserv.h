@@ -19,5 +19,9 @@ struct RegChannel
 #define CS_REG_SUCCESS    7
 #define CS_REG_FAIL       8
 #define CS_NAMESTART_HASH 9
+#define CS_SET_SHORT      10
+#define CS_SET_LONG       11
+#define CS_NOT_ONCHAN     12
+#define CS_NOT_OPPED      13
 
 #endif

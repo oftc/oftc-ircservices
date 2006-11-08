@@ -11,25 +11,25 @@ NS_HELP_REG_SHORT Registriert einen Nicknamen für dich.
 NS_HELP_REG_LONG  Registriert einen Nicknamen für dich.
 NS_HELP_ID_SHORT  Dich unter deinem Nicknamen anmelden.
 NS_HELP_ID_LONG   Dich unter deinem Nicknamen anmelden.
-NS_CURR_LANGUAGE  Momentane Spracheinstellung: %s(%d).
+NS_CURR_LANGUAGE  Momentane Spracheinstellung: %s (%d).
 NS_AVAIL_LANGUAGE Verfügbare Sprachen sind:
-NS_LANGUAGE_SET   Sprache auf %s(%d) gewechselt.
+NS_LANGUAGE_SET   Sprache auf %s (%d) geändert.
 NS_SET_SUCCESS    Dein SET war erfolgreich.
 NS_SET_FAILED     Dein SET ist fehlgeschlagen.
 NS_SET_VALUE      %s wurde auf %s gesetzt
-NS_HELP_DROP_SHORT Deregistriert deinen Nicknamen.
-NS_HELP_DROP_LONG  Deregistriert deinen Nicknamen und loescht ihn aus der Datenbank. Dieser Vorgang ist nicht rueckgaengig zu machen.
-NS_NEED_IDENTIFY  Du musst bei Nickserv identifiziert sein.
-NS_NICK_DROPPED   Nickname %s wurde deregistriert.
-NS_NICK_DROPFAIL  Nickname %s konnte nicht deregistriert werden.
+NS_HELP_DROP_SHORT Löscht deinen Nicknamen.
+NS_HELP_DROP_LONG  Löscht deinen Nicknamen aus der Datenbank. Dieser Vorgang ist nicht rückgaengig zu machen.
+NS_NEED_IDENTIFY  Du musst am Nickserv angemeldet sein.
+NS_NICK_DROPPED   Nickname %s wurde gelöscht.
+NS_NICK_DROPFAIL  Nickname %s konnte nicht gelöscht werden.
 NS_ACCESS_HELP_S  Verwaltung der Nickname Zugriffsliste.
 NS_ACCESS_HELP_LONG Verwaltung der Nickname Zugriffsliste
-NS_ACCESS_ADD     Eintrag %s zur Zugriffsliste hinzugefuegt
-NS_ACCESS_ADDFAIL Hinzufuegen des Eintrags %szur Zugriffsliste fehlgeschlagen.
+NS_ACCESS_ADD     Eintrag %s zur Zugriffsliste hinzugefügt
+NS_ACCESS_ADDFAIL Hinzufügen des Eintrags %szur Zugriffsliste fehlgeschlagen.
 NS_ACCESS_START   Zugriffsliste:
 NS_ACCESS_ENTRY   %d  %s
 NS_HELP_GHOST_SHORT Terminieren einer verlorenen IRC Sitzung
 NS_HELP_GHOST_LONG Terminieren einer verlorenen IRC Sitzung
 NS_GHOST_SUCCESS  IRC Sitzung fuer %s wurde terminiert
-NS_GHOST_FAILED   Terminierung von %s fehlgeschlagen
-NS_GHOST_NOSELF   Suizid wird nicht unterstuetzt, %s
+NS_GHOST_FAILED   Terminierung der IRC Sitzung von %s fehlgeschlagen
+NS_GHOST_NOSELF   Suizid wird nicht unterstützt, %s
