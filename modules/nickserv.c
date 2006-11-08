@@ -482,7 +482,7 @@ ns_on_nick_change(va_list args)
   struct Client *user = va_arg(args, struct Client *);
   char *oldnick       = va_arg(args, char *);
   struct Nick *nick_p;
-  char userhost[USERLEN+HOSTLEN+1+1]; /* userlen@hostlen\0 */
+  char userhost[USERHOSTLEN+1]; 
 
   printf("%s changing nick to %s\n", oldnick, user->name);
  
@@ -501,7 +501,7 @@ ns_on_nick_change(va_list args)
     return pass_callback(ns_nick_hook);
   }
 
-  snprintf(userhost, USERLEN+HOSTLEN+1, "%s@%s", user->username, user->host);
+  snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
   if(check_list_entry("nicknameaccess", nick_p->id, userhost))
   {
     printf("%s changed nick to %s(found access entry)\n", oldnick, user->name);
@@ -519,7 +519,7 @@ ns_on_newuser(va_list args)
 {
   struct Client *newuser = va_arg(args, struct Client*);
   struct Nick *nick_p;
-  char userhost[USERLEN+HOSTLEN+1+1];
+  char userhost[USERHOSTLEN+1];
   
   printf("New User: %s!\n", newuser->name);
 
@@ -529,7 +529,7 @@ ns_on_newuser(va_list args)
     return pass_callback(ns_nick_hook);
   }
 
-  snprintf(userhost, USERLEN+HOSTLEN+1, "%s@%s", newuser->username, 
+  snprintf(userhost, USERHOSTLEN, "%s@%s", newuser->username, 
       newuser->host);
   if(check_list_entry("nicknameaccess", nick_p->id, userhost))
   {

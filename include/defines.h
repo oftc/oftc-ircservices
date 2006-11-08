@@ -21,6 +21,7 @@
 #define TOPICLEN        300
 #define PASSLEN         40
 #define DATALEN         255
+#define USERHOSTLEN     NICKLEN+USERLEN+1
 #define USERHOST_REPLYLEN       (NICKLEN+HOSTLEN+USERLEN+5)
 
 #define IRC_MAXSID 3
