@@ -32,9 +32,11 @@ static struct Service *nickserv = NULL;
 
 static dlink_node *ns_umode_hook;
 static dlink_node *ns_nick_hook;
+static dlink_node *ns_newuser_hook;
 
-static void *s_umode(va_list);
-static void *s_nick(va_list);
+static void *ns_on_umode_change(va_list);
+static void *ns_on_newuser(va_list);
+static void *ns_on_nick_change(va_list);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
@@ -120,8 +122,9 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &access_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &ghost_msgtab);
   
-  ns_umode_hook = install_hook(on_umode_change_cb, s_umode);
-  ns_nick_hook  = install_hook(on_nick_change_cb, s_nick);
+  ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
+  ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
+  ns_newuser_hook     = install_hook(on_newuser_cb, ns_on_newuser);
 }
 
 CLEANUP_MODULE
@@ -396,7 +399,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Nick *nick;
-  struct NickAccess entry;
+  struct AccessEntry entry;
   void *listptr;
   int i = 1;
 
@@ -459,8 +462,8 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
       service->name, parv[1], "services.oftc.net", client->name);
 }
 
-  static void*
-s_umode(va_list args) 
+static void*
+ns_on_umode_change(va_list args) 
 {
 /*  struct Client *client_p = va_arg(args, struct Client*);
   struct Client *source_p = va_arg(args, struct Client*);
@@ -474,22 +477,63 @@ s_umode(va_list args)
 }
 
 static void *
-s_nick(va_list args)
+ns_on_nick_change(va_list args)
 {
-  struct Client *client_p = va_arg(args, struct Client*);
-  struct Client *source_p = va_arg(args, struct Client*);
-  int            parc     = va_arg(args, int);
-  char         **parv     = va_arg(args, char**);
-  int            newts    = va_arg(args, int);
-  char          *nick     = va_arg(args, char*);
-  char          *gecos    = va_arg(args, char*);
+  struct Client *user = va_arg(args, struct Client *);
+  char *newnick       = va_arg(args, char *);
+  struct Nick *nick_p;
 
-  if (IsIdentified(source_p) )
+  printf("%s changing nick to %s\n", user->name, newnick);
+ 
+  if(IsIdentified(user))
   {
-    source_p->service_handler = UNREG_HANDLER;
-    ClearIdentified(source_p);
-    send_umode(nickserv, source_p, "-R");
+    /* XXX Check links */
+    user->service_handler = UNREG_HANDLER;
+    ClearIdentified(user);
+    /* XXX Use unidentify event */
+    send_umode(nickserv, user, "-R");
   }
+
+  if((nick_p = db_find_nick(newnick)) == NULL)
+  {
+    printf("Nick Change: %s->%s(nick not registered)\n", user->name, newnick);
+    return pass_callback(ns_nick_hook);
+  }
+
+  if(check_list_entry("nicknameaccess", nick_p->id, user->host))
+  {
+    printf("%s changed nick to %s(found access entry)\n", user->name, newnick);
+    user->nickname = nick_p;
+    identify_user(user);
+  }
+  else
+    printf("%s changed nick to %s(no access entry)\n", user->name, newnick);
+  
   return pass_callback(ns_nick_hook);
 }
 
+static void *
+ns_on_newuser(va_list args)
+{
+  struct Client *newuser = va_arg(args, struct Client*);
+  struct Nick *nick_p;
+  
+  printf("New User: %s!\n", newuser->name);
+
+  if((nick_p = db_find_nick(newuser->name)) == NULL)
+  {
+    printf("New user: %s(nick not registered)\n", newuser->name);
+    return pass_callback(ns_nick_hook);
+  }
+
+  if(check_list_entry("nicknameaccess", nick_p->id, newuser->host))
+  {
+    printf("new user: %s(found access entry)\n", newuser->name);
+    newuser->nickname = nick_p;
+    identify_user(newuser);
+  }
+  else
+    printf("new user:%s(no access entry)\n", newuser->name);
+  
+  return pass_callback(ns_nick_hook);
+}

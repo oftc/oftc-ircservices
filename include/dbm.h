@@ -1,7 +1,7 @@
 #ifndef DBMH
 #define DBMH
 
-struct NickAccess
+struct AccessEntry 
 {
   unsigned int id;
   char *value;
@@ -22,8 +22,8 @@ int db_nick_set_number(unsigned int, const char *, const unsigned long);
 char *db_nick_get_string(unsigned int, const char *);
 
 int db_list_add(const char *, unsigned int, const char *);
-void *db_list_first(const char *, unsigned int, struct NickAccess *);
-void *db_list_next(void *, struct NickAccess *);
+void *db_list_first(const char *, unsigned int, struct AccessEntry *);
+void *db_list_next(void *, struct AccessEntry *);
 void db_list_done(void *);
 
 #endif

@@ -162,7 +162,7 @@ static dlink_node *notice_hook;
 INIT_MODULE(irc, "$Revision$")
 {
   connected_hook = install_hook(connected_cb, irc_server_connected);
-  newuser_hook = install_hook(newuser_cb, irc_sendmsg_nick);
+  newuser_hook = install_hook(send_newuser_cb, irc_sendmsg_nick);
   privmsg_hook = install_hook(send_privmsg_cb, irc_sendmsg_privmsg);
   notice_hook  = install_hook(send_notice_cb, irc_sendmsg_notice);
   mod_add_cmd(&ping_msgtab);
@@ -1131,7 +1131,6 @@ m_nick(struct Client *client_p, struct Client *source_p,
   if (!(target_p = find_client(nick)))
   {
     nick_from_server(client_p, source_p, parc, parv, newts, nick, ngecos);
-    chain_nick(client_p, source_p, parc, parv, newts, nick, ngecos);
     return;
   }
 
@@ -1141,7 +1140,6 @@ m_nick(struct Client *client_p, struct Client *source_p,
     {
       /* client changing case of nick */
       nick_from_server(client_p, source_p, parc, parv, newts, nick, ngecos);
-      chain_nick(client_p, source_p, parc, parv, newts, nick, ngecos);
       return;
     }
     else

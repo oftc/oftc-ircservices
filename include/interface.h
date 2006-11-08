@@ -5,7 +5,7 @@ struct Service;
 struct Client;
 
 extern dlink_list services_list;
-extern struct Callback *newuser_cb;
+extern struct Callback *send_newuser_cb;
 extern struct Callback *send_privmsg_cb;
 extern struct Callback *send_notice_cb;
 extern struct Callback *send_gnotice_cb;
@@ -19,6 +19,7 @@ extern struct Callback *on_quit_cb;
 extern struct Callback *on_part_cb;
 extern struct Callback *on_nick_change_cb;
 extern struct Callback *on_identify_cb;
+extern struct Callback *on_newuser_cb;
 
 struct Service *make_service(char *);
 void introduce_service(struct Service *);
@@ -38,6 +39,7 @@ void chain_part(struct Client *, struct Client *, char *);
 void chain_nick(struct Client *, struct Client *, int, char **, int, char *, char *);
 
 char *replace_string(char *, const char *);
+int check_list_entry(const char *, unsigned int, const char *);
 
 struct Service
 {

@@ -447,7 +447,7 @@ db_list_add(const char *table, unsigned int id, const char *value)
 }
 
 void *
-db_list_first(const char *table, unsigned int id, struct NickAccess *entry)
+db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
 {
   dbi_result result;
     
@@ -480,7 +480,7 @@ db_list_first(const char *table, unsigned int id, struct NickAccess *entry)
 }
 
 void *
-db_list_next(void *result, struct NickAccess *entry)
+db_list_next(void *result, struct AccessEntry *entry)
 {
   if(dbi_result_next_row(result))
   {

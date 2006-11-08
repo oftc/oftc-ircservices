@@ -728,13 +728,13 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
 
       register_remote_user(client_p, source_p, parv[5], parv[6],
                            parv[7], ngecos);
+      execute_callback(on_newuser_cb, source_p);
       return;
     }
   }
   else if (source_p->name[0])
   {
     samenick = !irccmp(parv[0], nick);
-
 
     /* client changing their nick */
     if (!samenick)
@@ -749,5 +749,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
   hash_del_client(source_p);
   strcpy(source_p->name, nick);
   hash_add_client(source_p);
+
+  execute_callback(on_nick_change_cb, source_p, nick);
 }
 

@@ -42,10 +42,10 @@ static dlink_node *newuser_hook;
 static dlink_node *privmsg_hook;
 static dlink_node *notice_hook;
 
-INIT_MODULE(irc, "$Revision$")
+INIT_MODULE(hybrid_ts6, "$Revision$")
 {
   connected_hook = install_hook(connected_cb, irc_server_connected);
-  newuser_hook = install_hook(newuser_cb, irc_sendmsg_nick);
+  newuser_hook = install_hook(send_newuser_cb, irc_sendmsg_nick);
   privmsg_hook = install_hook(send_privmsg_cb, irc_sendmsg_privmsg);
   notice_hook  = install_hook(send_notice_cb, irc_sendmsg_notice);
   mod_add_cmd(&privmsg_msgtab);

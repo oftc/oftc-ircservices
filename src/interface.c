@@ -25,7 +25,7 @@
 #include "stdinc.h"
 
 dlink_list services_list = { 0 };
-struct Callback *newuser_cb;
+struct Callback *send_newuser_cb;
 struct Callback *send_privmsg_cb;
 struct Callback *send_notice_cb;
 struct Callback *send_gnotice_cb;
@@ -40,7 +40,7 @@ struct Callback *on_quit_cb;
 struct Callback *on_umode_change_cb;
 struct Callback *on_cmode_change_cb;
 struct Callback *on_squit_cb;
-
+struct Callback *on_newuser_cb;
 struct Callback *on_identify_cb;
 
 void
@@ -48,7 +48,7 @@ init_interface()
 {
   services_heap       = BlockHeapCreate("services", sizeof(struct Service), SERVICES_HEAP_SIZE);
   /* XXX some of these should probably have default callbacks */
-  newuser_cb          = register_callback("introduce user", NULL);
+  send_newuser_cb     = register_callback("us introducing user", NULL);
   send_privmsg_cb     = register_callback("message user", NULL);
   send_notice_cb      = register_callback("NOTICE user", NULL);
   send_gnotice_cb     = register_callback("Global Notice", NULL);
@@ -62,6 +62,7 @@ init_interface()
   on_cmode_change_cb  = register_callback("Propagate CMODE", NULL);
   on_quit_cb          = register_callback("Propagate SQUIT", NULL);
   on_identify_cb      = register_callback("Identify Callback", NULL);
+  on_newuser_cb       = register_callback("New user coming to us", NULL);
 }
 
 struct Service *
@@ -91,7 +92,7 @@ introduce_service(struct Service *service)
   /* If we are not connected yet, the service will be sent as part of burst */
   if(me.uplink != NULL)
   {
-    execute_callback(newuser_cb, me.uplink, service->name, "services", me.name,
+    execute_callback(send_newuser_cb, me.uplink, service->name, "services", me.name,
       service->name, "o");
   }
 }
@@ -196,6 +197,32 @@ replace_string(char *str, const char *value)
   return ptr;
 }
 
+int
+check_list_entry(const char *table, unsigned int id, const char *value)
+{
+  struct AccessEntry entry;
+  void *ptr;
+
+  ptr = db_list_first(table, id, &entry);
+
+  while(ptr != NULL)
+  {
+    if(match(entry.value, value))
+    {
+      printf("check_list_entry: Found match: %s %s\n", entry.value, value);
+      MyFree(entry.value);
+      db_list_done(ptr);
+      return TRUE;
+    }
+    
+    printf("check_list_entry: Not Found match: %s %s\n", entry.value, value);
+    MyFree(entry.value);
+    ptr = db_list_next(ptr, &entry);
+  }
+  db_list_done(ptr);
+  return FALSE;
+}
+
 void
 chain_umode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
@@ -226,9 +253,3 @@ chain_part(struct Client *client, struct Client *source, char *name)
   execute_callback(on_part_cb, client, source, name);
 }
 
-void
-chain_nick(struct Client *client_p, struct Client *source_p, 
-    int parc, char **parv, int newts, char *nick, char *gecos)
-{
-  execute_callback(on_nick_change_cb, client_p, source_p, parc, parv, newts, nick, gecos);
-}
