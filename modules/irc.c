@@ -50,107 +50,107 @@ static char *mbuf;
 static int pargs;
 
 struct Message away_msgtab = {
-  "AWAY", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "AWAY", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message admin_msgtab = {
-  "ADMIN", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "ADMIN", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message version_msgtab = {
-  "VERSION", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "VERSION", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message trace_msgtab = {
-  "TRACE", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "TRACE", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message stats_msgtab = {
-  "STATS", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "STATS", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message whois_msgtab = {
-  "WHOIS", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "WHOIS", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message whowas_msgtab = {
-  "WHOWAS", 0, 0, 0 ,0, MFLG_SLOW, 0,
+  "WHOWAS", 0, 0, 0 ,0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message invite_msgtab = {
-  "INVITE", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "INVITE", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message lusers_msgtab = {
-  "LUSERS", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "LUSERS", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message motd_msgtab = {
-  "MOTD", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "MOTD", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message part_msgtab = {
-  "PART", 0, 0, 2, 0, MFLG_SLOW, 0,
+  "PART", 0, 0, 2, 0, 0, 0,
   { m_part, m_ignore }
 };
 
 struct Message ping_msgtab = {
-  "PING", 0, 0, 1, 0, MFLG_SLOW, 0,
+  "PING", 0, 0, 1, 0, 0, 0,
   { m_ping, m_ignore }
 };
 
 struct Message pong_msgtab = {
-  "PONG", 0, 0, 1, 0, MFLG_SLOW, 0,
+  "PONG", 0, 0, 1, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message eob_msgtab = {
-  "EOB", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "EOB", 0, 0, 0, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
 struct Message server_msgtab = {
-  "SERVER", 0, 0, 3, 0, MFLG_SLOW, 0,
+  "SERVER", 0, 0, 3, 0, 0, 0,
   { m_server, m_ignore }
 };
 
 struct Message nick_msgtab = {
-  "NICK", 0, 0, 1, 0, MFLG_SLOW, 0,
+  "NICK", 0, 0, 1, 0, 0, 0,
   { m_nick, m_ignore }
 };
 
 struct Message sjoin_msgtab = {
-  "SJOIN", 0, 0, 4, 0, MFLG_SLOW, 0,
+  "SJOIN", 0, 0, 4, 0, 0, 0,
   { m_sjoin, m_ignore }
 };
 
 struct Message quit_msgtab = {
-  "QUIT", 0, 0, 0, 0, MFLG_SLOW, 0,
+  "QUIT", 0, 0, 0, 0, 0, 0,
   { m_quit, m_ignore }
 };
 
 struct Message squit_msgtab = {
-  "SQUIT", 0, 0, 1, 0, MFLG_SLOW, 0,
+  "SQUIT", 0, 0, 1, 0, 0, 0,
   { m_squit, m_ignore }
 };
 
 struct Message mode_msgtab = {
-  "MODE", 0, 0, 2, 0, MFLG_SLOW, 0,
+  "MODE", 0, 0, 2, 0, 0, 0,
   { m_mode, m_ignore }
 };
 
 struct Message privmsg_msgtab = {
-  "PRIVMSG", 0, 0, 2, 0, MFLG_SLOW, 0,
+  "PRIVMSG", 0, 0, 2, 0, 0, 0,
   { process_privmsg, m_ignore }
 };
 

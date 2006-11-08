@@ -766,7 +766,7 @@ process_privmsg(struct Client *client, struct Client *source,
 {
   struct Service *service;
   struct ServiceMessage *mptr;
-  char  *s, *s2, *ch, *ch2;
+  char  *s, *ch, *ch2;
   int i;
 
   service = find_service(parv[1]);
@@ -803,17 +803,34 @@ process_privmsg(struct Client *client, struct Client *source,
 
     for (ch2 = parv[3]; *ch2 == ' '; ch2++) /* skip spaces */
       ;
-    if ((s2 = strchr(ch2, ' ')) != NULL)
-      *s2++ = '\0';
+    
+    i = string_to_array(ch2, servpara);
+
+    if(*servpara[1] == '#' && i > 2)
+    {
+      printf("Got %s which is possibly a channeli\n", servpara[1]);
+      servpara[0] = servpara[1];
+      servpara[1] = servpara[2];
+      servpara[2] = servpara[0];
+    }
 
     while(sub->cmd != NULL)
     {
-      if(irccmp(sub->cmd, ch2) == 0)
+      if(irccmp(sub->cmd, servpara[1]) == 0)
       {
         servpara[0] = source->name;
 
-        if(s2 != NULL)
-          i = string_to_array(s2, servpara);
+        if(i > 2)
+        {
+          int i2;
+          
+          for(i2 = 2; i2 < i; i2++)
+          {
+            servpara[i2-1] = servpara[i2];
+          }
+          servpara[i2-1] = NULL;
+          i--;
+        }
         else
         {
           i = 0;

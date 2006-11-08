@@ -35,7 +35,7 @@ static dlink_node *oftc_svscloak_hook;
 static dlink_node *oftc_identify_hook;
 
 struct Message gnotice_msgtab = {
-  "GNOTICE", 0, 0, 3, 0, MFLG_SLOW, 0,
+  "GNOTICE", 0, 0, 3, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 

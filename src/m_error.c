@@ -29,7 +29,7 @@
 #include "stdinc.h"
 
 struct Message error_msgtab = {
- "ERROR", 0, 0, 1, 0, MFLG_SLOW | MFLG_UNREG, 0,
+ "ERROR", 0, 0, 1, 0, 0, 0,
   { ms_error, m_ignore }
 };
 

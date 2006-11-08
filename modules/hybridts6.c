@@ -33,7 +33,7 @@ static void *irc_sendmsg_notice(va_list);
 static void *irc_server_connected(va_list);
 
 struct Message privmsg_msgtab = {
-  "PRIVMSG", 0, 0, 2, 0, MFLG_SLOW, 0,
+  "PRIVMSG", 0, 0, 2, 0, 0, 0,
   { process_privmsg, m_ignore }
 };
 
