@@ -191,20 +191,14 @@ m_register(struct Service *service, struct Client *client,
   }
 
   // Bail out if services dont know the channel (it does not exist)
+  // or if client is no member of the channel
   chptr = hash_find_channel(parv[1]);
-  if (chptr == NULL) 
+  if ((chptr == NULL) || (! IsMember(client, chptr))) 
   {
     reply_user(service, client, _L(chanserv, client, CS_NOT_ONCHAN));
     return;
   }
   
-  // bail out if client is no member of the channel
-  if (! IsMember(client, chptr)) 
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_ONCHAN));
-    return;
-  } 
-
   // bail out if client is not opped on channel
   if (! IsChanop(client, chptr))
   {
