@@ -688,6 +688,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
                  char *parv[], time_t newts, char *nick, char *ngecos)
 {
   int samenick = 0;
+  char oldnick[NICKLEN+1];
 
   if (IsServer(source_p))
   {
@@ -741,15 +742,14 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
     {
       source_p->tsinfo = newts ? newts : CurrentTime;
     }
+    strlcpy(oldnick, parv[0], sizeof(oldnick));
   }
 
   /* set the new nick name */
   assert(source_p->name[0]);
 
-  execute_callback(on_nick_change_cb, source_p, nick);
   hash_del_client(source_p);
   strcpy(source_p->name, nick);
   hash_add_client(source_p);
-
+  execute_callback(on_nick_change_cb, source_p, oldnick);
 }
-

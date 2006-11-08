@@ -480,10 +480,11 @@ static void *
 ns_on_nick_change(va_list args)
 {
   struct Client *user = va_arg(args, struct Client *);
-  char *newnick       = va_arg(args, char *);
+  char *oldnick       = va_arg(args, char *);
   struct Nick *nick_p;
+  char userhost[USERLEN+HOSTLEN+1+1]; /* userlen@hostlen\0 */
 
-  printf("%s changing nick to %s\n", user->name, newnick);
+  printf("%s changing nick to %s\n", oldnick, user->name);
  
   if(IsIdentified(user))
   {
@@ -494,20 +495,21 @@ ns_on_nick_change(va_list args)
     send_umode(nickserv, user, "-R");
   }
 
-  if((nick_p = db_find_nick(newnick)) == NULL)
+  if((nick_p = db_find_nick(user->name)) == NULL)
   {
-    printf("Nick Change: %s->%s(nick not registered)\n", user->name, newnick);
+    printf("Nick Change: %s->%s(nick not registered)\n", oldnick, user->name);
     return pass_callback(ns_nick_hook);
   }
 
-  if(check_list_entry("nicknameaccess", nick_p->id, user->host))
+  snprintf(userhost, USERLEN+HOSTLEN+1, "%s@%s", user->username, user->host);
+  if(check_list_entry("nicknameaccess", nick_p->id, userhost))
   {
-    printf("%s changed nick to %s(found access entry)\n", user->name, newnick);
+    printf("%s changed nick to %s(found access entry)\n", oldnick, user->name);
     user->nickname = nick_p;
     identify_user(user);
   }
   else
-    printf("%s changed nick to %s(no access entry)\n", user->name, newnick);
+    printf("%s changed nick to %s(no access entry)\n", oldnick, user->name);
   
   return pass_callback(ns_nick_hook);
 }
@@ -517,6 +519,7 @@ ns_on_newuser(va_list args)
 {
   struct Client *newuser = va_arg(args, struct Client*);
   struct Nick *nick_p;
+  char userhost[USERLEN+HOSTLEN+1+1];
   
   printf("New User: %s!\n", newuser->name);
 
@@ -526,7 +529,9 @@ ns_on_newuser(va_list args)
     return pass_callback(ns_nick_hook);
   }
 
-  if(check_list_entry("nicknameaccess", nick_p->id, newuser->host))
+  snprintf(userhost, USERLEN+HOSTLEN+1, "%s@%s", newuser->username, 
+      newuser->host);
+  if(check_list_entry("nicknameaccess", nick_p->id, userhost))
   {
     printf("new user: %s(found access entry)\n", newuser->name);
     newuser->nickname = nick_p;
