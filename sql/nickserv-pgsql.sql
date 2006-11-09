@@ -25,3 +25,9 @@ CREATE TABLE nickname_access (
   parent_id       INTEGER REFERENCES nickname(id),
   entry           VARCHAR(255) NOT NULL default ''
 );
+
+DROP TABLE nickname_links;
+CREATE TABLE nickname_links (
+ nick_id          INTEGER REFERENCES nickname(id),
+ link_id          INTEGER REFERENCES nickname(id)
+);

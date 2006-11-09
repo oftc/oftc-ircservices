@@ -27,3 +27,11 @@ CREATE TABLE nickname_access (
   UNIQUE KEY id (id),
   UNIQUE KEY nickname_id (nickname_id, entry)
 ) TYPE=MyISAM;
+
+DROP TABLE IF EXISTS nickname_links;
+CREATE TABLE nickname_links (
+  nick_id         INTEGER,
+  link_id         INTEGER,
+  KEY nick_id,
+  KEY link_id
+) TYPE=MyISAM;
