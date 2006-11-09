@@ -452,7 +452,7 @@ db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
   dbi_result result;
     
   snprintf(querybuffer, 1024, "SELECT id, entry FROM %s WHERE parent_id=%d", 
-      "nickname_access", id);
+      table, id);
   
   printf("db: query: %s\n", querybuffer);
 
@@ -495,3 +495,92 @@ db_list_done(void *result)
 {
   dbi_result_free(result);
 }
+
+int
+db_list_del(const char *table, unsigned int id, const char *entry)
+{
+  dbi_result result;
+  char *escentry;
+  int numrows;
+    
+  if(dbi_driver_quote_string_copy(Database.driv, entry, &escentry) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return 0;
+  }
+
+  snprintf(querybuffer, 1024, "DELETE FROM %s WHERE parent_id=%d AND entry=%s",
+      table, id, escentry);
+
+  MyFree(escentry);
+ 
+  printf("db: query: %s\n", querybuffer);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return 0;
+  }
+
+  numrows = dbi_result_get_numrows_affected(result);
+
+  dbi_result_free(result);
+  return numrows;
+}
+
+int 
+db_list_del_index(const char *table, unsigned int id, unsigned int index)
+{
+  dbi_result result;
+  unsigned int delid, numrows, j;
+    
+  snprintf(querybuffer, 1024, "SELECT id, entry FROM %s WHERE parent_id=%d", 
+      table, id);
+  
+  printf("db: query: %s\n", querybuffer);
+
+  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db: Failed to query: %s\n", error);
+    return 0;
+  }
+
+  if((numrows = dbi_result_get_numrows(result)) == 0)
+  {
+    printf("db: %d has no access list\n", id);
+    return 0;
+  }
+
+  if(dbi_result_first_row(result))
+  {
+    for(j = 1; j <= numrows; j++)
+    {
+      if(j == index)
+      {
+        dbi_result_get_fields(result, "id.%ui", &delid);
+        dbi_result_free(result);
+        snprintf(querybuffer, 1024, 
+            "DELETE FROM %s WHERE parent_id=%d AND id=%d", table, id, delid);
+
+        printf("db: query: %s\n", querybuffer);
+
+        if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+        {
+          const char *error;
+          dbi_conn_error(Database.conn, &error);
+          printf("db: Failed to query: %s\n", error);
+          return 0;
+        }
+        return 1;
+      }
+      dbi_result_next_row(result);
+    }
+  }
+  dbi_result_free(result);
+  return 0;
+}
+

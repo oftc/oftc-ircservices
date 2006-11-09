@@ -25,5 +25,7 @@ int db_list_add(const char *, unsigned int, const char *);
 void *db_list_first(const char *, unsigned int, struct AccessEntry *);
 void *db_list_next(void *, struct AccessEntry *);
 void db_list_done(void *);
+int db_list_del(const char *, unsigned int, const char *);
+int db_list_del_index(const char *, unsigned int, unsigned int);
 
 #endif

@@ -767,7 +767,7 @@ process_privmsg(struct Client *client, struct Client *source,
   struct Service *service;
   struct ServiceMessage *mptr;
   char  *s, *ch, *ch2;
-  int i;
+  int i = 0;
 
   service = find_service(parv[1]);
   if(service == NULL)
@@ -888,6 +888,10 @@ process_privmsg(struct Client *client, struct Client *source,
     }
     servpara[j-1] = NULL;
     i--;
+  }
+  else if(i == 0 && s != NULL)
+  {
+    i = string_to_array(s, servpara);
   }
   else
   {

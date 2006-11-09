@@ -26,8 +26,10 @@ NS_ACCESS_HELP_S  Verwaltung der Nickname Zugriffsliste.
 NS_ACCESS_HELP_LONG Verwaltung der Nickname Zugriffsliste
 NS_ACCESS_ADD     Eintrag %s zur Zugriffsliste hinzugefügt
 NS_ACCESS_ADDFAIL Hinzufügen des Eintrags %szur Zugriffsliste fehlgeschlagen.
+NS_ACCESS_INVALID ACCESS list entry %s is not a userhost. (user@host) XXX TRANSLATE PLEASE XXX
 NS_ACCESS_START   Zugriffsliste:
 NS_ACCESS_ENTRY   %d  %s
+NS_ACCESS_DEL     %d ACCESS entries deleted. (XXX TRANSLATE PLEASE)
 NS_HELP_GHOST_SHORT Terminieren einer verlorenen IRC Sitzung
 NS_HELP_GHOST_LONG Terminieren einer verlorenen IRC Sitzung
 NS_GHOST_SUCCESS  IRC Sitzung fuer %s wurde terminiert

@@ -26,8 +26,10 @@ NS_ACCESS_HELP_S  Maintains the Nickname ACCESS list.
 NS_ACCESS_HELP_LONG Maintains the Nickname ACCESS list.
 NS_ACCESS_ADD     ACCESS list entry %s added.
 NS_ACCESS_ADDFAIL Failed to add ACCESS list entry %s.
+NS_ACCESS_INVALID ACCESS list entry %s is not a userhost. (user@host)
 NS_ACCESS_START   ACCESS list:
 NS_ACCESS_ENTRY   %d  %s
+NS_ACCESS_DEL     %d ACCESS entries deleted.
 NS_HELP_GHOST_SHORT Terminate a GHOST IRC session.
 NS_HELP_GHOST_LONG  Terminate a GHOST IRC session.
 NS_GHOST_SUCCESS  GHOST succeed on nickname %s.

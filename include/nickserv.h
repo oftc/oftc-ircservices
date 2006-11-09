@@ -54,12 +54,14 @@ struct Nick
 #define NS_ACCESS_HELP_LONG 25
 #define NS_ACCESS_ADD       26 
 #define NS_ACCESS_ADDFAIL   27
-#define NS_ACCESS_START     28
-#define NS_ACCESS_ENTRY     29
-#define NS_HELP_GHOST_SHORT 30
-#define NS_HELP_GHOST_LONG  31
-#define NS_GHOST_SUCCESS    32
-#define NS_GHOST_FAILED     33
-#define NS_GHOST_NOSELF     34
+#define NS_ACCESS_INVALID   28
+#define NS_ACCESS_START     29
+#define NS_ACCESS_ENTRY     30
+#define NS_ACCESS_DEL       31
+#define NS_HELP_GHOST_SHORT 32
+#define NS_HELP_GHOST_LONG  33
+#define NS_GHOST_SUCCESS    34
+#define NS_GHOST_FAILED     35
+#define NS_GHOST_NOSELF     36
 
 #endif

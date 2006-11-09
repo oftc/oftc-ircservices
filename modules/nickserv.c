@@ -383,6 +383,13 @@ m_access_add(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Nick *nick = client->nickname;
+
+  if(strchr(parv[1], '@') == NULL)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_ACCESS_INVALID), parv[1]);
+    return;
+  }
+  
   if(db_list_add("nickname_access", nick->id, parv[1]) == 0)
   {
     reply_user(service, client, _L(nickserv, client, NS_ACCESS_ADD), parv[1]);
@@ -405,12 +412,12 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 
   nick = client->nickname;
 
+  reply_user(service, client, _L(nickserv, client, NS_ACCESS_START));
+ 
   if((listptr = db_list_first("nickname_access", nick->id, &entry)) == NULL)
   {
     return;
   }
-
-  reply_user(service, client, _L(nickserv, client, NS_ACCESS_START));
 
   while(listptr != NULL)
   {
@@ -427,7 +434,16 @@ static void
 m_access_del(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  printf("del\n");
+  struct Nick *nick = client->nickname;
+  int index, ret;
+
+  index = atoi(parv[1]);
+  if(index > 0)
+    ret = db_list_del_index("nickname_access", nick->id, index);
+  else
+    ret = db_list_del("nickname_access", nick->id, parv[1]);
+  
+  reply_user(service, client, _L(nickserv, client, NS_ACCESS_DEL), ret);
 }
 
 static void
@@ -502,7 +518,7 @@ ns_on_nick_change(va_list args)
   }
 
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
-  if(check_list_entry("nicknameaccess", nick_p->id, userhost))
+  if(check_list_entry("nickname_access", nick_p->id, userhost))
   {
     printf("%s changed nick to %s(found access entry)\n", oldnick, user->name);
     user->nickname = nick_p;
@@ -531,7 +547,7 @@ ns_on_newuser(va_list args)
 
   snprintf(userhost, USERHOSTLEN, "%s@%s", newuser->username, 
       newuser->host);
-  if(check_list_entry("nicknameaccess", nick_p->id, userhost))
+  if(check_list_entry("nickname_access", nick_p->id, userhost))
   {
     printf("new user: %s(found access entry)\n", newuser->name);
     newuser->nickname = nick_p;
