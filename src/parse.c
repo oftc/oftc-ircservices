@@ -748,7 +748,7 @@ void
 m_alreadyreg(struct Service *service, struct Client *source, int parc, 
     char *parv[])
 {
-  reply_user(service, source, "%s is already registered dumbass.", 
+  reply_user(service, source, "Nick %s is already registered.", 
       source->name);
 }
 
@@ -756,7 +756,7 @@ void
 m_unreg(struct Service *service, struct Client *source,
     int parc, char *parv[])
 {
-  reply_user(service, source, "You are not identified.",
+  reply_user(service, source, "You are not identified to Nickserv.",
         source->name);
 }
 
