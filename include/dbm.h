@@ -29,5 +29,7 @@ int db_list_del(const char *, unsigned int, const char *);
 int db_list_del_index(const char *, unsigned int, unsigned int);
 
 int db_link_nicks(unsigned int, unsigned int);
+int db_is_linked(const char *);
+struct Nick *db_unlink_nick(const char *);
 
 #endif

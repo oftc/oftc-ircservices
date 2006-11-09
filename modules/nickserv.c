@@ -45,6 +45,7 @@ static void m_set(struct Service *, struct Client *, int, char *[]);
 static void m_access(struct Service *, struct Client *, int, char *[]);
 static void m_ghost(struct Service *, struct Client *, int, char *[]);
 static void m_link(struct Service *, struct Client *, int, char *[]);
+static void m_unlink(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -83,7 +84,7 @@ static struct SubMessage set_sub[5] = {
 };
 
 static struct ServiceMessage set_msgtab = {
-  set_sub, "SET",  0, 0, NS_HELP_SHORT, NS_HELP_LONG,
+  set_sub, "SET",  0, 0, NS_HELP_SET_SHORT, NS_HELP_SET_LONG,
   { m_unreg, m_set, m_set, m_set }
 };
 
@@ -95,7 +96,7 @@ static struct SubMessage access_sub[4] = {
 };
 
 static struct ServiceMessage access_msgtab = {
-  access_sub, "ACCESS", 0, 0, NS_HELP_SHORT, NS_HELP_LONG,
+  access_sub, "ACCESS", 0, 0, NS_HELP_ACCESS_SHORT, NS_HELP_ACCESS_LONG,
   { m_unreg, m_access, m_access, m_access }
 };
 
@@ -107,6 +108,11 @@ static struct ServiceMessage ghost_msgtab = {
 static struct ServiceMessage link_msgtab = {
   NULL, "LINK", 0, 2, NS_HELP_LINK_SHORT, NS_HELP_LINK_LONG,
   { m_unreg, m_link, m_link, m_link }
+};
+
+static struct ServiceMessage unlink_msgtab = {
+  NULL, "UNLINK", 0, 0, NS_HELP_UNLINK_SHORT, NS_HELP_UNLINK_LONG,
+  { m_unreg, m_unlink, m_unlink, m_unlink }
 };
 
 INIT_MODULE(nickserv, "$Revision$")
@@ -128,6 +134,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &access_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &ghost_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &link_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -516,6 +523,30 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
       , nick->nick, parv[1]);
   free_nick(nick);
   nick = NULL;
+}
+
+static void
+m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Nick *nick = client->nickname;
+  struct Nick *unlinked_nick;
+
+  if(!db_is_linked(client->name))
+  {
+    reply_user(service, client, _L(nickserv, client, NS_UNLINK_NOLINK), 
+        client->name);
+    return;
+  }
+  if((unlinked_nick = db_unlink_nick(client->name)) != NULL)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_UNLINK_OK), 
+        client->name);
+    free_nick(nick);
+    client->nickname = unlinked_nick;
+  }
+  else
+    reply_user(service, client, _L(nickserv, client, NS_UNLINK_FAILED), 
+        client->name);
 }
 
 static void*

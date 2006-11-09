@@ -1,43 +1,62 @@
 0 English
-NS_ALREADY_REG    Nickname %s is already registered.
-NS_REG_COMPLETE   Nickname %s has been registered.
-NS_REG_FAIL       Nickname %s failed to register.
-NS_REG_FIRST      Nickname %s is not registered.
-NS_IDENTIFIED     You are sucessfully identified as %s.
-NS_IDENT_FAIL     Identify failed as %s.
-NS_HELP_SHORT     Shows this help.
-NS_HELP_LONG      Shows this help message.  Use HELP <command> for help with a commmand.
-NS_HELP_REG_SHORT Registers a nickname for your usage.
-NS_HELP_REG_LONG  Registers a nickname for your usage.
-NS_HELP_ID_SHORT  Identify your nickname.
-NS_HELP_ID_LONG   Identify your nickname.
-NS_CURR_LANGUAGE  Current language is %s(%d).
-NS_AVAIL_LANGUAGE Available languages are:
-NS_LANGUAGE_SET   Language set to %s(%d).
-NS_SET_SUCCESS    SET %s to %s.
-NS_SET_FAILED     Failed to SET %s to %s.
-NS_SET_VALUE      %s is SET to: %s.
-NS_HELP_DROP_SHORT Releases your nickname for use. 
-NS_HELP_DROP_LONG Releases your nickname for use and deletes it from the database.  This cannot be undone.
-NS_NEED_IDENTIFY  You need to identify to Nickserv first.
-NS_NICK_DROPPED   Nickname %s has been DROPped.
-NS_NICK_DROPFAIL  DROP failed on Nickname %s.
-NS_ACCESS_HELP_S  Maintains the Nickname ACCESS list.
-NS_ACCESS_HELP_LONG Maintains the Nickname ACCESS list.
-NS_ACCESS_ADD     ACCESS list entry %s added.
-NS_ACCESS_ADDFAIL Failed to add ACCESS list entry %s.
-NS_ACCESS_INVALID ACCESS list entry %s is not a userhost. (user@host)
-NS_ACCESS_START   ACCESS list:
-NS_ACCESS_ENTRY   %d  %s
-NS_ACCESS_DEL     %d ACCESS entries deleted.
-NS_HELP_GHOST_SHORT Terminate a GHOST IRC session.
-NS_HELP_GHOST_LONG  Terminate a GHOST IRC session.
-NS_GHOST_SUCCESS  GHOST succeed on nickname %s.
-NS_GHOST_FAILED   GHOST failed on nickname %s.
-NS_GHOST_NOSELF   You cannot GHOST yourself, %s.
-NS_HELP_LINK_SHORT  LINK this nickname to a master nickname. 
-NS_HELP_LINK_LONG   LINK this nickname to a master nickname.
-NS_LINK_NOMASTER    Master nickname %s not registered.
-NS_LINK_BADPASS     Incorrect password for master nickname %s.
-NS_LINK_FAIL        LINK failed to master %s.
-NS_LINK_OK          Nickname %s is now linked to master %s.
+NS_HELP_SHORT           Shows this help.
+NS_HELP_LONG            Shows this help message.  Use HELP <command> for help with a commmand.
+NS_HELP_REG_SHORT       Registers a nickname for your usage.
+NS_HELP_REG_LONG        Registers a nickname for your usage.
+NS_HELP_ID_SHORT        Identify your nickname.
+NS_HELP_ID_LONG         Identify your nickname.
+NS_HELP_DROP_SHORT      Releases your nickname for use. 
+NS_HELP_DROP_LONG       Releases your nickname for use and deletes it from the database.  This cannot be undone.
+NS_HELP_ACCESS_SHORT    Maintains the nickname ACCESS list.
+NS_HELP_ACCESS_LONG     Maintains the nickname ACCESS list.
+NS_HELP_SET_SHORT       Set nickname properties.
+NS_HELP_SET_LONG        Set nickname properties.
+NS_HELP_GHOST_SHORT     Terminate a GHOST IRC session.
+NS_HELP_GHOST_LONG      Terminate a GHOST IRC session.
+NS_HELP_LINK_SHORT      Link this nickname to a master nickname. 
+NS_HELP_LINK_LONG       Link this nickname to a master nickname.
+NS_HELP_UNLINK_SHORT    Unlink this nickname from a master nickname.
+NS_HELP_UNLINK_LONG     Unlink this nickname from a master nickname.
+NS_HELP_RECOVER_SHORT   Recover your nickname in a more forceful way.
+NS_HELP_RECOVER_LONG    Recover your nickname in a more forceful way.
+NS_HELP_RELEASE_SHORT   Release NickServ's hold on your nickname.
+NS_HELP_RELEASE_LONG    Release NickServ's hold on your nickname.
+NS_HELP_SUSPEND_SHORT   Suspend a nickname from use.
+NS_HELP_SUSPENT_LONG    Suspend a nickname from use.
+NS_HELP_FORBID_SHORT    Forbid a nickname from being used.
+NS_HELP_FORBID_LONG     Forbid a nickname from being used.
+NS_HELP_INFO_SHORT      Get information on a nickname.
+NS_HELP_INFO_LONG       Get information on a nickname.
+NS_HELP_SENDPASS_SHORT  Send a password reset request. 
+NS_HELP_SENDPASS_LONG   Send a password reset request.
+NS_ALREADY_REG          Nickname %s is already registered.
+NS_REG_COMPLETE         Nickname %s has been registered.
+NS_REG_FAIL             Nickname %s failed to register.
+NS_REG_FIRST            Nickname %s is not registered.
+NS_IDENTIFIED           You are sucessfully identified as %s.
+NS_IDENT_FAIL           Identify failed as %s.
+NS_CURR_LANGUAGE        Current language is %s(%d).
+NS_AVAIL_LANGUAGE       Available languages are:
+NS_LANGUAGE_SET         Language set to %s(%d).
+NS_SET_SUCCESS          SET %s to %s.
+NS_SET_FAILED           Failed to SET %s to %s.
+NS_SET_VALUE            %s is SET to: %s.
+NS_NEED_IDENTIFY        You need to identify to Nickserv first.
+NS_NICK_DROPPED         Nickname %s has been DROPped.
+NS_NICK_DROPFAIL        DROP failed on Nickname %s.
+NS_ACCESS_ADD           ACCESS list entry %s added.
+NS_ACCESS_ADDFAIL       Failed to add ACCESS list entry %s.
+NS_ACCESS_INVALID       ACCESS list entry %s is not a userhost. (user@host)
+NS_ACCESS_START         ACCESS list:
+NS_ACCESS_ENTRY         %d  %s
+NS_ACCESS_DEL           %d ACCESS entries deleted.
+NS_GHOST_SUCCESS        GHOST succeed on nickname %s.
+NS_GHOST_FAILED         GHOST failed on nickname %s.
+NS_GHOST_NOSELF         You cannot GHOST yourself, %s.
+NS_LINK_NOMASTER        Master nickname %s not registered.
+NS_LINK_BADPASS         Incorrect password for master nickname %s.
+NS_LINK_FAIL            LINK failed to master %s.
+NS_LINK_OK              Nickname %s is now linked to master %s.
+NS_UNLINK_FAILED        Nickname %s is failed to unlink.
+NS_UNLINK_OK            Nickname %s is now unlinked.
+NS_UNLINK_NOLINK        Nickname %s has is not linked.

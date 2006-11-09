@@ -27,6 +27,7 @@
 #include "conf/conf.h"
 
 static dbi_result db_query(const char *, ...);
+static unsigned int db_get_id_from_nick(const char *);
 
 void
 init_db()
@@ -138,7 +139,7 @@ db_find_nick(const char *nick)
 
   link_result = db_query("SELECT nick_id FROM nickname_links WHERE link_id=%d", 
       id);
-  if(link_result != NULL && dbi_result_get_numrows(result) != 0)
+  if(link_result != NULL && dbi_result_get_numrows(link_result) != 0)
   {
     dbi_result_free(result);
     dbi_result_first_row(link_result);
@@ -179,6 +180,39 @@ db_find_nick(const char *nick)
   dbi_result_free(result);
 
   return nick_p;
+}
+
+static unsigned int
+db_get_id_from_nick(const char *nick)
+{
+  dbi_result result;
+  char *escnick;
+  int id;
+
+  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return 0;
+  }
+
+  result = db_query("SELECT id from nickname WHERE nick=%s", escnick);
+  MyFree(escnick);
+  
+  if(result == NULL)
+    return 0;
+
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    printf("db: WTF. Didn't find nickname entry for %s\n", nick);
+    dbi_result_free(result);
+    return 0;
+  }
+
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "id.%ui", &id);
+  dbi_result_free(result);
+
+  return id;
 }
 
 struct Nick *
@@ -573,4 +607,79 @@ db_link_nicks(unsigned int master, unsigned int child)
     return -1;
   
   return 0;
+}
+
+int
+db_is_linked(const char *nick)
+{
+  dbi_result result;
+  int ret, id;
+  
+  id = db_get_id_from_nick(nick);
+
+  if(id <= 0)
+    return FALSE;
+
+  result = db_query("SELECT link_id FROM nickname_links WHERE link_id=%d", id);
+  if(result == NULL)
+    return FALSE;
+
+  if(dbi_result_get_numrows(result) > 0)
+    ret = TRUE;
+  else
+    ret = FALSE;
+
+  dbi_result_free(result);
+
+  return ret;
+}
+
+struct Nick *
+db_unlink_nick(const char *nick)
+{
+  dbi_result result;
+  struct Nick *nick_p;
+  char *retnick, *retpass, *retcloak;
+  int id;
+
+  id = db_get_id_from_nick(nick);
+
+  if(id <= 0)
+    return NULL;
+
+  result = db_query("DELETE FROM nickname_links WHERE link_id=%d", id);
+  if(result == NULL)
+    return NULL;
+
+  dbi_result_free(result);
+
+  if((result = db_query("SELECT id, nick, password, email, cloak, "
+      "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
+      "FROM %s WHERE id=%d", "nickname", id)) == NULL)
+  {
+    return NULL;
+  }
+
+  nick_p = MyMalloc(sizeof(struct Nick));
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
+      "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l status.%ui "
+      "flags.%ui language.%ui",
+      &nick_p->id, &retnick, &retpass, &nick_p->email, &retcloak, 
+      &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen, 
+      &nick_p->last_used, &nick_p->status, &nick_p->flags, &nick_p->language);
+
+  strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
+  strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
+  strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
+
+  printf("db_unlink_link: Found nick %s\n", nick_p->nick);
+
+  MyFree(retnick);
+  MyFree(retpass);
+  MyFree(retcloak);
+
+  dbi_result_free(result);
+
+  return nick_p;
 }
