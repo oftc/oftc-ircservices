@@ -118,15 +118,13 @@ db_find_nick(const char *nick)
     return NULL;
   }
   
-  if((result = db_query("SELECT id, nick, password, email, cloak, "
-      "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
-      "FROM %s WHERE nick=%s", "nickname", escnick)) == NULL)
-  {
-    MyFree(escnick);
-    return NULL;
-  }
-
+  result = db_query("SELECT id, nick, password, email, cloak, last_quit_time, "
+      "reg_time, last_seen, last_used, status, flags, language FROM %s WHERE "
+      "nick=%s", "nickname", escnick);
   MyFree(escnick);
+
+  if(result == NULL)
+    return NULL;
 
   if(dbi_result_get_numrows(result) == 0)
   {
@@ -246,20 +244,17 @@ db_register_nick(const char *nick, const char *password, const char *email)
     return NULL;
   }
   
-  if((result = db_query("INSERT INTO %s (nick, password, email, reg_time,"
+  result = db_query("INSERT INTO %s (nick, password, email, reg_time,"
       " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nickname", 
-      escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime)) == NULL)
-  {
-    MyFree(escnick);
-    MyFree(escemail);
-    MyFree(escpass);
-    return NULL;
-  }
-  
+      escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime);
+
   MyFree(escnick);
   MyFree(escemail);
   MyFree(escpass);
  
+  if(result == NULL)
+    return NULL;
+  
   dbi_result_free(result);
 
   return db_find_nick(nick); 
@@ -277,14 +272,13 @@ db_delete_nick(const char *nick)
     return -1;
   }
 
-  if((result = db_query("DELETE FROM %s WHERE nick=%s", 
-          "nickname", escnick)) == NULL)
-  {
-    MyFree(escnick);
-    return 0;
-  }  
-  
+  result = db_query("DELETE FROM %s WHERE nick=%s", "nickname", escnick);
+ 
   MyFree(escnick);
+  
+  if(result == NULL)
+    return 0;
+  
   dbi_result_free(result);
 
   return 0;
@@ -302,14 +296,14 @@ db_nick_set_string(unsigned int id, const char *key, const char *value)
     return -1;
   }
   
-  if((result = db_query("UPDATE %s SET %s=%s WHERE id=%d", "nickname", 
-          key, escvalue, id)) == NULL)
-  {
-    MyFree(escvalue);
-    return -1;
-  }
-
+  result = db_query("UPDATE %s SET %s=%s WHERE id=%d", "nickname", key, 
+      escvalue, id);
+  
   MyFree(escvalue);
+
+  if(result == NULL)
+    return -1;
+
   dbi_result_free(result);
 
   return 0;
@@ -320,7 +314,6 @@ db_nick_set_number(unsigned int id, const char *key, const unsigned long value)
 {
   dbi_result result;
 
-  
   if((result = db_query("UPDATE %s SET %s=%ld WHERE id=%d", 
           "nickname", key, value, id)) == NULL)
   {
@@ -348,14 +341,12 @@ db_nick_get_string(unsigned int id, const char *key)
     return NULL;
   }
    
-  if((result = db_query("SELECT %s FROM %s WHERE id=%d", esckey, 
-          "nickname", id)) == NULL)
-  {
-    MyFree(esckey);
-    return NULL;
-  }
+  result = db_query("SELECT %s FROM %s WHERE id=%d", esckey, "nickname", id);
 
   MyFree(esckey);
+  
+  if(result == NULL)
+    return NULL;
 
   if(dbi_result_get_numrows(result) == 0)
   {
@@ -387,16 +378,15 @@ db_find_chan(const char *channel)
     return NULL;
   }
 
-  if((result = db_query("SELECT %s.id, channel, nickname.nick FROM %s "
+  result = db_query("SELECT %s.id, channel, nickname.nick FROM %s "
           "INNER JOIN %s ON %s.founder=%s.id WHERE channel=%s", 
           "channel", "channel", "nickname", "channel", "nickname", 
-          escchannel)) == NULL)
-  {
-    MyFree(escchannel);
-    return NULL;
-  }
-  
+          escchannel);
+ 
   MyFree(escchannel);
+  
+  if(result == NULL)
+    return NULL;
   
   if(dbi_result_get_numrows(result) == 0)
   {
@@ -443,17 +433,16 @@ db_register_chan(struct Client *client, char *channelname)
     return -1;
   }
   
-  if((result = db_query("INSERT INTO %s (channel, founder) VALUES(%s, "
+  result = db_query("INSERT INTO %s (channel, founder) VALUES(%s, "
           "(SELECT id FROM nickname WHERE nick=%s))", "channel", escchannel, 
-          escfounder)) == NULL)
-  {
-    MyFree(escchannel);
-    MyFree(escfounder);
-  }  
-  
+          escfounder);
+
   MyFree(escchannel);
   MyFree(escfounder);
  
+  if(result == NULL)
+    return 0;
+
   dbi_result_free(result);
 
   return 0;
@@ -471,14 +460,14 @@ db_list_add(const char *table, unsigned int id, const char *value)
     return -1;
   }
   
-  if((result = db_query("INSERT INTO %s (parent_id, entry) VALUES(%d, %s)", 
-          table, id, escvalue)) == NULL)
-  {
-    MyFree(escvalue);
-    return -1;
-  }  
-
+  result = db_query("INSERT INTO %s (parent_id, entry) VALUES(%d, %s)", table, id, 
+      escvalue);
+  
   MyFree(escvalue);
+  
+  if(result == NULL)
+    return -1;
+
   dbi_result_free(result);
   
   return 0;
