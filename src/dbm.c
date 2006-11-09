@@ -26,7 +26,7 @@
 #include <dbi/dbi.h>
 #include "conf/conf.h"
 
-static char querybuffer[1025];
+static dbi_result db_query(const char *, ...);
 
 void
 init_db()
@@ -74,6 +74,32 @@ db_load_driver()
   Database.driv = dbi_conn_get_driver(Database.conn);
 }
 
+dbi_result
+db_query(const char *pattern, ...)
+{
+  va_list args;
+  char *buffer;
+  dbi_result result;
+  int len;
+
+  va_start(args, pattern);
+  len = vasprintf(&buffer, pattern, args);
+  va_end(args);
+  if(len == -1)
+    return NULL;
+
+  printf("db_query: %s\n", buffer);
+  result = dbi_conn_query(Database.conn, buffer);
+  if(result == NULL)
+  {
+    const char *error;
+    dbi_conn_error(Database.conn, &error);
+    printf("db_query: Failed: %s\n", error);
+  }
+  MyFree(buffer);
+  return result;
+}
+
 struct Nick *
 db_find_nick(const char *nick)
 {
@@ -90,20 +116,15 @@ db_find_nick(const char *nick)
     return NULL;
   }
   
-  snprintf(querybuffer, 1024, "SELECT id, nick, password, email, cloak, "
+  if((result = db_query("SELECT id, nick, password, email, cloak, "
       "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
-      "FROM %s WHERE nick=%s", "nickname", escnick);
-
-  MyFree(escnick);
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+      "FROM %s WHERE nick=%s", "nickname", escnick)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
+    MyFree(escnick);
     return NULL;
   }
+
+  MyFree(escnick);
 
   if(dbi_result_get_numrows(result) == 0)
   {
@@ -162,24 +183,20 @@ db_register_nick(const char *nick, const char *password, const char *email)
     return NULL;
   }
   
-  snprintf(querybuffer, 1024, "INSERT INTO %s (nick, password, email, reg_time,"
+  if((result = db_query("INSERT INTO %s (nick, password, email, reg_time,"
       " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nickname", 
-      escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime);
-
+      escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime)) == NULL)
+  {
+    MyFree(escnick);
+    MyFree(escemail);
+    MyFree(escpass);
+    return NULL;
+  }
+  
   MyFree(escnick);
   MyFree(escemail);
   MyFree(escpass);
-
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
-  {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
-    return NULL;
-  }  
-
+ 
   dbi_result_free(result);
 
   return db_find_nick(nick); 
@@ -197,22 +214,14 @@ db_delete_nick(const char *nick)
     return -1;
   }
 
-  
-  snprintf(querybuffer, 1024, "DELETE FROM %s WHERE nick=%s",
-      "nickname", escnick);
-
-  MyFree(escnick);
-
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if((result = db_query("DELETE FROM %s WHERE nick=%s", 
+          "nickname", escnick)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
+    MyFree(escnick);
     return 0;
   }  
-
+  
+  MyFree(escnick);
   dbi_result_free(result);
 
   return 0;
@@ -230,21 +239,14 @@ db_nick_set_string(unsigned int id, const char *key, const char *value)
     return -1;
   }
   
-  snprintf(querybuffer, 1024, "UPDATE %s SET %s=%s WHERE id=%d", 
-      "nickname", key, escvalue, id);
-
-  printf("db: query: %s\n", querybuffer);
-
-  MyFree(escvalue);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if((result = db_query("UPDATE %s SET %s=%s WHERE id=%d", "nickname", 
+          key, escvalue, id)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
+    MyFree(escvalue);
     return -1;
   }
 
+  MyFree(escvalue);
   dbi_result_free(result);
 
   return 0;
@@ -255,16 +257,10 @@ db_nick_set_number(unsigned int id, const char *key, const unsigned long value)
 {
   dbi_result result;
 
-  snprintf(querybuffer, 1024, "UPDATE %s SET %s=%ld WHERE id=%d", 
-      "nickname", key, value, id);
-
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  
+  if((result = db_query("UPDATE %s SET %s=%ld WHERE id=%d", 
+          "nickname", key, value, id)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
     return -1;
   }
 
@@ -279,6 +275,7 @@ db_nick_get_string(unsigned int id, const char *key)
   dbi_result result;
   char *esckey;
   char *value;
+  char buffer[512];
 
   assert(key != NULL);
   
@@ -288,19 +285,14 @@ db_nick_get_string(unsigned int id, const char *key)
     return NULL;
   }
    
-  snprintf(querybuffer, 1024, "SELECT %s FROM %s WHERE id=%d", 
-      esckey, "nickname", id);
-  
-  MyFree(esckey);
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if((result = db_query("SELECT %s FROM %s WHERE id=%d", esckey, 
+          "nickname", id)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
+    MyFree(esckey);
     return NULL;
   }
+
+  MyFree(esckey);
 
   if(dbi_result_get_numrows(result) == 0)
   {
@@ -308,10 +300,10 @@ db_nick_get_string(unsigned int id, const char *key)
     return NULL;
   }
 
-  snprintf(querybuffer, 1024, "%s.%%S", key);
+  snprintf(buffer, sizeof(buffer), "%s.%%S", key);
 
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, querybuffer, &value);
+  dbi_result_get_fields(result, buffer, &value);
 
   return value;
 }
@@ -331,22 +323,18 @@ db_find_chan(const char *channel)
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     return NULL;
   }
-  
-  snprintf(querybuffer, 1024, "SELECT %s.id, channel, nickname.nick "
-      "FROM %s INNER JOIN %s ON %s.founder=%s.id WHERE channel=%s", "channel",
-	  "channel", "nickname", "channel", "nickname", escchannel);
 
-  MyFree(escchannel);
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if((result = db_query("SELECT %s.id, channel, nickname.nick FROM %s "
+          "INNER JOIN %s ON %s.founder=%s.id WHERE channel=%s", 
+          "channel", "channel", "nickname", "channel", "nickname", 
+          escchannel)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
+    MyFree(escchannel);
     return NULL;
   }
-
+  
+  MyFree(escchannel);
+  
   if(dbi_result_get_numrows(result) == 0)
   {
     printf("db: Channel %s not found\n", channel);
@@ -392,23 +380,17 @@ db_register_chan(struct Client *client, char *channelname)
     return -1;
   }
   
-  snprintf(querybuffer, 1024, "INSERT INTO %s (channel, founder)"
-      "VALUES(%s, (SELECT id FROM nickname WHERE nick=%s))", 
-	  "channel", escchannel, escfounder);
-
+  if((result = db_query("INSERT INTO %s (channel, founder) VALUES(%s, "
+          "(SELECT id FROM nickname WHERE nick=%s))", "channel", escchannel, 
+          escfounder)) == NULL)
+  {
+    MyFree(escchannel);
+    MyFree(escfounder);
+  }  
+  
   MyFree(escchannel);
   MyFree(escfounder);
-  
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
-  {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
-    return -1;
-  }  
-
+ 
   dbi_result_free(result);
 
   return 0;
@@ -425,22 +407,15 @@ db_list_add(const char *table, unsigned int id, const char *value)
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     return -1;
   }
-
-  snprintf(querybuffer, 1024, "INSERT INTO %s (parent_id, entry)"
-      " VALUES(%d, %s)", table, id, escvalue);
-
-  MyFree(escvalue);
-
-  printf("db: query: %s\n", querybuffer);
   
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if((result = db_query("INSERT INTO %s (parent_id, entry) VALUES(%d, %s)", 
+          table, id, escvalue)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
+    MyFree(escvalue);
     return -1;
   }  
 
+  MyFree(escvalue);
   dbi_result_free(result);
   
   return 0;
@@ -451,16 +426,9 @@ db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
 {
   dbi_result result;
     
-  snprintf(querybuffer, 1024, "SELECT id, entry FROM %s WHERE parent_id=%d", 
-      table, id);
-  
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if((result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d", 
+          table, id)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
     return NULL;
   }
 
@@ -509,20 +477,14 @@ db_list_del(const char *table, unsigned int id, const char *entry)
     return 0;
   }
 
-  snprintf(querybuffer, 1024, "DELETE FROM %s WHERE parent_id=%d AND entry=%s",
-      table, id, escentry);
-
-  MyFree(escentry);
- 
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if((result = db_query("DELETE FROM %s WHERE parent_id=%d AND entry=%s", 
+          table, id, escentry)) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
+    MyFree(escentry);
     return 0;
   }
+    
+  MyFree(escentry);
 
   numrows = dbi_result_get_numrows_affected(result);
 
@@ -536,16 +498,8 @@ db_list_del_index(const char *table, unsigned int id, unsigned int index)
   dbi_result result;
   unsigned int delid, numrows, j;
     
-  snprintf(querybuffer, 1024, "SELECT id, entry FROM %s WHERE parent_id=%d", 
-      table, id);
-  
-  printf("db: query: %s\n", querybuffer);
-
-  if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+  if((result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d")) == NULL)
   {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to query: %s\n", error);
     return 0;
   }
 
@@ -563,16 +517,10 @@ db_list_del_index(const char *table, unsigned int id, unsigned int index)
       {
         dbi_result_get_fields(result, "id.%ui", &delid);
         dbi_result_free(result);
-        snprintf(querybuffer, 1024, 
-            "DELETE FROM %s WHERE parent_id=%d AND id=%d", table, id, delid);
-
-        printf("db: query: %s\n", querybuffer);
-
-        if((result = dbi_conn_query(Database.conn, querybuffer)) == NULL)
+            
+        if((result = db_query("DELETE FROM %s WHERE parent_id=%d AND id=%d", 
+                table, id, delid)) == NULL)
         {
-          const char *error;
-          dbi_conn_error(Database.conn, &error);
-          printf("db: Failed to query: %s\n", error);
           return 0;
         }
         return 1;
