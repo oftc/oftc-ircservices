@@ -63,5 +63,11 @@ struct Nick
 #define NS_GHOST_SUCCESS    34
 #define NS_GHOST_FAILED     35
 #define NS_GHOST_NOSELF     36
+#define NS_HELP_LINK_SHORT  37
+#define NS_HELP_LINK_LONG   38
+#define NS_LINK_NOMASTER    39
+#define NS_LINK_BADPASS     40
+#define NS_LINK_FAIL        41
+#define NS_LINK_OK          42
 
 #endif

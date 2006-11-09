@@ -224,6 +224,16 @@ check_list_entry(const char *table, unsigned int id, const char *value)
 }
 
 void
+free_nick(struct Nick *nick)
+{
+  printf("Freeing nick %p for %s\n", nick, nick->nick);
+  MyFree(nick->email);
+  nick->email = NULL;
+  MyFree(nick->url);
+  nick->url = NULL;
+}
+
+void
 chain_umode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
   execute_callback(on_umode_change_cb, client_p, source_p, parc, parv);

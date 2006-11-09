@@ -44,6 +44,7 @@ static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_set(struct Service *, struct Client *, int, char *[]);
 static void m_access(struct Service *, struct Client *, int, char *[]);
 static void m_ghost(struct Service *, struct Client *, int, char *[]);
+static void m_link(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -103,6 +104,11 @@ static struct ServiceMessage ghost_msgtab = {
   { m_ghost, m_ghost, m_ghost, m_ghost }
 };
 
+static struct ServiceMessage link_msgtab = {
+  NULL, "LINK", 0, 2, NS_HELP_LINK_SHORT, NS_HELP_LINK_LONG,
+  { m_unreg, m_link, m_link, m_link }
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -121,6 +127,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &access_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &ghost_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &link_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -147,7 +154,7 @@ m_register(struct Service *service, struct Client *client,
   {
     reply_user(service, client, _L(nickserv, client, NS_ALREADY_REG), 
         client->name); 
-    MyFree(nick);
+    free_nick(nick);
     return;
   }
 
@@ -218,7 +225,7 @@ m_identify(struct Service *service, struct Client *client,
   if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), 
     sizeof(nick->pass)) != 0)
   {
-    MyFree(nick);
+    free_nick(nick);
     reply_user(service, client, _L(nickserv, client, NS_IDENT_FAIL), 
         client->name);
     return;
@@ -459,7 +466,7 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(strncmp(client->name, parv[1], NICKLEN) == 0)
   {
-    MyFree(nick);
+    free_nick(nick);
     reply_user(service, client, _L(nickserv, client, NS_GHOST_NOSELF), parv[1]);
     return;
   }
@@ -467,7 +474,7 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
   if(strncmp(nick->pass, servcrypt(parv[2], nick->pass),
         sizeof(nick->pass)) != 0)
   {
-    MyFree(nick);
+    free_nick(nick);
     reply_user(service, client, _L(nickserv, client, NS_GHOST_FAILED), parv[1]);   
     return;
   }
@@ -476,6 +483,39 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
   /* XXX Turn this into send_kill */
   sendto_server(me.uplink, ":%s KILL %s :%s (GHOST Command recieved from %s)", 
       service->name, parv[1], "services.oftc.net", client->name);
+}
+
+static void
+m_link(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Nick *nick, *master_nick;
+
+  nick = client->nickname;
+  if((master_nick = db_find_nick(parv[1])) == NULL)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_LINK_NOMASTER), parv[1]);
+    return;
+  }
+  if(strncmp(master_nick->pass, servcrypt(parv[2], master_nick->pass), 
+    sizeof(master_nick->pass)) != 0)
+  {
+    free_nick(master_nick);
+    reply_user(service, client, _L(nickserv, client, NS_LINK_BADPASS), parv[1]);
+    return;
+  }
+
+  if(db_link_nicks(master_nick->id, nick->id) != 0)
+  {
+    free_nick(master_nick);
+    reply_user(service, client, _L(nickserv, client, NS_LINK_FAIL), parv[1]);
+    return;
+  }
+  strlcpy(master_nick->nick, nick->nick, sizeof(master_nick->nick));
+  client->nickname = master_nick;
+  reply_user(service, client, _L(nickserv, client, NS_LINK_OK)
+      , nick->nick, parv[1]);
+  free_nick(nick);
+  nick = NULL;
 }
 
 static void*

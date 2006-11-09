@@ -28,4 +28,6 @@ void db_list_done(void *);
 int db_list_del(const char *, unsigned int, const char *);
 int db_list_del_index(const char *, unsigned int, unsigned int);
 
+int db_link_nicks(unsigned int, unsigned int);
+
 #endif

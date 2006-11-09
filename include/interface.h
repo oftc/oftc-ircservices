@@ -40,6 +40,8 @@ void chain_nick(struct Client *, struct Client *, int, char **, int, char *, cha
 char *replace_string(char *, const char *);
 int check_list_entry(const char *, unsigned int, const char *);
 
+void free_nick(struct Nick *);
+
 struct Service
 {
   dlink_node node;

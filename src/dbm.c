@@ -103,10 +103,11 @@ db_query(const char *pattern, ...)
 struct Nick *
 db_find_nick(const char *nick)
 {
-  dbi_result result;
+  dbi_result result, link_result;
   char *escnick = NULL;
   struct Nick *nick_p;
   char *retnick, *retpass, *retcloak;
+  unsigned int id;
   
   assert(nick != NULL);
 
@@ -132,6 +133,30 @@ db_find_nick(const char *nick)
     return NULL;
   }
 
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "id.%ui", &id);
+
+  link_result = db_query("SELECT nick_id FROM nickname_links WHERE link_id=%d", 
+      id);
+  if(link_result != NULL && dbi_result_get_numrows(result) != 0)
+  {
+    dbi_result_free(result);
+    dbi_result_first_row(link_result);
+    dbi_result_get_fields(link_result, "nick_id.%ui", &id);
+    dbi_result_free(link_result);
+    result = db_query("SELECT id, nick, password, email, cloak, "
+      "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
+      "FROM %s WHERE id=%d", "nickname", id);
+    if(result == NULL)
+      return NULL;
+    if(dbi_result_get_numrows(result) == 0)
+    {
+      printf("WTF: Master nick not found!!! %s %d\n", nick, id);
+      dbi_result_free(result);
+      return NULL;
+    }
+  }
+
   nick_p = MyMalloc(sizeof(struct Nick));
   dbi_result_first_row(result);
   dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
@@ -145,9 +170,13 @@ db_find_nick(const char *nick)
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
   strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
 
+  printf("db_find_nick: Found nick %s(asked for %s)\n", nick_p->nick, nick);
+
   MyFree(retnick);
   MyFree(retpass);
   MyFree(retcloak);
+
+  dbi_result_free(result);
 
   return nick_p;
 }
@@ -532,3 +561,16 @@ db_list_del_index(const char *table, unsigned int id, unsigned int index)
   return 0;
 }
 
+int
+db_link_nicks(unsigned int master, unsigned int child)
+{
+  dbi_result result;
+
+  result = db_query("INSERT INTO nickname_links (nick_id, link_id) VALUES "
+      "(%d, %d)", master, child);
+
+  if(result == NULL)
+    return -1;
+  
+  return 0;
+}
