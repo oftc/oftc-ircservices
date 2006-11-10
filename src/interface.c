@@ -175,8 +175,12 @@ do_help(struct Service *service, struct Client *client,
   if(command != NULL)
   {
     msg = find_services_command(command, &service->msg_tree);
-    /* Not possible */
-    assert(msg != NULL);
+    if(msg == NULL)
+    {
+      reply_user(service, client, "HELP for %s is not available.",
+          command);
+      return;
+    }
 
     reply_user(service, client, _L(service, client, msg->help_long));
     return;
