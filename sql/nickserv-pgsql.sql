@@ -3,6 +3,7 @@ CREATE TABLE nickname (
   id              SERIAL PRIMARY KEY,
   nick            VARCHAR(255) NOT NULL default '',
   password        VARCHAR(255) NOT NULL default '',
+  salt            VARCHAR(50)  NOT NULL default '',
   url             VARCHAR(255) NOT NULL default '',
   email           VARCHAR(255) NOT NULL default '',
   cloak           VARCHAR(255) NOT NULL default '',
