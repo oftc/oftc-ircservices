@@ -39,6 +39,8 @@ void chain_nick(struct Client *, struct Client *, int, char **, int, char *, cha
 
 char *replace_string(char *, const char *);
 int check_list_entry(const char *, unsigned int, const char *);
+int check_nick_pass(struct Nick *, const char *);
+void make_random_string(char *, size_t);
 
 void free_nick(struct Nick *);
 

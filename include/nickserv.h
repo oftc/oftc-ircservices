@@ -8,6 +8,7 @@ struct Nick
   unsigned int id;
   char nick[NICKLEN+1];
   char pass[PASSLEN+1];
+  char salt[PASSLEN+1];
   char *email;
   char *url;
   char cloak[HOSTLEN+1];

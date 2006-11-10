@@ -107,7 +107,7 @@ db_find_nick(const char *nick)
   dbi_result result, link_result;
   char *escnick = NULL;
   struct Nick *nick_p;
-  char *retnick, *retpass, *retcloak;
+  char *retnick, *retpass, *retcloak, *retsalt;
   unsigned int id;
   
   assert(nick != NULL);
@@ -118,7 +118,7 @@ db_find_nick(const char *nick)
     return NULL;
   }
   
-  result = db_query("SELECT id, nick, password, email, cloak, last_quit_time, "
+  result = db_query("SELECT id, nick, password, salt, email, cloak, last_quit_time, "
       "reg_time, last_seen, last_used, status, flags, language FROM %s WHERE "
       "nick=%s", "nickname", escnick);
   MyFree(escnick);
@@ -143,7 +143,7 @@ db_find_nick(const char *nick)
     dbi_result_first_row(link_result);
     dbi_result_get_fields(link_result, "nick_id.%ui", &id);
     dbi_result_free(link_result);
-    result = db_query("SELECT id, nick, password, email, cloak, "
+    result = db_query("SELECT id, nick, password, salt, email, cloak, "
       "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
       "FROM %s WHERE id=%d", "nickname", id);
     if(result == NULL)
@@ -158,21 +158,23 @@ db_find_nick(const char *nick)
 
   nick_p = MyMalloc(sizeof(struct Nick));
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
-      "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l status.%ui "
-      "flags.%ui language.%ui",
-      &nick_p->id, &retnick, &retpass, &nick_p->email, &retcloak, 
+  dbi_result_get_fields(result, "id.%ui nick.%S password.%S salt.%S email.%S "
+      "cloak.%S last_quit_time.%l reg_time.%l last_seen.%l last_used.%l "
+      "status.%ui flags.%ui language.%ui",
+      &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->email, &retcloak, 
       &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen, 
       &nick_p->last_used, &nick_p->status, &nick_p->flags, &nick_p->language);
 
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
+  strlcpy(nick_p->salt, retsalt, sizeof(nick_p->salt));
   strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
 
   printf("db_find_nick: Found nick %s(asked for %s)\n", nick_p->nick, nick);
 
   MyFree(retnick);
   MyFree(retpass);
+  MyFree(retsalt);
   MyFree(retcloak);
 
   dbi_result_free(result);

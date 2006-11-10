@@ -233,6 +233,56 @@ free_nick(struct Nick *nick)
   nick->url = NULL;
 }
 
+int 
+check_nick_pass(struct Nick *nick, const char *password)
+{
+  char fullpass[PASSLEN*2+1];
+  char *pass;
+  int ret;
+
+  assert(nick);
+  assert(nick->salt);
+  
+  snprintf(fullpass, PASSLEN, "%s%s", password, nick->salt);
+  
+  pass = crypt_pass(fullpass);
+  if(strncmp(nick->pass, pass, sizeof(nick->pass)) == 0)
+    ret = 1;
+  else 
+    ret = 0;
+
+  MyFree(pass);
+  return ret;
+}
+
+/*
+ * make_random_string: fill buffer with (length - 1) random characters
+ * a-z A-Z and then add a terminating \0
+ */
+
+static char randchartab[] = 
+{
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+  'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+  'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+};
+
+void 
+make_random_string(char *buffer, size_t length)
+{
+  size_t i;
+  int maxidx, j;
+
+  maxidx = sizeof(randchartab) - 1;
+
+  for (i = 0; i < (length - 1); i++) {
+    j = rand() % (maxidx + 1);
+    buffer[i] = randchartab[j];
+  }
+  buffer[length - 1] = 0;
+}
+
 void
 chain_umode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
