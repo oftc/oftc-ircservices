@@ -8,7 +8,7 @@ CREATE TABLE nickname (
   cloak           VARCHAR(255) NOT NULL default '',
   last_host       VARCHAR(255) NOT NULL default '',
   last_realname   VARCHAR(255) NOT NULL default '',
-  last_quit       VARCHAR(255) NOT NULL default '',
+  last_quit       VARCHAR(512) NOT NULL default '',
   last_quit_time  INTEGER NOT NULL default '0',
   reg_time        INTEGER NOT NULL default '0',
   last_seen       INTEGER NOT NULL default '0',
