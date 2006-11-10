@@ -24,10 +24,19 @@
 
 
 #include "stdinc.h"
+#include <openssl/sha.h>
+//#include "libio/mem/memory.h"
 
 static const char saltChars[] = 
   "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   /* 0 .. 63, ascii - 64 */
+
+static char bin2hex[] = 
+{
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c',
+  'd', 'e', 'f'
+};
+
 
 char *
 generate_md5_salt(char *salt, int length)
@@ -42,9 +51,41 @@ generate_md5_salt(char *salt, int length)
 }
 
 char *
-crypt_pass(char *password)
+crypt_pass_old(char *password)
 {
   char salt[16];
 
   return servcrypt(password, generate_md5_salt(salt, 16));
+}
+
+char *crypt_pass(char *password)
+{
+  EVP_MD_CTX mdctx;
+  const EVP_MD *md;
+  unsigned char md_value[EVP_MAX_MD_SIZE];
+  char buffer[41];
+  char *ret;
+  int md_len, i, j, high, low;
+
+  OpenSSL_add_all_digests();
+
+  md = EVP_get_digestbyname("SHA1");
+
+  EVP_MD_CTX_init(&mdctx);
+  EVP_DigestInit_ex(&mdctx, md, NULL);
+  EVP_DigestUpdate(&mdctx, password, strlen(password));
+  EVP_DigestFinal_ex(&mdctx, md_value, &md_len);
+  EVP_MD_CTX_cleanup(&mdctx);
+
+  for (i = 0, j = 0; i < 20; i++, j += 2) 
+  {
+    high = md_value[i] >> 4;
+    low = md_value[i] - (high << 4);
+    buffer[j] = bin2hex[high];
+    buffer[j + 1] = bin2hex[low];
+  }
+  buffer[40] = '\0';
+
+  DupString(ret, buffer);
+  return ret;
 }

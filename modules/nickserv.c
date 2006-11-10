@@ -156,6 +156,7 @@ m_register(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick;
+  char *pass;
   
   if((nick = db_find_nick(client->name)) != NULL)
   {
@@ -165,7 +166,10 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  nick = db_register_nick(client->name, crypt_pass(parv[1]), parv[2]);
+  pass = crypt_pass(parv[1]);
+
+  nick = db_register_nick(client->name, pass, parv[2]);
+  MyFree(pass);
   if(nick != NULL)
   {
     client->nickname = nick;
@@ -221,6 +225,7 @@ m_identify(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick;
+  char *pass;
 
   if((nick = db_find_nick(client->name)) == NULL)
   {
@@ -229,15 +234,17 @@ m_identify(struct Service *service, struct Client *client,
     return;
   }
 
-  if(strncmp(nick->pass, servcrypt(parv[1], nick->pass), 
-    sizeof(nick->pass)) != 0)
+  pass = crypt_pass(parv[1]);
+  if(strncmp(nick->pass, pass, sizeof(nick->pass)) != 0)
   {
+    MyFree(pass);
     free_nick(nick);
     reply_user(service, client, _L(nickserv, client, NS_IDENT_FAIL), 
         client->name);
     return;
   }
 
+  MyFree(pass);
   client->nickname = nick;
 
   identify_user(client);
@@ -262,9 +269,11 @@ m_set_password(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
   struct Nick *nick;
+  char *pass;
   
   nick = client->nickname;
 
+  pass = crypt_pass(parv[1]);
   if(db_nick_set_string(client->nickname->id, "password", 
         crypt_pass(parv[1])) == 0)
   {
@@ -275,8 +284,11 @@ m_set_password(struct Service *service, struct Client *client,
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_FAILED),
         "PASSWORD", "hidden");
+    MyFree(pass);
+    return;
   }
-  strlcpy(nick->pass, crypt_pass(parv[1]), sizeof(nick->pass));
+  strlcpy(nick->pass, pass, sizeof(nick->pass));
+  MyFree(pass);
 }
 
 static void
@@ -464,6 +476,7 @@ static void
 m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
+  char *pass;
 
   if((nick = db_find_nick(parv[1])) == NULL)
   {
@@ -478,13 +491,17 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(strncmp(nick->pass, servcrypt(parv[2], nick->pass),
-        sizeof(nick->pass)) != 0)
+  pass = crypt_pass(parv[2]);
+
+  if(strncmp(nick->pass, pass, sizeof(nick->pass)) != 0)
   {
     free_nick(nick);
+    MyFree(pass);
     reply_user(service, client, _L(nickserv, client, NS_GHOST_FAILED), parv[1]);   
     return;
   }
+
+  MyFree(pass);
 
   reply_user(service, client, _L(nickserv, client, NS_GHOST_SUCCESS), parv[1]);
   /* XXX Turn this into send_kill */
@@ -496,6 +513,7 @@ static void
 m_link(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick, *master_nick;
+  char *pass;
 
   nick = client->nickname;
   if((master_nick = db_find_nick(parv[1])) == NULL)
@@ -503,13 +521,17 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, client, _L(nickserv, client, NS_LINK_NOMASTER), parv[1]);
     return;
   }
-  if(strncmp(master_nick->pass, servcrypt(parv[2], master_nick->pass), 
-    sizeof(master_nick->pass)) != 0)
+
+  pass = crypt_pass(parv[2]);
+  
+  if(strncmp(master_nick->pass, pass, sizeof(master_nick->pass)) != 0)
   {
+    MyFree(pass);
     free_nick(master_nick);
     reply_user(service, client, _L(nickserv, client, NS_LINK_BADPASS), parv[1]);
     return;
   }
+  MyFree(pass);
 
   if(db_link_nicks(master_nick->id, nick->id) != 0)
   {
