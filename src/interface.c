@@ -108,11 +108,21 @@ reply_user(struct Service *service, struct Client *client, const char *fmt, ...)
 {
   char buf[IRC_BUFSIZE+1];
   va_list ap;
+  char *s, *t;
   
   va_start(ap, fmt);
   vsnprintf(buf, IRC_BUFSIZE, fmt, ap);
   va_end(ap);
-  execute_callback(send_notice_cb, me.uplink, service->name, client->name, buf);
+  s = buf;
+  while (*s) 
+  {
+    t = s;
+    s += strcspn(s, "\n");
+    if (*s)
+      *s++ = 0;
+    execute_callback(send_notice_cb, me.uplink, service->name, client->name, 
+        *t != '\0' ? t : " ");
+  }
 }
 
 void

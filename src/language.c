@@ -67,7 +67,6 @@ load_language(struct Service *service, const char *langfile)
 
     if(buffer[0] != '\t')
     {
-      printf("Next block: %s\n", buffer);
       i++;
       continue;
     }
@@ -91,6 +90,5 @@ load_language(struct Service *service, const char *langfile)
       strcpy(ptr, s);
     }
     service->language_table[lang][i] = ptr;
-    printf("old '%s' new '%s'\n", ptr, s);
   }
 }
