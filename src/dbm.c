@@ -452,6 +452,31 @@ db_register_chan(struct Client *client, char *channelname)
 }
 
 int
+db_delete_chan(const char *chan)
+{
+  dbi_result result;
+  char *escchan;
+
+  if(dbi_driver_quote_string_copy(Database.driv, chan, &escchan) == 0)
+  {
+    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
+
+  if((result = db_query("DELETE FROM %s WHERE channel=%s", 
+          "channel", escchan)) == NULL)
+  {
+    MyFree(escchan);
+    return 0;
+  }  
+  
+  MyFree(escchan);
+  dbi_result_free(result);
+
+  return 0;
+}
+
+int
 db_list_add(const char *table, unsigned int id, const char *value)
 {
   char *escvalue;

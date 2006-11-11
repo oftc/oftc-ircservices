@@ -329,3 +329,8 @@ chain_part(struct Client *client, struct Client *source, char *name)
   execute_callback(on_part_cb, client, source, name);
 }
 
+void
+chain_join(struct Client *source, char *channel)
+{
+  execute_callback(on_join_cb, source, channel);
+}

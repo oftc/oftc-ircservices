@@ -28,6 +28,7 @@ struct Channel
   
   time_t channelts;
   char chname[CHANNELLEN + 1];
+  struct RegChannel *regchan;
 };
 
 struct Membership

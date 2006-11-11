@@ -27,10 +27,14 @@
 static struct Service *chanserv = NULL;
 
 static dlink_node *cs_cmode_hook;
-static void *s_cmode(va_list);
+static dlink_node *cs_join_hook;
+
+static void *cs_on_cmode_change(va_list);
+static void *cs_on_client_join(va_list);
 
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
+static void m_drop(struct Service *, struct Client *, int, char *[]);
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -123,7 +127,7 @@ static struct ServiceMessage akick_msgtab = {
 
 static struct ServiceMessage drop_msgtab = {
   NULL, "DROP", 0, 1, -1, -1,
-  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+  { m_unreg, m_drop, m_drop, m_drop }
 };
 
 static struct ServiceMessage identify_msgtab = {
@@ -166,7 +170,8 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &identify_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &levels_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &access_msgtab);
-  cs_cmode_hook = install_hook(on_cmode_change_cb, s_cmode);
+  cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
+  cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
 }
 
 CLEANUP_MODULE
@@ -217,7 +222,7 @@ m_register(struct Service *service, struct Client *client,
 
   if (db_register_chan(client, parv[1]) == 0)
   {
-    // XXX attach RegChannel to Channel
+    chptr->regchan = db_find_chan(parv[1]);
     reply_user(service, client, _L(chanserv, client, CS_REG_SUCCESS), parv[1]);
     global_notice(NULL, "%s (%s@%s) registered channel %s", 
       client->name, client->username, client->host, parv[1]);
@@ -226,6 +231,39 @@ m_register(struct Service *service, struct Client *client,
   {
     reply_user(service, client, _L(chanserv, client, CS_REG_FAIL), parv[1]);
   }
+}
+
+static void 
+m_drop(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+  
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+
+  if (db_delete_chan(parv[1]) == 0)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_REGISTERED), parv[1]);
+  } else
+  {
+    reply_user(service, client, _L(chanserv, client, CS_REG_FAILED), parv[1]);
+  }
+
+  MyFree(regchptr);
+  return;
 }
 
 /* XXX temp XXX */
@@ -256,7 +294,7 @@ m_set(struct Service *service, struct Client *client,
 #endif
 
 static void *
-s_cmode(va_list args) 
+cs_on_cmode_change(va_list args) 
 {
 /*  struct Client  *client_p = va_arg(args, struct Client*);
   struct Client  *source_p = va_arg(args, struct Client*);
@@ -270,4 +308,12 @@ s_cmode(va_list args)
   return pass_callback(cs_cmode_hook);
 }
 
+static void *
+cs_on_client_join(va_list args)
+{
+  /* struct Client *source_p = va_arg(args, struct Client *);
+   * char          *name     = va_arg(args, char *);
+   */
 
+  return pass_callback(cs_join_hook);
+}

@@ -17,6 +17,7 @@ extern struct Callback *on_cmode_change_cb;
 extern struct Callback *on_squit_cb;
 extern struct Callback *on_quit_cb;
 extern struct Callback *on_part_cb;
+extern struct Callback *on_join_cb;
 extern struct Callback *on_nick_change_cb;
 extern struct Callback *on_identify_cb;
 extern struct Callback *on_newuser_cb;
@@ -36,6 +37,7 @@ void chain_squit(struct Client *, struct Client *, char *);
 void chain_quit(struct Client *, char *);
 void chain_part(struct Client *, struct Client *, char *);
 void chain_nick(struct Client *, struct Client *, int, char **, int, char *, char *);
+void chain_join(struct Client *, char *);
 
 char *replace_string(char *, const char *);
 int check_list_entry(const char *, unsigned int, const char *);

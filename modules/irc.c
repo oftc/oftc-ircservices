@@ -731,6 +731,7 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
   {
     isnew = 1;
     chptr = make_channel(parv[2]);
+    chptr->regchan = db_find_chan(parv[2]); // the result doesnt matter here -mc
     printf("Created channel %s\n", parv[2]);
   }
 

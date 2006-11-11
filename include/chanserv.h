@@ -23,5 +23,9 @@ struct RegChannel
 #define CS_SET_LONG       11
 #define CS_NOT_ONCHAN     12
 #define CS_NOT_OPPED      13
+#define CS_NOT_REG        14
+#define CS_OWN_CHANNEL_ONLY 15
+#define CS_REGISTERED     16
+#define CS_REG_FAILED     17
 
 #endif

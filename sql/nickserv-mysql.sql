@@ -33,6 +33,6 @@ DROP TABLE IF EXISTS nickname_links;
 CREATE TABLE nickname_links (
   nick_id         INTEGER,
   link_id         INTEGER,
-  KEY nick_id,
-  KEY link_id
+  KEY nick_id(nick_id),
+  KEY link_id(link_id)
 ) TYPE=MyISAM;
