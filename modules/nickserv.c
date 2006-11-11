@@ -46,6 +46,7 @@ static void m_access(struct Service *, struct Client *, int, char *[]);
 static void m_ghost(struct Service *, struct Client *, int, char *[]);
 static void m_link(struct Service *, struct Client *, int, char *[]);
 static void m_unlink(struct Service *, struct Client *, int, char *[]);
+static void m_info(struct Service *,struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -115,6 +116,11 @@ static struct ServiceMessage unlink_msgtab = {
   { m_unreg, m_unlink, m_unlink, m_unlink }
 };
 
+static struct ServiceMessage info_msgtab = {
+  NULL, "INFO", 0, 0, NS_HELP_INFO_SHORT, NS_HELP_INFO_LONG,
+  { m_info, m_info, m_info, m_info }
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -135,6 +141,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &ghost_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &link_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &info_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -570,6 +577,49 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
   else
     reply_user(service, client, _L(nickserv, client, NS_UNLINK_FAILED), 
         client->name);
+}
+
+static void
+m_info(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Nick *nick;
+  char regtime[IRC_BUFSIZE/2+1];
+  char quittime[IRC_BUFSIZE/2+1];
+
+  if(parc == 0)
+  {
+    if(client->nickname != NULL)
+      nick = client->nickname;
+    else
+    {
+      if((nick = db_find_nick(client->name)) == NULL)
+      {
+        reply_user(service, client, _L(nickserv, client, NS_REG_FIRST), 
+            client->name);
+        return;
+      }
+    }
+  }
+  else
+  {
+    if((nick = db_find_nick(parv[1])) == NULL)
+    {
+      reply_user(service, client, _L(nickserv, client, NS_REG_FIRST),
+          parv[1]);
+      return;
+    }
+  }
+
+  strftime(regtime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", 
+      gmtime(&nick->reg_time));
+  strftime(quittime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", 
+      gmtime(&nick->last_quit_time));
+
+  reply_user(service, client, _L(nickserv, client, NS_INFO), regtime, 
+      nick->last_quit, quittime, nick->email);
+  
+  if(nick != client->nickname)
+    free_nick(nick);
 }
 
 static void*

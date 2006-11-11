@@ -122,3 +122,8 @@ NS_UNLINK_OK
 	Nickname %s is now unlinked.
 NS_UNLINK_NOLINK        
 	Nickname %s has is not linked.
+NS_INFO
+	  Time registered: %s
+	Last quit message: '%s'
+	   Last quit time: %s
+	    eMail address: %s

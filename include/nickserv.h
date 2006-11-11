@@ -11,6 +11,7 @@ struct Nick
   char salt[PASSLEN+1];
   char *email;
   char *url;
+  char *last_quit;
   char cloak[HOSTLEN+1];
   unsigned int status;
   unsigned int flags;
@@ -89,5 +90,6 @@ struct Nick
 #define NS_UNLINK_FAILED        59
 #define NS_UNLINK_OK            60
 #define NS_UNLINK_NOLINK        61
+#define NS_INFO                 62
   
 #endif
