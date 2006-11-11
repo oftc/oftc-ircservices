@@ -164,7 +164,8 @@ lua_register_nick(lua_State *L)
   password = luaL_checkstring(L, 2);
   email = luaL_checkstring(L, 3);
 
-  nick_p = db_register_nick(nick, password, email);
+  /* XXX */
+  nick_p = db_register_nick(nick, password, password, email);
   if(nick_p == NULL)
   {
     lua_pushnil(L);

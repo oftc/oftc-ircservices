@@ -182,7 +182,7 @@ m_register(struct Service *service, struct Client *client,
 
   pass = crypt_pass(password);
 
-  nick = db_register_nick(client->name, password, parv[2]);
+  nick = db_register_nick(client->name, pass, salt, parv[2]);
   MyFree(pass);
   if(nick != NULL)
   {

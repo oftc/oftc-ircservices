@@ -217,11 +217,13 @@ db_get_id_from_nick(const char *nick)
 }
 
 struct Nick *
-db_register_nick(const char *nick, const char *password, const char *email)
+db_register_nick(const char *nick, const char *password, const char *salt,
+    const char *email)
 {
   char *escnick = NULL;
   char *escemail = NULL;
   char *escpass = NULL;
+  char *escsalt = NULL;
   dbi_result result;
   
   assert(nick != NULL);
@@ -247,13 +249,23 @@ db_register_nick(const char *nick, const char *password, const char *email)
     return NULL;
   }
   
-  result = db_query("INSERT INTO %s (nick, password, email, reg_time,"
-      " last_seen, last_used) VALUES(%s, %s, %s, %ld, %ld, %ld)", "nickname", 
-      escnick, escpass, escemail, CurrentTime, CurrentTime, CurrentTime);
+  if(dbi_driver_quote_string_copy(Database.driv, salt, &escsalt) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    MyFree(escnick);
+    MyFree(escemail);
+    MyFree(escpass);
+    return NULL;
+  }
+  
+  result = db_query("INSERT INTO %s (nick, password, salt, email, reg_time,"
+      " last_seen, last_used) VALUES(%s, %s, %s, %s, %ld, %ld, %ld)", "nickname", 
+      escnick, escpass, escsalt, escemail, CurrentTime, CurrentTime, CurrentTime);
 
   MyFree(escnick);
   MyFree(escemail);
   MyFree(escpass);
+  MyFree(escsalt);
  
   if(result == NULL)
     return NULL;

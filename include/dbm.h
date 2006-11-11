@@ -11,7 +11,8 @@ void init_db();
 void db_load_driver();
 
 struct Nick *db_find_nick(const char *);
-struct Nick *db_register_nick(const char *, const char *, const char *);
+struct Nick *db_register_nick(const char *, const char *, const char *,
+    const char *);
 int db_delete_nick(const char*);
 
 int db_register_chan(struct Client *, char *);

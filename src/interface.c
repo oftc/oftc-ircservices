@@ -259,7 +259,7 @@ check_nick_pass(struct Nick *nick, const char *password)
   assert(nick);
   assert(nick->salt);
   
-  snprintf(fullpass, PASSLEN, "%s%s", password, nick->salt);
+  snprintf(fullpass, PASSLEN*2, "%s%s", password, nick->salt);
   
   pass = crypt_pass(fullpass);
   if(strncmp(nick->pass, pass, sizeof(nick->pass)) == 0)
