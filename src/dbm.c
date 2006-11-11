@@ -489,6 +489,20 @@ db_delete_chan(const char *chan)
 }
 
 int
+db_set_founder(const char *channel, const char *nickname)
+{
+  dbi_result result;
+
+  result = db_query("UPDATE %s SET founder="
+    "(SELECT id FROM nickname WHERE nick=%s) WHERE channel=%s",
+    "channel", nickname, channel);
+  if (result != NULL)
+    MyFree(result);
+
+  return 0;
+}
+
+int
 db_list_add(const char *table, unsigned int id, const char *value)
 {
   char *escvalue;

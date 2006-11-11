@@ -14,7 +14,7 @@ struct RegChannel
 #define CS_HELP_REG_LONG  2
 #define CS_HELP_SHORT     3 
 #define CS_HELP_LONG      4
-#define CS_REG_NS_FIRST   5
+#define CS_REGISTER_NICK  5
 #define CS_ALREADY_REG    6
 #define CS_REG_SUCCESS    7
 #define CS_REG_FAIL       8
@@ -27,5 +27,7 @@ struct RegChannel
 #define CS_OWN_CHANNEL_ONLY 15
 #define CS_REGISTERED     16
 #define CS_REG_FAILED     17
+#define CS_SET_FOUNDER    18
+#define CS_SET_FOUNDER_FAILED 19
 
 #endif

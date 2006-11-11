@@ -36,6 +36,8 @@ static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 
+static void m_set_founder(struct Service *, struct Client *, int, char *[]);
+
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
 
@@ -55,7 +57,7 @@ static struct ServiceMessage help_msgtab = {
  * this is not nice, but fits our structure better
  */
 static struct SubMessage set_sub[] = {
-  { "FOUNDER",     0, 1, -1, -1, m_not_avail },
+  { "FOUNDER",     0, 1, -1, -1, m_set_founder },
   { "SUCCESSOR",   0, 1, -1, -1, m_not_avail },
   { "PASSWORD",    0, 1, -1, -1, m_not_avail },
   { "DESC",        0, 1, -1, -1, m_not_avail },
@@ -181,6 +183,10 @@ CLEANUP_MODULE
   dlinkDelete(&chanserv->node, &services_list);
 }
 
+
+/*
+ * CHANSERV REGISTER
+ */
 static void 
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -233,6 +239,10 @@ m_register(struct Service *service, struct Client *client,
   }
 }
 
+
+/* 
+ * CHANSERV DROP
+ */
 static void 
 m_drop(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -275,6 +285,9 @@ m_not_avail(struct Service *service, struct Client *client,
 }
 
 
+/*
+ * CHANSERV HELP
+ */
 static void
 m_help(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -282,8 +295,10 @@ m_help(struct Service *service, struct Client *client,
   do_help(service, client, parv[1], parc, parv);
 }
 
-#if 0
-XXX not used atm
+
+/*
+ * CHANSERV SET
+ */
 static void
 m_set(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -291,8 +306,66 @@ m_set(struct Service *service, struct Client *client,
   reply_user(service, client, "Unknown SET option");
 }
 
-#endif
 
+/*
+ * CHANSERV SET FOUNDER
+ */
+static void
+m_set_founder(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+  struct Nick *nick_p;
+
+  /* we need to consult the db, since the nick may not be online -mc */
+  printf("find nick\n");
+  if ((nick_p = db_find_nick(parv[2])) == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_REGISTER_NICK), parv[2]);
+    return;
+  } 
+  else 
+  {
+    MyFree(nick_p);
+  }
+
+  printf ("find channel\n");
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+  
+  printf ("compare founder of %s with our client %s  ", regchptr->founder, client->name);
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    printf("user requested wrong channel\n");
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    return;
+  }
+
+  printf("set founder");
+  if (db_set_founder(parv[1], parv[2]) == 0)
+  {
+    printf ("success\n");
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_FOUNDER), parv[1], parv[2]);
+  }
+  else
+  {
+    printf ("failed\n");
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_FOUNDER_FAILED), parv[1], parv[2]);
+  }
+}
+
+
+/*
+ * EVENT: Channel Mode Change
+ */
 static void *
 cs_on_cmode_change(va_list args) 
 {
@@ -308,6 +381,10 @@ cs_on_cmode_change(va_list args)
   return pass_callback(cs_cmode_hook);
 }
 
+
+/* 
+ * EVENT: Client Joins Channel
+ */
 static void *
 cs_on_client_join(va_list args)
 {

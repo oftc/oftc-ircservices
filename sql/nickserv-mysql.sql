@@ -23,10 +23,10 @@ CREATE TABLE nickname (
 DROP TABLE IF EXISTS nickname_access;
 CREATE TABLE nickname_access (
   id              INTEGER PRIMARY KEY auto_increment,
-  nickname_id     INTEGER NOT NULL default '0',
+  parent_id     INTEGER NOT NULL default '0',
   entry           VARCHAR(255) NOT NULL default '',
   UNIQUE KEY id (id),
-  UNIQUE KEY nickname_id (nickname_id, entry)
+  UNIQUE KEY parent_id (parent_id, entry)
 ) TYPE=MyISAM;
 
 DROP TABLE IF EXISTS nickname_links;
