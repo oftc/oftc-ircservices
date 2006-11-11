@@ -239,7 +239,6 @@ m_identify(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick;
-  char *pass;
 
   if((nick = db_find_nick(client->name)) == NULL)
   {
@@ -250,14 +249,11 @@ m_identify(struct Service *service, struct Client *client,
 
   if(check_nick_pass(nick, parv[1]) == FALSE)
   {
-    MyFree(pass);
     free_nick(nick);
     reply_user(service, client, _L(nickserv, client, NS_IDENT_FAIL), 
         client->name);
     return;
   }
-
-  MyFree(pass);
   client->nickname = nick;
 
   identify_user(client);
