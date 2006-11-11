@@ -74,9 +74,6 @@ load_language(struct Service *service, const char *langfile)
     s = buffer;
     s++;
 
-    while(*s == ' ')
-      s++;
-
     if(service->language_table[lang][i] != NULL)
     {
       ptr = MyMalloc(strlen(service->language_table[lang][i]) + strlen(s)+1);

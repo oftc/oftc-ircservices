@@ -3,23 +3,47 @@ NS_HELP_SHORT
 	Shows this help.
 NS_HELP_LONG            
 	Shows this help message.  Use HELP <command> for help with a commmand.
-	This is really long.
 NS_HELP_REG_SHORT       
 	Registers a nickname for your usage.
 NS_HELP_REG_LONG          
-	Registers a nickname for your usage.
+	Usage: REGISTER password eMail
+	
+	Registers a nickname in our database for your use.
+	
+	The eMail address you enter will be used in case you forget your password, 
+	so make sure it is valid and correct.
+	
+	Choose a password that you can remember but is not easily guessed.
 NS_HELP_ID_SHORT        
 	Identify your nickname.
 NS_HELP_ID_LONG					
-	Identify your nickname.
+	Usage: IDENTIFY [nick] password
+	
+	Identify that you the owner of the nick you are currently using.
+	If you specify a nickname to identify against, your IRC nick will
+	automatically be changed to the one you identify for.
 NS_HELP_DROP_SHORT      
 	Releases your nickname for use. 
-NS_HELP_DROP_LONG       
-	Releases your nickname for use and deletes it from the database.  This cannot be undone.
+NS_HELP_DROP_LONG
+	Usage: REGISTER
+	Releases your nickname for use and deletes it from the database.  
+	This cannot be undone.
 NS_HELP_ACCESS_SHORT		
 	Maintains the nickname ACCESS list.
-NS_HELP_ACCESS_LONG     
-	Maintains the nickname ACCESS list.
+NS_HELP_ACCESS_LONG
+	Usage: ACCESS ADD mask
+	       ACCESS DEL mask
+	       ACCESS LIST
+				 
+	Maintains the nickname access list.  If your IRC userhost matches an entry
+	in your access list, you will be automatically identified to your nickname
+	without having to use the IDENTIFY command.
+	
+	Examples:
+	    ACCESS ADD foo@*.org
+	    ACCESS DEL foo@*.org
+	    ACCESS DEL 1
+	    ACCESS LIST
 NS_HELP_SET_SHORT       
 	Set nickname properties.
 NS_HELP_SET_LONG        
