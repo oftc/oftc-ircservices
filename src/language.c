@@ -56,28 +56,41 @@ load_language(struct Service *service, const char *langfile)
   if(s[strlen(s) - 1] == '\n')
     s[strlen(s) - 1] = '\0';
   
-  DupString(service->language_table[lang][i++], s);
+  DupString(service->language_table[lang][i], s);
   
   printf("Loading language %d(%s) for service %s\n", lang, langfile,
       service->name);
 
   while(fbgets(buffer, sizeof(buffer), file) != NULL)
   {
-    if((s = strchr(buffer, ' ')) == NULL)
+    char *ptr;
+
+    if(buffer[0] != '\t')
     {
-      printf("Language file %s for service %s is invalid\n", langfile,
-          service->name);
-      return;
+      printf("Next block: %s\n", buffer);
+      i++;
+      continue;
     }
-    *s = '\0';
+
+    s = buffer;
     s++;
 
-    /* Skip spaces */
     while(*s == ' ')
       s++;
 
-    if(s[strlen(s) - 1] == '\n')
-      s[strlen(s) - 1] = '\0';
-    DupString(service->language_table[lang][i++], s);
+    if(service->language_table[lang][i] != NULL)
+    {
+      ptr = MyMalloc(strlen(service->language_table[lang][i]) + strlen(s)+1);
+      strcpy(ptr, service->language_table[lang][i]);
+      MyFree(service->language_table[lang][i]);
+      strcat(ptr, s);
+    }
+    else
+    {
+      ptr = MyMalloc(strlen(s)+1);
+      strcpy(ptr, s);
+    }
+    service->language_table[lang][i] = ptr;
+    printf("old '%s' new '%s'\n", ptr, s);
   }
 }

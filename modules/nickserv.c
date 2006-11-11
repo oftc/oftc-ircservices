@@ -123,8 +123,8 @@ INIT_MODULE(nickserv, "$Revision$")
   hash_add_service(nickserv);
   introduce_service(nickserv);
   load_language(nickserv, "nickserv.en");
-  load_language(nickserv, "nickserv.rude");
-  load_language(nickserv, "nickserv.de");
+//  load_language(nickserv, "nickserv.rude");
+//  load_language(nickserv, "nickserv.de");
 
   mod_add_servcmd(&nickserv->msg_tree, &drop_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &identify_msgtab);

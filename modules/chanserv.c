@@ -153,11 +153,11 @@ INIT_MODULE(chanserv, "$Revision$")
   clear_serv_tree_parse(&chanserv->msg_tree);
   dlinkAdd(chanserv, &chanserv->node, &services_list);
   hash_add_service(chanserv);
-  introduce_service(chanserv);
+/*  introduce_service(chanserv);
   load_language(chanserv, "chanserv.en");
   load_language(chanserv, "chanserv.rude");
   load_language(chanserv, "chanserv.de");
-
+*/
   mod_add_servcmd(&chanserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &help_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &set_msgtab);
