@@ -84,15 +84,15 @@ static struct SubMessage set_sub[] = {
   { "EMAIL",       0, 1, CS_SET_EMAIL_SHORT, CS_SET_EMAIL_LONG, m_set_email },
   { "ENTRYMSG",    0, 1, CS_SET_ENTRYMSG_SHORT, CS_SET_ENTRYMSG_LONG, m_set_entrymsg },
   { "TOPIC",       0, 1, CS_SET_TOPIC_SHORT, CS_SET_TOPIC_LONG, m_set_topic },
-  { "KEEPTOPIC",   0, 1, -1, -1, m_set_keeptopic },
-  { "TOPICLOCK",   0, 1, -1, -1, m_set_topiclock },
+  { "KEEPTOPIC",   0, 1, CS_SET_KEEPTOPIC_SHORT, CS_SET_KEEPTOPIC_LONG, m_set_keeptopic },
+  { "TOPICLOCK",   0, 1, CS_SET_TOPICLOCK_SHORT, CS_SET_TOPICLOCK_LONG, m_set_topiclock },
   { "MLOCK",       0, 1, -1, -1, m_not_avail }, // +kl-mnt
-  { "PRIVATE",     0, 1, -1, -1, m_set_private },
-  { "RESTRICTED",  0, 1, -1, -1, m_set_restricted },
-  { "SECURE",      0, 1, -1, -1, m_set_secure },
-  { "SECUREOPS",   0, 1, -1, -1, m_set_secureops },
-  { "LEAVEOPS",    0, 1, -1, -1, m_set_leaveops },
-  { "VERBOSE",     0, 1, -1, -1, m_set_verbose },
+  { "PRIVATE",     0, 1, CS_SET_PRIVATE_SHORT, CS_SET_PRIVATE_LONG, m_set_private },
+  { "RESTRICTED",  0, 1, CS_SET_RESTRICTED_SHORT, CS_SET_RESTRICTED_LONG, m_set_restricted },
+  { "SECURE",      0, 1, CS_SET_SECURE_SHORT, CS_SET_SECURE_LONG, m_set_secure },
+  { "SECUREOPS",   0, 1, CS_SET_SECUREOPS_SHORT, CS_SET_SECUREOPS_LONG, m_set_secureops },
+  { "LEAVEOPS",    0, 1, CS_SET_LEAVEOPS_SHORT, CS_SET_LEAVEOPS_LONG, m_set_leaveops },
+  { "VERBOSE",     0, 1, CS_SET_VERBOSE_SHORT, CS_SET_VERBOSE_LONG, m_set_verbose },
   { "AUTOLIMIT",   0, 1, -1, -1, m_not_avail }, // 5:2:2
   { "CLEARBANS",   0, 1, -1, -1, m_not_avail }, // 120
   { "NULL",        0, 0,  0,  0, m_not_avail } 
@@ -757,10 +757,21 @@ int
 m_set_flag(struct Service *service, struct Client *client,
            char *channel, char *toggle, int flag, char *flagname)
 {
+  struct Channel *chptr;
   struct RegChannel *regchptr;
   int newflag;
 
-  regchptr = db_find_chan(channel);
+  chptr = hash_find_channel(channel);
+
+  if (chptr->regchan == NULL) {
+    regchptr = db_find_chan(channel);
+    chptr->regchan = regchptr;
+  } 
+  else
+  {
+    regchptr = chptr->regchan;
+  }
+
   if (regchptr == NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_NOT_REG), channel);
@@ -771,12 +782,18 @@ m_set_flag(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), channel);
-    free_regchan(regchptr);
-    MyFree(regchptr);
     return -1;
   }
 
   newflag = regchptr->flags;
+
+  if (toggle == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_SET_FLAG),
+      flagname, (newflag & flag) ? "ON" : "OFF", channel);
+
+    return -1;
+  }
 
   if ( strncasecmp(toggle, "ON", strlen(toggle)) == 0 )
   {
@@ -786,20 +803,12 @@ m_set_flag(struct Service *service, struct Client *client,
   {
     newflag &= ~flag;
   }
-  else
-  {
-    reply_user(service, client, _L(chanserv, client, CS_SET_FLAG),
-      flagname, (newflag & flag) ? "ON" : "OFF", channel);
-
-    free_regchan(regchptr);
-    MyFree(regchptr);
-    return -1;
-  }
 
   if (db_chan_set_number(db_get_id_from_chan(channel), "flags", newflag) == 0 )
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_SUCCESS), channel, flagname, toggle);
+
     regchptr->flags = newflag;
   }
   else
@@ -808,9 +817,6 @@ m_set_flag(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_FAILED), flagname, channel);
   }
 
-  free_regchan(regchptr);
-  MyFree(regchptr);
-  
   return 0;
 }
 

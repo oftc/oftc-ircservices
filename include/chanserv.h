@@ -79,7 +79,6 @@ struct RegChannel
 #define CS_SET_EMAIL_FAILED 27
 #define CS_SET_MSG          28
 #define CS_SET_MSG_FAILED   29
-
 #define CS_SET_FOUNDER_SHORT 30
 #define CS_SET_FOUNDER_LONG  31
 #define CS_SET_SUCC_SHORT    32
@@ -96,10 +95,26 @@ struct RegChannel
 #define CS_SET_TOPIC_LONG     43
 #define CS_SET_TOPIC          44
 #define CS_SET_TOPIC_FAILED   45
-#define CS_SET_KEEPTOPIC      46
-#define CS_SET_KEEPTOPIC_FAILED 47
-#define CS_WRONG_ARG            48
+/* two spare */
+#define CS_SET_FLAG             48
 #define CS_SET_SUCCESS          49
 #define CS_SET_FAILED           50
+#define CS_SET_KEEPTOPIC_SHORT  51
+#define CS_SET_KEEPTOPIC_LONG   52
+#define CS_SET_TOPICLOCK_SHORT  53
+#define CS_SET_TOPICLOCK_LONG   54
+#define CS_SET_PRIVATE_SHORT    55
+#define CS_SET_PRIVATE_LONG     56
+#define CS_SET_RESTRICTED_SHORT 57
+#define CS_SET_RESTRICTED_LONG  58
+#define CS_SET_SECURE_SHORT     59
+#define CS_SET_SECURE_LONG      60
+#define CS_SET_SECUREOPS_SHORT  61
+#define CS_SET_SECUREOPS_LONG   62
+#define CS_SET_LEAVEOPS_SHORT   63 
+#define CS_SET_LEAVEOPS_LONG    64
+#define CS_SET_VERBOSE_SHORT    65
+#define CS_SET_VERBOSE_LONG     66
 
 #endif
+

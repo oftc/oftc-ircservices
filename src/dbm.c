@@ -467,7 +467,7 @@ db_find_chan(const char *channel)
     return NULL;
   }
 
-  result = db_query("SELECT %s.id, channel, description, entrymsg, nickname.nick FROM %s "
+  result = db_query("SELECT %s.id, channel, description, entrymsg, channel.flags, nickname.nick FROM %s "
           "INNER JOIN %s ON %s.founder=%s.id WHERE channel=%s", 
           "channel", "channel", "nickname", "channel", "nickname", 
           escchannel);
@@ -485,9 +485,9 @@ db_find_chan(const char *channel)
 
   channel_p = MyMalloc(sizeof(struct RegChannel));
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui channel.%S description.%S entrymsg.%S nick.%S",
+  dbi_result_get_fields(result, "id.%ui channel.%S description.%S entrymsg.%S flags.%ui nick.%S",
       &channel_p->id, &findchannel, &channel_p->description, 
-      &channel_p->entrymsg, &findfounder);
+      &channel_p->entrymsg, &channel_p->flags, &findfounder);
 
   strlcpy(channel_p->channel, findchannel, sizeof(channel_p->channel));
   strlcpy(channel_p->founder, findfounder, sizeof(channel_p->founder));
