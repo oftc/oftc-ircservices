@@ -50,6 +50,8 @@ static void m_info(struct Service *,struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
+static void m_set_enforce(struct Service *, struct Client *, int, char *[]);
+static void m_set_secure(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
@@ -76,11 +78,13 @@ static struct ServiceMessage drop_msgtab = {
   { m_unreg, m_drop, m_drop, m_drop }
 };
 
-static struct SubMessage set_sub[5] = {
+static struct SubMessage set_sub[7] = {
   { "LANGUAGE", 0, 0, -1, -1, m_set_language },
   { "PASSWORD", 0, 1, -1, -1, m_set_password },
   { "URL"     , 0, 0, -1, -1, m_set_url},
   { "EMAIL"   , 0, 0, -1, -1, m_set_email},
+  { "ENFORCE" , 0, 0, -1, -1, m_set_enforce},
+  { "SECURE"  , 0, 0, -1, -1, m_set_secure},
   { "NULL"    , 0, 0, 0, 0, NULL }
 };
 
@@ -411,6 +415,86 @@ m_set_cloak(struct Service *service, struct Client *client,
   } else {
     reply_user(service, client, _L(operserv, client, OS_NICK_NOT_REG), nick);
   }*/
+}
+
+static void
+m_set_secure(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Nick *nick = client->nickname;
+  unsigned int newflags = nick->flags;
+  
+  if(parc == 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "SECURE", 
+        (nick->flags & NS_FLAG_SECURE) ? "ON" : "OFF");
+    return;
+  }
+
+  if(strcmp(parv[1], "ON") == 0)
+  {
+    newflags |= NS_FLAG_SECURE;
+  }
+  else if(strcmp(parv[1], "OFF") == 0)
+  {
+    newflags &= ~NS_FLAG_SECURE;
+  }
+  else
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "SECURE", 
+        (nick->flags & NS_FLAG_SECURE) ? "ON" : "OFF");
+    return;
+  }
+
+  if(db_nick_set_number(nick->id, "flags", newflags) == 0)
+  {
+    nick->flags = newflags;
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
+        "SECURE", nick->flags & NS_FLAG_SECURE ? "ON" : "OFF");
+  }
+  else
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
+        "SECURE", parv[1]);
+}
+
+static void
+m_set_enforce(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Nick *nick = client->nickname;
+  unsigned int newflags = nick->flags;
+  
+  if(parc == 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "ENFORCE", 
+        (nick->flags & NS_FLAG_ENFORCE) ? "ON" : "OFF");
+    return;
+  }
+
+  if(strcmp(parv[1], "ON") == 0)
+  {
+    newflags |= NS_FLAG_ENFORCE;
+  }
+  else if(strcmp(parv[1], "OFF") == 0)
+  {
+    newflags &= ~NS_FLAG_ENFORCE;
+  }
+  else
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "ENFORCE", 
+        (nick->flags & NS_FLAG_ENFORCE) ? "ON" : "OFF");
+    return;
+  }
+
+  if(db_nick_set_number(nick->id, "flags", newflags) == 0)
+  {
+    nick->flags = newflags;
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
+        "ENFORCE", nick->flags & NS_FLAG_ENFORCE ? "ON" : "OFF");
+  }
+  else
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
+        "ENFORCE", parv[1]);
 }
 
 static void

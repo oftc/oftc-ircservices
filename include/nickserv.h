@@ -23,7 +23,9 @@ struct Nick
 };
 
 /* Nick flags */
-#define NS_FLAG_ADMIN     0x1
+#define NS_FLAG_ENFORCE         0x0000001
+#define NS_FLAG_SECURE          0x0000002
+#define NS_FLAG_ADMIN           0x1000000
 
 #define IsServAdmin(x)    (x)->nickname->flags & NS_FLAG_ADMIN
 
