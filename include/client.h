@@ -115,6 +115,7 @@ struct Client
   struct Server      *server;
 
   time_t        tsinfo;
+  time_t        enforce_time;
   unsigned int  status;
   unsigned int  umodes;
   unsigned short hopcount;

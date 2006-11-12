@@ -34,6 +34,12 @@ static dlink_node *ns_umode_hook;
 static dlink_node *ns_nick_hook;
 static dlink_node *ns_newuser_hook;
 
+static dlink_list nick_enforce_list = { NULL, NULL, 0 };
+
+static int guest_number;
+
+static void process_enforce_list(void *);
+
 static void *ns_on_umode_change(va_list);
 static void *ns_on_newuser(va_list);
 static void *ns_on_nick_change(va_list);
@@ -150,6 +156,10 @@ INIT_MODULE(nickserv, "$Revision$")
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
   ns_newuser_hook     = install_hook(on_newuser_cb, ns_on_newuser);
+
+  guest_number = 0;
+
+  eventAdd("process nickserv enforce list", process_enforce_list, NULL, 10);
 }
 
 CLEANUP_MODULE
@@ -157,6 +167,30 @@ CLEANUP_MODULE
   exit_client(find_client(nickserv->name), &me, "Service unloaded");
   hash_del_service(nickserv);
   dlinkDelete(&nickserv->node, &services_list);
+  eventDelete(process_enforce_list, NULL);
+}
+
+static void
+process_enforce_list(void *param)
+{
+  dlink_node *ptr, *ptr_next;
+  
+  DLINK_FOREACH_SAFE(ptr, ptr_next, nick_enforce_list.head)
+  {
+    struct Client *user = (struct Client *)ptr->data;  
+
+    if(CurrentTime > user->enforce_time)
+    {
+      char newname[NICKLEN+1];
+      
+      dlinkDelete(ptr, &nick_enforce_list);
+      free_dlink_node(ptr);
+      user->enforce_time = 0;
+
+      snprintf(newname, NICKLEN, "%s%d", "Guest", guest_number++);
+      send_nick_change(nickserv, user, newname);
+    }
+  }
 }
 
 /**
@@ -259,6 +293,7 @@ m_identify(struct Service *service, struct Client *client,
     return;
   }
   client->nickname = nick;
+  dlinkFindDelete(&nick_enforce_list, client);
 
   identify_user(client);
   reply_user(service, client, _L(nickserv, client, NS_IDENTIFIED), client->name);
@@ -726,6 +761,7 @@ ns_on_nick_change(va_list args)
 
   printf("%s changing nick to %s\n", oldnick, user->name);
  
+  dlinkFindDelete(&nick_enforce_list, user);
   if(IsIdentified(user))
   {
     /* XXX Check links */
@@ -758,6 +794,8 @@ ns_on_nick_change(va_list args)
     {
       reply_user(nickserv, user, _L(nickserv, user, NS_NICK_IN_USE_IWILLCHANGE), 
           user->name);
+      user->enforce_time = CurrentTime + 60; /* XXX configurable? */
+      dlinkAdd(user, make_dlink_node(), &nick_enforce_list);
     }
     else
     {
@@ -803,6 +841,8 @@ ns_on_newuser(va_list args)
     {
       reply_user(nickserv, newuser, _L(nickserv, newuser, 
             NS_NICK_IN_USE_IWILLCHANGE), newuser->name);
+      newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */
+      dlinkAdd(newuser, make_dlink_node(), &nick_enforce_list);
     }
     else
     {

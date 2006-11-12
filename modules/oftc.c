@@ -27,11 +27,15 @@
 static void *oftc_sendmsg_gnotice(va_list);
 static void *oftc_sendmsg_svsmode(va_list);
 static void *oftc_sendmsg_svscloak(va_list);
+static void *oftc_sendmsg_svsnick(va_list);
+//static void *oftc_sendmsg_svsjoin(va_list);
 static void *oftc_identify(va_list);
 
 static dlink_node *oftc_gnotice_hook;
 static dlink_node *oftc_umode_hook;
 static dlink_node *oftc_svscloak_hook;
+static dlink_node *oftc_svsnick_hook;
+//static dlink_node *oftc_svsjoin_hook;
 static dlink_node *oftc_identify_hook;
 
 struct Message gnotice_msgtab = {
@@ -44,6 +48,8 @@ INIT_MODULE(oftc, "$Revision$")
   oftc_gnotice_hook   = install_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
   oftc_umode_hook     = install_hook(send_umode_cb, oftc_sendmsg_svsmode);
   oftc_svscloak_hook  = install_hook(send_cloak_cb, oftc_sendmsg_svscloak);
+//  oftc_svsjoin_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsjoin);
+  oftc_svsnick_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsnick);
   oftc_identify_hook  = install_hook(on_identify_cb, oftc_identify); 
   mod_add_cmd(&gnotice_msgtab);
 }
@@ -109,12 +115,14 @@ oftc_sendmsg_svsmode(va_list args)
   return pass_callback(oftc_umode_hook);
 }
 
-#if 0
-XXX unused atm
-static void
-oftc_sendmsg_svsnick(struct Client *client, struct Client *target, char *newnick)
+static void *
+oftc_sendmsg_svsnick(va_list args)
 {
-  sendto_server(client, ":%s SVSNICK %s :%s", me.name, target->name, newnick);
-}
+  struct Client *uplink = va_arg(args, struct Client *);
+  struct Client *user   = va_arg(args, struct Client *);
+  char          *newnick= va_arg(args, char *);
 
-#endif
+  sendto_server(uplink, ":%s SVSNICK %s :%s", me.name, user->name, newnick);
+  
+  return pass_callback(oftc_svsnick_hook);
+}

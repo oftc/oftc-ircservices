@@ -86,6 +86,9 @@ int main(int argc, char *argv[])
 
   for(;;)
   {
+    while (eventNextTime() <= CurrentTime)
+      eventRun();
+
     comm_select();
     send_queued_all();
   }
