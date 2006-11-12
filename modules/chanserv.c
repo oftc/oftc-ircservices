@@ -49,6 +49,9 @@ static void m_set_keeptopic(struct Service *, struct Client *, int, char *[]);
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
 
+/* private */
+int m_set_flag(struct Service *, struct Client *, char *, char *, int, char *);
+
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, CS_HELP_REG_SHORT, CS_HELP_REG_LONG,
   { m_unreg, m_register, m_register, m_register }
@@ -662,58 +665,72 @@ static void
 m_set_keeptopic(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  m_set_flag(service, client, parv[1], parv[2], CHSET_KEEPTOPIC, "KEEPTOPIC");
+}
 
-  regchptr = db_find_chan(parv[1]);
+/*
+ * CHANSERV set flag (private)
+ */
+int 
+m_set_flag(struct Service *service, struct Client *client,
+           char *channel, char *toggle, int flag, char *flagname)
+{
+  struct RegChannel *regchptr;
+  int newflag;
+
+  regchptr = db_find_chan(channel);
   if (regchptr == NULL)
   {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
-    return;
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), channel);
+    return -1;
   }
 
   if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
   {
     reply_user(service, client, 
-        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), channel);
     free_regchan(regchptr);
     MyFree(regchptr);
-    return;
+    return -1;
   }
 
-  if ( strncmp(parv[2], "ON", strlen(parv[2])) == 0 )
+  newflag = regchptr->flags;
+
+  if ( strncasecmp(toggle, "ON", strlen(toggle)) == 0 )
   {
-    SetChanKeeptopic(regchptr);
+    newflag |= flag;
   }
-  else if ( strncmp(parv[2], "OFF", strlen(parv[2])) == 0 )
+  else if ( strncasecmp(toggle, "OFF", strlen(toggle)) == 0 )
   {
-    ClearChanKeeptopic(regchptr);
+    newflag &= ~flag;
+  }
+  else
+  {
+    reply_user(service, client, _L(chanserv, client, CS_SET_FLAG),
+      flagname, (newflag & flag) ? "ON" : "OFF", channel);
+
+    free_regchan(regchptr);
+    MyFree(regchptr);
+    return -1;
+  }
+
+  if (db_chan_set_number(db_get_id_from_chan(channel), "flags", newflag) == 0 )
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_SUCCESS), channel, flagname, toggle);
+    regchptr->flags = newflag;
   }
   else
   {
     reply_user(service, client, 
-        _L(chanserv, client, CS_SET_TOPIC_LONG));
-
-    free_regchan(regchptr);
-    MyFree(regchptr);
-    return;
+        _L(chanserv, client, CS_SET_FAILED), flagname, channel);
   }
 
-  if (db_chan_set_number(db_get_id_from_chan(parv[1]), "flags", regchptr->flags) == 0 )
-  {
-    reply_user(service, client, 
-        _L(chanserv, client, CS_SET_KEEPTOPIC), parv[1], parv[2]);
-    global_notice(NULL, "%s (%s@%s) set KeepTopic %s on %s", 
-      client->name, client->username, client->host, parv[2], parv[1]);
-  }
-  else
-  {
-    reply_user(service, client, 
-        _L(chanserv, client, CS_SET_KEEPTOPIC_FAILED), parv[1]);
-  }
   free_regchan(regchptr);
   MyFree(regchptr);
+  
+  return 0;
 }
-
 
 
 

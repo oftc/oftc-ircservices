@@ -98,5 +98,8 @@ struct RegChannel
 #define CS_SET_TOPIC_FAILED   45
 #define CS_SET_KEEPTOPIC      46
 #define CS_SET_KEEPTOPIC_FAILED 47
+#define CS_WRONG_ARG            48
+#define CS_SET_SUCCESS          49
+#define CS_SET_FAILED           50
 
 #endif
