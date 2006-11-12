@@ -59,3 +59,27 @@ CS_SET_MSG
 	Entry message of channel %s has been set to %s
 CS_SET_MSG_FAILED
 	Setting eMail Address of %s has failed
+CS_SET_FOUNDER_SHORT
+	Sets the Channels Founder
+CS_SET_FOUNDER_LONG
+	Sets the Channels Founder
+CS_SET_SUCC_SHORT
+	Sets the Channels successor when the founder drops his nick
+CS_SET_SUCC_LONG
+	Sets the Channels successor when the founder drops his nick
+CS_SET_DESC_SHORT
+	Set the Channel Description
+CS_SET_DESC_LONG
+	Set the Channel Description
+CS_SET_URL_SHORT
+	Set the Channels Homepage
+CS_SET_URL_LONG
+	Set the Channels Homepage
+CS_SET_EMAIL_SHORT
+	Sets the Channels Contact- or Mailinglist email Address
+CS_SET_EMAIL_LONG
+	Sets the Channels Contact- or Mailinglist email Address
+CS_SET_ENTRYMSG_SHORT
+	Sets an automatic greeting when a Client joins a channel
+CS_SET_ENTRYMSG_LONG
+	Sets an automatic greeting when a Client joins a channel
