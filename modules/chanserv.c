@@ -45,6 +45,14 @@ static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_entrymsg(struct Service *, struct Client *, int, char *[]);
 static void m_set_topic(struct Service *, struct Client *, int, char *[]);
 static void m_set_keeptopic(struct Service *, struct Client *, int, char *[]);
+static void m_set_topiclock(struct Service *, struct Client *, int, char *[]);
+static void m_set_private(struct Service *, struct Client *, int, char *[]);
+static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
+static void m_set_secure(struct Service *, struct Client *, int, char *[]);
+static void m_set_secureops(struct Service *, struct Client *, int, char *[]);
+static void m_set_leaveops(struct Service *, struct Client *, int, char *[]);
+static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
+
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -77,14 +85,14 @@ static struct SubMessage set_sub[] = {
   { "ENTRYMSG",    0, 1, CS_SET_ENTRYMSG_SHORT, CS_SET_ENTRYMSG_LONG, m_set_entrymsg },
   { "TOPIC",       0, 1, CS_SET_TOPIC_SHORT, CS_SET_TOPIC_LONG, m_set_topic },
   { "KEEPTOPIC",   0, 1, -1, -1, m_set_keeptopic },
-  { "TOPICLOCK",   0, 1, -1, -1, m_not_avail },
+  { "TOPICLOCK",   0, 1, -1, -1, m_set_topiclock },
   { "MLOCK",       0, 1, -1, -1, m_not_avail }, // +kl-mnt
-  { "PRIVATE",     0, 1, -1, -1, m_not_avail },
-  { "RESTRICTED",  0, 1, -1, -1, m_not_avail },
-  { "SECURE",      0, 1, -1, -1, m_not_avail },
-  { "SECUREOPS",   0, 1, -1, -1, m_not_avail },
-  { "LEAVEOPS",    0, 1, -1, -1, m_not_avail },
-  { "VERBOSE",     0, 1, -1, -1, m_not_avail },
+  { "PRIVATE",     0, 1, -1, -1, m_set_private },
+  { "RESTRICTED",  0, 1, -1, -1, m_set_restricted },
+  { "SECURE",      0, 1, -1, -1, m_set_secure },
+  { "SECUREOPS",   0, 1, -1, -1, m_set_secureops },
+  { "LEAVEOPS",    0, 1, -1, -1, m_set_leaveops },
+  { "VERBOSE",     0, 1, -1, -1, m_set_verbose },
   { "AUTOLIMIT",   0, 1, -1, -1, m_not_avail }, // 5:2:2
   { "CLEARBANS",   0, 1, -1, -1, m_not_avail }, // 120
   { "NULL",        0, 0,  0,  0, m_not_avail } 
@@ -667,6 +675,80 @@ m_set_keeptopic(struct Service *service, struct Client *client,
 {
   m_set_flag(service, client, parv[1], parv[2], CHSET_KEEPTOPIC, "KEEPTOPIC");
 }
+
+/*
+ * CHANSERV SET TOPICLOCK
+ */
+static void
+m_set_topiclock(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], CHSET_TOPICLOCK, "TOPICLOCK");
+}
+
+/*
+ * CHANSERV SET PRIVATE
+ */
+static void
+m_set_private(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], CHSET_PRIVATE, "PRIVATE");
+}
+
+/*
+ * CHANSERV SET RESTRICTED
+ */
+static void
+m_set_restricted(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], CHSET_RESTRICTED, "RESTRICTED");
+}
+
+/*
+ * CHANSERV SET SECURE
+ */
+static void
+m_set_secure(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], CHSET_SECURE, "SECURE");
+}
+
+/*
+ * CHANSERV SET SECUREOPS
+ */
+static void
+m_set_secureops(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], CHSET_SECUREOPS, "SECUREOPS");
+}
+
+/*
+ *
+ * CHANSERV SET LEAVEOPS
+ */
+static void
+m_set_leaveops(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], CHSET_LEAVEOPS, "LEAVEOPS");
+}
+
+/*
+ *
+ * CHANSERV SET VERBOSE
+ */
+static void
+m_set_verbose(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], CHSET_VERBOSE, "VERBOSE");
+}
+
+
 
 /*
  * CHANSERV set flag (private)
