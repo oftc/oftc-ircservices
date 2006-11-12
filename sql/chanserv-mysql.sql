@@ -6,6 +6,8 @@ CREATE TABLE channel (
   successor       INTEGER NOT NULL default '0',
   description     VARCHAR(255) NOT NULL default '',
   url             VARCHAR(255) NOT NULL default '',
+  email           VARCHAR(255) NOT NULL default '',
+  entrymsg        VARCHAR(255) NOT NULL default '',
   
   UNIQUE (channel)
 )ENGINE=MyISAM;

@@ -51,3 +51,11 @@ CS_SET_URL
 	URL of channel %s has been set to %s
 CS_SET_URL_FAILED
 	Setting URL of channel %s has failed
+CS_SET_EMAIL
+	eMail Adress of channel %s has been changed to %s
+CS_SET_EMAIL_FAILED
+	Setting eMail Address of channel %s has failed
+CS_SET_MSG
+	Entry message of channel %s has been set to %s
+CS_SET_MSG_FAILED
+	Setting eMail Address of %s has failed

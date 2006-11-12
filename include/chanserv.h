@@ -35,5 +35,9 @@ struct RegChannel
 #define CS_SET_DESC_FAILED 23
 #define CS_SET_URL       24
 #define CS_SET_URL_FAILED 25
+#define CS_SET_EMAIL       26
+#define CS_SET_EMAIL_FAILED 27
+#define CS_SET_MSG          28
+#define CS_SET_MSG_FAILED   29
 
 #endif

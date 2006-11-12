@@ -41,6 +41,8 @@ static void m_set_founder(struct Service *, struct Client *, int, char *[]);
 static void m_set_successor(struct Service *, struct Client *, int, char *[]);
 static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
+static void m_set_email(struct Service *, struct Client *, int, char *[]);
+static void m_set_entrymsg(struct Service *, struct Client *, int, char *[]);
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -66,8 +68,8 @@ static struct SubMessage set_sub[] = {
   { "PASSWORD",    0, 1, -1, -1, m_not_avail },
   { "DESC",        0, 1, -1, -1, m_set_desc },
   { "URL",         0, 1, -1, -1, m_set_url },
-  { "EMAIL",       0, 1, -1, -1, m_not_avail },
-  { "ENTRYMSG",    0, 1, -1, -1, m_not_avail },
+  { "EMAIL",       0, 1, -1, -1, m_set_email },
+  { "ENTRYMSG",    0, 1, -1, -1, m_set_entrymsg },
   { "TOPIC",       0, 1, -1, -1, m_not_avail },
   { "KEEPTOPIC",   0, 1, -1, -1, m_not_avail },
   { "TOPICLOCK",   0, 1, -1, -1, m_not_avail },
@@ -163,9 +165,9 @@ INIT_MODULE(chanserv, "$Revision$")
   clear_serv_tree_parse(&chanserv->msg_tree);
   dlinkAdd(chanserv, &chanserv->node, &services_list);
   hash_add_service(chanserv);
-/*  introduce_service(chanserv);
+  introduce_service(chanserv);
   load_language(chanserv, "chanserv.en");
-  load_language(chanserv, "chanserv.rude");
+/*  load_language(chanserv, "chanserv.rude");
   load_language(chanserv, "chanserv.de");
 */
   mod_add_servcmd(&chanserv->msg_tree, &register_msgtab);
@@ -498,6 +500,91 @@ m_set_url(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_URL_FAILED), parv[1]);
+  }
+  MyFree(regchptr);
+}
+
+/*
+ * CHANSERV SET EMAIL
+ */
+static void
+m_set_email(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    return;
+  }
+
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+
+  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "email", parv[2]) == 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_EMAIL), parv[1], parv[2]);
+    global_notice(NULL, "%s (%s@%s) changed email of %s to %s", 
+      client->name, client->username, client->host, parv[1], parv[2]);
+  }
+  else
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_EMAIL_FAILED), parv[1]);
+  }
+  MyFree(regchptr);
+}
+
+/*
+ * CHANSERV SET ENTRYMSG
+ */
+static void
+m_set_entrymsg(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+  int i; char msg[512];
+
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    return;
+  }
+
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+
+  for (i = 2; parv[i] != '\0'; i++)
+  {
+    strncat(msg, parv[i], sizeof(msg) - strlen(msg) - 1);
+    strncat(msg, " ", 1);
+  }
+
+  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "entrymsg", msg) == 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_MSG), parv[1], parv[2]);
+    global_notice(NULL, "%s (%s@%s) changed entrymsg of %s to %s", 
+      client->name, client->username, client->host, parv[1], parv[2]);
+  }
+  else
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_MSG_FAILED), parv[1]);
   }
   MyFree(regchptr);
 }
