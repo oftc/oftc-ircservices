@@ -63,13 +63,13 @@ static struct ServiceMessage help_msgtab = {
  * this is not nice, but fits our structure better
  */
 static struct SubMessage set_sub[] = {
-  { "FOUNDER",     0, 1, -1, -1, m_set_founder },
-  { "SUCCESSOR",   0, 1, -1, -1, m_set_successor },
+  { "FOUNDER",     0, 1, CS_SET_FOUNDER_SHORT, CS_SET_FOUNDER_LONG, m_set_founder },
+  { "SUCCESSOR",   0, 1, CS_SET_SUCC_SHORT, CS_SET_SUCC_LONG, m_set_successor },
   { "PASSWORD",    0, 1, -1, -1, m_not_avail },
-  { "DESC",        0, 1, -1, -1, m_set_desc },
-  { "URL",         0, 1, -1, -1, m_set_url },
-  { "EMAIL",       0, 1, -1, -1, m_set_email },
-  { "ENTRYMSG",    0, 1, -1, -1, m_set_entrymsg },
+  { "DESC",        0, 1, CS_SET_DESC_SHORT, CS_SET_DESC_LONG, m_set_desc },
+  { "URL",         0, 1, CS_SET_URL_SHORT, CS_SET_URL_LONG, m_set_url },
+  { "EMAIL",       0, 1, CS_SET_EMAIL_SHORT, CS_SET_EMAIL_LONG, m_set_email },
+  { "ENTRYMSG",    0, 1, CS_SET_ENTRYMSG_SHORT, CS_SET_ENTRYMSG_LONG, m_set_entrymsg },
   { "TOPIC",       0, 1, -1, -1, m_not_avail },
   { "KEEPTOPIC",   0, 1, -1, -1, m_not_avail },
   { "TOPICLOCK",   0, 1, -1, -1, m_not_avail },

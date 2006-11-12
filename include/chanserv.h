@@ -40,4 +40,17 @@ struct RegChannel
 #define CS_SET_MSG          28
 #define CS_SET_MSG_FAILED   29
 
+#define CS_SET_FOUNDER_SHORT 30
+#define CS_SET_FOUNDER_LONG  31
+#define CS_SET_SUCC_SHORT
+#define CS_SET_SUCC_LONG
+#define CS_SET_DESC_SHORT
+#define CS_SET_DESC_LONG
+#define CS_SET_URL_SHORT
+#define CS_SET_URL_LONG
+#define CS_SET_EMAIL_SHORT
+#define CS_SET_EMAIL_LONG
+#define CS_SET_ENTRYMSG_SHORT
+#define CS_SET_ENTRYMSG_LONG
+
 #endif
