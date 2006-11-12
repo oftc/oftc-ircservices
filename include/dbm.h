@@ -23,6 +23,8 @@ int db_nick_set_string(unsigned int, const char *, const char *);
 int db_nick_set_number(unsigned int, const char *, const unsigned long);
 char *db_nick_get_string(unsigned int, const char *);
 
+unsigned int db_get_id_from_chan(const char *);
+int db_chan_set_string(unsigned int, const char *, const char *);
 int db_set_founder(const char *, const char *);
 int db_set_successor(const char *, const char *);
 

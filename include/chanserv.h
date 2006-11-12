@@ -31,5 +31,9 @@ struct RegChannel
 #define CS_SET_FOUNDER_FAILED 19
 #define CS_SET_SUCC       20
 #define CS_SET_SUCC_FAILED 21
+#define CS_SET_DESC       22
+#define CS_SET_DESC_FAILED 23
+#define CS_SET_URL       24
+#define CS_SET_URL_FAILED 25
 
 #endif

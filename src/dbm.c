@@ -377,6 +377,64 @@ db_nick_get_string(unsigned int id, const char *key)
   return value;
 }
 
+unsigned int
+db_get_id_from_chan(const char *chan)
+{
+  dbi_result result;
+  char *escchan;
+  int id;
+
+  if(dbi_driver_quote_string_copy(Database.driv, chan, &escchan) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return 0;
+  }
+
+  result = db_query("SELECT id from channel WHERE channel=%s", escchan);
+  MyFree(escchan);
+  
+  if(result == NULL)
+    return 0;
+
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    printf("db: WTF. Didn't find channel entry for %s\n", chan);
+    dbi_result_free(result);
+    return 0;
+  }
+
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "id.%ui", &id);
+  dbi_result_free(result);
+
+  return id;
+}
+
+int
+db_chan_set_string(unsigned int id, const char *key, const char *value)
+{
+  dbi_result result;
+  char *escvalue;
+
+  if(dbi_driver_quote_string_copy(Database.driv, value, &escvalue) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
+  
+  result = db_query("UPDATE %s SET %s=%s WHERE id=%d", "channel", key, 
+      escvalue, id);
+  
+  MyFree(escvalue);
+
+  if(result == NULL)
+    return -1;
+
+  dbi_result_free(result);
+
+  return 0;
+}
+
 struct RegChannel *
 db_find_chan(const char *channel)
 {

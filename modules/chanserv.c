@@ -39,6 +39,8 @@ static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_founder(struct Service *, struct Client *, int, char *[]);
 static void m_set_successor(struct Service *, struct Client *, int, char *[]);
+static void m_set_desc(struct Service *, struct Client *, int, char *[]);
+static void m_set_url(struct Service *, struct Client *, int, char *[]);
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -62,8 +64,8 @@ static struct SubMessage set_sub[] = {
   { "FOUNDER",     0, 1, -1, -1, m_set_founder },
   { "SUCCESSOR",   0, 1, -1, -1, m_set_successor },
   { "PASSWORD",    0, 1, -1, -1, m_not_avail },
-  { "DESC",        0, 1, -1, -1, m_not_avail },
-  { "URL",         0, 1, -1, -1, m_not_avail },
+  { "DESC",        0, 1, -1, -1, m_set_desc },
+  { "URL",         0, 1, -1, -1, m_set_url },
   { "EMAIL",       0, 1, -1, -1, m_not_avail },
   { "ENTRYMSG",    0, 1, -1, -1, m_not_avail },
   { "TOPIC",       0, 1, -1, -1, m_not_avail },
@@ -410,6 +412,95 @@ m_set_successor(struct Service *service, struct Client *client,
   }
   MyFree(regchptr);
 }
+
+
+/*
+ * CHANSERV SET DESC
+ */
+static void
+m_set_desc(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+  char desc[512];
+  int i;
+
+  memset(desc, 0, sizeof(desc));
+
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    return;
+  }
+
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+
+  for (i = 2; parv[i] != '\0'; i++)
+  {
+    strncat(desc, parv[i], sizeof(desc) - strlen(desc) - 1);
+  }
+
+  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "description", desc) == 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_DESC), parv[1], desc);
+    global_notice(NULL, "%s (%s@%s) changed description of %s to %s", 
+      client->name, client->username, client->host, parv[1], desc);
+  }
+  else
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_DESC_FAILED), parv[1]);
+  }
+  MyFree(regchptr);
+}
+
+/*
+ * CHANSERV SET URL
+ */
+static void
+m_set_url(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    return;
+  }
+
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+
+  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "url", parv[2]) == 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_URL), parv[1], parv[2]);
+    global_notice(NULL, "%s (%s@%s) changed url of %s to %s", 
+      client->name, client->username, client->host, parv[1], parv[2]);
+  }
+  else
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_URL_FAILED), parv[1]);
+  }
+  MyFree(regchptr);
+}
+
 
 
 /*

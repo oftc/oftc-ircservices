@@ -43,3 +43,11 @@ CS_SET_SUCC
 	Successor of channel %s has been set to %s
 CS_SET_SUCC_FAILED
 	Setting successor of channel %s to %s has failed
+CS_SET_DESC
+  Description of channel %s has been set to %s
+CS_SET_DESC_FAILED
+  Setting Description of channel %s has failed
+CS_SET_URL
+  URL of channel %s has been set to %s
+CS_SET_URL_FAILED
+  Setting URL of channel %s has failed
