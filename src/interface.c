@@ -43,6 +43,7 @@ struct Callback *on_cmode_change_cb;
 struct Callback *on_squit_cb;
 struct Callback *on_newuser_cb;
 struct Callback *on_identify_cb;
+struct Callback *on_channel_destroy_cb;
 
 void
 init_interface()
@@ -65,6 +66,7 @@ init_interface()
   on_quit_cb          = register_callback("Propagate SQUIT", NULL);
   on_identify_cb      = register_callback("Identify Callback", NULL);
   on_newuser_cb       = register_callback("New user coming to us", NULL);
+  on_channel_destroy_cb = register_callback("Channel is being destroyed", NULL);
 }
 
 struct Service *

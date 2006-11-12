@@ -28,9 +28,11 @@ static struct Service *chanserv = NULL;
 
 static dlink_node *cs_cmode_hook;
 static dlink_node *cs_join_hook;
+static dlink_node *cs_channel_destroy_hook;
 
 static void *cs_on_cmode_change(va_list);
 static void *cs_on_client_join(va_list);
+static void *cs_on_channel_destroy(va_list);
 
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
@@ -193,6 +195,8 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &access_msgtab);
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
+  cs_channel_destroy_hook = 
+       install_hook(on_channel_destroy_cb, cs_on_channel_destroy);
 }
 
 CLEANUP_MODULE
@@ -853,18 +857,42 @@ cs_on_client_join(va_list args)
   struct RegChannel *regchptr;
   struct Channel *chptr;
 
+  /* Find Channel in hash */
   if ((chptr = hash_find_channel(name)) != NULL)
   {
-    if (( chptr->regchan != NULL) && (chptr->regchan->entrymsg != NULL))
-      reply_user(chanserv, source_p, chptr->regchan->entrymsg);
-  }
-  else if ((regchptr = db_find_chan(name)) != NULL)
+    /* regchan attached, good */
+    if ( chptr->regchan != NULL)
+    {
+      /* fetch entrymsg from hash if it exists there */
+      if (chptr->regchan->entrymsg != NULL)
+        reply_user(chanserv, source_p, chptr->regchan->entrymsg);
+    }
+    /* regchan not attached, get it from DB */
+    else if ((regchptr = db_find_chan(name)) != NULL)
+    {
+      /* it does exist there, so attach it now */
+      if (regchptr->entrymsg != NULL)
+        reply_user(chanserv, source_p, regchptr->entrymsg);
+      chptr->regchan = regchptr;
+    }
+  } else
   {
-    if (regchptr->entrymsg != NULL)
-      reply_user(chanserv, source_p, regchptr->entrymsg);
-    free_regchan(regchptr);
-    MyFree(regchptr);
+    printf("badbad. Client %s joined non-existing Channel %s\n", 
+        source_p->name, chptr->name);
   }
 
   return pass_callback(cs_join_hook);
+}
+
+static void*
+cs_on_channel_destroy(va_list args)
+{
+  struct Channel *chan = va_arg(args, struct Channel *);
+
+  /* Free regchan from chptr before freeing chptr */
+  free_regchan(chan->regchan);
+  MyFree(chan->regchan);
+  chan->regchan = NULL;
+
+  return pass_callback(cs_channel_destroy_hook);
 }

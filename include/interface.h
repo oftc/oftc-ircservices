@@ -22,6 +22,7 @@ extern struct Callback *on_join_cb;
 extern struct Callback *on_nick_change_cb;
 extern struct Callback *on_identify_cb;
 extern struct Callback *on_newuser_cb;
+extern struct Callback *on_channel_destroy_cb;
 
 struct Service *make_service(char *);
 void introduce_service(struct Service *);

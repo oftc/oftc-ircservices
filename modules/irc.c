@@ -1173,8 +1173,8 @@ m_quit(struct Client *client, struct Client *source, int parc, char *parv[])
   if (strlen(comment) > (size_t)KICKLEN)
     comment[KICKLEN] = '\0';
 
-  exit_client(source, source, comment);
   chain_quit(source, comment);
+  exit_client(source, source, comment);
 }
 
 static void

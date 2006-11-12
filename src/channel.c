@@ -98,6 +98,7 @@ remove_user_from_channel(struct Membership *member)
   {
     assert(dlink_list_length(&chptr->members) == 0);  
     printf("Destroying empty channel %s\n", chptr->chname);
+    execute_callback(on_channel_destroy_cb, chptr);
     destroy_channel(chptr);
   }
 }
