@@ -14,7 +14,6 @@ CREATE TABLE nickname (
   reg_time        INTEGER NOT NULL default '0',
   last_seen       INTEGER NOT NULL default '0',
   last_used       INTEGER NOT NULL default '0',
-  status          INTEGER NOT NULL default '0',
   flags           INTEGER NOT NULL default '0',
   language        INTEGER NOT NULL default '0',
   UNIQUE (nick)

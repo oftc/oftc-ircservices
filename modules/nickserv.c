@@ -427,7 +427,7 @@ m_set_secure(struct Service *service, struct Client *client,
   if(parc == 0)
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "SECURE", 
-        (nick->flags & NS_FLAG_SECURE) ? "ON" : "OFF");
+        IsSecure(nick) ? "ON" : "OFF");
     return;
   }
 
@@ -442,7 +442,7 @@ m_set_secure(struct Service *service, struct Client *client,
   else
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "SECURE", 
-        (nick->flags & NS_FLAG_SECURE) ? "ON" : "OFF");
+        IsSecure(nick) ? "ON" : "OFF");
     return;
   }
 
@@ -450,7 +450,7 @@ m_set_secure(struct Service *service, struct Client *client,
   {
     nick->flags = newflags;
     reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
-        "SECURE", nick->flags & NS_FLAG_SECURE ? "ON" : "OFF");
+        "SECURE", IsSecure(nick) ? "ON" : "OFF");
   }
   else
     reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
@@ -467,7 +467,7 @@ m_set_enforce(struct Service *service, struct Client *client,
   if(parc == 0)
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "ENFORCE", 
-        (nick->flags & NS_FLAG_ENFORCE) ? "ON" : "OFF");
+        IsEnforce(nick) ? "ON" : "OFF");
     return;
   }
 
@@ -482,7 +482,7 @@ m_set_enforce(struct Service *service, struct Client *client,
   else
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "ENFORCE", 
-        (nick->flags & NS_FLAG_ENFORCE) ? "ON" : "OFF");
+        IsEnforce(nick) ? "ON" : "OFF");
     return;
   }
 
@@ -490,7 +490,7 @@ m_set_enforce(struct Service *service, struct Client *client,
   {
     nick->flags = newflags;
     reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
-        "ENFORCE", nick->flags & NS_FLAG_ENFORCE ? "ON" : "OFF");
+        "ENFORCE", IsEnforce(nick) ? "ON" : "OFF");
   }
   else
     reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
@@ -745,8 +745,12 @@ ns_on_nick_change(va_list args)
   if(check_list_entry("nickname_access", nick_p->id, userhost))
   {
     printf("%s changed nick to %s(found access entry)\n", oldnick, user->name);
-    user->nickname = nick_p;
-    identify_user(user);
+    SetOnAccess(user);
+    if(!IsSecure(nick_p))
+    {
+      user->nickname = nick_p;
+      identify_user(user);
+    }
   }
   else
     printf("%s changed nick to %s(no access entry)\n", oldnick, user->name);
@@ -774,8 +778,12 @@ ns_on_newuser(va_list args)
   if(check_list_entry("nickname_access", nick_p->id, userhost))
   {
     printf("new user: %s(found access entry)\n", newuser->name);
-    newuser->nickname = nick_p;
-    identify_user(newuser);
+    SetOnAccess(newuser);
+    if(!IsSecure(nick_p))
+    {
+      newuser->nickname = nick_p;
+      identify_user(newuser);
+    }
   }
   else
     printf("new user:%s(no access entry)\n", newuser->name);

@@ -119,7 +119,7 @@ db_find_nick(const char *nick)
   }
   
   result = db_query("SELECT id, nick, password, salt, email, cloak, last_quit, "
-      "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
+      "last_quit_time, reg_time, last_seen, last_used, flags, language "
       "FROM %s WHERE nick=%s", "nickname", escnick);
   MyFree(escnick);
 
@@ -144,7 +144,7 @@ db_find_nick(const char *nick)
     dbi_result_get_fields(link_result, "nick_id.%ui", &id);
     dbi_result_free(link_result);
     result = db_query("SELECT id, nick, password, salt, email, cloak, last_quit, "
-      "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
+      "last_quit_time, reg_time, last_seen, last_used, flags, language "
       "FROM %s WHERE id=%d", "nickname", id);
     if(result == NULL)
       return NULL;
@@ -160,10 +160,10 @@ db_find_nick(const char *nick)
   dbi_result_first_row(result);
   dbi_result_get_fields(result, "id.%ui nick.%S password.%S salt.%S email.%S "
       "cloak.%S last_quit.%S last_quit_time.%l reg_time.%l last_seen.%l "
-      "last_used.%l status.%ui flags.%ui language.%ui",
+      "last_used.%l flags.%ui language.%ui",
       &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->email, &retcloak, 
       &nick_p->last_quit, &nick_p->last_quit_time, &nick_p->reg_time, 
-      &nick_p->last_seen, &nick_p->last_used, &nick_p->status, &nick_p->flags, 
+      &nick_p->last_seen, &nick_p->last_used, &nick_p->flags, 
       &nick_p->language);
 
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
@@ -809,7 +809,7 @@ db_unlink_nick(const char *nick)
   dbi_result_free(result);
 
   if((result = db_query("SELECT id, nick, password, email, cloak, "
-      "last_quit_time, reg_time, last_seen, last_used, status, flags, language "
+      "last_quit_time, reg_time, last_seen, last_used, flags, language "
       "FROM %s WHERE id=%d", "nickname", id)) == NULL)
   {
     return NULL;
@@ -818,11 +818,11 @@ db_unlink_nick(const char *nick)
   nick_p = MyMalloc(sizeof(struct Nick));
   dbi_result_first_row(result);
   dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
-      "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l status.%ui "
+      "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l "
       "flags.%ui language.%ui",
       &nick_p->id, &retnick, &retpass, &nick_p->email, &retcloak, 
       &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen, 
-      &nick_p->last_used, &nick_p->status, &nick_p->flags, &nick_p->language);
+      &nick_p->last_used, &nick_p->flags, &nick_p->language);
 
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));

@@ -9,6 +9,7 @@ extern dlink_list global_server_list;
 #define FLAGS_KILLED        0x00000004UL /* Prevents "QUIT" from being sent to this */
 #define FLAGS_CLOSING       0x00000008UL /* set when closing */
 #define FLAGS_CONNECTING    0x00000010UL /* Currently connecting not bursted */
+#define FLAGS_ONACCESS      0x00000020UL /* Client isnt authed with nickserv but does match the access list*/
 
 #define STAT_SERVER         0x01
 #define STAT_CLIENT         0x02
@@ -44,13 +45,14 @@ extern dlink_list global_server_list;
 #define IsDefunct(x)            ((x)->flags & (FLAGS_DEADSOCKET|FLAGS_CLOSING))
 #define IsDead(x)               ((x)->flags & FLAGS_DEADSOCKET)
 #define IsClosing(x)            ((x)->flags & FLAGS_CLOSING)
+#define IsOnAccess(x)           ((x)->flags & FLAGS_ONACCESS)
 
-
-#define SetConnecting(x)        ((x)->flags|= FLAGS_CONNECTING)
+#define SetConnecting(x)        ((x)->flags |= FLAGS_CONNECTING)
 #define SetClosing(x)           ((x)->flags |= FLAGS_CLOSING)
-
+#define SetOnAccess(x)          ((x)->flags |= FLAGS_ONACCESS)
 
 #define ClearConnecting(x)      ((x)->flags &= ~FLAGS_CONNECTING)
+#define ClearOnAccess(x)        ((x)->flags &= ~FLAGS_ONACCESS)
 
 #define IsServer(x)             ((x)->status & STAT_SERVER)
 #define IsClient(x)             ((x)->status & STAT_CLIENT)
