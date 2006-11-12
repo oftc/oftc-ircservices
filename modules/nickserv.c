@@ -427,22 +427,22 @@ m_set_secure(struct Service *service, struct Client *client,
   if(parc == 0)
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "SECURE", 
-        IsSecure(nick) ? "ON" : "OFF");
+        IsNickSecure(nick) ? "ON" : "OFF");
     return;
   }
 
-  if(strcmp(parv[1], "ON") == 0)
+  if(strcasecmp(parv[1], "ON") == 0)
   {
     newflags |= NS_FLAG_SECURE;
   }
-  else if(strcmp(parv[1], "OFF") == 0)
+  else if(strcasecmp(parv[1], "OFF") == 0)
   {
     newflags &= ~NS_FLAG_SECURE;
   }
   else
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "SECURE", 
-        IsSecure(nick) ? "ON" : "OFF");
+        IsNickSecure(nick) ? "ON" : "OFF");
     return;
   }
 
@@ -450,7 +450,7 @@ m_set_secure(struct Service *service, struct Client *client,
   {
     nick->flags = newflags;
     reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
-        "SECURE", IsSecure(nick) ? "ON" : "OFF");
+        "SECURE", IsNickSecure(nick) ? "ON" : "OFF");
   }
   else
     reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
@@ -467,22 +467,22 @@ m_set_enforce(struct Service *service, struct Client *client,
   if(parc == 0)
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "ENFORCE", 
-        IsEnforce(nick) ? "ON" : "OFF");
+        IsNickEnforce(nick) ? "ON" : "OFF");
     return;
   }
 
-  if(strcmp(parv[1], "ON") == 0)
+  if(strcasecmp(parv[1], "ON") == 0)
   {
     newflags |= NS_FLAG_ENFORCE;
   }
-  else if(strcmp(parv[1], "OFF") == 0)
+  else if(strcasecmp(parv[1], "OFF") == 0)
   {
     newflags &= ~NS_FLAG_ENFORCE;
   }
   else
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "ENFORCE", 
-        IsEnforce(nick) ? "ON" : "OFF");
+        IsNickEnforce(nick) ? "ON" : "OFF");
     return;
   }
 
@@ -490,7 +490,7 @@ m_set_enforce(struct Service *service, struct Client *client,
   {
     nick->flags = newflags;
     reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
-        "ENFORCE", IsEnforce(nick) ? "ON" : "OFF");
+        "ENFORCE", IsNickEnforce(nick) ? "ON" : "OFF");
   }
   else
     reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
@@ -746,14 +746,26 @@ ns_on_nick_change(va_list args)
   {
     printf("%s changed nick to %s(found access entry)\n", oldnick, user->name);
     SetOnAccess(user);
-    if(!IsSecure(nick_p))
+    if(!IsNickSecure(nick_p))
     {
       user->nickname = nick_p;
       identify_user(user);
     }
   }
   else
+  {
+    if(IsNickEnforce(nick_p))
+    {
+      reply_user(nickserv, user, _L(nickserv, user, NS_NICK_IN_USE_IWILLCHANGE), 
+          user->name);
+    }
+    else
+    {
+      reply_user(nickserv, user, _L(nickserv, user, NS_NICK_IN_USE), user->name);
+    }
+ 
     printf("%s changed nick to %s(no access entry)\n", oldnick, user->name);
+  }
   
   return pass_callback(ns_nick_hook);
 }
@@ -779,14 +791,26 @@ ns_on_newuser(va_list args)
   {
     printf("new user: %s(found access entry)\n", newuser->name);
     SetOnAccess(newuser);
-    if(!IsSecure(nick_p))
+    if(!IsNickSecure(nick_p))
     {
       newuser->nickname = nick_p;
       identify_user(newuser);
     }
   }
   else
+  {
+    if(IsNickEnforce(nick_p))
+    {
+      reply_user(nickserv, newuser, _L(nickserv, newuser, 
+            NS_NICK_IN_USE_IWILLCHANGE), newuser->name);
+    }
+    else
+    {
+      reply_user(nickserv, newuser, _L(nickserv, newuser, NS_NICK_IN_USE),
+          newuser->name);
+    }
     printf("new user:%s(no access entry)\n", newuser->name);
+  }
   
   return pass_callback(ns_nick_hook);
 }

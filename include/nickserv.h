@@ -28,16 +28,16 @@ struct Nick
 #define NS_FLAG_ADMIN         0x1000000
 
 #define IsServAdmin(x)        ((x)->nickname->flags & NS_FLAG_ADMIN)
-#define IsSecure(x)           ((x)->flags & NS_FLAG_SECURE)
-#define IsEnforce(x)          ((x)->flags & NS_FLAG_ENFORCE)
+#define IsNickSecure(x)       ((x)->flags & NS_FLAG_SECURE)
+#define IsNickEnforce(x)      ((x)->flags & NS_FLAG_ENFORCE)
 
 #define SetServAdmin(x)       ((x)->nickname->flags |= NS_FLAG_ADMIN)
-#define SetSecure(x)          ((x)->flags |= NS_FLAG_SECURE)
-#define SetEnforce(x)         ((x)->flags |= NS_FLAG_ENFORCE)
+#define SetNickSecure(x)      ((x)->flags |= NS_FLAG_SECURE)
+#define SetNickEnforce(x)     ((x)->flags |= NS_FLAG_ENFORCE)
 
 #define ClearServAdmin(x)     ((x)->nickname->flags &= ~NS_FLAG_ADMIN)
-#define ClearSecure(x)        ((x)->flags &= ~NS_FLAG_SECURE)
-#define ClearEnforce(x)       ((x)->flags &= ~NS_FLAG_ENFORCE)
+#define ClearNickSecure(x)    ((x)->flags &= ~NS_FLAG_SECURE)
+#define ClearNickEnforce(x)   ((x)->flags &= ~NS_FLAG_ENFORCE)
 
 /* Language defines */
 
@@ -103,5 +103,8 @@ struct Nick
 #define NS_UNLINK_OK            60
 #define NS_UNLINK_NOLINK        61
 #define NS_INFO                 62
+#define NS_NICK_IN_USE          63
+#define NS_NICK_IN_USE_IWILLCHANGE 64
+
   
 #endif

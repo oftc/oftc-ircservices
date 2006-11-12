@@ -153,3 +153,7 @@ NS_INFO
 	      Letzte QUIT Nachricht:  %s
 	 Zeitpunkt des letzten QUIT:  %s
 	              eMail Adresse:  %s
+NS_NICK_IN_USE
+	This string is not translated, bug someone(maybe mc) to fix it.
+NS_NICK_IN_USE_IWILLCHANGE
+	This string is not translated, bug someone(maybe mc) to fix it.

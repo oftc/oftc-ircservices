@@ -729,7 +729,8 @@ db_list_del_index(const char *table, unsigned int id, unsigned int index)
   dbi_result result;
   unsigned int delid, numrows, j;
     
-  if((result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d")) == NULL)
+  if((result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d",
+          table, id)) == NULL)
   {
     return 0;
   }
