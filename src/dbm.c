@@ -441,6 +441,7 @@ db_find_chan(const char *channel)
   dbi_result result;
   char *escchannel = NULL;
   char *findchannel; char *findfounder;
+  char *description, *entrymsg;
   struct RegChannel *channel_p;
   
   assert(channel != NULL);
@@ -451,7 +452,7 @@ db_find_chan(const char *channel)
     return NULL;
   }
 
-  result = db_query("SELECT %s.id, channel, nickname.nick FROM %s "
+  result = db_query("SELECT %s.id, channel, description, entrymsg, nickname.nick FROM %s "
           "INNER JOIN %s ON %s.founder=%s.id WHERE channel=%s", 
           "channel", "channel", "nickname", "channel", "nickname", 
           escchannel);
@@ -469,14 +470,18 @@ db_find_chan(const char *channel)
 
   channel_p = MyMalloc(sizeof(struct RegChannel));
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui channel.%S nick.%S",
-      &channel_p->id, &findchannel, &findfounder);
+  dbi_result_get_fields(result, "id.%ui channel.%S description.%S entrymsg.%S nick.%S",
+      &channel_p->id, &findchannel, &description, &entrymsg, &findfounder);
 
   strlcpy(channel_p->channel, findchannel, sizeof(channel_p->channel));
   strlcpy(channel_p->founder, findfounder, sizeof(channel_p->founder));
+  strlcpy(channel_p->description, description, sizeof(channel_p->description));
+  strlcpy(channel_p->entrymsg, entrymsg, sizeof(channel_p->entrymsg));
 
   MyFree(findchannel);
   MyFree(findfounder);
+  MyFree(description);
+  MyFree(entrymsg);
 
   return channel_p;
 }

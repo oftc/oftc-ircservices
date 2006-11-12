@@ -616,9 +616,16 @@ cs_on_cmode_change(va_list args)
 static void *
 cs_on_client_join(va_list args)
 {
-  /* struct Client *source_p = va_arg(args, struct Client *);
-   * char          *name     = va_arg(args, char *);
-   */
+  struct Client *source_p = va_arg(args, struct Client *);
+  char          *name     = va_arg(args, char *);
+  
+  struct RegChannel *regchptr;
+
+  if ((regchptr = db_find_chan(name)) != NULL)
+  {
+    reply_user(chanserv, source_p, regchptr->entrymsg);
+    MyFree(regchptr);
+  }
 
   return pass_callback(cs_join_hook);
 }

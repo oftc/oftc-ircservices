@@ -914,6 +914,7 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
     if (!IsMember(target, chptr))
     {
       add_user_to_channel(chptr, target, fl, !have_many_nicks);
+      chain_join(target, chptr->chname);
       printf("Added %s!%s@%s to %s\n", target->name, target->username,
           target->host, chptr->chname);
     }
