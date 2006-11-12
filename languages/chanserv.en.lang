@@ -83,3 +83,11 @@ CS_SET_ENTRYMSG_SHORT
 	Sets an automatic greeting when a Client joins a channel
 CS_SET_ENTRYMSG_LONG
 	Sets an automatic greeting when a Client joins a channel
+CS_SET_TOPIC_SHORT
+                XXX FIXME XXX
+CS_SET_TOPIC_LONG
+                XXX FIXME XXX
+CS_SET_TOPIC
+                XXX FIXME XXX %s : %s
+CS_SET_TOPIC_FAILED
+                XXX FIXME XXX %s

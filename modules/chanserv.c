@@ -43,6 +43,7 @@ static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_entrymsg(struct Service *, struct Client *, int, char *[]);
+static void m_set_topic(struct Service *, struct Client *, int, char *[]);
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -70,19 +71,19 @@ static struct SubMessage set_sub[] = {
   { "URL",         0, 1, CS_SET_URL_SHORT, CS_SET_URL_LONG, m_set_url },
   { "EMAIL",       0, 1, CS_SET_EMAIL_SHORT, CS_SET_EMAIL_LONG, m_set_email },
   { "ENTRYMSG",    0, 1, CS_SET_ENTRYMSG_SHORT, CS_SET_ENTRYMSG_LONG, m_set_entrymsg },
-  { "TOPIC",       0, 1, -1, -1, m_not_avail },
-  { "KEEPTOPIC",   0, 1, -1, -1, m_not_avail },
+  { "TOPIC",       0, 1, CS_SET_TOPIC_SHORT, CS_SET_TOPIC_LONG, m_set_topic },
+  { "KEEPTOPIC",   0, 1, -1, -1, m_set_keeptopic },
   { "TOPICLOCK",   0, 1, -1, -1, m_not_avail },
-  { "MLOCK",       0, 1, -1, -1, m_not_avail },
+  { "MLOCK",       0, 1, -1, -1, m_not_avail }, // +kl-mnt
   { "PRIVATE",     0, 1, -1, -1, m_not_avail },
   { "RESTRICTED",  0, 1, -1, -1, m_not_avail },
   { "SECURE",      0, 1, -1, -1, m_not_avail },
   { "SECUREOPS",   0, 1, -1, -1, m_not_avail },
   { "LEAVEOPS",    0, 1, -1, -1, m_not_avail },
   { "VERBOSE",     0, 1, -1, -1, m_not_avail },
-  { "AUTOLIMIT",   0, 1, -1, -1, m_not_avail },
-  { "CLEARBANS",   0, 1, -1, -1, m_not_avail },
-  { "NULL",        0, 0,  0,  0, m_not_avail }
+  { "AUTOLIMIT",   0, 1, -1, -1, m_not_avail }, // 5:2:2
+  { "CLEARBANS",   0, 1, -1, -1, m_not_avail }, // 120
+  { "NULL",        0, 0,  0,  0, m_not_avail } 
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -592,14 +593,62 @@ m_set_entrymsg(struct Service *service, struct Client *client,
   if (db_chan_set_string(db_get_id_from_chan(parv[1]), "entrymsg", msg) == 0)
   {
     reply_user(service, client, 
-        _L(chanserv, client, CS_SET_MSG), parv[1], parv[2]);
+        _L(chanserv, client, CS_SET_MSG), parv[1], msg);
     global_notice(NULL, "%s (%s@%s) changed entrymsg of %s to %s", 
-      client->name, client->username, client->host, parv[1], parv[2]);
+      client->name, client->username, client->host, parv[1], msg);
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_MSG_FAILED), parv[1]);
+  }
+  free_regchan(regchptr);
+  MyFree(regchptr);
+}
+
+/*
+ * CHANSERV SET TOPIC
+ */
+static void
+m_set_topic(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+  int i; char topic[TOPICLEN+1];
+
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    return;
+  }
+
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
+    MyFree(regchptr);
+    return;
+  }
+
+  for (i = 2; parv[i] != '\0'; i++)
+  {
+    strncat(topic, parv[i], sizeof(topic) - strlen(topic) - 1);
+    strncat(topic, " ", 1);
+  }
+
+  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "topic", topic) == 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_TOPIC), parv[1], topic);
+    global_notice(NULL, "%s (%s@%s) changed TOPIC of %s to %s", 
+      client->name, client->username, client->host, parv[1], topic);
+  }
+  else
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_TOPIC_FAILED), parv[1]);
   }
   free_regchan(regchptr);
   MyFree(regchptr);
@@ -636,8 +685,13 @@ cs_on_client_join(va_list args)
   char          *name     = va_arg(args, char *);
   
   struct RegChannel *regchptr;
+  struct Channel *chptr;
 
-  if ((regchptr = db_find_chan(name)) != NULL)
+  if ((chptr = hash_find_channel(name)) != NULL)
+  {
+    reply_user(chanserv, source_p, chptr->regchptr->entrymsg);
+  }
+  else if ((regchptr = db_find_chan(name)) != NULL)
   {
     reply_user(chanserv, source_p, regchptr->entrymsg);
     free_regchan(regchptr);

@@ -10,7 +10,45 @@ struct RegChannel
   char channel[CHANNELLEN+1];
   char *description;
   char *entrymsg; 
+  unsigned int flags;
 };
+
+/* channel flag defines */
+#define CHSET_KEEPTOPIC  0x01
+#define CHSET_TOPICLOCK  0x02
+#define CHSET_PRIVATE    0x04
+#define CHSET_RESTRICTED 0x08
+#define CHSET_SECURE     0x10
+#define CHSET_SECUREOPS  0x20
+#define CHSET_LEAVEOPS   0x40
+#define CHSET_VERBOSE    0x80
+
+#define  SetKeeptopic(x)    ((x)->flags |= CHSET_KEEPTOPIC)
+#define  SetTopiclock(x)    ((x)->flags |= CHSET_TOPICLOCK)
+#define  SetPrivate(x)      ((x)->flags |= CHSET_PRIVATE)
+#define  SetRestricted(x)   ((x)->flags |= CHSET_RESTRICTED)
+#define  SetSecure(x)       ((x)->flags |= CHSET_SECURE)
+#define  SetSecureops(x)    ((x)->flags |= CHSET_SECUREOPS)
+#define  SetLeaveops(x)     ((x)->flags |= CHSET_LEAVEOPS)
+#define  SetVerbose(x)      ((x)->flags |= CHSET_VERBOSE)
+
+#define  ClearKeeptopic(x)    ((x)->flags &= ~CHSET_KEEPTOPIC)
+#define  ClearTopiclock(x)    ((x)->flags &= ~CHSET_TOPICLOCK)
+#define  ClearPrivate(x)      ((x)->flags &= ~CHSET_PRIVATE)
+#define  ClearRestricted(x)   ((x)->flags &= ~CHSET_RESTRICTED)
+#define  ClearSecure(x)       ((x)->flags &= ~CHSET_SECURE)
+#define  ClearSecureops(x)    ((x)->flags &= ~CHSET_SECUREOPS)
+#define  ClearLeaveops(x)     ((x)->flags &= ~CHSET_LEAVEOPS)
+#define  ClearVerbose(x)      ((x)->flags &= ~CHSET_VERBOSE)
+
+#define  IsKeeptopic(x)    ((x)->flags & CHSET_KEEPTOPIC)
+#define  IsTopiclock(x)    ((x)->flags & CHSET_TOPICLOCK)
+#define  IsPrivate(x)      ((x)->flags & CHSET_PRIVATE)
+#define  IsRestricted(x)   ((x)->flags & CHSET_RESTRICTED)
+#define  IsSecure(x)       ((x)->flags & CHSET_SECURE)
+#define  IsSecureops(x)    ((x)->flags & CHSET_SECUREOPS)
+#define  IsLeaveops(x)     ((x)->flags & CHSET_LEAVEOPS)
+#define  IsVerbose(x)      ((x)->flags & CHSET_VERBOSE)
 
 #define CS_HELP_REG_SHORT 1
 #define CS_HELP_REG_LONG  2
@@ -54,5 +92,9 @@ struct RegChannel
 #define CS_SET_EMAIL_LONG    39
 #define CS_SET_ENTRYMSG_SHORT 40
 #define CS_SET_ENTRYMSG_LONG  41
+#define CS_SET_TOPIC_SHORT    42
+#define CS_SET_TOPIC_LONG     43
+#define CS_SET_TOPIC          44
+#define CS_SET_TOPIC_FAILED   45
 
 #endif
