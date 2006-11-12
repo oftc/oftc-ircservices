@@ -445,6 +445,7 @@ m_set_desc(struct Service *service, struct Client *client,
   for (i = 2; parv[i] != '\0'; i++)
   {
     strncat(desc, parv[i], sizeof(desc) - strlen(desc) - 1);
+    strncat(desc, " ", 1);
   }
 
   if (db_chan_set_string(db_get_id_from_chan(parv[1]), "description", desc) == 0)
