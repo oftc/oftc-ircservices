@@ -35,8 +35,10 @@ static void *cs_on_client_join(va_list);
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
+static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_founder(struct Service *, struct Client *, int, char *[]);
+static void m_set_successor(struct Service *, struct Client *, int, char *[]);
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -58,7 +60,7 @@ static struct ServiceMessage help_msgtab = {
  */
 static struct SubMessage set_sub[] = {
   { "FOUNDER",     0, 1, -1, -1, m_set_founder },
-  { "SUCCESSOR",   0, 1, -1, -1, m_not_avail },
+  { "SUCCESSOR",   0, 1, -1, -1, m_set_successor },
   { "PASSWORD",    0, 1, -1, -1, m_not_avail },
   { "DESC",        0, 1, -1, -1, m_not_avail },
   { "URL",         0, 1, -1, -1, m_not_avail },
@@ -81,7 +83,7 @@ static struct SubMessage set_sub[] = {
 
 static struct ServiceMessage set_msgtab = {
   set_sub, "SET", 0, 0, CS_SET_SHORT, CS_SET_LONG,
-  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+  { m_unreg, m_set, m_set, m_set }
 };
 
 static struct SubMessage access_sub[6] = {
@@ -266,10 +268,12 @@ m_drop(struct Service *service, struct Client *client,
 
   if (db_delete_chan(parv[1]) == 0)
   {
-    reply_user(service, client, _L(chanserv, client, CS_REGISTERED), parv[1]);
+    reply_user(service, client, _L(chanserv, client, CS_DROPPED), parv[1]);
+    global_notice(NULL, "%s (%s@%s) dropped channel %s", 
+      client->name, client->username, client->host, parv[1]);
   } else
   {
-    reply_user(service, client, _L(chanserv, client, CS_REG_FAILED), parv[1]);
+    reply_user(service, client, _L(chanserv, client, CS_DROP_FAILED), parv[1]);
   }
 
   MyFree(regchptr);
@@ -303,7 +307,7 @@ static void
 m_set(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, client, "Unknown SET option");
+  reply_user(service, client, _L(chanserv, client, CS_SET_LONG));
 }
 
 
@@ -318,48 +322,93 @@ m_set_founder(struct Service *service, struct Client *client,
   struct Nick *nick_p;
 
   /* we need to consult the db, since the nick may not be online -mc */
-  printf("find nick\n");
+  if ((nick_p = db_find_nick(parv[2])) == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_REGISTER_NICK), parv[2]);
+    return;
+  }
+
+  free_nick(nick_p);
+  MyFree(nick_p);
+
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    return;
+  }
+
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+
+  if (db_set_founder(parv[1], parv[2]) == 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_FOUNDER), parv[1], parv[2]);
+    global_notice(NULL, "%s (%s@%s) set founder of %s to %s", 
+      client->name, client->username, client->host, parv[1], parv[2]);
+  }
+  else
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_FOUNDER_FAILED), parv[1], parv[2]);
+  }
+  MyFree(regchptr);
+}
+
+
+/*
+ * CHANSERV SET SUCCESSOR
+ */
+static void
+m_set_successor(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+  struct Nick *nick_p;
+
   if ((nick_p = db_find_nick(parv[2])) == NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_REGISTER_NICK), parv[2]);
     return;
   } 
-  else 
-  {
-    MyFree(nick_p);
-  }
 
-  printf ("find channel\n");
+  free_nick(nick_p);
+  MyFree(nick_p);
+
   regchptr = db_find_chan(parv[1]);
   if (regchptr == NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
-    MyFree(regchptr);
-    return;
-  }
-  
-  printf ("compare founder of %s with our client %s  ", regchptr->founder, client->name);
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
-  {
-    printf("user requested wrong channel\n");
-    reply_user(service, client, 
-        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
     return;
   }
 
-  printf("set founder");
-  if (db_set_founder(parv[1], parv[2]) == 0)
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
   {
-    printf ("success\n");
     reply_user(service, client, 
-        _L(chanserv, client, CS_SET_FOUNDER), parv[1], parv[2]);
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    MyFree(regchptr);
+    return;
+  }
+
+  if (db_set_successor(parv[1], parv[2]) == 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_SUCC), parv[1], parv[2]);
+    global_notice(NULL, "%s (%s@%s) set successor of %s to %s", 
+      client->name, client->username, client->host, parv[1], parv[2]);
   }
   else
   {
-    printf ("failed\n");
     reply_user(service, client, 
-        _L(chanserv, client, CS_SET_FOUNDER_FAILED), parv[1], parv[2]);
+        _L(chanserv, client, CS_SET_SUCC_FAILED), parv[1], parv[2]);
   }
+  MyFree(regchptr);
 }
 
 

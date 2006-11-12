@@ -493,11 +493,61 @@ db_set_founder(const char *channel, const char *nickname)
 {
   dbi_result result;
 
+  char *escchannel, *escnick;
+
+  if(dbi_driver_quote_string_copy(Database.driv, nickname, &escnick) == 0)
+  {
+    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
+
+  if(dbi_driver_quote_string_copy(Database.driv, channel, &escchannel) == 0)
+  {
+    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
+    MyFree(escnick);
+    return -1;
+  }
+
   result = db_query("UPDATE %s SET founder="
     "(SELECT id FROM nickname WHERE nick=%s) WHERE channel=%s",
-    "channel", nickname, channel);
+    "channel", escnick, escchannel);
   if (result != NULL)
     MyFree(result);
+
+  MyFree(escnick);
+  MyFree(escchannel);
+
+  return 0;
+}
+
+int
+db_set_successor(const char *channel, const char *nickname)
+{
+  dbi_result result;
+
+  char *escchannel, *escnick;
+
+  if(dbi_driver_quote_string_copy(Database.driv, nickname, &escnick) == 0)
+  {
+    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
+
+  if(dbi_driver_quote_string_copy(Database.driv, channel, &escchannel) == 0)
+  {
+    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
+    MyFree(escnick);
+    return -1;
+  }
+
+  result = db_query("UPDATE %s SET successor="
+    "(SELECT id FROM nickname WHERE nick=%s) WHERE channel=%s",
+    "channel", escnick, escchannel);
+  if (result != NULL)
+    MyFree(result);
+
+  MyFree(escnick);
+  MyFree(escchannel);
 
   return 0;
 }

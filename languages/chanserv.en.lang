@@ -1,20 +1,45 @@
 0 English
-CS_HELP_REG_SHORT Registers a channel for your usage.
-CS_HELP_REG_LONG  Registers a channel for your usage.
-CS_HELP_SHORT     Shows this help.
-CS_HELP_LONG      Shows this help message.  Use HELP <command> for help with a commmand.
-CS_REGISTER_NICK  Nick _%s_ is not registered.
-CS_ALREADY_REG    Channel %s is already registered.
-CS_REG_SUCCESS    Channel %s successfully registered.
-CS_REG_FAIL       Failed to register Channel %s.
-CS_NAMESTART_HASH Channelname needs to start with a hash
-CS_SET_SHORT      (fixme) set something
-CS_SET_LONG       (fixme) set something more
-CS_NOT_ONCHAN     You are not on that Channel
-CS_NOT_OPPED      You are not opped on that Channel
-CS_NOT_REG        Channel %s is not registered
-CS_OWN_CHANNEL_ONLY Channel %s is not registered to you
-CS_REGISTERED     Channel %s has been registered
-CS_REG_FAILED     Registering of Channel %s has failed.
-CS_SET_FOUNDER    Founder of channel %s has been set to %s
-CS_SET_FOUNDER_FAILED  Setting founder of channel %s to %s has failed
+CS_HELP_REG_SHORT
+	Registers a channel for your usage.
+CS_HELP_REG_LONG
+	Registers a channel for your usage.
+CS_HELP_SHORT
+	Shows this help.
+CS_HELP_LONG
+	Shows this help message.  Use HELP <command> for help with a commmand.
+CS_REGISTER_NICK
+	Nick %s is not registered.
+CS_ALREADY_REG
+	Channel %s is already registered.
+CS_REG_SUCCESS
+	Channel %s successfully registered.
+CS_REG_FAIL
+	Failed to register Channel %s.
+CS_NAMESTART_HASH
+	Channelname needs to start with a hash
+CS_SET_SHORT
+	Sets various stati on a channel
+CS_SET_LONG
+	FOUNDER    Sets the Founder of a channel
+	SUCCESSOR  Sets the Successor of a channel
+	PASSWORD   Sets the Password of a channel
+CS_NOT_ONCHAN
+	You are not on that Channel
+CS_NOT_OPPED
+	You are not opped on that Channel
+CS_NOT_REG
+	Channel %s is not registered
+CS_OWN_CHANNEL_ONLY
+	Channel %s is not registered to you
+CS_DROPPED
+	Channel %s has been dropped
+CS_DROP_FAILED
+	Dropping of Channel %s has failed.
+CS_SET_FOUNDER
+	Founder of channel %s has been set to %s
+CS_SET_FOUNDER_FAILED
+	Setting founder of channel %s to %s has failed
+CS_SET_SUCC
+	Successor of channel %s has been set to %s
+CS_SET_SUCC_FAILED
+	Setting successor of channel %s to %s has failed

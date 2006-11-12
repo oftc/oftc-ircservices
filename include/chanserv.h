@@ -25,9 +25,11 @@ struct RegChannel
 #define CS_NOT_OPPED      13
 #define CS_NOT_REG        14
 #define CS_OWN_CHANNEL_ONLY 15
-#define CS_REGISTERED     16
-#define CS_REG_FAILED     17
+#define CS_DROPPED        16
+#define CS_DROP_FAILED    17
 #define CS_SET_FOUNDER    18
 #define CS_SET_FOUNDER_FAILED 19
+#define CS_SET_SUCC       20
+#define CS_SET_SUCC_FAILED 21
 
 #endif
