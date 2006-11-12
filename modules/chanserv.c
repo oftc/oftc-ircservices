@@ -44,6 +44,7 @@ static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_entrymsg(struct Service *, struct Client *, int, char *[]);
 static void m_set_topic(struct Service *, struct Client *, int, char *[]);
+static void m_set_keeptopic(struct Service *, struct Client *, int, char *[]);
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -689,7 +690,7 @@ cs_on_client_join(va_list args)
 
   if ((chptr = hash_find_channel(name)) != NULL)
   {
-    reply_user(chanserv, source_p, chptr->regchptr->entrymsg);
+    reply_user(chanserv, source_p, chptr->regchan->entrymsg);
   }
   else if ((regchptr = db_find_chan(name)) != NULL)
   {
