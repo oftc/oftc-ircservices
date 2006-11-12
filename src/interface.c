@@ -238,6 +238,15 @@ check_list_entry(const char *table, unsigned int id, const char *value)
 }
 
 void
+free_regchan(struct RegChannel *regchptr)
+{
+  MyFree(regchptr->description);
+  MyFree(regchptr->entrymsg);
+  regchptr->description = NULL;
+  regchptr->entrymsg = NULL;
+}
+
+void
 free_nick(struct Nick *nick)
 {
   printf("Freeing nick %p for %s\n", nick, nick->nick);

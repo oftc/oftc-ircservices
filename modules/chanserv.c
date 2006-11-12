@@ -228,6 +228,7 @@ m_register(struct Service *service, struct Client *client,
   if (regchptr != NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_ALREADY_REG), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -259,6 +260,7 @@ m_drop(struct Service *service, struct Client *client,
   if (regchptr == NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -266,6 +268,7 @@ m_drop(struct Service *service, struct Client *client,
   if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
   {
     reply_user(service, client, _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -280,6 +283,7 @@ m_drop(struct Service *service, struct Client *client,
     reply_user(service, client, _L(chanserv, client, CS_DROP_FAILED), parv[1]);
   }
 
+  free_regchan(regchptr);
   MyFree(regchptr);
   return;
 }
@@ -346,6 +350,7 @@ m_set_founder(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -362,6 +367,7 @@ m_set_founder(struct Service *service, struct Client *client,
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_FOUNDER_FAILED), parv[1], parv[2]);
   }
+  free_regchan(regchptr);
   MyFree(regchptr);
 }
 
@@ -396,6 +402,7 @@ m_set_successor(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -412,6 +419,7 @@ m_set_successor(struct Service *service, struct Client *client,
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_SUCC_FAILED), parv[1], parv[2]);
   }
+  free_regchan(regchptr);
   MyFree(regchptr);
 }
 
@@ -440,6 +448,7 @@ m_set_desc(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -462,6 +471,7 @@ m_set_desc(struct Service *service, struct Client *client,
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_DESC_FAILED), parv[1]);
   }
+  free_regchan(regchptr);
   MyFree(regchptr);
 }
 
@@ -485,6 +495,7 @@ m_set_url(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -501,6 +512,7 @@ m_set_url(struct Service *service, struct Client *client,
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_URL_FAILED), parv[1]);
   }
+  free_regchan(regchptr);
   MyFree(regchptr);
 }
 
@@ -524,6 +536,7 @@ m_set_email(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -540,6 +553,7 @@ m_set_email(struct Service *service, struct Client *client,
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_EMAIL_FAILED), parv[1]);
   }
+  free_regchan(regchptr);
   MyFree(regchptr);
 }
 
@@ -564,6 +578,7 @@ m_set_entrymsg(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
     MyFree(regchptr);
     return;
   }
@@ -586,6 +601,7 @@ m_set_entrymsg(struct Service *service, struct Client *client,
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_MSG_FAILED), parv[1]);
   }
+  free_regchan(regchptr);
   MyFree(regchptr);
 }
 
@@ -624,6 +640,7 @@ cs_on_client_join(va_list args)
   if ((regchptr = db_find_chan(name)) != NULL)
   {
     reply_user(chanserv, source_p, regchptr->entrymsg);
+    free_regchan(regchptr);
     MyFree(regchptr);
   }
 

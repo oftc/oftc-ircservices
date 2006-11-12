@@ -45,6 +45,7 @@ int check_nick_pass(struct Nick *, const char *);
 void make_random_string(char *, size_t);
 
 void free_nick(struct Nick *);
+void free_regchan(struct RegChannel *);
 
 struct Service
 {
