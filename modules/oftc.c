@@ -74,7 +74,7 @@ oftc_identify(va_list args)
   
   send_umode(NULL, client, "+R");
 
-  return pass_callback(oftc_identify_hook);
+  return pass_callback(oftc_identify_hook, uplink, client);
 }
 
 static void *
@@ -86,7 +86,7 @@ oftc_sendmsg_gnotice(va_list args)
   
   // 1 is UMODE_ALL, aka UMODE_SERVERNOTICE
   sendto_server(client, ":%s GNOTICE %s 1 :%s", source, source, text);
-  return pass_callback(oftc_gnotice_hook);
+  return pass_callback(oftc_gnotice_hook, client, source, text);
 }
 
 static void *
@@ -100,7 +100,7 @@ oftc_sendmsg_svscloak(va_list args)
       me.name, client->name, cloakstring);
   }
   
-  return pass_callback(oftc_svscloak_hook);
+  return pass_callback(oftc_svscloak_hook, client, cloakstring);
 }
 
 static void *
@@ -112,7 +112,7 @@ oftc_sendmsg_svsmode(va_list args)
 
   sendto_server(client, ":%s SVSMODE %s :%s", me.name, target, mode);
 
-  return pass_callback(oftc_umode_hook);
+  return pass_callback(oftc_umode_hook, client, target, mode);
 }
 
 static void *
@@ -124,5 +124,5 @@ oftc_sendmsg_svsnick(va_list args)
 
   sendto_server(uplink, ":%s SVSNICK %s :%s", me.name, user->name, newnick);
   
-  return pass_callback(oftc_svsnick_hook);
+  return pass_callback(oftc_svsnick_hook, uplink, user, newnick);
 }
