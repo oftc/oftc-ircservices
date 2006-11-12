@@ -878,7 +878,7 @@ cs_on_client_join(va_list args)
   } else
   {
     printf("badbad. Client %s joined non-existing Channel %s\n", 
-        source_p->name, chptr->name);
+        source_p->name, chptr->chname);
   }
 
   return pass_callback(cs_join_hook, source_p, name);
