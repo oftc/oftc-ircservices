@@ -1,41 +1,155 @@
 2 Deutsch(German) 
-NS_ALREADY_REG    Nickname %s ist bereits registristiert.
-NS_REG_COMPLETE   Nickname %s wurde registriert.
-NS_REG_FAIL       Nickname %s konnte nicht registriert werden.
-NS_REG_FIRST      Nickname %s ist nicht registriert.
-NS_IDENTIFIED     Erfolgreich als %s angemeldet.
-NS_IDENT_FAIL     Anmeldung als %s fehlgeschlagen.
-NS_HELP_SHORT     Zeigt diese Hilfe.
-NS_HELP_LONG      Zeigt diese Hilfe. Benutze HELP <command> um Hilfe für ein bestimmtes Kommando zu erhalten.
-NS_HELP_REG_SHORT Registriert einen Nicknamen für dich.
-NS_HELP_REG_LONG  Registriert einen Nicknamen für dich.
-NS_HELP_ID_SHORT  Dich unter deinem Nicknamen anmelden.
-NS_HELP_ID_LONG   Dich unter deinem Nicknamen anmelden.
-NS_CURR_LANGUAGE  Momentane Spracheinstellung: %s (%d).
-NS_AVAIL_LANGUAGE Verfügbare Sprachen sind:
-NS_LANGUAGE_SET   Sprache auf %s (%d) geändert.
-NS_SET_SUCCESS    Dein SET war erfolgreich.
-NS_SET_FAILED     Dein SET ist fehlgeschlagen.
-NS_SET_VALUE      %s wurde auf %s gesetzt
-NS_HELP_DROP_SHORT Löscht deinen Nicknamen.
-NS_HELP_DROP_LONG  Löscht deinen Nicknamen aus der Datenbank. Dieser Vorgang ist nicht rückgaengig zu machen.
-NS_NEED_IDENTIFY  Du musst am Nickserv angemeldet sein.
-NS_NICK_DROPPED   Nickname %s wurde gelöscht.
-NS_NICK_DROPFAIL  Nickname %s konnte nicht gelöscht werden.
-NS_ACCESS_HELP_S  Verwaltung der Nickname Zugriffsliste.
-NS_ACCESS_HELP_LONG Verwaltung der Nickname Zugriffsliste
-NS_ACCESS_ADD     Eintrag %s zur Zugriffsliste hinzugefügt
-NS_ACCESS_ADDFAIL Hinzufügen des Eintrags %szur Zugriffsliste fehlgeschlagen.
-NS_ACCESS_INVALID ACCESS list entry %s is not a userhost. (user@host) XXX TRANSLATE PLEASE XXX
-NS_ACCESS_START   Zugriffsliste:
-NS_ACCESS_ENTRY   %d  %s
-NS_ACCESS_DEL     %d ACCESS entries deleted. (XXX TRANSLATE PLEASE)
-NS_HELP_GHOST_SHORT Terminieren einer verlorenen IRC Sitzung
-NS_HELP_GHOST_LONG Terminieren einer verlorenen IRC Sitzung
-NS_GHOST_SUCCESS  IRC Sitzung fuer %s wurde terminiert
-NS_GHOST_FAILED   Terminierung der IRC Sitzung von %s fehlgeschlagen
-NS_GHOST_NOSELF   Suizid wird nicht unterstützt, %s
-NS_HELP_LINK_SHORT  LINK this nickname to a master nickname.  XXX TRANSLATE ME XXX
-NS_HELP_LINK_LONG   LINK this nickname to a master nickname. XXX TRANSLATE ME XXX
-NS_LINK_NOMASTER    Master nickname %s not registered.  XXX TRANSLATE ME XXX
-NS_LINK_BADPASS     Incorrect password for master nickname %s. XXX TRANSLATE ME XXX
+NS_HELP_SHORT
+	Zeigt diese Hilfe.
+NS_HELP_LONG
+	Zeigt diese Hilfe. Benutze HELP <command> um Hilfe für ein bestimmtes Kommando zu erhalten.
+NS_HELP_REG_SHORT
+	Registriert einen Nicknamen für dich.
+NS_HELP_REG_LONG
+	Benutzung:  REGISTER passwort emailAdresse
+
+	Registriert einen Nicknamen in unserer Datenbank für dich.
+
+	Die email Adresse wird benutzt, wenn du dein Passwort vergisst,
+	du solltest also sicher stellen, dass sie korrekt und gültig ist.
+
+	Wähle ein Passwort, dass leicht zu merken, aber schwer zu erraten ist.
+NS_HELP_ID_SHORT
+	Dich unter deinem Nicknamen anmelden.
+NS_HELP_ID_LONG
+	Benutzung:  IDENTIFY [nickname] passwort
+
+	Identifiziert dich als "Eigner" des Nicks den du gerade benutzt.
+
+	Wenn du den Nicknamen im Kommando angibst, dann wird dein Nick bei
+	erfolgreicher Identifizierung in ebenjenen geändert.
+NS_HELP_DROP_SHORT
+	Löscht deinen Nicknamen aus unserer Datenbank.
+NS_HELP_DROP_LONG
+	Benutzung:  DROP
+
+	Löscht deinen Nicknamen aus unserer Datenbank. 
+	Dieser Vorgang ist nicht rückgaengig zu machen.
+NS_HELP_ACCESS_SHORT
+	Administriert deine Zugriffsliste.
+NS_HELP_ACCESS_LONG
+	Benutzung:  ACCESS ADD mask
+	            ACCESS DEL mask
+		    ACCESS LIST
+	
+	Administriert deine Zugriffsliste.  Wenn dein IRC user@host einen
+	Eintrag in der Zugriffsliste matcht, dann wirst du automatisch
+	identifiziert, ohne dass du dich manuell identifizieren musst.
+
+	Beispiele:
+	            ACCESS ADD foo@*.org
+		    ACCESS DEL foo@*.org
+		    ACCESS DEL 1
+		    ACCESS LIST
+NS_HELP_SET_SHORT
+	Setzt Eigenschaften deines registrierten Nicknamen.
+NS_HELP_SET_LONG
+	Setzt Eigenschaften deines registrierten Nicknamen.
+NS_HELP_GHOST_SHORT
+	Terminiert eine verloren gegangene IRC Sitzung.
+NS_HELP_GHOST_LONG
+	Terminiert eine verloren gegangene IRC Sitzung.
+NS_HELP_LINK_SHORT
+	Verlinkt diesen Nicknamen mit einem Haupt-Nicknamen
+NS_HELP_LINK_LONG
+	Verlinkt diesen Nicknamen mit einem Haupt-Nicknamen
+NS_HELP_UNLINK_SHORT
+	Hebt eine Verlinkung von diesem mit einem Haupt-Nicknamen auf.
+NS_HELP_UNLINK_LONG
+	Hebt eine Verlinkung von diesem mit einem Haupt-Nicknamen auf.
+NS_HELP_RECOVER_SHORT
+	Recover (S)
+NS_HELP_RECOVE_LONG
+	Recover (L)
+NS_HELP_RELEASE_SHORT
+	Gibt den Nick wieder für deine Benutzung frei.
+NS_HELP_RELEASE_LONG
+	Gibt den Nick wieder für deine Benutzung frei.
+NS_HELP_SUSPEND_SHORT
+	Blockiert einen Nicknamen vor der Benutzung.
+NS_HELP_SUSPEND_LONG
+	Blockiert einen Nicknamen vor der Benutzung.
+NS_HELP_FORBID_SHORT
+	Verbietet dauerhaft die Benutzung eines Nicknamen.
+NS_HELP_FORBID_LONG
+	Verbietet dauerhaft die Benutzung eines Nicknamen.
+NS_HELP_INFO_SHORT
+	Zeigt Informationen über einen registrierten Nicknamen an.
+NS_HELP_INFO_LONG
+	Zeigt Informationen über einen registrierten Nicknamen an.
+NS_HELP_SENDPASS_SHORT
+	Sendet einen Passwort Reset Request.
+NS_HELP_SENDPASS_LONG
+	Sendet einen Passwort Reset Request.
+NS_ALREADY_REG
+	Nickname %s ist bereits registriert.
+NS_REG_COMPLETE
+	Nickname %s wurde registriert.
+NS_REG_FAIL
+	Registration des Nicknamen %s ist gescheitert.
+NS_REG_FIRST
+	Nickname %s ist nicht registriert.
+NS_IDENTIFIED
+	Du hast dich erfolgreich als %s identifiziert.
+NS_IDENT_FAIL
+	Identifizierung als %s fehlgeschlagen
+NS_CURR_LANGUAGE
+	Momentane Spracheinstellung ist: %s (%d)
+NS_AVAIL_LANGUAGE
+	Verfügbare Sprachen sind:
+NS_LANGUAGE_SET
+	Sprache auf %s (%d) gesetzt
+NS_SET_SUCCESS
+	%s erfolgreich auf %s gesetzt
+NS_SET_FAILED
+	%s konnte nicht %s gesetzt werden.
+NS_SET_VALUE
+	%s ist auf %s gesetzt
+NS_NEED_IDENTIFY
+	Du musst dich zuerst bei Nickserv anmelden (siehe HELP IDENTIFY)
+NS_NICK_DROPPED
+	Nickname %s wurde aus unserer Datenbank gelöscht
+NS_NICK_DROPFAIL
+	Nickname %s konnte nicht aus unserer Datenbank gelöscht werden
+NS_ACCESS_ADD
+	Eintrag %s wurde in die Zugriffsliste übernommen.
+NS_ACCESS_ADDFAIL
+	Eintrag %s konnte nicht in die Zugriffsliste übernommen werden.
+NS_ACCESS_INVALID
+	%s ist kein gültiger Eintrag in der Zugriffsliste (kein user@host)
+NS_ACCESS_START
+	Zugriffsliste:
+NS_ACCESS_ENTRY
+	%2d: %s
+NS_ACCESS_DEL
+	%d Einträge aus der Zugriffsliste gelöscht.
+NS_GHOST_SUCCESS
+	Sitzung von %s erfolgreich terminiert.
+NS_GHOST_FAILED
+	Sitzung von %s konnte nicht terminiert werden.
+NS_GHOST_NOSELF
+	Du solltest deine eigene Sitzung nicht terminieren, %s.
+NS_LINK_NOMASTER
+	Nickname %s nicht registriert.
+NS_LINK_BADPASS
+	Falsches Passwort für Nicknamen %s
+NS_LINK_FAIL
+	Konnte deinen Nicknamen nicht zum Haupt-Nicknamen %s verlinken.
+NS_LINK_OK
+	Nickname %s ist jetzt mit dem Haupt-Nicknamen %s verlinkt.
+NS_UNLINK_FAILED
+	Nickname %s konnte nicht vom Haupt-Nicknamen gelöst werden.
+NS_UNLINK_OK
+	Nickname %s wurde vom Haupt-Nicknamen gelöst
+NS_UNLINK_NOLINK
+	Nickname %s ist nicht verlinkt.
+NS_INFO
+	Zeitpunkt der Registrierung:  %s
+	      Letzte QUIT Nachricht:  %s
+	 Zeitpunkt des letzten QUIT:  %s
+	              eMail Adresse:  %s
