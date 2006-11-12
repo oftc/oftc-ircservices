@@ -858,19 +858,18 @@ ns_on_newuser(va_list args)
   
   printf("New User: %s!\n", newuser->name);
 
+  if((nick_p = db_find_nick(newuser->name)) == NULL)
+  {
+    printf("New user: %s(nick not registered)\n", newuser->name);
+    return pass_callback(ns_nick_hook, newuser);
+  }
+
   if(IsIdentified(newuser))
   {
     reply_user(nickserv, newuser, _L(nickserv, newuser, NS_NICK_AUTOID),
         newuser->name);
     newuser->nickname = nick_p;
     identify_user(newuser);
-    return pass_callback(ns_nick_hook, newuser);
-  }
- 
-
-  if((nick_p = db_find_nick(newuser->name)) == NULL)
-  {
-    printf("New user: %s(nick not registered)\n", newuser->name);
     return pass_callback(ns_nick_hook, newuser);
   }
 
