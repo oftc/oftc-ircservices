@@ -23,32 +23,32 @@ struct RegChannel
 #define CHSET_LEAVEOPS   0x40
 #define CHSET_VERBOSE    0x80
 
-#define  SetKeeptopic(x)    ((x)->flags |= CHSET_KEEPTOPIC)
-#define  SetTopiclock(x)    ((x)->flags |= CHSET_TOPICLOCK)
-#define  SetPrivate(x)      ((x)->flags |= CHSET_PRIVATE)
-#define  SetRestricted(x)   ((x)->flags |= CHSET_RESTRICTED)
-#define  SetSecure(x)       ((x)->flags |= CHSET_SECURE)
-#define  SetSecureops(x)    ((x)->flags |= CHSET_SECUREOPS)
-#define  SetLeaveops(x)     ((x)->flags |= CHSET_LEAVEOPS)
-#define  SetVerbose(x)      ((x)->flags |= CHSET_VERBOSE)
+#define  SetChanKeeptopic(x)    ((x)->flags |= CHSET_KEEPTOPIC)
+#define  SetChanTopiclock(x)    ((x)->flags |= CHSET_TOPICLOCK)
+#define  SetChanPrivate(x)      ((x)->flags |= CHSET_PRIVATE)
+#define  SetChanRestricted(x)   ((x)->flags |= CHSET_RESTRICTED)
+#define  SetChanSecure(x)       ((x)->flags |= CHSET_SECURE)
+#define  SetChanSecureops(x)    ((x)->flags |= CHSET_SECUREOPS)
+#define  SetChanLeaveops(x)     ((x)->flags |= CHSET_LEAVEOPS)
+#define  SetChanVerbose(x)      ((x)->flags |= CHSET_VERBOSE)
 
-#define  ClearKeeptopic(x)    ((x)->flags &= ~CHSET_KEEPTOPIC)
-#define  ClearTopiclock(x)    ((x)->flags &= ~CHSET_TOPICLOCK)
-#define  ClearPrivate(x)      ((x)->flags &= ~CHSET_PRIVATE)
-#define  ClearRestricted(x)   ((x)->flags &= ~CHSET_RESTRICTED)
-#define  ClearSecure(x)       ((x)->flags &= ~CHSET_SECURE)
-#define  ClearSecureops(x)    ((x)->flags &= ~CHSET_SECUREOPS)
-#define  ClearLeaveops(x)     ((x)->flags &= ~CHSET_LEAVEOPS)
-#define  ClearVerbose(x)      ((x)->flags &= ~CHSET_VERBOSE)
+#define  ClearChanKeeptopic(x)    ((x)->flags &= ~CHSET_KEEPTOPIC)
+#define  ClearChanTopiclock(x)    ((x)->flags &= ~CHSET_TOPICLOCK)
+#define  ClearChanPrivate(x)      ((x)->flags &= ~CHSET_PRIVATE)
+#define  ClearChanRestricted(x)   ((x)->flags &= ~CHSET_RESTRICTED)
+#define  ClearChanSecure(x)       ((x)->flags &= ~CHSET_SECURE)
+#define  ClearChanSecureops(x)    ((x)->flags &= ~CHSET_SECUREOPS)
+#define  ClearChanLeaveops(x)     ((x)->flags &= ~CHSET_LEAVEOPS)
+#define  ClearChanVerbose(x)      ((x)->flags &= ~CHSET_VERBOSE)
 
-#define  IsKeeptopic(x)    ((x)->flags & CHSET_KEEPTOPIC)
-#define  IsTopiclock(x)    ((x)->flags & CHSET_TOPICLOCK)
-#define  IsPrivate(x)      ((x)->flags & CHSET_PRIVATE)
-#define  IsRestricted(x)   ((x)->flags & CHSET_RESTRICTED)
-#define  IsSecure(x)       ((x)->flags & CHSET_SECURE)
-#define  IsSecureops(x)    ((x)->flags & CHSET_SECUREOPS)
-#define  IsLeaveops(x)     ((x)->flags & CHSET_LEAVEOPS)
-#define  IsVerbose(x)      ((x)->flags & CHSET_VERBOSE)
+#define  IsChanKeeptopic(x)    ((x)->flags & CHSET_KEEPTOPIC)
+#define  IsChanTopiclock(x)    ((x)->flags & CHSET_TOPICLOCK)
+#define  IsChanPrivate(x)      ((x)->flags & CHSET_PRIVATE)
+#define  IsChanRestricted(x)   ((x)->flags & CHSET_RESTRICTED)
+#define  IsChanSecure(x)       ((x)->flags & CHSET_SECURE)
+#define  IsChanSecureops(x)    ((x)->flags & CHSET_SECUREOPS)
+#define  IsChanLeaveops(x)     ((x)->flags & CHSET_LEAVEOPS)
+#define  IsChanVerbose(x)      ((x)->flags & CHSET_VERBOSE)
 
 #define CS_HELP_REG_SHORT 1
 #define CS_HELP_REG_LONG  2
@@ -96,5 +96,7 @@ struct RegChannel
 #define CS_SET_TOPIC_LONG     43
 #define CS_SET_TOPIC          44
 #define CS_SET_TOPIC_FAILED   45
+#define CS_SET_KEEPTOPIC      46
+#define CS_SET_KEEPTOPIC_FAILED 47
 
 #endif

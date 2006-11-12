@@ -435,13 +435,28 @@ db_chan_set_string(unsigned int id, const char *key, const char *value)
   return 0;
 }
 
+int
+db_chan_set_number(unsigned int id, const char *key, const unsigned long value)
+{
+  dbi_result result;
+
+  if((result = db_query("UPDATE %s SET %s=%ld WHERE id=%d", 
+          "channel", key, value, id)) == NULL)
+  {
+    return -1;
+  }
+
+  dbi_result_free(result);
+
+  return 0;
+}
+
 struct RegChannel *
 db_find_chan(const char *channel)
 {
   dbi_result result;
   char *escchannel = NULL;
   char *findchannel; char *findfounder;
-  char *description, *entrymsg;
   struct RegChannel *channel_p;
   
   assert(channel != NULL);
@@ -479,8 +494,6 @@ db_find_chan(const char *channel)
 
   MyFree(findchannel);
   MyFree(findfounder);
-  MyFree(description);
-  MyFree(entrymsg);
 
   return channel_p;
 }

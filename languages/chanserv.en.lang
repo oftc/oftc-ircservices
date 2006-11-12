@@ -91,3 +91,7 @@ CS_SET_TOPIC
                 XXX FIXME XXX %s : %s
 CS_SET_TOPIC_FAILED
                 XXX FIXME XXX %s
+CS_SET_KEEPTOPIC
+                XXX FIXME XXX %s : %s
+CS_SET_KEEPTOPIC_FAILED
+                XXX FIXME XXX %s

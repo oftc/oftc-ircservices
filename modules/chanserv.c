@@ -655,6 +655,66 @@ m_set_topic(struct Service *service, struct Client *client,
   MyFree(regchptr);
 }
 
+/*
+ * CHANSERV SET KEEPTOPIC
+ */
+static void
+m_set_keeptopic(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct RegChannel *regchptr;
+
+  regchptr = db_find_chan(parv[1]);
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+    return;
+  }
+
+  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    free_regchan(regchptr);
+    MyFree(regchptr);
+    return;
+  }
+
+  if ( strncmp(parv[2], "ON", strlen(parv[2])) == 0 )
+  {
+    SetChanKeeptopic(regchptr);
+  }
+  else if ( strncmp(parv[2], "OFF", strlen(parv[2])) == 0 )
+  {
+    ClearChanKeeptopic(regchptr);
+  }
+  else
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_TOPIC_LONG));
+
+    free_regchan(regchptr);
+    MyFree(regchptr);
+    return;
+  }
+
+  if (db_chan_set_number(db_get_id_from_chan(parv[1]), "flags", regchptr->flags) == 0 )
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_KEEPTOPIC), parv[1], parv[2]);
+    global_notice(NULL, "%s (%s@%s) set KeepTopic %s on %s", 
+      client->name, client->username, client->host, parv[2], parv[1]);
+  }
+  else
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_KEEPTOPIC_FAILED), parv[1]);
+  }
+  free_regchan(regchptr);
+  MyFree(regchptr);
+}
+
+
 
 
 /*
@@ -690,11 +750,13 @@ cs_on_client_join(va_list args)
 
   if ((chptr = hash_find_channel(name)) != NULL)
   {
-    reply_user(chanserv, source_p, chptr->regchan->entrymsg);
+    if (( chptr->regchan != NULL) && (chptr->regchan->entrymsg != NULL))
+      reply_user(chanserv, source_p, chptr->regchan->entrymsg);
   }
   else if ((regchptr = db_find_chan(name)) != NULL)
   {
-    reply_user(chanserv, source_p, regchptr->entrymsg);
+    if (regchptr->entrymsg != NULL)
+      reply_user(chanserv, source_p, regchptr->entrymsg);
     free_regchan(regchptr);
     MyFree(regchptr);
   }
