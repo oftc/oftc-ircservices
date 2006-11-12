@@ -25,19 +25,23 @@ struct Nick
 /* Nick flags */
 #define NS_FLAG_ENFORCE       0x0000001
 #define NS_FLAG_SECURE        0x0000002
+#define NS_FLAG_CLOAK         0x0010000
 #define NS_FLAG_ADMIN         0x1000000
 
 #define IsServAdmin(x)        ((x)->nickname->flags & NS_FLAG_ADMIN)
 #define IsNickSecure(x)       ((x)->flags & NS_FLAG_SECURE)
 #define IsNickEnforce(x)      ((x)->flags & NS_FLAG_ENFORCE)
+#define IsNickCloak(x)        ((x)->flags & NS_FLAG_CLOAK)
 
 #define SetServAdmin(x)       ((x)->nickname->flags |= NS_FLAG_ADMIN)
 #define SetNickSecure(x)      ((x)->flags |= NS_FLAG_SECURE)
 #define SetNickEnforce(x)     ((x)->flags |= NS_FLAG_ENFORCE)
+#define SetNickCloak(x)       ((x)->flags |= NS_FLAG_CLOAK)
 
 #define ClearServAdmin(x)     ((x)->nickname->flags &= ~NS_FLAG_ADMIN)
 #define ClearNickSecure(x)    ((x)->flags &= ~NS_FLAG_SECURE)
 #define ClearNickEnforce(x)   ((x)->flags &= ~NS_FLAG_ENFORCE)
+#define ClearNickCloak(x)     ((x)->flags &= ~NS_FLAG_CLOAK)
 
 /* Language defines */
 

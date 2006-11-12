@@ -60,6 +60,8 @@ static void m_set_enforce(struct Service *, struct Client *, int, char *[]);
 static void m_set_secure(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
+static void m_set_cloak(struct Service *, struct Client *, int, char *[]);
+static void m_set_cloakstring(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
@@ -84,14 +86,16 @@ static struct ServiceMessage drop_msgtab = {
   { m_unreg, m_drop, m_drop, m_drop }
 };
 
-static struct SubMessage set_sub[7] = {
-  { "LANGUAGE", 0, 0, -1, -1, m_set_language },
-  { "PASSWORD", 0, 1, -1, -1, m_set_password },
-  { "URL"     , 0, 0, -1, -1, m_set_url},
-  { "EMAIL"   , 0, 0, -1, -1, m_set_email},
-  { "ENFORCE" , 0, 0, -1, -1, m_set_enforce},
-  { "SECURE"  , 0, 0, -1, -1, m_set_secure},
-  { "NULL"    , 0, 0, 0, 0, NULL }
+static struct SubMessage set_sub[9] = {
+  { "LANGUAGE"    , 0, 0, -1, -1, m_set_language },
+  { "PASSWORD"    , 0, 1, -1, -1, m_set_password },
+  { "URL"         , 0, 0, -1, -1, m_set_url},
+  { "EMAIL"       , 0, 0, -1, -1, m_set_email},
+  { "ENFORCE"     , 0, 0, -1, -1, m_set_enforce},
+  { "SECURE"      , 0, 0, -1, -1, m_set_secure},
+  { "CLOAK"       , 0, 0, -1, -1, m_set_cloak},
+  { "CLOAKSTRING" , 0, 0, -1, -1, m_set_cloakstring},
+  { "NULL"        , 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -432,24 +436,64 @@ static void
 m_set_cloak(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-/*
- * XXX
- * char *nick = parv[1];
-  char *cloak = parv[2];
+  struct Nick *nick = client->nickname;
+  unsigned int newflags = nick->flags;
+  
+  if(parc == 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "CLOAK", 
+        IsNickCloak(nick) ? "ON" : "OFF");
+    return;
+  }
 
-  struct Nick *nick_p;
-  nick_p = db_find_nick(nick);
+  if(strcasecmp(parv[1], "ON") == 0)
+  {
+    newflags |= NS_FLAG_CLOAK;
+  }
+  else if(strcasecmp(parv[1], "OFF") == 0)
+  {
+    newflags &= ~NS_FLAG_CLOAK;
+  }
+  else
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), "CLOAK", 
+        IsNickCloak(nick) ? "ON" : "OFF");
+    return;
+  }
 
-  if (nick_p != NULL) {
-    if (db_set_cloak(nick_p, cloak) == 0) {
-      reply_user(service, client, _L(operserv, client, OS_CLOAK_SET), cloak);
-    } else {
-      reply_user(service, client, _L(operserv, client, OS_CLOAK_FAILED), cloak, nick);
-    }
-    MyFree (nick_p);
-  } else {
-    reply_user(service, client, _L(operserv, client, OS_NICK_NOT_REG), nick);
-  }*/
+  if(db_nick_set_number(nick->id, "flags", newflags) == 0)
+  {
+    nick->flags = newflags;
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
+        "CLOAK", IsNickCloak(nick) ? "ON" : "OFF");
+  }
+  else
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
+        "CLOAK", parv[1]);
+}
+static void
+m_set_cloakstring(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+  struct Nick *nick = client->nickname;
+  /* XXX This needs to be admin only, but the admin stuff isnt done yet */
+  
+  if(parc == 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), 
+        "CLOAKSTRING", nick->cloak);
+    return;
+  }
+    
+  if(db_nick_set_string(nick->id, "cloak", parv[1]) == 0)
+  {
+    strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
+    reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
+        "CLOAKSTRING", nick->email);
+  }
+  else
+    reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
+        "CLOAKSTRING", parv[1]);
 }
 
 static void

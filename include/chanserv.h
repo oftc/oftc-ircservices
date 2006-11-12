@@ -14,14 +14,14 @@ struct RegChannel
 };
 
 /* channel flag defines */
-#define CHSET_KEEPTOPIC  0x01
-#define CHSET_TOPICLOCK  0x02
-#define CHSET_PRIVATE    0x04
-#define CHSET_RESTRICTED 0x08
-#define CHSET_SECURE     0x10
-#define CHSET_SECUREOPS  0x20
-#define CHSET_LEAVEOPS   0x40
-#define CHSET_VERBOSE    0x80
+#define CHSET_KEEPTOPIC  0x00000001
+#define CHSET_SECUREOPS  0x00000002
+#define CHSET_PRIVATE    0x00000004
+#define CHSET_TOPICLOCK  0x00000008
+#define CHSET_RESTRICTED 0x00000010
+#define CHSET_LEAVEOPS   0x00000020
+#define CHSET_SECURE     0x00000040
+#define CHSET_VERBOSE    0x00000800
 
 #define  SetChanKeeptopic(x)    ((x)->flags |= CHSET_KEEPTOPIC)
 #define  SetChanTopiclock(x)    ((x)->flags |= CHSET_TOPICLOCK)
