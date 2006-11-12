@@ -320,12 +320,6 @@ make_random_string(char *buffer, size_t length)
 }
 
 void
-chain_umode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
-{
-  execute_callback(on_umode_change_cb, client_p, source_p, parc, parv);
-}
-
-void
 chain_cmode(struct Client *client_p, struct Client *source_p, struct Channel *chptr, int parc, char *parv[])
 {
   execute_callback(on_cmode_change_cb, client_p, source_p, chptr, parc, parv);

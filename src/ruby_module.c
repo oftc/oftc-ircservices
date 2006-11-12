@@ -608,13 +608,17 @@ rb_cmode_hdlr(va_list args)
     }
   }
 
-  pass_callback(ruby_cmode_hook);
-  return (void *)0;
+  return pass_callback(ruby_cmode_hook, client_p, source_p, chptr, parc, parv);
 }
 
 static void*
 rb_umode_hdlr(va_list args)
 {
+  struct Client *user = va_arg(args, struct Client *);
+  int what = va_arg(args, int);
+  int mode = va_arg(args, int);
+#if 0
+  XXX NEEDS UPDATING: NEW FORMAT: Client WHAT MODE
   struct Client *client_p = va_arg(args, struct Client*);
   struct Client *source_p = va_arg(args, struct Client*);
   int            parc     = va_arg(args, int);
@@ -654,9 +658,9 @@ rb_umode_hdlr(va_list args)
       }
     }
   }
-
-  pass_callback(ruby_umode_hook);
-  return (void *)0;
+  
+#endif
+  return pass_callback(ruby_umode_hook, user, what, mode);
 }
 
 int

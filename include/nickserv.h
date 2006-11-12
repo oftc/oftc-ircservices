@@ -109,6 +109,6 @@ struct Nick
 #define NS_INFO                 62
 #define NS_NICK_IN_USE          63
 #define NS_NICK_IN_USE_IWILLCHANGE 64
+#define NS_NICK_AUTOID          65
 
-  
 #endif

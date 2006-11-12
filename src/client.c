@@ -61,7 +61,7 @@ unsigned int user_modes[256] =
   0,                  /* O */
   0,                  /* P */
   0,                  /* Q */
-  0,                  /* R */
+  UMODE_IDENTIFIED,   /* R */
   0,                  /* S */
   0,                  /* T */
   0,                  /* U */
@@ -578,6 +578,7 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
               printf("Setting %s!%s@%s as oper\n", source_p->name,
                   source_p->username, source_p->host);
               SetOper(source_p);
+              execute_callback(on_umode_change_cb, source_p, what, UMODE_OPER);
             }
           }
           else
@@ -589,7 +590,7 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
               break;
 
             ClearOper(source_p);
-
+            execute_callback(on_umode_change_cb, source_p, what, UMODE_OPER);
           }
 
           break;
@@ -603,19 +604,15 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
         case '\t':
           break;
 
-
         default:
           if ((flag = user_modes[(unsigned char)*m]))
           {
-/*            else
-              execute_callback(umode_cb, client_p, source_p, what, flag);*/
+            execute_callback(on_umode_change_cb, source_p, what, flag);
           }
           break;
       }
     }
   }
-
-  //send_umode_out(client_p, source_p, setflags);
 }
 
 /* register_remote_user()
@@ -723,6 +720,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
         flag = user_modes[(unsigned char)*m];
 
         source_p->umodes |= flag;
+        execute_callback(on_umode_change_cb, source_p, MODE_ADD, flag);
         printf("Setting umode %c on %s\n", *m, source_p->name);
         m++;
       }

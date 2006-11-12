@@ -784,15 +784,12 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 static void*
 ns_on_umode_change(va_list args) 
 {
-/*  struct Client *client_p = va_arg(args, struct Client*);
-  struct Client *source_p = va_arg(args, struct Client*);
-  int            parc     = va_arg(args, int);
-  char         **parv     = va_arg(args, char**);
-  */  
-  /// actually do stuff....
-    
-  // last function to call to pass the hook further to other hooks
-  return pass_callback(ns_umode_hook);
+  struct Client *user = va_arg(args, struct Client *);
+  int what            = va_arg(args, int);
+  int umode           = va_arg(args, int);
+
+  printf("Got %d %d from %s\n", what, umode, user->name);
+  return pass_callback(ns_nick_hook, user, what, umode);
 }
 
 static void *
@@ -818,7 +815,7 @@ ns_on_nick_change(va_list args)
   if((nick_p = db_find_nick(user->name)) == NULL)
   {
     printf("Nick Change: %s->%s(nick not registered)\n", oldnick, user->name);
-    return pass_callback(ns_nick_hook);
+    return pass_callback(ns_nick_hook, user, oldnick);
   }
 
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
@@ -849,7 +846,7 @@ ns_on_nick_change(va_list args)
     printf("%s changed nick to %s(no access entry)\n", oldnick, user->name);
   }
   
-  return pass_callback(ns_nick_hook);
+  return pass_callback(ns_nick_hook, user, oldnick);
 }
 
 static void *
@@ -861,10 +858,20 @@ ns_on_newuser(va_list args)
   
   printf("New User: %s!\n", newuser->name);
 
+  if(IsIdentified(newuser))
+  {
+    reply_user(nickserv, newuser, _L(nickserv, newuser, NS_NICK_AUTOID),
+        newuser->name);
+    newuser->nickname = nick_p;
+    identify_user(newuser);
+    return pass_callback(ns_nick_hook, newuser);
+  }
+ 
+
   if((nick_p = db_find_nick(newuser->name)) == NULL)
   {
     printf("New user: %s(nick not registered)\n", newuser->name);
-    return pass_callback(ns_nick_hook);
+    return pass_callback(ns_nick_hook, newuser);
   }
 
   snprintf(userhost, USERHOSTLEN, "%s@%s", newuser->username, 
@@ -896,5 +903,5 @@ ns_on_newuser(va_list args)
     printf("new user:%s(no access entry)\n", newuser->name);
   }
   
-  return pass_callback(ns_nick_hook);
+  return pass_callback(ns_nick_hook, newuser);
 }
