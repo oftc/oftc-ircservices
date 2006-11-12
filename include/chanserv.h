@@ -8,8 +8,8 @@ struct RegChannel
   unsigned int id;
   char founder[NICKLEN+1];
   char channel[CHANNELLEN+1];
-  char description[512]; // XXX badbad, mkay?
-  char entrymsg[512]; 
+  char *description;
+  char *entrymsg; 
 };
 
 #define CS_HELP_REG_SHORT 1
