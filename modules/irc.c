@@ -617,6 +617,7 @@ m_ping(struct Client *client, struct Client *source, int parc, char *parv[])
 static void
 m_server(struct Client *client, struct Client *source, int parc, char *parv[])
 {
+  printf("baa\n");
   if(IsConnecting(client))
   {
     sendto_server(client, "SVINFO 5 5 0: %lu", CurrentTime);

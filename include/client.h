@@ -3,6 +3,7 @@
 
 extern dlink_list global_client_list;
 extern dlink_list global_server_list;
+EXTERN unsigned int user_modes[];
 
 #define FLAGS_PINGSENT      0x00000001UL /* Unreplied ping sent*/
 #define FLAGS_DEADSOCKET    0x00000002UL /* Local socket is dead--Exiting soon*/
@@ -108,6 +109,7 @@ struct Client
 
   char          name[HOSTLEN+1];
   char          host[HOSTLEN+1];
+  char          sockhost[HOSTLEN+1];
   char          id[IDLEN + 1];      /* client ID, unique ID per client */
   char          info[REALLEN + 1];  /* Free form additional client info */
   char          username[USERLEN + 1];

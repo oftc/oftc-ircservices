@@ -185,6 +185,7 @@ parse(struct Client *client, char *pbuffer, char *bufend)
        * XXX it could be useful to know which of these occurs most frequently.
        * the ID check should always come first, though, since it is so easy.
        */
+
       if ((from = find_person(client, sender)) == NULL)
       {
         from = find_server(sender);
@@ -572,7 +573,7 @@ mod_add_cmd(struct Message *msg)
 
   /* command already added? */
   if ((found_msg = msg_tree_parse(msg->cmd, &irc_msg_tree)) != NULL)
-    return;
+    del_msg_element(&irc_msg_tree, msg->cmd);
 
   add_msg_element(&irc_msg_tree, msg, msg->cmd);
   msg->count = msg->rcount = msg->bytes = 0;
