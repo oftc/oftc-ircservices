@@ -747,7 +747,6 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Nick *nick;
   char regtime[IRC_BUFSIZE/2+1];
   char quittime[IRC_BUFSIZE/2+1];
-  struct tm *reg, *quit;
 
   if(parc == 0)
   {
@@ -773,15 +772,11 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     }
   }
 
-  reg = gmtime(&nick->reg_time);
-  quit = gmtime(&nick->last_quit_time);
-  
-  strftime(regtime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", reg);
-  strftime(quittime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", quit);
-
-  MyFree(reg);
-  MyFree(quit);
-
+  strftime(regtime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", 
+      gmtime(&nick->reg_time));
+  strftime(quittime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", 
+      gmtime(&nick->last_quit_time));
+      
   reply_user(service, client, _L(nickserv, client, NS_INFO), regtime, 
       nick->last_quit, quittime, nick->email);
   
