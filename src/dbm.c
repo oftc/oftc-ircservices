@@ -461,7 +461,7 @@ db_find_chan(const char *channel)
 {
   dbi_result result;
   char *escchannel = NULL;
-  char *findchannel; char *findfounder;
+  char *findchannel;
   struct RegChannel *channel_p;
   
   assert(channel != NULL);
@@ -472,11 +472,10 @@ db_find_chan(const char *channel)
     return NULL;
   }
 
-  result = db_query("SELECT %s.id, channel, description, entrymsg, channel.flags, nickname.nick FROM %s "
-          "INNER JOIN %s ON %s.founder=%s.id WHERE channel=%s", 
-          "channel", "channel", "nickname", "channel", "nickname", 
-          escchannel);
- 
+  result = db_query(
+    "SELECT id, channel, description, entrymsg, flags, url, email, topic, "
+    "founder, successor FROM channel WHERE channel=%s", escchannel);
+
   MyFree(escchannel);
   
   if(result == NULL)
@@ -490,15 +489,17 @@ db_find_chan(const char *channel)
 
   channel_p = MyMalloc(sizeof(struct RegChannel));
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui channel.%S description.%S entrymsg.%S flags.%ui nick.%S",
+  dbi_result_get_fields(result, 
+      "id.%ui channel.%S description.%S entrymsg.%S flags.%ui "
+      "url.%S email.%S topic.%S founder.%ui successor.%ui",
       &channel_p->id, &findchannel, &channel_p->description, 
-      &channel_p->entrymsg, &channel_p->flags, &findfounder);
+      &channel_p->entrymsg, &channel_p->flags, &channel_p->url,
+      &channel_p->email, &channel_p->topic, &channel_p->founder, 
+      &channel_p->successor);
 
   strlcpy(channel_p->channel, findchannel, sizeof(channel_p->channel));
-  strlcpy(channel_p->founder, findfounder, sizeof(channel_p->founder));
 
   MyFree(findchannel);
-  MyFree(findfounder);
 
   return channel_p;
 }
@@ -506,13 +507,10 @@ db_find_chan(const char *channel)
 int
 db_register_chan(struct Client *client, char *channelname)
 {
-  struct RegChannel *channel;
   char *escchannel = NULL;
   char *escfounder = NULL;
   dbi_result result;
   
-  assert(channel != NULL);
-
   if(dbi_driver_quote_string_copy(Database.driv, channelname, &escchannel) == 0)
   {
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");

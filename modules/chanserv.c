@@ -61,6 +61,7 @@ static void m_not_avail(struct Service *, struct Client *, int, char *[]);
 
 /* private */
 int m_set_flag(struct Service *, struct Client *, char *, char *, int, char *);
+struct Channel *cs_find_chan(struct Service *, struct Client *, char *);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, CS_HELP_REG_SHORT, CS_HELP_REG_LONG,
@@ -217,6 +218,8 @@ m_register(struct Service *service, struct Client *client,
   struct Channel    *chptr;
   struct RegChannel *regchptr;
 
+  assert(parv[1]);
+
   // Bail out if channelname does not start with a hash
   if ( *parv[1] != '#' )
   {
@@ -271,22 +274,16 @@ static void
 m_drop(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  struct Channel *chptr;
 
-  regchptr = db_find_chan(parv[1]);
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
+  assert(parv[1]);
+
+  if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
     return;
-  }
   
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  if (chptr->regchan->founder != client->nickname->id)
   {
     reply_user(service, client, _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
     return;
   }
 
@@ -295,13 +292,14 @@ m_drop(struct Service *service, struct Client *client,
     reply_user(service, client, _L(chanserv, client, CS_DROPPED), parv[1]);
     global_notice(NULL, "%s (%s@%s) dropped channel %s", 
       client->name, client->username, client->host, parv[1]);
+
+    free_regchan(chptr->regchan);
+    MyFree(chptr->regchan);
+    chptr->regchan = NULL;
   } else
   {
     reply_user(service, client, _L(chanserv, client, CS_DROP_FAILED), parv[1]);
   }
-
-  free_regchan(regchptr);
-  MyFree(regchptr);
   return;
 }
 
@@ -310,7 +308,8 @@ static void
 m_not_avail(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, client, "This function is currently not implemented.  Bug the Devs! ;-)");
+  reply_user(service, client, "This function is currently not implemented."
+    "   Bug the Devs! ;-)");
 }
 
 
@@ -321,6 +320,7 @@ static void
 m_help(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  assert(parv[1]);
   do_help(service, client, parv[1], parc, parv);
 }
 
@@ -343,8 +343,26 @@ static void
 m_set_founder(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  struct Channel *chptr;
   struct Nick *nick_p;
+
+  if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
+    return;
+
+  if (chptr->regchan->founder != client->nickname->id)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    return;
+  }
+
+  if (parc < 2)
+  {
+    // XXX
+    // reply_user(service, client, 
+    //    _L(chanserv, client, CS_SET_FOUNDER), parv[1], chptr->regchan->founder);
+    return;
+  }
 
   /* we need to consult the db, since the nick may not be online -mc */
   if ((nick_p = db_find_nick(parv[2])) == NULL)
@@ -352,25 +370,9 @@ m_set_founder(struct Service *service, struct Client *client,
     reply_user(service, client, _L(chanserv, client, CS_REGISTER_NICK), parv[2]);
     return;
   }
-
   free_nick(nick_p);
   MyFree(nick_p);
 
-  regchptr = db_find_chan(parv[1]);
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
-    return;
-  }
-
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
-  {
-    reply_user(service, client, 
-        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
-    return;
-  }
 
   if (db_set_founder(parv[1], parv[2]) == 0)
   {
@@ -378,14 +380,13 @@ m_set_founder(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_FOUNDER), parv[1], parv[2]);
     global_notice(NULL, "%s (%s@%s) set founder of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
+    // XXX strlcpy(chptr->regchan->founder, parv[2], sizeof(chptr->regchan->founder));
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_FOUNDER_FAILED), parv[1], parv[2]);
   }
-  free_regchan(regchptr);
-  MyFree(regchptr);
 }
 
 
@@ -396,8 +397,26 @@ static void
 m_set_successor(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  struct Channel *chptr;
   struct Nick *nick_p;
+
+  if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
+    return;
+
+  if (chptr->regchan->founder != client->nickname->id)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    return;
+  }
+
+  if (parc < 2)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_SUCCESSOR), 
+        parv[1], chptr->regchan->successor);
+    return;
+  }
 
   if ((nick_p = db_find_nick(parv[2])) == NULL)
   {
@@ -408,36 +427,19 @@ m_set_successor(struct Service *service, struct Client *client,
   free_nick(nick_p);
   MyFree(nick_p);
 
-  regchptr = db_find_chan(parv[1]);
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
-    return;
-  }
-
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
-  {
-    reply_user(service, client, 
-        _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
-    return;
-  }
-
   if (db_set_successor(parv[1], parv[2]) == 0)
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_SUCC), parv[1], parv[2]);
     global_notice(NULL, "%s (%s@%s) set successor of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
+    // XXX (chptr->regchan->successor, parv[2], sizeof(chptr->regchan->successor));
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_SUCC_FAILED), parv[1], parv[2]);
   }
-  free_regchan(regchptr);
-  MyFree(regchptr);
 }
 
 
@@ -448,25 +450,27 @@ static void
 m_set_desc(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  struct Channel *chptr;
   char desc[512];
   int i;
 
   memset(desc, 0, sizeof(desc));
 
-  regchptr = db_find_chan(parv[1]);
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+  if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
     return;
-  }
 
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  if (chptr->regchan->founder != client->nickname->id)
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
+    return;
+  }
+
+  if (parc < 2)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_DESCRIPTION), 
+        parv[1], chptr->regchan->description);
     return;
   }
 
@@ -482,14 +486,16 @@ m_set_desc(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_DESC), parv[1], desc);
     global_notice(NULL, "%s (%s@%s) changed description of %s to %s", 
       client->name, client->username, client->host, parv[1], desc);
+
+    if (chptr->regchan->description != NULL)
+      MyFree(chptr->regchan->description);
+    DupString(chptr->regchan->description, desc);
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_DESC_FAILED), parv[1]);
   }
-  free_regchan(regchptr);
-  MyFree(regchptr);
 }
 
 /*
@@ -499,21 +505,23 @@ static void
 m_set_url(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  struct Channel *chptr;
 
-  regchptr = db_find_chan(parv[1]);
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+  if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
     return;
-  }
 
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  if (chptr->regchan->founder != client->nickname->id)
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
+    return;
+  }
+
+  if (parc < 2)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_URL), 
+        parv[1], chptr->regchan->url);
     return;
   }
 
@@ -523,14 +531,16 @@ m_set_url(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_URL), parv[1], parv[2]);
     global_notice(NULL, "%s (%s@%s) changed url of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
+
+    if (chptr->regchan->url != NULL)
+      MyFree(chptr->regchan->url);
+    DupString(chptr->regchan->url, parv[2]);
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_URL_FAILED), parv[1]);
   }
-  free_regchan(regchptr);
-  MyFree(regchptr);
 }
 
 /*
@@ -540,21 +550,23 @@ static void
 m_set_email(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  struct Channel *chptr;
 
-  regchptr = db_find_chan(parv[1]);
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+  if (( chptr = cs_find_chan(service, client, parv[1])) == NULL)
     return;
-  }
 
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  if (chptr->regchan->id != client->nickname->id)
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
+    return;
+  }
+
+  if (parc < 2)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_EMAIL), 
+        parv[1], chptr->regchan->email);
     return;
   }
 
@@ -564,14 +576,16 @@ m_set_email(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_EMAIL), parv[1], parv[2]);
     global_notice(NULL, "%s (%s@%s) changed email of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
+
+    if (chptr->regchan->email != NULL)
+      MyFree(chptr->regchan->email);
+    DupString(chptr->regchan->email, parv[2]);
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_EMAIL_FAILED), parv[1]);
   }
-  free_regchan(regchptr);
-  MyFree(regchptr);
 }
 
 /*
@@ -581,22 +595,24 @@ static void
 m_set_entrymsg(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  struct Channel *chptr;
   int i; char msg[512];
 
-  regchptr = db_find_chan(parv[1]);
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+  if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
     return;
-  }
 
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  if (chptr->regchan->founder != client->nickname->id)
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
+    return;
+  }
+
+  if (parc < 2)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_ENTRYMSG),
+        parv[1], chptr->regchan->entrymsg);
     return;
   }
 
@@ -612,14 +628,16 @@ m_set_entrymsg(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_MSG), parv[1], msg);
     global_notice(NULL, "%s (%s@%s) changed entrymsg of %s to %s", 
       client->name, client->username, client->host, parv[1], msg);
+    
+    if (chptr->regchan->entrymsg != NULL)
+      MyFree(chptr->regchan->entrymsg);
+    DupString(chptr->regchan->entrymsg, msg);
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_MSG_FAILED), parv[1]);
   }
-  free_regchan(regchptr);
-  MyFree(regchptr);
 }
 
 /*
@@ -629,22 +647,24 @@ static void
 m_set_topic(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct RegChannel *regchptr;
+  struct Channel *chptr;
   int i; char topic[TOPICLEN+1];
 
-  regchptr = db_find_chan(parv[1]);
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), parv[1]);
+  if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
     return;
-  }
 
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  if (chptr->regchan->founder != client->nickname->id)
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
-    free_regchan(regchptr);
-    MyFree(regchptr);
+    return;
+  }
+
+  if (parc < 2)
+  {
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_TOPIC),
+        parv[1], chptr->regchan->topic);
     return;
   }
 
@@ -660,14 +680,18 @@ m_set_topic(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_TOPIC), parv[1], topic);
     global_notice(NULL, "%s (%s@%s) changed TOPIC of %s to %s", 
       client->name, client->username, client->host, parv[1], topic);
+
+    if (chptr->regchan->topic != NULL)
+      MyFree(chptr->regchan->topic);
+    DupString(chptr->regchan->topic, topic);
+
+    // XXX: send topic
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_TOPIC_FAILED), parv[1]);
   }
-  free_regchan(regchptr);
-  MyFree(regchptr);
 }
 
 /*
@@ -753,7 +777,6 @@ m_set_verbose(struct Service *service, struct Client *client,
 }
 
 
-
 /*
  * CHANSERV set flag (private)
  */
@@ -762,34 +785,19 @@ m_set_flag(struct Service *service, struct Client *client,
            char *channel, char *toggle, int flag, char *flagname)
 {
   struct Channel *chptr;
-  struct RegChannel *regchptr;
   int newflag;
 
-  chptr = hash_find_channel(channel);
-
-  if (chptr->regchan == NULL) {
-    regchptr = db_find_chan(channel);
-    chptr->regchan = regchptr;
-  } 
-  else
-  {
-    regchptr = chptr->regchan;
-  }
-
-  if (regchptr == NULL)
-  {
-    reply_user(service, client, _L(chanserv, client, CS_NOT_REG), channel);
+  if ((chptr = cs_find_chan(service, client, channel)) == NULL)
     return -1;
-  }
 
-  if (strncmp(regchptr->founder, client->name, NICKLEN+1) != 0)
+  if (chptr->regchan->founder != client->nickname->id)
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), channel);
     return -1;
   }
 
-  newflag = regchptr->flags;
+  newflag = chptr->regchan->flags;
 
   if (toggle == NULL)
   {
@@ -813,7 +821,7 @@ m_set_flag(struct Service *service, struct Client *client,
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_SUCCESS), channel, flagname, toggle);
 
-    regchptr->flags = newflag;
+    chptr->regchan->flags = newflag;
   }
   else
   {
@@ -895,4 +903,39 @@ cs_on_channel_destroy(va_list args)
   chan->regchan = NULL;
 
   return pass_callback(cs_channel_destroy_hook, chan);
+}
+
+
+/*
+ * find a Channel/Regchannel from hash_find_chan(name)->regchan
+ * or complete from db_find_chan(name)
+ * return: struct Channel * for completeness
+ */
+struct Channel *
+cs_find_chan(struct Service *service, struct Client *client, char *name)
+{
+  struct Channel *channel;
+  struct RegChannel *regchptr;
+
+  if ((channel = hash_find_channel(name)) == NULL)
+  {
+    reply_user(service, client, _L(chanserv, client, CS_NOT_EXIST), name);
+    return NULL;
+  }
+
+  if ( channel->regchan == NULL)
+  {
+    regchptr = db_find_chan(name);
+    if (regchptr == NULL)
+    {
+      reply_user(service, client, _L(chanserv, client, CS_NOT_REG), name);
+      return NULL;
+    }
+    else
+    {
+      channel->regchan = regchptr;
+    }
+  }
+
+  return channel;
 }

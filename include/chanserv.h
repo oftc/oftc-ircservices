@@ -6,10 +6,14 @@ struct RegChannel
   dlink_node node;
   
   unsigned int id;
-  char founder[NICKLEN+1];
+  int founder;
+  int successor;
   char channel[CHANNELLEN+1];
   char *description;
   char *entrymsg; 
+  char *url;
+  char *email;
+  char *topic;
   unsigned int flags;
 };
 
@@ -95,7 +99,8 @@ struct RegChannel
 #define CS_SET_TOPIC_LONG     43
 #define CS_SET_TOPIC          44
 #define CS_SET_TOPIC_FAILED   45
-/* two spare */
+#define CS_NOT_EXIST          46
+/* one spare */
 #define CS_SET_FLAG             48
 #define CS_SET_SUCCESS          49
 #define CS_SET_FAILED           50
@@ -115,6 +120,9 @@ struct RegChannel
 #define CS_SET_LEAVEOPS_LONG    64
 #define CS_SET_VERBOSE_SHORT    65
 #define CS_SET_VERBOSE_LONG     66
+#define CS_SET_SUCCESSOR        67
+#define CS_SET_DESCRIPTION      68
+#define CS_SET_ENTRYMSG         69
 
 #endif
 

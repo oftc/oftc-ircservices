@@ -104,8 +104,8 @@ CS_SET_TOPIC
 	Topic for %s has been set to %s
 CS_SET_TOPIC_FAILED
 	Failed to set Topic for %s
-CS_NONE
-	XXX 46
+CS_NOT_EXIST
+	Channel does not exist. XXX
 CS_NONE
 	XXX 47
 CS_SET_FLAG
@@ -146,3 +146,9 @@ CS_SET_VERBOSE_SHORT
 	Be more verbose when someone messes with Chanserv Features on a channel
 CS_SET_VERBOSE_LONG
 	SET channel VERBOSE on|off
+CS_SET_SUCCESSOR
+	Successor of %s is set to %s
+CS_SET_DESCRIPTION
+	Description of %s is set to %s
+CS_SET ENTRYMSG
+	Entrymsg of %s is set to "%s"
