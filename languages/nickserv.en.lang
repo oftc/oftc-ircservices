@@ -48,7 +48,7 @@ NS_HELP_SET_SHORT
 	Set nickname properties.
 NS_HELP_SET_LONG        
 	Usage: SET property value
-
+	
 	Set nickname properties.  The various properties are shown below.  Use HELP
 	SET property to get help on the individual properties.
 NS_HELP_GHOST_SHORT			

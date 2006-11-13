@@ -769,6 +769,9 @@ process_privmsg(struct Client *client, struct Client *source,
   char  *s, *ch, *ch2;
   int i = 0;
 
+  if((s = strchr(parv[1], '@')) != NULL)
+    *s++ = '\0';
+
   service = find_service(parv[1]);
   if(service == NULL)
   {
