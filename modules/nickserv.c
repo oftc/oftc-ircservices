@@ -33,6 +33,7 @@ static struct Service *nickserv = NULL;
 static dlink_node *ns_umode_hook;
 static dlink_node *ns_nick_hook;
 static dlink_node *ns_newuser_hook;
+static dlink_node *ns_quit_hook;
 
 static dlink_list nick_enforce_list = { NULL, NULL, 0 };
 
@@ -43,6 +44,7 @@ static void process_enforce_list(void *);
 static void *ns_on_umode_change(va_list);
 static void *ns_on_newuser(va_list);
 static void *ns_on_nick_change(va_list);
+static void *ns_on_quit(va_list);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
@@ -160,7 +162,8 @@ INIT_MODULE(nickserv, "$Revision$")
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
   ns_newuser_hook     = install_hook(on_newuser_cb, ns_on_newuser);
-
+  ns_quit_hook        = install_hook(on_quit_cb, ns_on_quit);
+  
   guest_number = 0;
 
   eventAdd("process nickserv enforce list", process_enforce_list, NULL, 10);
@@ -903,4 +906,24 @@ ns_on_newuser(va_list args)
   }
   
   return pass_callback(ns_nick_hook, newuser);
+}
+
+static void *
+ns_on_quit(va_list args)
+{
+  struct Client *user     = va_arg(args, struct Client *);
+  char          *comment  = va_arg(args, char *);
+  struct Nick *nick = user->nickname;
+
+  if(nick)
+  {
+    db_nick_set_string(nick->id, "last_quit", comment);
+    db_nick_set_string(nick->id, "last_host", user->host);
+    db_nick_set_number(nick->id, "last_quit_time", CurrentTime);
+    db_nick_set_number(nick->id, "last_seen", CurrentTime);
+    db_nick_set_number(nick->id, "last_used", CurrentTime);
+    free_nick(nick);
+  }
+
+  return pass_callback(ns_quit_hook, user, comment);
 }

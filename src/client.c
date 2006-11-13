@@ -294,6 +294,7 @@ recurse_remove_clients(struct Client *source_p)
   DLINK_FOREACH_SAFE(ptr, next, source_p->server_list.head)
   {
     recurse_remove_clients(ptr->data);
+    execute_callback(on_quit_cb, ptr, "Server Split");
     exit_one_client(ptr->data);
   }
 }
@@ -365,6 +366,7 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
     sendto_server(me.uplink, ":%s QUIT :%s", source_p->name, comment);
   }
 
+  execute_callback(on_quit_cb, source_p, comment);
   exit_one_client(source_p);
 }
 

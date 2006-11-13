@@ -332,12 +332,6 @@ chain_squit(struct Client *client, struct Client *source, char *comment)
 }
 
 void
-chain_quit(struct Client *source, char *comment)
-{
-  execute_callback(on_quit_cb, source, comment);
-}
-
-void
 chain_part(struct Client *client, struct Client *source, char *name)
 {
   execute_callback(on_part_cb, client, source, name);
