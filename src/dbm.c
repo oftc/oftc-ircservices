@@ -29,6 +29,8 @@
 static dbi_result db_query(const char *, ...);
 static unsigned int db_get_id_from_nick(const char *);
 
+struct Callback *on_nick_drop_cb;
+
 void
 init_db()
 {
@@ -45,6 +47,8 @@ init_db()
   }
 
   printf("db: version: %s\n", dbi_version());
+
+  on_nick_drop_cb = register_callback("Nick DROP Callback", NULL);
 }
 
 void
@@ -287,13 +291,14 @@ db_delete_nick(const char *nick)
     return -1;
   }
 
+  execute_callback(on_nick_drop_cb, nick);
   result = db_query("DELETE FROM %s WHERE nick=%s", "nickname", escnick);
  
   MyFree(escnick);
   
   if(result == NULL)
     return 0;
-  
+ 
   dbi_result_free(result);
 
   return 0;
