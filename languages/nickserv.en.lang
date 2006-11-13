@@ -2,7 +2,7 @@
 NS_HELP_SHORT
 	Shows this help.
 NS_HELP_LONG            
-	Shows this help message.  Use HELP <command> for help with a commmand.
+	Shows this help message.  Use HELP command for help with a commmand.
 NS_HELP_REG_SHORT       
 	Registers a nickname for your usage.
 NS_HELP_REG_LONG          
@@ -32,9 +32,9 @@ NS_HELP_ACCESS_SHORT
 	Maintains the nickname ACCESS list.
 NS_HELP_ACCESS_LONG
 	Usage: ACCESS ADD mask
-	       ACCESS DEL mask
+	       ACCESS DEL (mask|number)
 	       ACCESS LIST
-				 
+	 
 	Maintains the nickname access list.  If your IRC userhost matches an entry
 	in your access list, you will be automatically identified to your nickname
 	without having to use the IDENTIFY command.
@@ -47,19 +47,36 @@ NS_HELP_ACCESS_LONG
 NS_HELP_SET_SHORT       
 	Set nickname properties.
 NS_HELP_SET_LONG        
-	Set nickname properties.
+	Usage: SET property value
+
+	Set nickname properties.  The various properties are shown below.  Use HELP
+	SET property to get help on the individual properties.
 NS_HELP_GHOST_SHORT			
 	Terminate a GHOST IRC session.
-NS_HELP_GHOST_LONG      
-	Terminate a GHOST IRC session.
+NS_HELP_GHOST_LONG     
+	Usage: GHOST nickname [password]
+	
+	Terminates the GHOST IRC session with the nickname specified.  If the
+	nickname has SECURE set, or you do not match an entry in the nickname's
+	ACCESS list, you will require a password.
 NS_HELP_LINK_SHORT      
 	Link this nickname to a master nickname. 
 NS_HELP_LINK_LONG       
-	Link this nickname to a master nickname.
+	Usage: LINK master_nickname password
+	
+	Link this nickname to a master nickname.  This effectively creates an alias
+	for your nickname to the master nickname.  When you change to this nickname
+	you will be checked against the master nickname access list and the master
+	nickname's settings will be applied to you.  To identify for this nickname
+	after linking it, you will need to use the master nickname password.
 NS_HELP_UNLINK_SHORT    
 	Unlink this nickname from a master nickname.
 NS_HELP_UNLINK_LONG     
-	Unlink this nickname from a master nickname.
+	Usage: UNLINK
+	
+	Unlink this nickname from a master nickname. This removes the link from the
+	master nickname and reverts this nickname to be a standalone nickname with
+	all the settings it had(including password) before it was linked.
 NS_HELP_RECOVER_SHORT   
 	Recover your nickname in a more forceful way.
 NS_HELP_RECOVER_LONG    
@@ -70,7 +87,7 @@ NS_HELP_RELEASE_LONG
 	Release NickServ's hold on your nickname.
 NS_HELP_SUSPEND_SHORT   
 	Suspend a nickname from use.
-NS_HELP_SUSPENT_LONG    
+NS_HELP_SUSPEND_LONG    
 	Suspend a nickname from use.
 NS_HELP_FORBID_SHORT    
 	Forbid a nickname from being used.
