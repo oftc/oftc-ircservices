@@ -202,6 +202,10 @@ process_enforce_list(void *param)
       user->enforce_time = 0;
 
       snprintf(newname, NICKLEN, "%s%d", "Guest", guest_number++);
+      while((find_client(newname)) != NULL)
+      {
+        snprintf(newname, NICKLEN, "%s%d", "Guest", guest_number++);
+      }
       send_nick_change(nickserv, user, newname);
     }
   }
