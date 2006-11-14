@@ -148,7 +148,7 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   if(IsConnecting(client))
   {
-    sendto_server(client, "SVINFO 5 5 0: %lu", CurrentTime);
+    sendto_server(client, "SVINFO 6 5 0: %lu", CurrentTime);
     //irc_sendmsg_ping(client, me.name, me.name);
     SetServer(client);
     hash_add_client(client);
@@ -249,7 +249,7 @@ oftc_server_connected(va_list args)
   
   sendto_server(client, "PASS %s TS 6 %s", client->server->pass, me.id);
   sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
-  sendto_server(client, "SERVER %s 1 : %s", me.name, me.info);
+  sendto_server(client, "SERVER %s 1 :%s", me.name, me.info);
   send_queued_write(client);
 
   me.uplink = client;
