@@ -55,6 +55,7 @@ static void m_ghost(struct Service *, struct Client *, int, char *[]);
 static void m_link(struct Service *, struct Client *, int, char *[]);
 static void m_unlink(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *,struct Client *, int, char *[]);
+static void m_forbid(struct Service *,struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -137,6 +138,11 @@ static struct ServiceMessage info_msgtab = {
   { m_info, m_info, m_info, m_info }
 };
 
+static struct ServiceMessage forbid_msgtab = {
+  NULL, "FORBID", 0, 1, NS_HELP_FORBID_SHORT, NS_HELP_FORBID_LONG,
+  { m_unreg, m_unreg, m_unreg, m_forbid }
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -158,6 +164,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &link_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &info_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &forbid_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -784,6 +791,40 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     free_nick(nick);
 }
 
+static void
+m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Nick *nick;
+  char *pass;
+  char password[PASSLEN*2+1];
+  char salt[PASSLEN+1];
+  char randpass[PASSLEN+1];
+
+  if((nick = db_find_nick(parv[1])) != NULL)
+  {
+    db_nick_set_number(nick->id, "flags", NS_FLAG_FORBID);
+    free_nick(nick);
+    reply_user(service, client, _L(nickserv, client, NS_FORBID_OK), parv[1]);
+    return;
+  }
+  make_random_string(salt, PASSLEN);
+  make_random_string(randpass, PASSLEN);
+  snprintf(password, sizeof(password), "%s%s", randpass, salt);
+
+  pass = crypt_pass(password);
+  nick = db_register_nick(parv[1], pass, salt, "Forbidden Nick");
+  MyFree(pass);
+  if(nick == NULL)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_FORBID_FAIL), parv[1]);
+    return;
+  }
+
+  db_nick_set_number(nick->id, "flags", NS_FLAG_FORBID);
+  reply_user(service, client, _L(nickserv, client, NS_FORBID_OK), parv[1]);
+  free_nick(nick);
+}
+
 static void*
 ns_on_umode_change(va_list args) 
 {
@@ -818,6 +859,16 @@ ns_on_nick_change(va_list args)
   if((nick_p = db_find_nick(user->name)) == NULL)
   {
     printf("Nick Change: %s->%s(nick not registered)\n", oldnick, user->name);
+    return pass_callback(ns_nick_hook, user, oldnick);
+  }
+
+  if(IsNickForbid(nick_p))
+  {
+    reply_user(nickserv, user, _L(nickserv, user, NS_NICK_FORBID_IWILLCHANGE), 
+        user->name);
+    user->enforce_time = CurrentTime + 60; /* XXX configurable? */
+    dlinkAdd(user, make_dlink_node(), &nick_enforce_list);
+    free_nick(nick_p);
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
@@ -864,7 +915,17 @@ ns_on_newuser(va_list args)
   if((nick_p = db_find_nick(newuser->name)) == NULL)
   {
     printf("New user: %s(nick not registered)\n", newuser->name);
-    return pass_callback(ns_nick_hook, newuser);
+    return pass_callback(ns_newuser_hook, newuser);
+  }
+
+  if(IsNickForbid(nick_p))
+  {
+    reply_user(nickserv, newuser, _L(nickserv, newuser,
+          NS_NICK_FORBID_IWILLCHANGE), newuser->name);
+    newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */
+    dlinkAdd(newuser, make_dlink_node(), &nick_enforce_list);
+    free_nick(nick_p);
+    return pass_callback(ns_newuser_hook, newuser);
   }
 
   if(IsIdentified(newuser))
@@ -873,7 +934,7 @@ ns_on_newuser(va_list args)
         newuser->name);
     newuser->nickname = nick_p;
     identify_user(newuser);
-    return pass_callback(ns_nick_hook, newuser);
+    return pass_callback(ns_newuser_hook, newuser);
   }
 
   snprintf(userhost, USERHOSTLEN, "%s@%s", newuser->username, 
@@ -905,7 +966,7 @@ ns_on_newuser(va_list args)
     printf("new user:%s(no access entry)\n", newuser->name);
   }
   
-  return pass_callback(ns_nick_hook, newuser);
+  return pass_callback(ns_newuser_hook, newuser);
 }
 
 static void *

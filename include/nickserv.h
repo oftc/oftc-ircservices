@@ -23,25 +23,29 @@ struct Nick
 };
 
 /* Nick flags */
-#define NS_FLAG_ENFORCE       0x0000001
-#define NS_FLAG_SECURE        0x0000002
-#define NS_FLAG_CLOAK         0x0010000
-#define NS_FLAG_ADMIN         0x1000000
+#define NS_FLAG_ENFORCE       0x00000001
+#define NS_FLAG_SECURE        0x00000002
+#define NS_FLAG_CLOAK         0x00010000
+#define NS_FLAG_FORBID        0x00020000
+#define NS_FLAG_ADMIN         0x01000000
 
 #define IsServAdmin(x)        ((x)->nickname->flags & NS_FLAG_ADMIN)
 #define IsNickSecure(x)       ((x)->flags & NS_FLAG_SECURE)
 #define IsNickEnforce(x)      ((x)->flags & NS_FLAG_ENFORCE)
 #define IsNickCloak(x)        ((x)->flags & NS_FLAG_CLOAK)
+#define IsNickForbid(x)       ((x)->flags & NS_FLAG_FORBID)
 
 #define SetServAdmin(x)       ((x)->nickname->flags |= NS_FLAG_ADMIN)
 #define SetNickSecure(x)      ((x)->flags |= NS_FLAG_SECURE)
 #define SetNickEnforce(x)     ((x)->flags |= NS_FLAG_ENFORCE)
 #define SetNickCloak(x)       ((x)->flags |= NS_FLAG_CLOAK)
+#define SetNickForbid(x)      ((x)->flags |= NS_FLAG_FORBID)
 
 #define ClearServAdmin(x)     ((x)->nickname->flags &= ~NS_FLAG_ADMIN)
 #define ClearNickSecure(x)    ((x)->flags &= ~NS_FLAG_SECURE)
 #define ClearNickEnforce(x)   ((x)->flags &= ~NS_FLAG_ENFORCE)
 #define ClearNickCloak(x)     ((x)->flags &= ~NS_FLAG_CLOAK)
+#define ClearNickForbid(x)    ((x)->flags &= ~NS_FLAG_FORBID)
 
 /* Language defines */
 
@@ -110,5 +114,8 @@ struct Nick
 #define NS_NICK_IN_USE          63
 #define NS_NICK_IN_USE_IWILLCHANGE 64
 #define NS_NICK_AUTOID          65
+#define NS_NICK_FORBID_IWILLCHANGE 66
+#define NS_FORBID_OK 67
+#define NS_FORBID_FAIL 68
 
 #endif

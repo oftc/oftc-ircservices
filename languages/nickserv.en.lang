@@ -178,3 +178,10 @@ NS_NICK_IN_USE_IWILLCHANGE
 	authenticate yourself to services now with the IDENTIFY command.
 NS_NICK_AUTOID
 	You have been automatically identified as %s.
+NS_NICK_FORBID_IWILLCHANGE
+	This nickname %s may not be used. Choose another or I will forcefully
+	change your nickname.
+NS_FORBID_OK
+	%s has been forbidden.
+NS_FORBID_FAIL
+	%s failed to be forbidden.
