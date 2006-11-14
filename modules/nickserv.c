@@ -97,7 +97,7 @@ static struct SubMessage set_sub[9] = {
   { "SECURE"      , 0, 0, -1, -1, m_set_secure},
   { "CLOAK"       , 0, 0, -1, -1, m_set_cloak},
   { "CLOAKSTRING" , 0, 0, -1, -1, m_set_cloakstring},
-  { "NULL"        , 0, 0, 0, 0, NULL }
+  { NULL        , 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -109,7 +109,7 @@ static struct SubMessage access_sub[4] = {
   { "ADD", 0, 1, -1, -1, m_access_add },
   { "LIST", 0, 0, -1, -1, m_access_list },
   { "DEL", 0, 0, -1, -1, m_access_del },
-  { "NULL", 0, 0, 0, 0, NULL }
+  { NULL, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage access_msgtab = {

@@ -191,6 +191,7 @@ do_help(struct Service *service, struct Client *client,
     const char *command, int parc, char *parv[])
 {
   struct ServiceMessage *msg;
+  struct SubMessage *sub;
 
   /* Command specific help, show the long entry. */
   if(command != NULL)
@@ -203,7 +204,35 @@ do_help(struct Service *service, struct Client *client,
       return;
     }
 
+    sub = msg->sub;
+    
+    if(parc > 1)
+    { 
+      while(sub != NULL && sub->cmd != NULL)
+      {
+        if(strncasecmp(sub->cmd, parv[2], sizeof(sub->cmd)) == 0)
+        {
+          reply_user(service, client, _L(service, client, sub->help_long));
+          return;   
+        }
+        sub++;
+      }
+      reply_user(service, client, "HELP for %s %s is not available.",
+          command, parv[2]);
+      return;
+    }
+
     reply_user(service, client, _L(service, client, msg->help_long));
+    sub = msg->sub;
+    
+    while(sub != NULL && sub->cmd != NULL)
+    {
+      reply_user(service, client, "\002%s\002: %s", 
+          sub->cmd, _L(service, client, sub->help_short));
+      sub++;
+      if(sub->cmd == NULL)
+        sub = NULL;
+    }
     return;
   }
   do_serv_help_messages(service, client);

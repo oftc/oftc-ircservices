@@ -98,7 +98,7 @@ static struct SubMessage set_sub[] = {
   { "VERBOSE",     0, 1, CS_SET_VERBOSE_SHORT, CS_SET_VERBOSE_LONG, m_set_verbose },
   { "AUTOLIMIT",   0, 1, -1, -1, m_not_avail }, // 5:2:2
   { "CLEARBANS",   0, 1, -1, -1, m_not_avail }, // 120
-  { "NULL",        0, 0,  0,  0, m_not_avail } 
+  { NULL,          0, 0,  0,  0, m_not_avail } 
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -112,7 +112,7 @@ static struct SubMessage access_sub[6] = {
   { "LIST",  0, 2, -1, -1, m_not_avail },
   { "VIEW",  0, 1, -1, -1, m_not_avail },
   { "COUNT", 0, 0, -1, -1, m_not_avail },
-  { "NULL",  0, 0,  0,  0, NULL }
+  { NULL,    0, 0,  0,  0, NULL }
 };
 
 static struct ServiceMessage access_msgtab = {
@@ -126,7 +126,7 @@ static struct SubMessage levels_sub[6] = {
   { "RESET",    0, 0, -1, -1, m_not_avail },
   { "DIS",      0, 1, -1, -1, m_not_avail },
   { "DISABLED", 0, 1, -1, -1, m_not_avail },
-  { "NULL",     0, 0,  0,  0, NULL }
+  { NULL,       0, 0,  0,  0, NULL }
 };
 
 static struct ServiceMessage levels_msgtab = {
@@ -141,7 +141,7 @@ static struct SubMessage akick_sub[7] = {
   { "VIEW",    0, 1, -1, -1, m_not_avail },
   { "ENFORCE", 0, 0, -1, -1, m_not_avail },
   { "COUNT",   0, 0, -1, -1, m_not_avail },
-  { "NULL",    0, 0,  0,  0, NULL }
+  { NULL,      0, 0,  0,  0, NULL }
 };
 
 static struct ServiceMessage akick_msgtab = {
