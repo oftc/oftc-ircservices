@@ -117,5 +117,6 @@ struct Nick
 #define NS_NICK_FORBID_IWILLCHANGE 66
 #define NS_FORBID_OK 67
 #define NS_FORBID_FAIL 68
+#define NS_NOREG_GUEST 69
 
 #endif

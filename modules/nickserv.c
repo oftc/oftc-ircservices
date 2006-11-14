@@ -224,6 +224,13 @@ m_register(struct Service *service, struct Client *client,
   char salt[PASSLEN+1];
  
   memset(salt, 0, sizeof(salt));
+
+  if(strncasecmp(client->name, "guest", 5) == 0)
+  {
+    reply_user(service, client, _L(nickserv, client, NS_NOREG_GUEST),
+        client->name);
+    return;
+  }
     
   if((nick = db_find_nick(client->name)) != NULL)
   {
