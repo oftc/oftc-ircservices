@@ -267,6 +267,7 @@ free_nick(struct Nick *nick)
   nick->url = NULL;
   MyFree(nick->last_quit);
   nick->last_quit = NULL;
+  MyFree(nick);
 }
 
 int 
