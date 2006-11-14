@@ -220,6 +220,31 @@ db_get_id_from_nick(const char *nick)
   return id;
 }
 
+char *
+db_get_nickname_from_id(unsigned int id)
+{
+  dbi_result result;
+  char *retnick;
+
+  result = db_query("SELECT nick from nickname WHERE id=%d", id);
+  
+  if(result == NULL)
+    return NULL;
+
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    dbi_result_free(result);
+    return NULL;
+  }
+
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "nick.%S", &retnick);
+  dbi_result_free(result);
+
+  return retnick;
+}
+
+
 struct Nick *
 db_register_nick(const char *nick, const char *password, const char *salt,
     const char *email)
