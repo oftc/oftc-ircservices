@@ -643,6 +643,55 @@ m_set_entrymsg(struct Service *service, struct Client *client,
   }
 }
 
+struct RegChannel*
+cs_get_regchan_from_hash_or_db(struct Channel *chptr, char *name)
+{
+  if ( (chptr == NULL) || (chptr->regchan == NULL))
+  {
+    regchptr = db_find_chan(name);
+    if (regchptr == NULL)
+    {
+      reply_user(service, client, _L(chanserv, client, CS_NOT_REG), name);
+      return;
+    }
+    else
+    {
+      chptr->regchan = regchptr;
+    }
+  }
+  else
+  {
+    regchptr = chptr->regchan;
+  }
+}
+
+static void
+cs_free_regchan_if_no_chptr(struct Channel *chptr, struct Regchannel *regchptr)
+{
+  if (chptr == NULL)
+  {
+    free_regchan(regchptr);
+    MyFree(regchptr);
+  }
+}
+
+static void
+replace_regchan(struct Channel *chptr, struct RegChannel *regchptr)
+{
+  if (chptr == NULL)
+  {
+    free_regchan(regchptr);
+    MyFree(regchptr);
+  }
+  else
+  {
+    free_regchan(chptr->regchan);
+    MyFree(chptr->regchan);
+    chptr->regchan = regchptr;
+  }
+}
+
+
 /*
  * CHANSERV SET TOPIC
  */
@@ -651,15 +700,17 @@ m_set_topic(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
+  struct RegChannel *regchptr;
   int i; char topic[TOPICLEN+1];
 
-  if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
-    return;
+  chptr = hash_find_chan(parv[1]);
+  regchptr = cs_get_regchan_from_hash_or_db(chptr, parv[1]);
 
-  if (chptr->regchan->founder != client->nickname->id)
+  if (regchptr->founder != client->nickname->id)
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    cs_free_regchan_if_no_chptr(chptr, regchptr);
     return;
   }
 
@@ -667,7 +718,7 @@ m_set_topic(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_TOPIC),
-        parv[1], chptr->regchan->topic);
+        parv[1], regchptr->topic);
     return;
   }
 
@@ -684,9 +735,8 @@ m_set_topic(struct Service *service, struct Client *client,
     global_notice(NULL, "%s (%s@%s) changed TOPIC of %s to %s", 
       client->name, client->username, client->host, parv[1], topic);
 
-    if (chptr->regchan->topic != NULL)
-      MyFree(chptr->regchan->topic);
-    DupString(chptr->regchan->topic, topic);
+    replace_string(regchptr->topic, topic);
+    replace_regchan(chptr, regchptr);
 
     // XXX: send topic
   }
