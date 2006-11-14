@@ -320,7 +320,6 @@ static void
 m_help(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  assert(parv[1]);
   do_help(service, client, parv[1], parc, parv);
 }
 
@@ -345,6 +344,7 @@ m_set_founder(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct Nick *nick_p;
+  char *foundernick;
 
   if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
     return;
@@ -358,9 +358,10 @@ m_set_founder(struct Service *service, struct Client *client,
 
   if (parc < 2)
   {
-    // XXX
-    // reply_user(service, client, 
-    //    _L(chanserv, client, CS_SET_FOUNDER), parv[1], chptr->regchan->founder);
+    foundernick = db_get_nickname_from_id(chptr->regchan->founder);
+    reply_user(service, client, 
+        _L(chanserv, client, CS_SET_FOUNDER), parv[1], foundernick);
+    MyFree(foundernick);
     return;
   }
 
@@ -380,7 +381,7 @@ m_set_founder(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_FOUNDER), parv[1], parv[2]);
     global_notice(NULL, "%s (%s@%s) set founder of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
-    // XXX strlcpy(chptr->regchan->founder, parv[2], sizeof(chptr->regchan->founder));
+    chptr->regchan->founder = db_get_id_from_nick(parv[2]); // correct? -mc
   }
   else
   {
@@ -399,6 +400,7 @@ m_set_successor(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct Nick *nick_p;
+  char *successornick;
 
   if ((chptr = cs_find_chan(service, client, parv[1])) == NULL)
     return;
@@ -412,9 +414,10 @@ m_set_successor(struct Service *service, struct Client *client,
 
   if (parc < 2)
   {
+    successornick = db_get_nickname_from_id(chptr->regchan->successor);
     reply_user(service, client, 
-        _L(chanserv, client, CS_SET_SUCCESSOR), 
-        parv[1], chptr->regchan->successor);
+        _L(chanserv, client, CS_SET_SUCCESSOR), parv[1], successornick);
+    MyFree(successornick);
     return;
   }
 
@@ -433,7 +436,7 @@ m_set_successor(struct Service *service, struct Client *client,
         _L(chanserv, client, CS_SET_SUCC), parv[1], parv[2]);
     global_notice(NULL, "%s (%s@%s) set successor of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
-    // XXX (chptr->regchan->successor, parv[2], sizeof(chptr->regchan->successor));
+   chptr->regchan->successor = db_get_id_from_nick(parv[2]); // XXX correct? -mc
   }
   else
   {

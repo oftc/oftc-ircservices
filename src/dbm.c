@@ -27,7 +27,6 @@
 #include "conf/conf.h"
 
 static dbi_result db_query(const char *, ...);
-static unsigned int db_get_id_from_nick(const char *);
 
 struct Callback *on_nick_drop_cb;
 
@@ -187,7 +186,7 @@ db_find_nick(const char *nick)
   return nick_p;
 }
 
-static unsigned int
+unsigned int
 db_get_id_from_nick(const char *nick)
 {
   dbi_result result;

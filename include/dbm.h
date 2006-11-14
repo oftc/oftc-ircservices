@@ -15,6 +15,8 @@ struct Nick *db_register_nick(const char *, const char *, const char *,
     const char *);
 int db_delete_nick(const char*);
 char *db_get_nickname_from_id(unsigned int id);
+unsigned int db_get_id_from_nick(const char *);
+
 
 int db_register_chan(struct Client *, char *);
 struct RegChannel *db_find_chan(const char *);
