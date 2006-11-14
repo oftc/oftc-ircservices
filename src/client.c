@@ -677,6 +677,7 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
   dlinkAdd(source_p, &source_p->lnode, &source_p->servptr->client_list);
   printf("Adding client %s!%s@%s from %s\n", source_p->name, source_p->username,
       source_p->host, server);
+  execute_callback(on_newuser_cb, source_p);
 }
 
 /*
@@ -729,7 +730,6 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
 
       register_remote_user(client_p, source_p, parv[5], parv[6],
                            parv[7], ngecos);
-      execute_callback(on_newuser_cb, source_p);
       return;
     }
   }

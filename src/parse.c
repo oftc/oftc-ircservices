@@ -768,7 +768,9 @@ process_privmsg(struct Client *client, struct Client *source,
   struct Service *service;
   struct ServiceMessage *mptr;
   char  *s, *ch, *ch2;
-  int i = 0;
+  int i = 0, replaced = FALSE;
+  struct Nick *oldnick = NULL;
+  
 
   if((s = strchr(parv[1], '@')) != NULL)
     *s++ = '\0';
@@ -822,16 +824,31 @@ process_privmsg(struct Client *client, struct Client *source,
     {
       /* It's an admin, if the command lookup fails, try switching
        * the parameters because they could be using a SET <nick> FOO */
+      replaced = TRUE;
       while(sub->cmd != NULL)
       {
         if(irccmp(sub->cmd, servpara[1]) == 0)
+        {
+          replaced = FALSE;
           break;
+        }
         sub++;
       }
-      servpara[0] = servpara[1];
-      servpara[1] = servpara[2];
-      servpara[2] = servpara[1];
-      sub = mptr->sub;
+      if(replaced)
+      {
+        servpara[0] = servpara[1];
+        servpara[1] = servpara[2];
+        servpara[2] = servpara[1];
+        sub = mptr->sub;
+        oldnick = source->nickname;
+        source->nickname = db_find_nick(para[3]);
+        if(source->nickname == NULL)
+        {
+          m_unreg(service, source, (i == 0) ? i : i-1, servpara);
+          source->nickname = oldnick;
+          return;
+        }
+      }
     }
 
     while(sub->cmd != NULL)
@@ -849,7 +866,7 @@ process_privmsg(struct Client *client, struct Client *source,
             servpara[j-1] = servpara[j];
           }
           servpara[j-1] = NULL;
-          i--;
+          i -= 2;
         }
         else
         {
@@ -863,6 +880,11 @@ process_privmsg(struct Client *client, struct Client *source,
           reply_user(service, source, "Insufficient Parameters");
           printf("%s sent services a sub command %s with too few paramters\n",
               client->name, sub->cmd);
+          if(oldnick != NULL)
+          {
+            free_nick(source->nickname);
+            source->nickname = oldnick;
+          }
           return;
         }
         else
@@ -873,6 +895,11 @@ process_privmsg(struct Client *client, struct Client *source,
             return;
           }
           (*sub->handler)(service, source, (i == 0) ? i : i-1, servpara);
+          if(oldnick != NULL)
+          {
+            free_nick(source->nickname);
+            source->nickname = oldnick;
+          }
           return;
         }
       }
@@ -904,6 +931,11 @@ process_privmsg(struct Client *client, struct Client *source,
   }
 
   handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
+  if(oldnick != NULL)
+  {
+    free_nick(source->nickname);
+    source->nickname = oldnick;
+  }
 }
 
 size_t
