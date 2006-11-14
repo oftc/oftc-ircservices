@@ -901,9 +901,12 @@ cs_on_channel_destroy(va_list args)
   struct Channel *chan = va_arg(args, struct Channel *);
 
   /* Free regchan from chptr before freeing chptr */
-  free_regchan(chan->regchan);
-  MyFree(chan->regchan);
-  chan->regchan = NULL;
+  if (chan->regchan != NULL)
+  {
+    free_regchan(chan->regchan);
+    MyFree(chan->regchan);
+    chan->regchan = NULL;
+  }
 
   return pass_callback(cs_channel_destroy_hook, chan);
 }
