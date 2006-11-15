@@ -79,6 +79,11 @@ static struct ServiceMessage identify_msgtab = {
   { m_identify, m_alreadyreg, m_alreadyreg, m_alreadyreg }
 };
 
+static struct ServiceMessage id_msgtab = {
+  NULL, "ID", 0, 1, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
+  { m_identify, m_alreadyreg, m_alreadyreg, m_alreadyreg }
+};
+
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, NS_HELP_SHORT, NS_HELP_LONG,
   { m_help, m_help, m_help, m_help }
@@ -165,6 +170,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &info_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &forbid_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &id_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
