@@ -762,6 +762,13 @@ m_unreg(struct Service *service, struct Client *source,
 }
 
 void
+m_notadmin(struct Service *service, struct Client *source,
+    int parc, char *parv[])
+{
+  reply_user(service, source, "Access to this command is restricted.");
+}
+
+void
 process_privmsg(struct Client *client, struct Client *source, 
     int parc, char *parv[])
 {

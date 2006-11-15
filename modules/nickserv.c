@@ -145,7 +145,7 @@ static struct ServiceMessage info_msgtab = {
 
 static struct ServiceMessage forbid_msgtab = {
   NULL, "FORBID", 0, 1, NS_HELP_FORBID_SHORT, NS_HELP_FORBID_LONG,
-  { m_unreg, m_unreg, m_unreg, m_forbid }
+  { m_notadmin, m_notadmin, m_notadmin, m_forbid }
 };
 
 INIT_MODULE(nickserv, "$Revision$")
@@ -503,8 +503,7 @@ m_set_cloakstring(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
-  /* XXX This needs to be admin only, but the admin stuff isnt done yet */
-  
+ 
   if(parc == 0)
   {
     reply_user(service, client, _L(nickserv, client, NS_SET_VALUE), 
@@ -512,6 +511,12 @@ m_set_cloakstring(struct Service *service, struct Client *client,
     return;
   }
     
+  /* Need admin to change, but can view no problem */
+  if(!IsServAdmin(client))
+  {
+    m_notadmin(service, client, parc, parv);
+    return;
+  }
   if(db_nick_set_string(nick->id, "cloak", parv[1]) == 0)
   {
     strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
