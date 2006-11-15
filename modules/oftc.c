@@ -44,6 +44,7 @@ static void m_pass(struct Client *, struct Client *, int, char *[]);
 static void m_server(struct Client *, struct Client *, int, char *[]);
 static void m_sid(struct Client *, struct Client *, int, char *[]);
 static void m_uid(struct Client *, struct Client *, int, char *[]);
+static void m_join(struct Client *, struct Client *, int, char *[]);
 
 struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
@@ -70,6 +71,11 @@ struct Message uid_msgtab = {
   { m_uid, m_uid }
 };
 
+struct Message join_msgtab = {
+  "JOIN", 0, 0, 4, 0, 0, 0,
+  { m_join, m_join }
+};
+
 INIT_MODULE(oftc, "$Revision$")
 {
   oftc_connected_hook  = install_hook(connected_cb, oftc_server_connected);
@@ -84,6 +90,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&sid_msgtab);
   mod_add_cmd(&uid_msgtab);
+  mod_add_cmd(&join_msgtab);
 }
 
 CLEANUP_MODULE
@@ -93,6 +100,7 @@ CLEANUP_MODULE
   mod_del_cmd(&server_msgtab);
   mod_del_cmd(&sid_msgtab);
   mod_del_cmd(&uid_msgtab);
+  mod_del_cmd(&join_msgtab);
 
   uninstall_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
   uninstall_hook(send_umode_cb, oftc_sendmsg_svsmode);
@@ -240,6 +248,28 @@ m_uid(struct Client *client_p, struct Client *source_p,
     client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos);
 }
 
+static void
+m_join(struct Client *client_p, struct Client *source_p,
+        int parc, char *parv[])
+{
+  struct Channel *chptr = hash_find_channel(parv[2]);
+
+  if(chptr == NULL)
+  {
+    printf("%s!%s@%s(%s) trying to join channel %s which doesnt exist!\n", 
+        source_p->name, source_p->username, source_p->host, source_p->id, 
+        parv[2]);
+    return;
+  }
+  
+  if (!IsMember(source_p, chptr))
+  {
+    add_user_to_channel(chptr, source_p, 0, 0);
+    chain_join(source_p, chptr->chname);
+    printf("Added %s!%s@%s to %s\n", source_p->name, source_p->username,
+        source_p->host, chptr->chname);
+  }
+}
 
 static void *
 oftc_server_connected(va_list args)
