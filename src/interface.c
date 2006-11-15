@@ -154,7 +154,7 @@ identify_user(struct Client *client)
 
   SetIdentified(client);
 
-  if(client->nickname->cloak[0] != '\0')
+  if(client->nickname->cloak[0] != '\0' && IsNickCloak(client->nickname))
     cloak_user(client, client->nickname->cloak);
 
   execute_callback(on_identify_cb, me.uplink, client);

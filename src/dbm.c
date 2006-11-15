@@ -123,7 +123,7 @@ db_find_nick(const char *nick)
   
   result = db_query("SELECT id, nick, password, salt, email, cloak, last_quit, "
       "last_quit_time, reg_time, last_seen, last_used, flags, language "
-      "FROM %s WHERE nick=%s", "nickname", escnick);
+      "FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick);
   MyFree(escnick);
 
   if(result == NULL)
@@ -199,7 +199,8 @@ db_get_id_from_nick(const char *nick)
     return 0;
   }
 
-  result = db_query("SELECT id from nickname WHERE nick=%s", escnick);
+  result = db_query("SELECT id from nickname WHERE lower(nick)=lower(%s)", 
+      escnick);
   MyFree(escnick);
   
   if(result == NULL)
@@ -242,7 +243,6 @@ db_get_nickname_from_id(unsigned int id)
 
   return retnick;
 }
-
 
 struct Nick *
 db_register_nick(const char *nick, const char *password, const char *salt,
@@ -316,7 +316,7 @@ db_delete_nick(const char *nick)
   }
 
   execute_callback(on_nick_drop_cb, nick);
-  result = db_query("DELETE FROM %s WHERE nick=%s", "nickname", escnick);
+  result = db_query("DELETE FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick);
  
   MyFree(escnick);
   
@@ -419,7 +419,8 @@ db_get_id_from_chan(const char *chan)
     return 0;
   }
 
-  result = db_query("SELECT id from channel WHERE channel=%s", escchan);
+  result = db_query("SELECT id from channel WHERE lower(channel)=lower(%s)", 
+      escchan);
   MyFree(escchan);
   
   if(result == NULL)
@@ -498,7 +499,8 @@ db_find_chan(const char *channel)
 
   result = db_query(
     "SELECT id, channel, description, entrymsg, flags, url, email, topic, "
-    "founder, successor FROM channel WHERE channel=%s", escchannel);
+    "founder, successor FROM channel WHERE lower(channel)=lower(%s)", 
+    escchannel);
 
   MyFree(escchannel);
   
@@ -551,8 +553,8 @@ db_register_chan(struct Client *client, char *channelname)
   }
   
   result = db_query("INSERT INTO %s (channel, founder) VALUES(%s, "
-          "(SELECT id FROM nickname WHERE nick=%s))", "channel", escchannel, 
-          escfounder);
+          "(SELECT id FROM nickname WHERE lower(nick)=lower(%s)))", 
+          "channel", escchannel, escfounder);
 
   MyFree(escchannel);
   MyFree(escfounder);
@@ -577,7 +579,7 @@ db_delete_chan(const char *chan)
     return -1;
   }
 
-  if((result = db_query("DELETE FROM %s WHERE channel=%s", 
+  if((result = db_query("DELETE FROM %s WHERE lower(channel)=lower(%s)", 
           "channel", escchan)) == NULL)
   {
     MyFree(escchan);
@@ -611,8 +613,8 @@ db_set_founder(const char *channel, const char *nickname)
   }
 
   result = db_query("UPDATE %s SET founder="
-    "(SELECT id FROM nickname WHERE nick=%s) WHERE channel=%s",
-    "channel", escnick, escchannel);
+    "(SELECT id FROM nickname WHERE lower(nick)=lower(%s)) WHERE "
+    "lower(channel)=lower(%s)", "channel", escnick, escchannel);
   if (result != NULL)
     MyFree(result);
 
@@ -643,7 +645,7 @@ db_set_successor(const char *channel, const char *nickname)
   }
 
   result = db_query("UPDATE %s SET successor="
-    "(SELECT id FROM nickname WHERE nick=%s) WHERE channel=%s",
+    "(SELECT id FROM nickname WHERE lower(nick)=lower(%s) WHERE channel=%s",
     "channel", escnick, escchannel);
   if (result != NULL)
     MyFree(result);
