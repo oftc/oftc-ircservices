@@ -625,6 +625,24 @@ db_set_founder(const char *channel, const char *nickname)
 }
 
 int
+db_chan_success_founder(const char *nickname)
+{
+  dbi_result result;
+
+  int successor_id;
+
+  successor_id = db_get_id_from_nick(nickname);
+
+
+  result = db_query("UPDATE %s SET founder=successor, successor=0 "
+    "WHERE successor=%i", "channel", successor_id);
+  if (result != NULL)
+    MyFree(result);
+
+  return 0;
+}
+
+int
 db_set_successor(const char *channel, const char *nickname)
 {
   dbi_result result;

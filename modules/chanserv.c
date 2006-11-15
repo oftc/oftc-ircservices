@@ -29,10 +29,12 @@ static struct Service *chanserv = NULL;
 static dlink_node *cs_cmode_hook;
 static dlink_node *cs_join_hook;
 static dlink_node *cs_channel_destroy_hook;
+static dlink_node *cs_on_nick_drop_hook;
 
 static void *cs_on_cmode_change(va_list);
 static void *cs_on_client_join(va_list);
 static void *cs_on_channel_destroy(va_list);
+static void *cs_on_nick_drop(va_list);
 
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
@@ -198,6 +200,7 @@ INIT_MODULE(chanserv, "$Revision$")
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
   cs_channel_destroy_hook = 
        install_hook(on_channel_destroy_cb, cs_on_channel_destroy);
+  cs_on_nick_drop_hook = install_hook(on_nick_drop_cb, cs_on_nick_drop);
 }
 
 CLEANUP_MODULE
@@ -1058,4 +1061,12 @@ cs_on_channel_destroy(va_list args)
   return pass_callback(cs_channel_destroy_hook, chan);
 }
 
+static void*
+cs_on_nick_drop(va_list args)
+{
+  char *nick = va_arg(args, char *);
 
+  db_chan_success_founder(char *name);
+
+  return pass_callback(cs_on_nick_drop_hook, nick);
+}
