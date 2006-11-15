@@ -184,10 +184,14 @@ INIT_MODULE(nickserv, "$Revision$")
 
 CLEANUP_MODULE
 {
-  exit_client(find_client(nickserv->name), &me, "Service unloaded");
-  hash_del_service(nickserv);
+  uninstall_hook(on_umode_change_cb, ns_on_umode_change);
+  uninstall_hook(on_nick_change_cb, ns_on_nick_change);
+  uninstall_hook(on_newuser_cb, ns_on_newuser);
+  uninstall_hook(on_quit_cb, ns_on_quit);
   dlinkDelete(&nickserv->node, &services_list);
   eventDelete(process_enforce_list, NULL);
+  exit_client(find_client(nickserv->name), &me, "Service unloaded");
+  hash_del_service(nickserv);
 }
 
 static void
@@ -521,7 +525,7 @@ m_set_cloakstring(struct Service *service, struct Client *client,
   {
     strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
     reply_user(service, client, _L(nickserv, client, NS_SET_SUCCESS),
-        "CLOAKSTRING", nick->email);
+        "CLOAKSTRING", nick->cloak);
   }
   else
     reply_user(service, client, _L(nickserv, client, NS_SET_FAILED), 
