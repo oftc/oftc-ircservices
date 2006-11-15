@@ -106,8 +106,16 @@ CS_SET_TOPIC_FAILED
 	Failed to set Topic for %s
 CS_NOT_EXIST
 	Channel does not exist. XXX
-CS_NONE
-	XXX 47
+CS_INFO_CHAN
+	Channel Information about %s
+	Founder:     %s
+	Successor:   %s
+	Description: %s
+	URL:         %s
+	eMail:       %s
+	Topic:       %s
+	EntryMsg:    %s
+	Flags:       %s %s %s %s %s %s %s
 CS_SET_FLAG
 	%s is set to %s on %s
 CS_SET_SUCCESS

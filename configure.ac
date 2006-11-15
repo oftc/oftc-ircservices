@@ -1064,7 +1064,7 @@ fi
 
 dnl locate "ruby.h", "intern.h"
 ruby_h_dir=`$ruby_path -r mkmf -e 'print Config::CONFIG[["archdir"]]'`
-if test 'x$ruby_h_dir' = 'x'; then
+if test -z $ruby_h_dir ; then
   RUBY_CFLAGS=""
 else
   RUBY_CFLAGS="-I$ruby_h_dir"

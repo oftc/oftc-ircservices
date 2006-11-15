@@ -39,6 +39,7 @@ static void *cs_on_nick_drop(va_list);
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
+static void m_info(struct Service *, struct Client *, int, char *[]);
 static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_founder(struct Service *, struct Client *, int, char *[]);
@@ -161,9 +162,13 @@ static struct ServiceMessage identify_msgtab = {
   { m_unreg, m_not_avail, m_not_avail, m_not_avail }
 };
 
+static struct ServiceMessage info_msgtab = {
+  NULL, "INFO", 0, 1, -1, -1,
+  { m_unreg, m_info, m_info, m_info }
+};
+
 
 /*
-INFO
 LIST
 INVITE
 OP
@@ -196,6 +201,7 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &identify_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &levels_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &access_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &info_msgtab);
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
   cs_channel_destroy_hook = 
@@ -325,6 +331,35 @@ m_not_avail(struct Service *service, struct Client *client,
     "   Bug the Devs! ;-)");
 }
 
+/*
+ * CHANSERV INFO
+ */
+static void
+m_info(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = cs_get_regchan_from_hash_or_db(service, client, chptr, parv[1]);
+
+  reply_user(service, client, _L(chanserv, client, CS_INFO_CHAN), parv[1], 
+  db_get_nickname_from_id(regchptr->founder),
+  db_get_nickname_from_id(regchptr->successor),
+  regchptr->description, regchptr->url, regchptr->email,
+  regchptr->topic, regchptr->entrymsg,
+  IsChanKeeptopic(regchptr)  ? "KEEPTOPIC"  : "" ,
+  IsChanTopiclock(regchptr)  ? "TOPICLOCK"  : "" ,
+  IsChanPrivate(regchptr)    ? "PRIVATE"    : "" ,
+  IsChanRestricted(regchptr) ? "RESTRICTED" : "" ,
+  IsChanSecure(regchptr)     ? "SECURE"     : "" ,
+  IsChanLeaveops(regchptr)   ? "LEAVEOPS"   : "" ,
+  IsChanVerbose(regchptr)    ? "VERBOSE"    : "" );
+
+  if (chptr == NULL)
+    free_regchan(regchptr);
+}
 
 /*
  * CHANSERV HELP
@@ -1070,7 +1105,7 @@ cs_on_nick_drop(va_list args)
 {
   char *nick = va_arg(args, char *);
 
-  db_chan_success_founder(char *name);
+  db_chan_success_founder(nick);
 
   return pass_callback(cs_on_nick_drop_hook, nick);
 }

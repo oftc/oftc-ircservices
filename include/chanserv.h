@@ -100,7 +100,7 @@ struct RegChannel
 #define CS_SET_TOPIC          44
 #define CS_SET_TOPIC_FAILED   45
 #define CS_NOT_EXIST          46
-/* one spare */
+#define CS_INFO_CHAN          47
 #define CS_SET_FLAG             48
 #define CS_SET_SUCCESS          49
 #define CS_SET_FAILED           50
