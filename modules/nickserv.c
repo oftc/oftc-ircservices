@@ -76,12 +76,12 @@ static struct ServiceMessage register_msgtab = {
 
 static struct ServiceMessage identify_msgtab = {
   NULL, "IDENTIFY", 0, 1, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
-  { m_identify, m_alreadyreg, m_alreadyreg, m_alreadyreg }
+  { m_identify, m_identify, m_identify, m_identify }
 };
 
 static struct ServiceMessage id_msgtab = {
   NULL, "ID", 0, 1, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
-  { m_identify, m_alreadyreg, m_alreadyreg, m_alreadyreg }
+  { m_identify, m_identify, m_identify, m_identify }
 };
 
 static struct ServiceMessage help_msgtab = {
