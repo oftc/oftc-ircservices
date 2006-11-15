@@ -793,7 +793,8 @@ process_privmsg(struct Client *client, struct Client *source,
   {
     printf("Unknown Message: %s %s for service %s from %s\n", ch, s, 
         parv[1], source->name);
-    reply_user(service, source, "Unknown command");
+    reply_user(service, source, "Unknown command %s.  /msg %s HELP for help.",
+        parv[1], service->name);
     return;
   }
 
@@ -866,7 +867,10 @@ process_privmsg(struct Client *client, struct Client *source,
             servpara[j-1] = servpara[j];
           }
           servpara[j-1] = NULL;
-          i -= 2;
+          if(replaced)
+            i -= 2;
+          else
+            i--;
         }
         else
         {
