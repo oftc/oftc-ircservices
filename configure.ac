@@ -1064,7 +1064,11 @@ fi
 
 dnl locate "ruby.h", "intern.h"
 ruby_h_dir=`$ruby_path -r mkmf -e 'print Config::CONFIG[["archdir"]]'`
-RUBY_CFLAGS="-I$ruby_h_dir"
+if test 'x$ruby_h_dir' = 'x'; then
+  RUBY_CFLAGS=""
+else
+  RUBY_CFLAGS="-I$ruby_h_dir"
+fi
 
 dnl locate libruby-static.a + extra libraries (libcrypt)
 ruby_lib=`$ruby_path -r mkmf -e 'c=Config::CONFIG; libs=c[["libdir"]]+"/"+c[["LIBRUBY"]]+" "+c[["LIBS"]]; print libs'`
