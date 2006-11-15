@@ -282,8 +282,7 @@ free_regchan(struct RegChannel *regchptr)
 {
   MyFree(regchptr->description);
   MyFree(regchptr->entrymsg);
-  regchptr->description = NULL;
-  regchptr->entrymsg = NULL;
+  MyFree(regchptr);
 }
 
 void
