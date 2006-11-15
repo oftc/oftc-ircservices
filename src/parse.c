@@ -794,7 +794,7 @@ process_privmsg(struct Client *client, struct Client *source,
     printf("Unknown Message: %s %s for service %s from %s\n", ch, s, 
         parv[1], source->name);
     reply_user(service, source, "Unknown command %s.  /msg %s HELP for help.",
-        parv[1], service->name);
+        ch, service->name);
     return;
   }
 
