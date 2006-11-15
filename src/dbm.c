@@ -635,7 +635,7 @@ db_chan_success_founder(const char *nickname)
 
 
   result = db_query("UPDATE %s SET founder=successor, successor=0 "
-    "WHERE successor=%i", "channel", successor_id);
+    "WHERE successor=%d", "channel", successor_id);
   if (result != NULL)
     MyFree(result);
 

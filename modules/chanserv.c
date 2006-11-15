@@ -205,6 +205,10 @@ INIT_MODULE(chanserv, "$Revision$")
 
 CLEANUP_MODULE
 {
+  uninstall_hook(on_cmode_change_cb, cs_on_cmode_change);
+  uninstall_hook(on_join_cb, cs_on_client_join);
+  uninstall_hook(on_channel_destroy_cb, cs_on_channel_destroy);
+  uninstall_hook(on_nick_drop_cb, cs_on_nick_drop);
   exit_client(find_client(chanserv->name), &me, "Service unloaded");
   hash_del_service(chanserv);
   dlinkDelete(&chanserv->node, &services_list);
