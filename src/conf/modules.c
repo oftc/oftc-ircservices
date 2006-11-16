@@ -113,7 +113,7 @@ init_module(struct Module *mod, const char *fullname)
       mod->handle ? "shared" : "built-in", fullname);
 
   ilog(L_NOTICE, "%s", message);
-  printf("%s", message);
+  ilog(L_DEBUG, "%s", message);
 
   DupString(mod->fullname, fullname);
   dlinkAdd(mod, &mod->node, &loaded_modules);
@@ -175,7 +175,7 @@ load_shared_module(const char *name, const char *dir, const char *fname)
   
   if (!(handle = modload(path, &base)))
   {
-    printf("Failed to load %s: %s\n", path, dlerror());
+    ilog(L_DEBUG, "Failed to load %s: %s\n", path, dlerror());
     return 0;
   }
 
@@ -188,7 +188,7 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     snprintf(error, sizeof(error), "%s contains no %s export!", fname, sym);
 
     ilog(L_WARN, "%s", error);
-    printf("%s", error);
+    ilog(L_DEBUG, "%s", error);
     return 0;
   }
 
@@ -253,7 +253,7 @@ load_module(const char *filename)
   }
 
   ilog(L_CRIT, "Cannot locate module %s", filename);
-  printf("Cannot locate module %s", filename);
+  ilog(L_DEBUG, "Cannot locate module %s", filename);
   return 0;
 }
 

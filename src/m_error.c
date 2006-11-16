@@ -40,11 +40,11 @@ ms_error(struct Client *client, struct Client *source, int parc, char *parv[])
 
   para = (parc > 1 && *parv[1] != '\0') ? parv[1] : "<>";
 
-  printf("Received ERROR message from %s: %s", source->name, para);
+  ilog(L_DEBUG, "Received ERROR message from %s: %s", source->name, para);
 
   if (client == source)
-    printf("ERROR :from %s -- %s", client->name, para);
+    ilog(L_DEBUG, "ERROR :from %s -- %s", client->name, para);
   else
-    printf("ERROR :from %s via %s -- %s", source->name, client->name, para);
+    ilog(L_DEBUG, "ERROR :from %s via %s -- %s", source->name, client->name, para);
 }
 

@@ -224,7 +224,7 @@ close_connection(struct Client *client_p)
 
   client_p->from = NULL; /* ...this should catch them! >:) --msa */
 
-  printf("Closed connection to %s\n", client_p->name);
+  ilog(L_DEBUG, "Closed connection to %s\n", client_p->name);
 }
 
 /*
@@ -274,7 +274,7 @@ exit_one_client(struct Client *source_p)
   if (source_p != NULL && source_p->node.next != NULL)
     dlinkDelete(&source_p->node, &global_client_list);
 
-  printf("exited: %s\n", source_p->name);
+  ilog(L_DEBUG, "exited: %s\n", source_p->name);
 }
 
 /*
@@ -391,7 +391,7 @@ check_clean_nick(struct Client *client_p, struct Client *source_p,
    */
   if (!clean_nick_name(nick, 0) || strcmp(nick, newnick))
   {
-    printf("Bad Nick: %s From: %s(via %s)",
+    ilog(L_DEBUG, "Bad Nick: %s From: %s(via %s)",
         nick, server_p->name, client_p->name);
 
     /* bad nick change */
@@ -421,14 +421,14 @@ check_clean_user(struct Client *client_p, char *nick,
 {
   if (strlen(user) > USERLEN)
   {
-    printf("Long Username: %s Nickname: %s From: %s(via %s)",
+    ilog(L_DEBUG, "Long Username: %s Nickname: %s From: %s(via %s)",
         user, nick, server_p->name, client_p->name);
 
     return 1;
   }
 
   if (!clean_user_name(user))
-    printf("Bad Username: %s Nickname: %s From: %s(via %s)",
+    ilog(L_DEBUG, "Bad Username: %s Nickname: %s From: %s(via %s)",
        user, nick, server_p->name, client_p->name);
 
   return 0;
@@ -449,14 +449,14 @@ check_clean_host(struct Client *client_p, char *nick,
 {
   if (strlen(host) > HOSTLEN)
   {
-    printf("Long Hostname: %s Nickname: %s From: %s(via %s)",
+    ilog(L_DEBUG, "Long Hostname: %s Nickname: %s From: %s(via %s)",
         host, nick, server_p->name, client_p->name);
 
     return 1;
   }
 
   if (!clean_host_name(host))
-    printf("Bad Hostname: %s Nickname: %s From: %s(via %s)",
+    ilog(L_DEBUG, "Bad Hostname: %s Nickname: %s From: %s(via %s)",
         host, nick, server_p->name, client_p->name);
 
   return 0;
@@ -577,7 +577,7 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
           {
             if (IsServer(client_p) && !IsOper(source_p))
             {
-              printf("Setting %s!%s@%s as oper\n", source_p->name,
+              ilog(L_DEBUG, "Setting %s!%s@%s as oper\n", source_p->name,
                   source_p->username, source_p->host);
               SetOper(source_p);
               execute_callback(on_umode_change_cb, source_p, what, UMODE_OPER);
@@ -654,7 +654,7 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
    */
   if (source_p->servptr == NULL)
   {
-    printf("No server %s for user %s[%s@%s] from %s",
+    ilog(L_DEBUG, "No server %s for user %s[%s@%s] from %s",
         server, source_p->name, source_p->username,
         source_p->host, source_p->from->name);
     exit_client(source_p, &me, "Ghosted Client");
@@ -663,7 +663,7 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
 
   if ((target_p = source_p->servptr) && target_p->from != source_p->from)
   {
-    printf("Bad User [%s] :%s USER %s@%s %s, != %s[%s]",
+    ilog(L_DEBUG, "Bad User [%s] :%s USER %s@%s %s, != %s[%s]",
         client_p->name, source_p->name, source_p->username,
         source_p->host, source_p->servptr->name,
         target_p->name, target_p->from->name);
@@ -675,7 +675,7 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
 
   SetClient(source_p);
   dlinkAdd(source_p, &source_p->lnode, &source_p->servptr->client_list);
-  printf("Adding client %s!%s@%s from %s\n", source_p->name, source_p->username,
+  ilog(L_DEBUG, "Adding client %s!%s@%s from %s\n", source_p->name, source_p->username,
       source_p->host, server);
   execute_callback(on_newuser_cb, source_p);
 }
@@ -703,7 +703,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
     else
     {
       newts = source_p->tsinfo = CurrentTime;
-      printf("Remote nick %s (%s) introduced without a TS", nick, parv[0]);
+      ilog(L_DEBUG, "Remote nick %s (%s) introduced without a TS", nick, parv[0]);
     }
 
     /* copy the nick in place */
@@ -724,7 +724,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
 
         source_p->umodes |= flag;
         execute_callback(on_umode_change_cb, source_p, MODE_ADD, flag);
-        printf("Setting umode %c on %s\n", *m, source_p->name);
+        ilog(L_DEBUG, "Setting umode %c on %s\n", *m, source_p->name);
         m++;
       }
 

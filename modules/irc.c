@@ -424,7 +424,7 @@ do_user_modes(struct Client *client, const char *modes)
         if(dir == MODE_ADD)
         {
           SetOper(client);
-          printf("Setting %s as operator(o)\n", client->name);
+          ilog(L_DEBUG, "Setting %s as operator(o)\n", client->name);
         }
         else
           ClearOper(client);
@@ -642,7 +642,7 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
     hash_add_client(newclient);
     newclient->servptr = source;
     dlinkAdd(newclient, &newclient->lnode, &newclient->servptr->server_list);
-    printf("Got server %s from hub %s\n", parv[1], source->name);
+    ilog(L_DEBUG, "Got server %s from hub %s\n", parv[1], source->name);
   }
 }
 
@@ -734,7 +734,7 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
     isnew = 1;
     chptr = make_channel(parv[2]);
     chptr->regchan = db_find_chan(parv[2]); // the result doesnt matter here -mc
-    printf("Created channel %s\n", parv[2]);
+    ilog(L_DEBUG, "Created channel %s\n", parv[2]);
   }
 
   oldts   = chptr->channelts;
@@ -917,7 +917,7 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
     {
       add_user_to_channel(chptr, target, fl, !have_many_nicks);
       chain_join(target, chptr->chname);
-      printf("Added %s!%s@%s to %s\n", target->name, target->username,
+      ilog(L_DEBUG, "Added %s!%s@%s to %s\n", target->name, target->username,
           target->host, chptr->chname);
     }
 
@@ -1224,7 +1224,7 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
   {
     /* if here, it has to be a non-channel name */
     set_user_mode(client_p, source_p, parc, parv);
-    printf("%s %s\n", client_p->name, source_p->name);
+    ilog(L_DEBUG, "%s %s\n", client_p->name, source_p->name);
     return;
   }
 

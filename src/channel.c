@@ -92,12 +92,12 @@ remove_user_from_channel(struct Membership *member)
   dlinkDelete(&member->usernode, &client_p->channel);
 
   BlockHeapFree(member_heap, member);
-  printf("Removing %s from channel %s\n", client_p->name, chptr->chname);
+  ilog(L_DEBUG, "Removing %s from channel %s\n", client_p->name, chptr->chname);
 
   if (chptr->members.head == NULL)
   {
     assert(dlink_list_length(&chptr->members) == 0);  
-    printf("Destroying empty channel %s\n", chptr->chname);
+    ilog(L_DEBUG, "Destroying empty channel %s\n", chptr->chname);
     execute_callback(on_channel_destroy_cb, chptr);
     destroy_channel(chptr);
   }
@@ -199,7 +199,7 @@ add_user_to_channel(struct Channel *chptr, struct Client *who,
   ms->chptr = chptr;
   ms->flags = flags;
 
-  printf("Adding %s to %s\n", who->name, chptr->chname);
+  ilog(L_DEBUG, "Adding %s to %s\n", who->name, chptr->chname);
 
   dlinkAdd(ms, &ms->channode, &chptr->members);
   dlinkAdd(ms, &ms->usernode, &who->channel);

@@ -858,7 +858,6 @@ ns_on_umode_change(va_list args)
   int what            = va_arg(args, int);
   int umode           = va_arg(args, int);
 
-  printf("Got %d %d from %s\n", what, umode, user->name);
   return pass_callback(ns_nick_hook, user, what, umode);
 }
 
@@ -870,7 +869,7 @@ ns_on_nick_change(va_list args)
   struct Nick *nick_p;
   char userhost[USERHOSTLEN+1]; 
 
-  printf("%s changing nick to %s\n", oldnick, user->name);
+  ilog(L_DEBUG, "%s changing nick to %s\n", oldnick, user->name);
  
   dlinkFindDelete(&nick_enforce_list, user);
   if(IsIdentified(user))
@@ -884,7 +883,7 @@ ns_on_nick_change(va_list args)
 
   if((nick_p = db_find_nick(user->name)) == NULL)
   {
-    printf("Nick Change: %s->%s(nick not registered)\n", oldnick, user->name);
+    ilog(L_DEBUG, "Nick Change: %s->%s(nick not registered)\n", oldnick, user->name);
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
@@ -901,7 +900,7 @@ ns_on_nick_change(va_list args)
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
   if(check_list_entry("nickname_access", nick_p->id, userhost))
   {
-    printf("%s changed nick to %s(found access entry)\n", oldnick, user->name);
+    ilog(L_DEBUG, "%s changed nick to %s(found access entry)\n", oldnick, user->name);
     SetOnAccess(user);
     if(!IsNickSecure(nick_p))
     {
@@ -923,7 +922,7 @@ ns_on_nick_change(va_list args)
       reply_user(nickserv, user, _L(nickserv, user, NS_NICK_IN_USE), user->name);
     }
  
-    printf("%s changed nick to %s(no access entry)\n", oldnick, user->name);
+    ilog(L_DEBUG, "%s changed nick to %s(no access entry)\n", oldnick, user->name);
   }
   
   return pass_callback(ns_nick_hook, user, oldnick);
@@ -936,11 +935,11 @@ ns_on_newuser(va_list args)
   struct Nick *nick_p;
   char userhost[USERHOSTLEN+1];
   
-  printf("New User: %s!\n", newuser->name);
+  ilog(L_DEBUG, "New User: %s!\n", newuser->name);
 
   if((nick_p = db_find_nick(newuser->name)) == NULL)
   {
-    printf("New user: %s(nick not registered)\n", newuser->name);
+    ilog(L_DEBUG, "New user: %s(nick not registered)\n", newuser->name);
     return pass_callback(ns_newuser_hook, newuser);
   }
 
@@ -967,7 +966,7 @@ ns_on_newuser(va_list args)
       newuser->host);
   if(check_list_entry("nickname_access", nick_p->id, userhost))
   {
-    printf("new user: %s(found access entry)\n", newuser->name);
+    ilog(L_DEBUG, "new user: %s(found access entry)\n", newuser->name);
     SetOnAccess(newuser);
     if(!IsNickSecure(nick_p))
     {
@@ -989,7 +988,7 @@ ns_on_newuser(va_list args)
       reply_user(nickserv, newuser, _L(nickserv, newuser, NS_NICK_IN_USE),
           newuser->name);
     }
-    printf("new user:%s(no access entry)\n", newuser->name);
+    ilog(L_DEBUG, "new user:%s(no access entry)\n", newuser->name);
   }
   
   return pass_callback(ns_newuser_hook, newuser);

@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
   init_log(ServicesInfo.logfile);
 
-  printf("Services starting with name %s description %s sid %s\n",
+  ilog(L_DEBUG, "Services starting with name %s description %s sid %s\n",
       me.name, me.info, me.id);
 
   me.from = me.servptr = &me;
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 #ifndef STATIC_MODULES
   if(chdir(MODPATH))
   {
-    printf("Could not load core modules. Terminating!");
+    ilog(L_DEBUG, "Could not load core modules. Terminating!");
     exit(EXIT_FAILURE);
   }
 
@@ -102,6 +102,6 @@ int main(int argc, char *argv[])
 void
 services_die(const char *msg, int rboot)
 {
-  printf("Dying: %s\n", msg);
+  ilog(L_DEBUG, "Dying: %s\n", msg);
   exit(rboot);
 }

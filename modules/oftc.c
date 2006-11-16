@@ -179,7 +179,7 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
     hash_add_client(newclient);
     newclient->servptr = source;
     dlinkAdd(newclient, &newclient->lnode, &newclient->servptr->server_list);
-    printf("Got TS5 server %s from TS6 hub %s\n", parv[1], source->name);
+    ilog(L_DEBUG, "Got TS5 server %s from TS6 hub %s\n", parv[1], source->name);
   }
 }
 
@@ -198,7 +198,7 @@ m_sid(struct Client *client, struct Client *source, int parc, char *parv[])
   hash_add_id(newclient);
   newclient->servptr = source;
   dlinkAdd(newclient, &newclient->lnode, &newclient->servptr->server_list);
-  printf("Got server %s(%s) from hub %s(%s)\n", parv[1], parv[3], 
+  ilog(L_DEBUG, "Got server %s(%s) from hub %s(%s)\n", parv[1], parv[3], 
       source->name, source->id);
 }
 
@@ -256,7 +256,7 @@ m_join(struct Client *client_p, struct Client *source_p,
 
   if(chptr == NULL)
   {
-    printf("%s!%s@%s(%s) trying to join channel %s which doesnt exist!\n", 
+    ilog(L_DEBUG, "%s!%s@%s(%s) trying to join channel %s which doesnt exist!\n", 
         source_p->name, source_p->username, source_p->host, source_p->id, 
         parv[2]);
     return;
@@ -266,7 +266,7 @@ m_join(struct Client *client_p, struct Client *source_p,
   {
     add_user_to_channel(chptr, source_p, 0, 0);
     chain_join(source_p, chptr->chname);
-    printf("Added %s!%s@%s to %s\n", source_p->name, source_p->username,
+    ilog(L_DEBUG, "Added %s!%s@%s to %s\n", source_p->name, source_p->username,
         source_p->host, chptr->chname);
   }
 }

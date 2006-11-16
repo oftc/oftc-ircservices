@@ -340,7 +340,7 @@ load_one_module(char *path, int coremodule)
     }
   }
 
-  printf("Cannot locate module %s", path);
+  ilog(L_DEBUG, "Cannot locate module %s", path);
   return -1;
 }
 

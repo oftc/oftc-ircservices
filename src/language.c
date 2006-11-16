@@ -36,7 +36,7 @@ load_language(struct Service *service, const char *langfile)
 
   if((file = fbopen(buffer, "r")) == NULL)
   {
-    printf("Failed to open language file %s for service %s(%s)\n", langfile,
+    ilog(L_DEBUG, "Failed to open language file %s for service %s(%s)\n", langfile,
         service->name, buffer);
     return;
   }
@@ -45,7 +45,7 @@ load_language(struct Service *service, const char *langfile)
   fbgets(buffer, sizeof(buffer), file);
   if((s = strchr(buffer, ' ')) == NULL)
   {
-    printf("Language file %s for service %s is invalid\n", langfile,
+    ilog(L_DEBUG, "Language file %s for service %s is invalid\n", langfile,
         service->name);
     return;
   }
@@ -58,7 +58,7 @@ load_language(struct Service *service, const char *langfile)
   
   DupString(service->language_table[lang][i], s);
   
-  printf("Loading language %d(%s) for service %s\n", lang, langfile,
+  ilog(L_DEBUG, "Loading language %d(%s) for service %s\n", lang, langfile,
       service->name);
 
   while(fbgets(buffer, sizeof(buffer), file) != NULL)
