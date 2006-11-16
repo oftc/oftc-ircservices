@@ -34,23 +34,25 @@ int main(int argc, char *argv[])
 {
   memset(&ServicesInfo, 0, sizeof(ServicesInfo));
 
-  libio_init(FALSE);
-
   memset(&me, 0, sizeof(me));
 
   iorecv_cb = register_callback("iorecv", iorecv_default);
   connected_cb = register_callback("server connected", server_connected);
   iosend_cb = register_callback("iosend", iosend_default);
       
+  init_interface();
+  strcpy(ServicesInfo.logfile, "services.log");
+  libio_init(FALSE);
   init_db();
   init_channel();
   init_conf();
   init_client();
-  init_interface();
   init_parser();
   init_channel_modes();
 
   read_services_conf(TRUE);
+
+  init_log(ServicesInfo.logfile);
 
   printf("Services starting with name %s description %s sid %s\n",
       me.name, me.info, me.id);
@@ -83,6 +85,7 @@ int main(int argc, char *argv[])
 
 
   connect_server();
+  ilog(L_DEBUG, "Test");
 
   for(;;)
   {

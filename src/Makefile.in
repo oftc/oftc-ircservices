@@ -65,6 +65,7 @@ SRCS = 								\
  conf/conf.c  				\
  conf/connect.c				\
  conf/database.c			\
+ conf/logging.c				\
  conf/modules.c				\
  conf/servicesinfo.c	\
  conf.c								\

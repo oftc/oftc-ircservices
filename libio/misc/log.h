@@ -36,8 +36,10 @@ LIBIO_EXTERN void *user_log_fb;
 
 LIBIO_EXTERN void init_log(const char *);
 LIBIO_EXTERN void reopen_log(const char *);
-LIBIO_EXTERN void set_log_level(const int);
-LIBIO_EXTERN int get_log_level(void);
+LIBIO_EXTERN void set_gnotice_log_level(const int);
+LIBIO_EXTERN int get_gnotice_log_level(void);
+LIBIO_EXTERN void set_file_log_level(const int);
+LIBIO_EXTERN int get_file_log_level(void);
 #ifdef __GNUC__
 LIBIO_EXTERN void ilog(const int, const char *, ...)
   __attribute__((format(printf, 2, 3)));

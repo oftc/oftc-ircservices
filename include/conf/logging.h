@@ -1,5 +1,6 @@
 /*
- *  servicesinfo.h: Defines servicesinfo{} conf section.
+ *  ircd-hybrid: an advanced Internet Relay Chat Daemon(ircd).
+ *  logging.h: Defines logging{} conf section.
  *
  *  Copyright (C) 2005 by the Hybrid Development Team.
  *
@@ -21,22 +22,14 @@
  *  $Id$
  */
 
-struct ServicesInfoConf
+struct LoggingConf
 {
-  struct irc_ssaddr vhost;
-#ifdef IPV6
-  struct irc_ssaddr vhost6;
-#endif
-#ifdef HAVE_LIBCRYPTO
-  char *rsa_private_key_file;
-  RSA *rsa_private_key;
-  SSL_CTX *ctx;
-#endif
-  char logfile[PATH_MAX+1];
+  char use_logging;
+  char serviceslog[PATH_MAX+1], debuglog[PATH_MAX+1], sqllog[PATH_MAX+1];
 };
 
-EXTERN struct ServicesInfoConf ServicesInfo;
+EXTERN struct LoggingConf Logging;
 
 #ifdef IN_CONF_C
-void init_servicesinfo(void);
+void init_logging(void);
 #endif

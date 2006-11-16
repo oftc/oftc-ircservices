@@ -60,6 +60,7 @@ init_conf(void)
 #ifndef STATIC_MODULES
   init_modules();
 #endif
+  init_logging();
 }
 
 /*

@@ -318,7 +318,8 @@ oftc_sendmsg_gnotice(va_list args)
   char          *text   = va_arg(args, char *);
   
   // 1 is UMODE_ALL, aka UMODE_SERVERNOTICE
-  sendto_server(client, ":%s GNOTICE %s 1 :%s", source, source, text);
+  if(client != NULL)
+    sendto_server(client, ":%s GNOTICE %s 1 :%s", source, source, text);
   return pass_callback(oftc_gnotice_hook, client, source, text);
 }
 

@@ -29,6 +29,7 @@
 #include "conf/servicesinfo.h"
 #include "conf/database.h"
 #include "conf/connect.h"
+#include "conf/logging.h"
 #ifndef STATIC_MODULES
 #include "conf/modules.h"
 #endif

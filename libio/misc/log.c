@@ -39,7 +39,8 @@
 #define LOG_BUFSIZE 2000
 
 static FBFILE *logFile = NULL;
-static int logLevel = INIT_LOG_LEVEL;
+static int gnotice_logLevel = INIT_LOG_LEVEL;
+static int file_logLevel = INIT_LOG_LEVEL;
 
 #ifndef SYSLOG_USERS
 static EVH user_log_resync;
@@ -120,7 +121,7 @@ ilog(const int priority, const char *fmt, ...)
   if (fmt == NULL)
     return;
 
-  if (priority > logLevel)
+  if (priority > file_logLevel && priority > gnotice_logLevel)
     return;
 
   va_start(args, fmt);
@@ -131,7 +132,11 @@ ilog(const int priority, const char *fmt, ...)
   if (priority <= L_DEBUG)
     syslog(sysLogLevel[priority], "%s", buf);
 #endif
-  write_log(buf);
+  if(priority <= file_logLevel)
+    write_log(buf);
+
+  if(priority <= gnotice_logLevel)
+    global_notice(NULL, buf);
 }
   
 void
@@ -155,18 +160,31 @@ reopen_log(const char *filename)
 }
 
 void
-set_log_level(const int level)
+set_gnotice_log_level(const int level)
 {
   if (L_ERROR < level && level <= L_DEBUG)
-    logLevel = level;
+    gnotice_logLevel = level;
+}
+
+void
+set_file_log_level(const int level)
+{
+  if (L_ERROR < level && level <= L_DEBUG)
+    file_logLevel = level;
 }
 
 int
-get_log_level(void)
+get_gnotice_log_level(void)
 {
-  return(logLevel);
+  return(gnotice_logLevel);
 }
 
+int
+get_file_log_level(void)
+{
+  return(file_logLevel);
+}
+  
 const char *
 get_log_level_as_string(int level)
 {
