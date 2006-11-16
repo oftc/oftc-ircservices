@@ -228,6 +228,7 @@ static void
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
+  ilog(L_DEBUG, "T: %s wishes to reg %s", client->name, parv[1]);
   struct Channel    *chptr;
   struct RegChannel *regchptr;
 
@@ -237,6 +238,7 @@ m_register(struct Service *service, struct Client *client,
   if ( *parv[1] != '#' )
   {
     reply_user(service, client, _L(chanserv, client, CS_NAMESTART_HASH));
+    ilog(L_DEBUG, "Channel REG failed for %s on %s (-ESPELING)", client->name, parv[1]);
     return;
   }
 
@@ -246,6 +248,7 @@ m_register(struct Service *service, struct Client *client,
   if ((chptr == NULL) || (! IsMember(client, chptr))) 
   {
     reply_user(service, client, _L(chanserv, client, CS_NOT_ONCHAN));
+    ilog(L_DEBUG, "Channel REG failed for %s on %s (notonchan)", client->name, parv[1]);
     return;
   }
   
@@ -253,6 +256,7 @@ m_register(struct Service *service, struct Client *client,
   if (! IsChanop(client, chptr))
   {
     reply_user(service, client, _L(chanserv, client, CS_NOT_OPPED));
+    ilog(L_DEBUG, "Channel REG failed for %s on %s (notop)", client->name, parv[1]);
     return;
   }
 
@@ -261,6 +265,7 @@ m_register(struct Service *service, struct Client *client,
   if (regchptr != NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_ALREADY_REG), parv[1]);
+    ilog(L_DEBUG, "Channel REG failed for %s on %s (exists)", client->name, parv[1]);
     free_regchan(regchptr);
     return;
   }
@@ -269,13 +274,15 @@ m_register(struct Service *service, struct Client *client,
   {
     chptr->regchan = db_find_chan(parv[1]);
     reply_user(service, client, _L(chanserv, client, CS_REG_SUCCESS), parv[1]);
-    global_notice(NULL, "%s (%s@%s) registered channel %s", 
-      client->name, client->username, client->host, parv[1]);
+    ilog(L_NOTICE, "%s!%s@%s registered channel %s", 
+        client->name, client->username, client->host, parv[1]);
   }
   else
   {
     reply_user(service, client, _L(chanserv, client, CS_REG_FAIL), parv[1]);
+    ilog(L_DEBUG, "Channel REG failed for %s on %s", client->name, parv[1]);
   }
+  ilog(L_TRACE, "T: Leaving CS:m_register (%s:%s)", client->name, parv[1]);
 }
 
 
@@ -286,6 +293,7 @@ static void
 m_drop(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "T: %s wishes to drop %s", client->name, parv[1]);
   struct Channel *chptr;
   struct RegChannel *regchptr;
 
@@ -297,6 +305,7 @@ m_drop(struct Service *service, struct Client *client,
   if (regchptr->founder != client->nickname->id)
   {
     reply_user(service, client, _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    ilog(L_DEBUG, "Channel DROP failed for %s on %s (notown)", client->name, parv[1]);
     if (chptr == NULL)
     {
       free_regchan(regchptr);
@@ -307,18 +316,20 @@ m_drop(struct Service *service, struct Client *client,
   if (db_delete_chan(parv[1]) == 0)
   {
     reply_user(service, client, _L(chanserv, client, CS_DROPPED), parv[1]);
-    global_notice(NULL, "%s (%s@%s) dropped channel %s", 
+    ilog(L_NOTICE, "%s!%s@%s dropped channel %s", 
       client->name, client->username, client->host, parv[1]);
 
     chptr->regchan = NULL;
   } else
   {
+    ilog(L_DEBUG, "Channel DROP failed for %s on %s", client->name, parv[1]);
     reply_user(service, client, _L(chanserv, client, CS_DROP_FAILED), parv[1]);
   }
   if (chptr == NULL)
   {
     free_regchan(regchptr);
   }
+  ilog(L_TRACE, "T: Leaving CS:m_drop (%s:%s)", client->name, parv[1]);
   return;
 }
 
@@ -338,6 +349,8 @@ static void
 m_info(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "Channel INFO from %s for %s", client->name, parv[1]);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
 
@@ -359,6 +372,8 @@ m_info(struct Service *service, struct Client *client,
 
   if (chptr == NULL)
     free_regchan(regchptr);
+
+  ilog(L_TRACE, "T: Leaving CS:m_drop (%s:%s)", client->name, parv[1]);
 }
 
 /*
@@ -390,6 +405,8 @@ static void
 m_set_founder(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "Channel SET FOUNDER from %s for %s", client->name, parv[1]);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
   struct Nick *nick_p;
@@ -402,6 +419,7 @@ m_set_founder(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    ilog(L_DEBUG, "Channel SET FOUNDER failed for %s on %s (notown)", client->name, parv[1]);
     if (chptr == NULL)
     {
       free_regchan(regchptr);
@@ -414,6 +432,7 @@ m_set_founder(struct Service *service, struct Client *client,
     foundernick = db_get_nickname_from_id(regchptr->founder);
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_FOUNDER), parv[1], foundernick);
+    ilog(L_TRACE, "T: Leaving CS:m_set_founder (%s:%s) (INFO ONLY)", client->name, parv[1]);
     MyFree(foundernick);
     if (chptr == NULL)
     {
@@ -426,6 +445,7 @@ m_set_founder(struct Service *service, struct Client *client,
   if ((nick_p = db_find_nick(parv[2])) == NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_REGISTER_NICK), parv[2]);
+    ilog(L_DEBUG, "Channel SET FOUNDER failed for %s on %s (newnotreg)", client->name, parv[1]);
     if (chptr == NULL)
     {
       free_regchan(regchptr);
@@ -440,19 +460,21 @@ m_set_founder(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_FOUNDER), parv[1], parv[2]);
-    global_notice(NULL, "%s (%s@%s) set founder of %s to %s", 
+    ilog(L_NOTICE, "%s (%s@%s) set founder of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
-    regchptr->founder = db_get_id_from_nick(parv[2]); // correct? -mc
+    regchptr->founder = db_get_id_from_nick(parv[2]); 
   }
   else
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_FOUNDER_FAILED), parv[1], parv[2]);
   }
+
   if (chptr == NULL)
   {
     free_regchan(regchptr);
   }
+  ilog(L_TRACE, "T: Leaving CS:m_set_foudner (%s:%s)", client->name, parv[1]);
 }
 
 
@@ -463,6 +485,8 @@ static void
 m_set_successor(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "Channel SET SUCCESSOR from %s for %s", client->name, parv[1]);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
   struct Nick *nick_p;
@@ -475,6 +499,7 @@ m_set_successor(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    ilog(L_DEBUG, "Channel SET SUCCESSOR failed for %s on %s (notown)", client->name, parv[1]);
     if (chptr == NULL)
     {
       free_regchan(regchptr);
@@ -487,6 +512,7 @@ m_set_successor(struct Service *service, struct Client *client,
     successornick = db_get_nickname_from_id(regchptr->successor);
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_SUCCESSOR), parv[1], successornick);
+    ilog(L_TRACE, "leaving CS:m_set_successor for %s on %s (INFO ONLY)", client->name, parv[1]);
     MyFree(successornick);
     if (chptr == NULL)
     {
@@ -498,6 +524,7 @@ m_set_successor(struct Service *service, struct Client *client,
   if ((nick_p = db_find_nick(parv[2])) == NULL)
   {
     reply_user(service, client, _L(chanserv, client, CS_REGISTER_NICK), parv[2]);
+    ilog(L_DEBUG, "Channel SET SUCCESSOR failed for %s on %s (newnotreg)", client->name, parv[1]);
     if (chptr == NULL)
     {
       free_regchan(regchptr);
@@ -512,7 +539,7 @@ m_set_successor(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_SUCC), parv[1], parv[2]);
-    global_notice(NULL, "%s (%s@%s) set successor of %s to %s", 
+    ilog(L_NOTICE, "%s (%s@%s) set successor of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
    regchptr->successor = db_get_id_from_nick(parv[2]); 
   }
@@ -525,6 +552,7 @@ m_set_successor(struct Service *service, struct Client *client,
   {
     free_regchan(regchptr);
   }
+  ilog(L_TRACE, "T: Leaving CS:m_set_successor (%s:%s)", client->name, parv[1]);
 }
 
 
