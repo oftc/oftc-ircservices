@@ -935,6 +935,9 @@ ns_on_newuser(va_list args)
   struct Nick *nick_p;
   char userhost[USERHOSTLEN+1];
   
+  if(IsMe(newuser->from))
+    return pass_callback(ns_newuser_hook, newuser);
+
   ilog(L_DEBUG, "New User: %s!\n", newuser->name);
 
   if((nick_p = db_find_nick(newuser->name)) == NULL)

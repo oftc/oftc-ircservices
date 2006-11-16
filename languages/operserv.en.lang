@@ -1,6 +1,50 @@
 0 English
-OS_NICK_NOT_REG    Nickname %s is not registered
-OS_CLOAK_SET       Set Cloak %s for %s
-OS_CLOAK_FAILED    Could not set Cloak for %s
-OS_SET_SHORT       Help for set
-OS_SET_LONG        Help for set (long)
+OS_HELP_SHORT
+	Shows this help
+OS_HELP_LONG
+	Use HELP to get help on commands.  /msg OperServ HELP command
+OS_MOD_HELP_SHORT
+	moo
+OS_MOD_HELP_LONG
+	moo
+OS_RAW_HELP_SHORT
+	moo
+OS_RAW_HELP_LONG
+	Sends a command to the server directly.  Abuse this and cdlu will bite off
+	your hand.
+OS_GLOBAL_HELP_SHORT
+	moo
+OS_GLOBAL_HELP_LONG
+	moo
+OS_ADMIN_HELP_SHORT
+	moo
+OS_ADMIN_HELP_LONG
+	moo
+OS_SESSION_HELP_SHORT
+	moo
+OS_SESSION_HELP_LONG
+	moo
+OS_AKILL_HELP_SHORT
+	moo
+OS_AKILL_HELP_LONG
+	moo
+OS_EXCEPTIONS_HELP_SHORT
+	moo
+OS_EXCEPTIONS_HELP_LONG
+	moo
+OS_JUPE_HELP_SHORT
+	moo
+OS_JUPE_HELP_LONG
+	moo
+OS_SET_HELP_SHORT
+	moo
+OS_SET_HELP_LONG
+	moo
+OS_SHUTDOWN_HELP_SHORT
+	moo
+OS_SHUTDOWN_HELP_LONG
+	moo
+OS_QUARENTINE_HELP_SHORT
+	moo
+OS_QUARENTINE_HELP_LONG
+	moo

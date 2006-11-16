@@ -30,30 +30,84 @@
 
 static struct Service *operserv = NULL;
 
+static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_raw(struct Service *, struct Client *, int, char *[]);
 static void m_mod(struct Service *, struct Client *, int, char *[]);
 static void m_mod_list(struct Service *, struct Client *, int, char *[]);
 static void m_mod_load(struct Service *, struct Client *, int, char *[]);
+static void m_mod_reload(struct Service *, struct Client *, int, char *[]);
 static void m_mod_unload(struct Service *, struct Client *, int, char *[]);
-
+static void m_operserv_notimp(struct Service *, struct Client *, int, char *[]);
 
 // FIXME wrong type of clients may execute
 //
-static struct SubMessage mod_subs[4] = {
+
+static struct ServiceMessage help_msgtab = {
+  NULL, "HELP", 0, 0, OS_HELP_SHORT, OS_HELP_LONG,
+  { m_help, m_help, m_help, m_help}
+};
+
+static struct SubMessage mod_subs[5] = {
   { "LIST", 0, 0, -1, -1, m_mod_list },
   { "LOAD", 0, 1, -1, -1, m_mod_load },
+  { "RELOAD", 0, 1, -1, -1, m_mod_reload },
   { "UNLOAD", 0, 1, -1, -1, m_mod_unload },
   { NULL, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage mod_msgtab = {
-  mod_subs, "MOD", 0, 1, -1, -1,
+  mod_subs, "MOD", 0, 1, OS_MOD_HELP_SHORT, OS_MOD_HELP_LONG,
   { m_mod, m_servignore, m_servignore, m_servignore }
 };
 
 static struct ServiceMessage raw_msgtab = {
-  NULL, "RAW", 1, 1, -1, -1,
+  NULL, "RAW", 1, 1, OS_RAW_HELP_SHORT, OS_RAW_HELP_LONG,
   { m_raw, m_servignore, m_servignore, m_servignore }
+};
+
+static struct ServiceMessage global_msgtab = {
+  NULL, "GLOBAL", 1, 1, OS_GLOBAL_HELP_SHORT, OS_GLOBAL_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+};
+
+static struct ServiceMessage admin_msgtab = {
+  NULL, "ADMIN", 1, 1, OS_ADMIN_HELP_SHORT, OS_ADMIN_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+};
+
+static struct ServiceMessage session_msgtab = {
+  NULL, "SESSION", 1, 1, OS_SESSION_HELP_SHORT, OS_SESSION_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+};
+
+static struct ServiceMessage akill_msgtab = {
+  NULL, "AKILL", 1, 1, OS_AKILL_HELP_SHORT, OS_AKILL_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+};
+
+static struct ServiceMessage exceptions_msgtab = {
+  NULL, "EXCEPTIONS", 1, 1, OS_EXCEPTIONS_HELP_SHORT, OS_EXCEPTIONS_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+};
+
+static struct ServiceMessage jupe_msgtab = {
+  NULL, "JUPE", 1, 1, OS_JUPE_HELP_SHORT, OS_JUPE_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+};
+
+static struct ServiceMessage set_msgtab = {
+  NULL, "SET", 1, 1, OS_SET_HELP_SHORT, OS_SET_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+};
+
+static struct ServiceMessage shutdown_msgtab = {
+  NULL, "SHUTDOWN", 1, 1, OS_SHUTDOWN_HELP_SHORT, OS_SHUTDOWN_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+};
+
+static struct ServiceMessage quarentine_msgtab = {
+  NULL, "QUARENTINE", 1, 1, OS_QUARENTINE_HELP_SHORT, OS_QUARENTINE_HELP_LONG,
+  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
 };
 
 INIT_MODULE(operserv, "$Revision$")
@@ -64,12 +118,32 @@ INIT_MODULE(operserv, "$Revision$")
   hash_add_service(operserv);
   introduce_service(operserv);
 
+  load_language(operserv, "operserv.en");
+
+  mod_add_servcmd(&operserv->msg_tree, &help_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &mod_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &global_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &admin_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &session_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &akill_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &exceptions_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &jupe_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &set_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &shutdown_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &quarentine_msgtab);
 }
 
 CLEANUP_MODULE
 {
+}
+
+static void
+m_help(struct Service *service, struct Client *client,
+        int parc, char *parv[])
+{
+  do_help(service, client, parv[1], parc, parv);
 }
 
 static void 
@@ -109,6 +183,41 @@ m_mod_load(struct Service *service, struct Client *client,
 
   global_notice(service, "Loading %s by request of %s",
       parm, client->name);
+  if (load_module(parm) == 1)
+  {
+    global_notice(service, "Module %s loaded", parm);
+    reply_user(service, client,  "Module %s loaded", parm);
+  }
+  else
+  {
+    global_notice(service, "Module %s could not be loaded!", parm);
+    reply_user(service, client,  "Module %s could not be loaded!", parm);
+  }
+}
+
+static void
+m_mod_reload(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  char *parm = parv[1];
+  char *mbn;
+  struct Module *module;
+
+  mbn = basename(parm);
+  module = find_module(mbn, 0);
+  if (module == NULL)
+  {
+    global_notice(service,
+        "Module %s reload requested by %s, but failed because not loaded",
+        parm, client->name);
+    reply_user(service, client,  
+        "Module %s reload requested by %s, but failed because not loaded",
+        parm, client->name);
+    return;
+  }
+  global_notice(service, "Reloading %s by request of %s", parm, client->name);
+  reply_user(service, client, "Reloading %s", parm, client->name);
+  unload_module(module);
   if (load_module(parm) == 1)
   {
     global_notice(service, "Module %s loaded", parm);
@@ -163,6 +272,12 @@ m_raw(struct Service *service, struct Client *client,
   if(buffer[strlen(buffer)-1] == ' ')
     buffer[strlen(buffer)-1] = '\0';
   sendto_server(me.uplink, buffer);
-  printf("Executing RAW: \"%s\"\n", buffer);
+  ilog(L_DEBUG, "Executing RAW: \"%s\"\n", buffer);
 }
 
+static void m_operserv_notimp(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+  reply_user(service, client, "This isnt implemented yet.");
+  
+}
