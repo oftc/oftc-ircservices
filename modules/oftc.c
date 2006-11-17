@@ -45,6 +45,7 @@ static void m_server(struct Client *, struct Client *, int, char *[]);
 static void m_sid(struct Client *, struct Client *, int, char *[]);
 static void m_uid(struct Client *, struct Client *, int, char *[]);
 static void m_join(struct Client *, struct Client *, int, char *[]);
+static void m_tmode(struct Client *, struct Client *, int, char *[]);
 
 struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
@@ -76,6 +77,11 @@ struct Message join_msgtab = {
   { m_join, m_join }
 };
 
+struct Message tmode_msgtab = {
+  "TMODE", 0, 0, 3, 0, 0, 0,
+  { m_tmode, m_tmode }
+};
+
 INIT_MODULE(oftc, "$Revision$")
 {
   oftc_connected_hook  = install_hook(connected_cb, oftc_server_connected);
@@ -91,6 +97,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&sid_msgtab);
   mod_add_cmd(&uid_msgtab);
   mod_add_cmd(&join_msgtab);
+  mod_add_cmd(&tmode_msgtab);
 }
 
 CLEANUP_MODULE
@@ -101,6 +108,7 @@ CLEANUP_MODULE
   mod_del_cmd(&sid_msgtab);
   mod_del_cmd(&uid_msgtab);
   mod_del_cmd(&join_msgtab);
+  mod_add_cmd(&tmode_msgtab);
 
   uninstall_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
   uninstall_hook(send_umode_cb, oftc_sendmsg_svsmode);
@@ -271,6 +279,53 @@ m_join(struct Client *client_p, struct Client *source_p,
   }
 }
 
+/*
+ * ms_tmode()
+ *
+ * inputs	- parv[0] = UID
+ *		  parv[1] = TS
+ *		  parv[2] = channel name
+ *		  parv[3] = modestring
+ */
+static void
+m_tmode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+  struct Channel *chptr = NULL;
+  struct Membership *member = NULL;
+
+  if ((chptr = hash_find_channel(parv[2])) == NULL)
+    return;
+  
+  if (atol(parv[1]) > chptr->channelts)
+    return;
+
+  if (IsServer(source_p))
+    set_channel_mode(client_p, source_p, chptr, NULL, parc - 3, parv + 3, chptr->chname);
+  else
+  {
+    member = find_channel_link(client_p, chptr);
+
+    /* XXX are we sure we just want to bail here? */
+    if (has_member_flags(member, CHFL_DEOPPED))
+      return;
+
+    set_channel_mode(me.uplink, client_p, chptr, member, parc - 3, parv + 3, chptr->chname);
+  }
+}
+
+/*
+ * ms_bmask()
+ *
+ * inputs	- parv[0] = SID
+ *		  parv[1] = TS
+ *		  parv[2] = channel name
+ *		  parv[3] = type of ban to add ('b' 'I' or 'e')
+ *		  parv[4] = space delimited list of masks to add
+ * outputs	- none
+ * side effects	- propagates unchanged bmask line to CAP_TS6 servers,
+ *		  sends plain modes to the others.  nothing is sent
+ *		  to the server the issuing server is connected through
+ */
 static void *
 oftc_server_connected(va_list args)
 {

@@ -387,15 +387,6 @@ chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chp
 
   mode_type = (long)d;
 
-  if ((alev < CHACCESS_HALFOP) ||
-      ((mode_type == MODE_PARANOID) && (alev < CHACCESS_CHANOP)))
-  {
-    if (!(*errors & SM_ERR_NOOPS))
-      ilog(L_DEBUG, "How on earth did this happen? non op changing channel mode\n");
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
-
   /* If have already dealt with this simple mode, ignore it */
   if (simple_modes_mask & mode_type)
     return;
@@ -615,14 +606,6 @@ chm_op(struct Client *client_p, struct Client *source_p,
   struct Client *targ_p;
   struct Membership *member;
   int caps = 0;
-
-  if (alev < CHACCESS_CHANOP)
-  {
-    if (!(*errors & SM_ERR_NOOPS))
-      ilog(L_DEBUG, "op from non chop\n");
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
 
   if ((dir == MODE_QUERY) || (parc <= *parn))
     return;
