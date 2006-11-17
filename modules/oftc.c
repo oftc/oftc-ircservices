@@ -46,6 +46,7 @@ static void m_sid(struct Client *, struct Client *, int, char *[]);
 static void m_uid(struct Client *, struct Client *, int, char *[]);
 static void m_join(struct Client *, struct Client *, int, char *[]);
 static void m_tmode(struct Client *, struct Client *, int, char *[]);
+static void m_bmask(struct Client *, struct Client *, int, char *[]);
 
 struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
@@ -82,6 +83,11 @@ struct Message tmode_msgtab = {
   { m_tmode, m_tmode }
 };
 
+struct Message bmask_msgtab = {
+  "BMASK", 0, 0, 4, 0, 0, 0,
+  { m_bmask, m_bmask}
+};
+
 INIT_MODULE(oftc, "$Revision$")
 {
   oftc_connected_hook  = install_hook(connected_cb, oftc_server_connected);
@@ -98,6 +104,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&uid_msgtab);
   mod_add_cmd(&join_msgtab);
   mod_add_cmd(&tmode_msgtab);
+  mod_add_cmd(&bmask_msgtab);
 }
 
 CLEANUP_MODULE
@@ -326,7 +333,71 @@ m_tmode(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
  *		  sends plain modes to the others.  nothing is sent
  *		  to the server the issuing server is connected through
  */
-static void *
+static void
+ms_bmask(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+  static char modebuf[IRC_BUFSIZE];
+  static char parabuf[IRC_BUFSIZE];
+  static char banbuf[IRC_BUFSIZE];
+  struct Channel *chptr;
+  char *s, *t, *mbuf, *pbuf;
+  long mode_type;
+  int mlen, tlen;
+
+  if ((chptr = hash_find_channel(parv[2])) == NULL)
+    return;
+
+  /* TS is higher, drop it. */
+  if (atol(parv[1]) > chptr->channelts)
+    return;
+
+  switch (*parv[3])
+  {
+    case 'b':
+      mode_type = CHFL_BAN;
+      break;
+
+    case 'e':
+      mode_type = CHFL_EXCEPTION;
+      break;
+
+    case 'I':
+      mode_type = CHFL_INVEX;
+      break;
+
+    /* maybe we should just blindly propagate this? */
+    default:
+      return; 
+  }
+
+  parabuf[0] = '\0';
+  s = banbuf;
+  strlcpy(s, parv[4], sizeof(banbuf));
+
+  /* only need to construct one buffer, for non-ts6 servers */
+  mlen = ircsprintf(modebuf, ":%s MODE %s +",
+                    source_p->name, chptr->chname);
+  mbuf = modebuf + mlen;
+  pbuf = parabuf;
+
+  do 
+  {
+    if ((t = strchr(s, ' ')) != NULL)
+      *t++ = '\0';
+    tlen = strlen(s);
+
+    /* I dont even want to begin parsing this.. */
+    if (tlen > MODEBUFLEN)
+      break;
+
+    if (tlen && *s != ':')
+      ilog(L_DEBUG, "%s %s %ld", chptr->chname, s, mode_type);
+      add_id(source_p, chptr, s, mode_type);
+    s = t;
+  } while (s != NULL);
+}
+
+  static void *
 oftc_server_connected(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
