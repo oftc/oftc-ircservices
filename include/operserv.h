@@ -42,5 +42,7 @@
 #define OS_ADMIN_LIST 39
 #define OS_ADMIN_ADDED 40
 #define OS_NICK_NOTREG 41
+#define OS_ADMIN_NOTADMIN 42
+#define OS_ADMIN_DEL 43
 
 #endif

@@ -82,3 +82,7 @@ OS_ADMIN_ADDED
 	%s added to the services admin list.
 OS_NICK_NOTREG
 	%s is not registered with Nickname Services.
+OS_ADMIN_NOTADMIN
+	%s is not an admin, or is not registered with Nickname Services.
+OS_ADMIN_DEL
+	%s has been removed as an admin.

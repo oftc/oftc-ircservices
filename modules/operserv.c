@@ -315,7 +315,7 @@ m_admin_list(struct Service *service, struct Client *client,
 {
   struct Nick *currnick;
   void *handle;
-  int i = 0;
+  int i = 1;
 
   handle = db_nick_list_flags_first(NS_FLAG_ADMIN, &currnick);
   while(currnick != NULL)
@@ -332,7 +332,21 @@ static void
 m_admin_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, client, "Del?");
+  struct Nick *nick;
+    
+  nick = db_find_nick(parv[1]);
+    
+  if(nick == NULL || !(nick->flags & NS_FLAG_ADMIN))
+  {
+    reply_user(service, client, _L(service, client, OS_ADMIN_NOTADMIN), 
+      parv[1]);
+    return;
+  }
+  reply_user(service, client, _L(service, client, OS_ADMIN_DEL), nick->nick);
+  nick->flags &= ~NS_FLAG_ADMIN;
+  db_nick_set_number(nick->id, "flags", nick->flags);
+
+  free_nick(nick);
 }
 
 static void m_operserv_notimp(struct Service *service, struct Client *client, 
