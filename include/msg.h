@@ -95,7 +95,7 @@ struct SubMessage
   unsigned int help_short;  /* Help index to show in generic HELP */
   unsigned int help_long;   /* Help index to show in HELP command */
 
-  ServiceMessageHandler handler;
+  ServiceMessageHandler handlers[SERVICES_LAST_HANDLER_TYPE];
 };
 
 struct ServiceMessage
@@ -116,7 +116,7 @@ struct ServiceMessage
    * parv = parameter variable array
    */
   /* handlers:
-   * UNREGISTERED, REGISTERD, OPER, ADMIN
+   * UNIDENTIFIED, IDENTIFIED, OPER, ADMIN
    */
   ServiceMessageHandler handlers[SERVICES_LAST_HANDLER_TYPE];
 };

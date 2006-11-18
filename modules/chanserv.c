@@ -82,26 +82,66 @@ static struct ServiceMessage help_msgtab = {
  * this is not nice, but fits our structure better
  */
 static struct SubMessage set_sub[] = {
-  { "FOUNDER",     0, 1, CS_SET_FOUNDER_SHORT, CS_SET_FOUNDER_LONG, m_set_founder },
-  { "SUCCESSOR",   0, 1, CS_SET_SUCC_SHORT, CS_SET_SUCC_LONG, m_set_successor },
-  { "PASSWORD",    0, 1, -1, -1, m_not_avail },
-  { "DESC",        0, 1, CS_SET_DESC_SHORT, CS_SET_DESC_LONG, m_set_desc },
-  { "URL",         0, 1, CS_SET_URL_SHORT, CS_SET_URL_LONG, m_set_url },
-  { "EMAIL",       0, 1, CS_SET_EMAIL_SHORT, CS_SET_EMAIL_LONG, m_set_email },
-  { "ENTRYMSG",    0, 1, CS_SET_ENTRYMSG_SHORT, CS_SET_ENTRYMSG_LONG, m_set_entrymsg },
-  { "TOPIC",       0, 1, CS_SET_TOPIC_SHORT, CS_SET_TOPIC_LONG, m_set_topic },
-  { "KEEPTOPIC",   0, 1, CS_SET_KEEPTOPIC_SHORT, CS_SET_KEEPTOPIC_LONG, m_set_keeptopic },
-  { "TOPICLOCK",   0, 1, CS_SET_TOPICLOCK_SHORT, CS_SET_TOPICLOCK_LONG, m_set_topiclock },
-  { "MLOCK",       0, 1, -1, -1, m_not_avail }, // +kl-mnt
-  { "PRIVATE",     0, 1, CS_SET_PRIVATE_SHORT, CS_SET_PRIVATE_LONG, m_set_private },
-  { "RESTRICTED",  0, 1, CS_SET_RESTRICTED_SHORT, CS_SET_RESTRICTED_LONG, m_set_restricted },
-  { "SECURE",      0, 1, CS_SET_SECURE_SHORT, CS_SET_SECURE_LONG, m_set_secure },
-  { "SECUREOPS",   0, 1, CS_SET_SECUREOPS_SHORT, CS_SET_SECUREOPS_LONG, m_set_secureops },
-  { "LEAVEOPS",    0, 1, CS_SET_LEAVEOPS_SHORT, CS_SET_LEAVEOPS_LONG, m_set_leaveops },
-  { "VERBOSE",     0, 1, CS_SET_VERBOSE_SHORT, CS_SET_VERBOSE_LONG, m_set_verbose },
-  { "AUTOLIMIT",   0, 1, -1, -1, m_not_avail }, // 5:2:2
-  { "CLEARBANS",   0, 1, -1, -1, m_not_avail }, // 120
-  { NULL,          0, 0,  0,  0, m_not_avail } 
+  { "FOUNDER",     0, 1, CS_SET_FOUNDER_SHORT, CS_SET_FOUNDER_LONG, 
+    { m_set_founder, m_set_founder, m_set_founder, m_set_founder }
+  },
+  { "SUCCESSOR",   0, 1, CS_SET_SUCC_SHORT, CS_SET_SUCC_LONG, 
+    { m_set_successor, m_set_successor, m_set_successor, m_set_successor }
+  },
+  { "PASSWORD",    0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
+  },
+  { "DESC",        0, 1, CS_SET_DESC_SHORT, CS_SET_DESC_LONG, 
+    { m_set_desc, m_set_desc, m_set_desc, m_set_desc }
+  },
+  { "URL",         0, 1, CS_SET_URL_SHORT, CS_SET_URL_LONG, 
+    { m_set_url, m_set_url, m_set_url, m_set_url }
+  },
+  { "EMAIL",       0, 1, CS_SET_EMAIL_SHORT, CS_SET_EMAIL_LONG, 
+    { m_set_email, m_set_email, m_set_email, m_set_email }
+  },
+  { "ENTRYMSG",    0, 1, CS_SET_ENTRYMSG_SHORT, CS_SET_ENTRYMSG_LONG, 
+    { m_set_entrymsg, m_set_entrymsg, m_set_entrymsg, m_set_entrymsg }
+  },
+  { "TOPIC",       0, 1, CS_SET_TOPIC_SHORT, CS_SET_TOPIC_LONG, 
+    { m_set_topic, m_set_topic, m_set_topic, m_set_topic }
+  },
+  { "KEEPTOPIC",   0, 1, CS_SET_KEEPTOPIC_SHORT, CS_SET_KEEPTOPIC_LONG, 
+    { m_set_keeptopic, m_set_keeptopic, m_set_keeptopic, m_set_keeptopic }
+  },
+  { "TOPICLOCK",   0, 1, CS_SET_TOPICLOCK_SHORT, CS_SET_TOPICLOCK_LONG, 
+    { m_set_topiclock, m_set_topiclock, m_set_topiclock, m_set_topiclock }
+  },
+  { "MLOCK",       0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
+  }, // +kl-mnt
+  { "PRIVATE",     0, 1, CS_SET_PRIVATE_SHORT, CS_SET_PRIVATE_LONG, 
+    { m_set_private, m_set_private, m_set_private, m_set_private }
+  },
+  { "RESTRICTED",  0, 1, CS_SET_RESTRICTED_SHORT, CS_SET_RESTRICTED_LONG, 
+    { m_set_restricted, m_set_restricted, m_set_restricted, m_set_restricted }
+  },
+  { "SECURE",      0, 1, CS_SET_SECURE_SHORT, CS_SET_SECURE_LONG, 
+    { m_set_secure, m_set_secure, m_set_secure, m_set_secure }
+  },
+  { "SECUREOPS",   0, 1, CS_SET_SECUREOPS_SHORT, CS_SET_SECUREOPS_LONG, 
+    { m_set_secureops, m_set_secureops, m_set_secureops, m_set_secureops }
+  },
+  { "LEAVEOPS",    0, 1, CS_SET_LEAVEOPS_SHORT, CS_SET_LEAVEOPS_LONG, 
+    { m_set_leaveops, m_set_leaveops, m_set_leaveops, m_set_leaveops }
+  },
+  { "VERBOSE",     0, 1, CS_SET_VERBOSE_SHORT, CS_SET_VERBOSE_LONG, 
+    { m_set_verbose, m_set_verbose, m_set_verbose, m_set_verbose }
+  },
+  { "AUTOLIMIT",   0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
+  }, // 5:2:2
+  { "CLEARBANS",   0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
+  }, // 120
+  { NULL,          0, 0,  0,  0, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
+  } 
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -110,12 +150,17 @@ static struct ServiceMessage set_msgtab = {
 };
 
 static struct SubMessage access_sub[6] = {
-  { "ADD",   0, 3, -1, -1, m_not_avail },
-  { "DEL",   0, 2, -1, -1, m_not_avail },
-  { "LIST",  0, 2, -1, -1, m_not_avail },
-  { "VIEW",  0, 1, -1, -1, m_not_avail },
-  { "COUNT", 0, 0, -1, -1, m_not_avail },
-  { NULL,    0, 0,  0,  0, NULL }
+  { "ADD",   0, 3, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "DEL",   0, 2, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "LIST",  0, 2, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "VIEW",  0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "COUNT", 0, 0, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { NULL,    0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage access_msgtab = {
@@ -124,12 +169,17 @@ static struct ServiceMessage access_msgtab = {
 };
 
 static struct SubMessage levels_sub[6] = {
-  { "SET",      0, 3, -1, -1, m_not_avail },
-  { "LIST",     0, 0, -1, -1, m_not_avail },
-  { "RESET",    0, 0, -1, -1, m_not_avail },
-  { "DIS",      0, 1, -1, -1, m_not_avail },
-  { "DISABLED", 0, 1, -1, -1, m_not_avail },
-  { NULL,       0, 0,  0,  0, NULL }
+  { "SET",      0, 3, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "LIST",     0, 0, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "RESET",    0, 0, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "DIS",      0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "DISABLED", 0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { NULL,       0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage levels_msgtab = {
@@ -138,13 +188,19 @@ static struct ServiceMessage levels_msgtab = {
 };
 
 static struct SubMessage akick_sub[7] = {
-  { "ADD",     0, 2, -1, -1, m_not_avail }, 
-  { "DEL",     0, 1, -1, -1, m_not_avail },
-  { "LIST",    0, 1, -1, -1, m_not_avail },
-  { "VIEW",    0, 1, -1, -1, m_not_avail },
-  { "ENFORCE", 0, 0, -1, -1, m_not_avail },
-  { "COUNT",   0, 0, -1, -1, m_not_avail },
-  { NULL,      0, 0,  0,  0, NULL }
+  { "ADD",     0, 2, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } }, 
+  { "DEL",     0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "LIST",    0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "VIEW",    0, 1, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "ENFORCE", 0, 0, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { "COUNT",   0, 0, -1, -1, 
+    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+  { NULL,      0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage akick_msgtab = {

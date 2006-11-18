@@ -50,11 +50,15 @@ static struct ServiceMessage help_msgtab = {
 };
 
 static struct SubMessage mod_subs[5] = {
-  { "LIST", 0, 0, OS_MOD_LIST_HELP_SHORT, OS_MOD_LIST_HELP_LONG, m_mod_list },
-  { "LOAD", 0, 1, OS_MOD_LOAD_HELP_SHORT, OS_MOD_LOAD_HELP_LONG, m_mod_load },
-  { "RELOAD", 0, 1, OS_MOD_RELOAD_HELP_SHORT, OS_MOD_RELOAD_HELP_LONG, m_mod_reload },
-  { "UNLOAD", 0, 1, OS_MOD_UNLOAD_HELP_SHORT, OS_MOD_UNLOAD_HELP_LONG, m_mod_unload },
-  { NULL, 0, 0, 0, 0, NULL }
+  { "LIST", 0, 0, OS_MOD_LIST_HELP_SHORT, OS_MOD_LIST_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_mod_list, m_mod_list } },
+  { "LOAD", 0, 1, OS_MOD_LOAD_HELP_SHORT, OS_MOD_LOAD_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_mod_load, m_mod_load } },
+  { "RELOAD", 0, 1, OS_MOD_RELOAD_HELP_SHORT, OS_MOD_RELOAD_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_mod_reload, m_mod_reload } },
+  { "UNLOAD", 0, 1, OS_MOD_UNLOAD_HELP_SHORT, OS_MOD_UNLOAD_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_mod_unload, m_mod_unload } },
+  { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage mod_msgtab = {
@@ -73,9 +77,13 @@ static struct ServiceMessage global_msgtab = {
 };
 
 static struct SubMessage admin_subs[4] = {
-  { "ADD", 0, 0, OS_ADMIN_ADD_HELP_SHORT, OS_ADMIN_ADD_HELP_LONG, m_admin_add },
-  { "LIST", 0, 0, OS_ADMIN_LIST_HELP_SHORT, OS_ADMIN_LIST_HELP_LONG, m_admin_list },
-  { "DEL", 0, 0, OS_ADMIN_DEL_HELP_SHORT, OS_ADMIN_DEL_HELP_LONG, m_admin_del }
+  { "ADD", 0, 0, OS_ADMIN_ADD_HELP_SHORT, OS_ADMIN_ADD_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_admin_add, m_admin_add } },
+  { "LIST", 0, 0, OS_ADMIN_LIST_HELP_SHORT, OS_ADMIN_LIST_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_admin_list, m_admin_list } },
+  { "DEL", 0, 0, OS_ADMIN_DEL_HELP_SHORT, OS_ADMIN_DEL_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_admin_del, m_admin_del } },
+  { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage admin_msgtab = {

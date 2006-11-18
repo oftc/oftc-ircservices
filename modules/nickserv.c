@@ -95,15 +95,31 @@ static struct ServiceMessage drop_msgtab = {
 };
 
 static struct SubMessage set_sub[9] = {
-  { "LANGUAGE"    , 0, 0, -1, -1, m_set_language },
-  { "PASSWORD"    , 0, 1, -1, -1, m_set_password },
-  { "URL"         , 0, 0, -1, -1, m_set_url},
-  { "EMAIL"       , 0, 0, -1, -1, m_set_email},
-  { "ENFORCE"     , 0, 0, -1, -1, m_set_enforce},
-  { "SECURE"      , 0, 0, -1, -1, m_set_secure},
-  { "CLOAK"       , 0, 0, -1, -1, m_set_cloak},
-  { "CLOAKSTRING" , 0, 0, -1, -1, m_set_cloakstring},
-  { NULL        , 0, 0, 0, 0, NULL }
+  { "LANGUAGE"    , 0, 0, -1, -1, 
+    { m_set_language, m_set_language, m_set_language, m_set_language }
+  },
+  { "PASSWORD"    , 0, 1, -1, -1, 
+    { m_set_password, m_set_password, m_set_password, m_set_password }
+  },
+  { "URL"         , 0, 0, -1, -1, 
+    { m_set_url, m_set_url, m_set_url, m_set_url }
+  },
+  { "EMAIL"       , 0, 0, -1, -1, 
+    { m_set_email, m_set_email, m_set_email, m_set_email }
+  },
+  { "ENFORCE"     , 0, 0, -1, -1, 
+    { m_set_enforce, m_set_enforce, m_set_enforce, m_set_enforce }
+  },
+  { "SECURE"      , 0, 0, -1, -1, 
+    { m_set_secure, m_set_secure, m_set_secure, m_set_secure }
+  },
+  { "CLOAK"       , 0, 0, -1, -1, 
+    { m_set_cloak, m_set_cloak, m_set_cloak, m_set_cloak }
+  },
+  { "CLOAKSTRING" , 0, 0, -1, -1, 
+    { m_set_cloakstring, m_set_cloakstring, m_set_cloakstring, m_set_cloakstring }
+  },
+  { NULL        , 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -112,10 +128,16 @@ static struct ServiceMessage set_msgtab = {
 };
 
 static struct SubMessage access_sub[4] = {
-  { "ADD", 0, 1, -1, -1, m_access_add },
-  { "LIST", 0, 0, -1, -1, m_access_list },
-  { "DEL", 0, 0, -1, -1, m_access_del },
-  { NULL, 0, 0, 0, 0, NULL }
+  { "ADD", 0, 1, -1, -1, 
+    { m_access_add, m_access_add, m_access_add, m_access_add }
+  },
+  { "LIST", 0, 0, -1, -1, 
+    { m_access_list, m_access_list, m_access_list, m_access_list }
+  },
+  { "DEL", 0, 0, -1, -1, 
+    { m_access_del, m_access_del, m_access_del, m_access_del }
+  },
+  { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage access_msgtab = {

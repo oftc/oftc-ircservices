@@ -412,8 +412,9 @@ db_nick_list_flags_first(unsigned int flags, struct Nick **nick)
 {
   dbi_result result;
   unsigned int id;
+  char *retnick;
 
-  if((result = db_query("SELECT id FROM %s WHERE (flags & %d > 0)", 
+  if((result = db_query("SELECT id, nick FROM %s WHERE (flags & %d > 0)", 
           "nickname", flags)) == NULL)
   {
     return NULL;
@@ -427,9 +428,10 @@ db_nick_list_flags_first(unsigned int flags, struct Nick **nick)
 
   if(dbi_result_first_row(result))
   {
-    dbi_result_get_fields(result, "id.%ui", &id);
+    dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
     /* Possibly a little inefficient, but ensures we maintain links */
-    *nick = db_find_nick(db_get_nickname_from_id(id));
+    *nick = db_find_nick(retnick);
+    MyFree(retnick);
     return result;
   }
 
@@ -440,11 +442,15 @@ struct Nick *
 db_nick_list_flags_next(void *result)
 {
   unsigned int id;
+  char *retnick;
   
   if(dbi_result_next_row(result))
   {
-    dbi_result_get_fields(result, "id.%ui", &id);
-    return db_find_nick(db_get_nickname_from_id(id));
+    struct Nick *nick;
+    dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
+    nick = db_find_nick(retnick);
+    MyFree(retnick);
+    return nick;
   }
   return NULL;
 }
