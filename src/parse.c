@@ -844,6 +844,12 @@ process_privmsg(struct Client *client, struct Client *source,
       }
       if(replaced)
       {
+        if(servpara[2] == NULL)
+        {
+          reply_user(service, source, "Unknown command %s, /msg %s HELP for help.",
+              servpara[1], service->name);
+          return;
+        }
         servpara[0] = servpara[1];
         servpara[1] = servpara[2];
         servpara[2] = servpara[1];

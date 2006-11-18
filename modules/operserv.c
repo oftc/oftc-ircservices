@@ -30,6 +30,7 @@
 
 static struct Service *operserv = NULL;
 
+static void m_noaccess(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_raw(struct Service *, struct Client *, int, char *[]);
 static void m_mod(struct Service *, struct Client *, int, char *[]);
@@ -43,12 +44,9 @@ static void m_admin_add(struct Service *, struct Client *, int, char *[]);
 static void m_admin_list(struct Service *, struct Client *, int, char *[]);
 static void m_admin_del(struct Service *, struct Client *, int, char *[]);
 
-// FIXME wrong type of clients may execute
-//
-
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, OS_HELP_SHORT, OS_HELP_LONG,
-  { m_help, m_help, m_help, m_help}
+  { m_noaccess, m_noaccess, m_help, m_help}
 };
 
 static struct SubMessage mod_subs[5] = {
@@ -61,17 +59,17 @@ static struct SubMessage mod_subs[5] = {
 
 static struct ServiceMessage mod_msgtab = {
   mod_subs, "MOD", 0, 1, OS_MOD_HELP_SHORT, OS_MOD_HELP_LONG,
-  { m_mod, m_servignore, m_servignore, m_servignore }
+  { m_noaccess, m_noaccess, m_mod, m_mod}
 };
 
 static struct ServiceMessage raw_msgtab = {
   NULL, "RAW", 1, 1, OS_RAW_HELP_SHORT, OS_RAW_HELP_LONG,
-  { m_raw, m_servignore, m_servignore, m_servignore }
+  { m_noaccess, m_noaccess, m_raw, m_raw }
 };
 
 static struct ServiceMessage global_msgtab = {
   NULL, "GLOBAL", 1, 1, OS_GLOBAL_HELP_SHORT, OS_GLOBAL_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
 static struct SubMessage admin_subs[4] = {
@@ -82,42 +80,42 @@ static struct SubMessage admin_subs[4] = {
 
 static struct ServiceMessage admin_msgtab = {
   admin_subs, "ADMIN", 1, 1, OS_ADMIN_HELP_SHORT, OS_ADMIN_HELP_LONG,
-  { m_admin, m_admin, m_admin, m_admin}
+  { m_noaccess, m_noaccess, m_admin, m_admin}
 };
 
 static struct ServiceMessage session_msgtab = {
   NULL, "SESSION", 1, 1, OS_SESSION_HELP_SHORT, OS_SESSION_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
 static struct ServiceMessage akill_msgtab = {
   NULL, "AKILL", 1, 1, OS_AKILL_HELP_SHORT, OS_AKILL_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
 static struct ServiceMessage exceptions_msgtab = {
   NULL, "EXCEPTIONS", 1, 1, OS_EXCEPTIONS_HELP_SHORT, OS_EXCEPTIONS_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
 static struct ServiceMessage jupe_msgtab = {
   NULL, "JUPE", 1, 1, OS_JUPE_HELP_SHORT, OS_JUPE_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
 static struct ServiceMessage set_msgtab = {
   NULL, "SET", 1, 1, OS_SET_HELP_SHORT, OS_SET_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
 static struct ServiceMessage shutdown_msgtab = {
   NULL, "SHUTDOWN", 1, 1, OS_SHUTDOWN_HELP_SHORT, OS_SHUTDOWN_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
 static struct ServiceMessage quarentine_msgtab = {
   NULL, "QUARENTINE", 1, 1, OS_QUARENTINE_HELP_SHORT, OS_QUARENTINE_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
 INIT_MODULE(operserv, "$Revision$")
@@ -147,6 +145,13 @@ INIT_MODULE(operserv, "$Revision$")
 
 CLEANUP_MODULE
 {
+}
+
+static void
+m_noaccess(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+  reply_user(service, client, "No access for you.");
 }
 
 static void
