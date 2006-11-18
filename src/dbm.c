@@ -107,12 +107,12 @@ db_query(const char *pattern, ...)
 struct Nick *
 db_find_nick(const char *nick)
 {
-  dbi_result result, link_result;
+  dbi_result result;
   char *escnick = NULL;
   struct Nick *nick_p;
   char *retnick, *retpass, *retcloak, *retsalt;
   unsigned int id;
-  
+
   assert(nick != NULL);
 
   if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
@@ -120,10 +120,18 @@ db_find_nick(const char *nick)
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
     return NULL;
   }
-  
-  result = db_query("SELECT id, nick, password, salt, email, cloak, last_quit, "
-      "last_quit_time, reg_time, last_seen, last_used, flags, language "
-      "FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick);
+
+  result = db_query("SELECT n.id, n.nick, n.password, n.salt, n.email, n.cloak, n.last_quit, "
+      "n.last_quit_time, n.reg_time, n.last_seen, n.last_used, n.flags, n.language, "
+      "CASE WHEN nick_id IS NULL THEN 0 ELSE nick_id END as parent_id, "
+      "p.nick as pnick, p.password as ppassword, p.salt as psalt, "
+      "p.email as pemail, p.cloak as pcloak, p.last_quit as plast_quit, "
+      "p.last_quit_time as plast_quit_time, p.reg_time as preg_time, "
+      "p.last_seen as plast_seen, p.last_used as plast_used, p.flags as pflags, p.language as planguage "
+      "FROM %s as n LEFT OUTER JOIN %s ON link_id = n.id "
+      "LEFT OUTER JOIN nickname as p ON p.id = nick_id "
+      "WHERE lower(n.nick)=lower(%s)",
+      "nickname", "nickname_links", escnick);
   MyFree(escnick);
 
   if(result == NULL)
@@ -136,38 +144,31 @@ db_find_nick(const char *nick)
   }
 
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui", &id);
-
-  link_result = db_query("SELECT nick_id FROM nickname_links WHERE link_id=%d", 
-      id);
-  if(link_result != NULL && dbi_result_get_numrows(link_result) != 0)
-  {
-    dbi_result_free(result);
-    dbi_result_first_row(link_result);
-    dbi_result_get_fields(link_result, "nick_id.%ui", &id);
-    dbi_result_free(link_result);
-    result = db_query("SELECT id, nick, password, salt, email, cloak, last_quit, "
-      "last_quit_time, reg_time, last_seen, last_used, flags, language "
-      "FROM %s WHERE id=%d", "nickname", id);
-    if(result == NULL)
-      return NULL;
-    if(dbi_result_get_numrows(result) == 0)
-    {
-      printf("WTF: Master nick not found!!! %s %d\n", nick, id);
-      dbi_result_free(result);
-      return NULL;
-    }
-  }
+  dbi_result_get_fields(result, "parent_id.%ui", &id);
 
   nick_p = MyMalloc(sizeof(struct Nick));
   dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui nick.%S password.%S salt.%S email.%S "
-      "cloak.%S last_quit.%S last_quit_time.%l reg_time.%l last_seen.%l "
-      "last_used.%l flags.%ui language.%ui",
-      &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->email, &retcloak, 
-      &nick_p->last_quit, &nick_p->last_quit_time, &nick_p->reg_time, 
-      &nick_p->last_seen, &nick_p->last_used, &nick_p->flags, 
-      &nick_p->language);
+
+  if(id)
+  {
+    dbi_result_get_fields(result, "parent_id.%ui pnick.%S ppassword.%S psalt.%S pemail.%S "
+        "pcloak.%S plast_quit.%S plast_quit_time.%l preg_time.%l plast_seen.%l "
+        "plast_used.%l pflags.%ui planguage.%ui",
+        &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->email, &retcloak, 
+        &nick_p->last_quit, &nick_p->last_quit_time, &nick_p->reg_time, 
+        &nick_p->last_seen, &nick_p->last_used, &nick_p->flags, 
+        &nick_p->language);
+  }
+  else
+  {
+    dbi_result_get_fields(result, "id.%ui nick.%S password.%S salt.%S email.%S "
+        "cloak.%S last_quit.%S last_quit_time.%l reg_time.%l last_seen.%l "
+        "last_used.%l flags.%ui language.%ui",
+        &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->email, &retcloak, 
+        &nick_p->last_quit, &nick_p->last_quit_time, &nick_p->reg_time, 
+        &nick_p->last_seen, &nick_p->last_used, &nick_p->flags, 
+        &nick_p->language);
+  }
 
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));

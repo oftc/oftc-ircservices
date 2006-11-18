@@ -70,7 +70,7 @@ static VALUE rb_carray2rbarray(int, char **);
 static struct Channel* rb_rbchannel2cchannel(VALUE);
 static VALUE rb_cchannel2rbchannel(struct Channel*);
 static struct Nick* rb_rbnick2cnick(VALUE);
-/*static VALUE rb_cnick2rbnick(struct Nick*);*/
+static VALUE rb_cnick2rbnick(struct Nick*);
 
 static VALUE rb_singleton_call(VALUE);
 
@@ -100,6 +100,7 @@ static VALUE ClientStruct_ID(VALUE);
 static VALUE ClientStruct_Info(VALUE);
 static VALUE ClientStruct_Username(VALUE);
 static VALUE ClientStruct_Umodes(VALUE);
+static VALUE ClientStruct_Nick(VALUE);
 static void Init_ClientStruct(void);
 
 static VALUE ChannelStruct_Initialize(VALUE, VALUE);
@@ -258,7 +259,7 @@ static struct Nick* rb_rbnick2cnick(VALUE self)
   return out;
 }
 
-/*static VALUE
+static VALUE
 rb_cnick2rbnick(struct Nick *nick)
 {
   VALUE fc2params, rbnick, real_nick;
@@ -281,7 +282,7 @@ rb_cnick2rbnick(struct Nick *nick)
   }
 
   return real_nick;
-}*/
+}
 
 static VALUE
 rb_carray2rbarray(int parc, char **parv)
@@ -534,9 +535,13 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "CMODE_HOOK", INT2NUM(RB_HOOKS_CMODE));
   rb_define_const(cServiceModule, "NEWUSR_HOOK", INT2NUM(RB_HOOKS_NEWUSR));
 
-  rb_define_const(cServiceModule, "LOG_DEBUG", INT2NUM(L_DEBUG));
-  rb_define_const(cServiceModule, "LOG_TRACE", INT2NUM(L_TRACE));
+  rb_define_const(cServiceModule, "LOG_CRIT", INT2NUM(L_CRIT));
+  rb_define_const(cServiceModule, "LOG_ERROR", INT2NUM(L_ERROR));
+  rb_define_const(cServiceModule, "LOG_WARN", INT2NUM(L_WARN));
   rb_define_const(cServiceModule, "LOG_NOTICE", INT2NUM(L_NOTICE));
+  rb_define_const(cServiceModule, "LOG_TRACE", INT2NUM(L_TRACE));
+  rb_define_const(cServiceModule, "LOG_INFO", INT2NUM(L_INFO));
+  rb_define_const(cServiceModule, "LOG_DEBUG", INT2NUM(L_DEBUG));
 
   rb_define_method(cServiceModule, "register", ServiceModule_register, 1);
   rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, 2);
@@ -604,6 +609,14 @@ ClientStruct_Umodes(VALUE self)
   return INT2NUM(client->umodes);
 }
 
+static VALUE
+ClientStruct_Nick(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  VALUE nick = rb_cnick2rbnick(client->nickname);
+  return nick;
+}
+
 static void
 Init_ClientStruct(void)
 {
@@ -618,6 +631,7 @@ Init_ClientStruct(void)
   rb_define_method(cClientStruct, "info", ClientStruct_Info, 0);
   rb_define_method(cClientStruct, "username", ClientStruct_Username, 0);
   rb_define_method(cClientStruct, "umodes", ClientStruct_Umodes, 0);
+  rb_define_method(cClientStruct, "nick", ClientStruct_Nick, 0);
 }
 
 static VALUE
@@ -682,7 +696,10 @@ static VALUE
 NickStruct_Nick(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return rb_str_new2(nick->nick);
+  if(nick)
+    return rb_str_new2(nick->nick);
+  else
+    return rb_str_new2("");
 }
 
 static VALUE

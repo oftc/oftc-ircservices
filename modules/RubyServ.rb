@@ -18,9 +18,12 @@ class RubyServ < ServiceModule
   end
   def umode(client, what, mode)
     log(ServiceModule::LOG_DEBUG, "UMODE client.name: %s what: %d mode: %08x" % [client.name, what, mode])
+    log(ServiceModule::LOG_DEBUG, "client.nick.nick: %s" % [client.nick.nick])
   end
   def cmode(clientp, sourcep, channel, params)
-    log(ServiceModule::LOG_DEBUG, "Made it to CMODE clientp.name: %s sourcep.name: %s in channel.name: %s | %s" % [clientp.name, sourcep.name, channel.name, params.join(" ")])
+    log(ServiceModule::LOG_DEBUG, "Made it to CMODE client.name: %s source.name: %s" % [clientp.name, sourcep.name])
+    log(ServiceModule::LOG_DEBUG, "\tin chan.name: %s chan.mode: %s" % [channel.name, channel.mode])
+    log(ServiceModule::LOG_DEBUG, "\t%s" % [params.join(" ")])
   end
   def newuser(newuser)
     log(ServiceModule::LOG_DEBUG, "newuser.name: %s" % [newuser.name])
