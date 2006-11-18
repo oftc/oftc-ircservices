@@ -141,11 +141,11 @@ ruby_script_error()
     lasterr = rb_gv_get("$!");
     err = RSTRING(rb_obj_as_string(lasterr))->ptr;
 
-    ilog(L_DEBUG, "RUBY ERROR: Error while executing Ruby Script: %s\n", err);
+    ilog(L_DEBUG, "RUBY ERROR: Error while executing Ruby Script: %s", err);
     array = rb_funcall(ruby_errinfo, rb_intern("backtrace"), 0);
-    ilog(L_DEBUG, "RUBY ERROR: BACKTRACE\n");
+    ilog(L_DEBUG, "RUBY ERROR: BACKTRACE");
     for (i = 0; i < RARRAY(array)->len; ++i)
-      ilog(L_DEBUG, "RUBY ERROR:   %s\n", RSTRING(RARRAY(array)->ptr[i])->ptr);
+      ilog(L_DEBUG, "RUBY ERROR:   %s", RSTRING(RARRAY(array)->ptr[i])->ptr);
   }
 }
 
@@ -210,7 +210,7 @@ rb_cclient2rbclient(struct Client *client)
 
   if(ruby_handle_error(status))
   {
-    ilog(L_DEBUG, "RUBY ERROR: Ruby Failed To Create ClientStruct\n");
+    ilog(L_DEBUG, "RUBY ERROR: Ruby Failed To Create ClientStruct");
     return Qnil;
   }
 
@@ -243,7 +243,7 @@ rb_cchannel2rbchannel(struct Channel *channel)
 
   if(ruby_handle_error(status))
   {
-    ilog(L_DEBUG, "RUBY ERROR: Ruby Failed To Create ChannelStruct\n");
+    ilog(L_DEBUG, "RUBY ERROR: Ruby Failed To Create ChannelStruct");
     return Qnil;
   }
 
@@ -336,7 +336,7 @@ m_generic(struct Service *service, struct Client *client,
   rb_ary_push(fc2params, RARRAY(rbparams)->len);
   rb_ary_push(fc2params, (VALUE)RARRAY(rbparams)->ptr);
 
-  ilog(L_TRACE, "RUBY INFO: Calling Command: %s From %s\n", command, client->name);
+  ilog(L_TRACE, "RUBY INFO: Calling Command: %s From %s", command, client->name);
 
   if(!do_ruby(RB_CALLBACK(rb_singleton_call), fc2params))
   {
@@ -839,7 +839,7 @@ rb_do_hook_cb(VALUE hooks, VALUE params)
 
       if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
       {
-        ilog(L_DEBUG, "RUBY ERROR: Failed to call: %s\n", StringValueCStr(command));
+        ilog(L_DEBUG, "RUBY ERROR: Failed to call: %s", StringValueCStr(command));
       }
     }
   }
@@ -857,7 +857,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
 
-  ilog(L_TRACE, "RUBY INFO: Loading ruby module: %s\n", path);
+  ilog(L_TRACE, "RUBY INFO: Loading ruby module: %s", path);
 
   if(!do_ruby(RB_CALLBACK(rb_load_file), (VALUE)path))
     return 0;
@@ -871,7 +871,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   if(ruby_handle_error(status))
     return 0;
 
-  ilog(L_TRACE, "RUBY INFO: Loaded Class %s\n", classname);
+  ilog(L_TRACE, "RUBY INFO: Loaded Class %s", classname);
 
   params = rb_ary_new();
   rb_ary_push(params, klass);
@@ -883,7 +883,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   if(ruby_handle_error(status))
     return 0;
-  ilog(L_TRACE, "RUBY INFO: Initialized Class %s\n", classname);
+  ilog(L_TRACE, "RUBY INFO: Initialized Class %s", classname);
 
   service = find_service(classname);
   service->data = (void *)self;
@@ -899,7 +899,7 @@ void
 sigabrt()
 {
   signal(SIGABRT, sigabrt);
-  ilog(L_DEBUG, "We've encountered a SIGABRT\n");
+  ilog(L_DEBUG, "We've encountered a SIGABRT");
   ruby_script_error();
 }
 

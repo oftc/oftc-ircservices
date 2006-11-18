@@ -224,7 +224,7 @@ close_connection(struct Client *client_p)
 
   client_p->from = NULL; /* ...this should catch them! >:) --msa */
 
-  ilog(L_DEBUG, "Closed connection to %s\n", client_p->name);
+  ilog(L_DEBUG, "Closed connection to %s", client_p->name);
 }
 
 /*
@@ -274,7 +274,7 @@ exit_one_client(struct Client *source_p)
   if (source_p != NULL && source_p->node.next != NULL)
     dlinkDelete(&source_p->node, &global_client_list);
 
-  ilog(L_DEBUG, "exited: %s\n", source_p->name);
+  ilog(L_DEBUG, "exited: %s", source_p->name);
 }
 
 /*
@@ -577,7 +577,7 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
           {
             if (IsServer(client_p) && !IsOper(source_p))
             {
-              ilog(L_DEBUG, "Setting %s!%s@%s as oper\n", source_p->name,
+              ilog(L_DEBUG, "Setting %s!%s@%s as oper", source_p->name,
                   source_p->username, source_p->host);
               SetOper(source_p);
               execute_callback(on_umode_change_cb, source_p, what, UMODE_OPER);
@@ -675,7 +675,7 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
 
   SetClient(source_p);
   dlinkAdd(source_p, &source_p->lnode, &source_p->servptr->client_list);
-  ilog(L_DEBUG, "Adding client %s!%s@%s from %s\n", source_p->name, source_p->username,
+  ilog(L_DEBUG, "Adding client %s!%s@%s from %s", source_p->name, source_p->username,
       source_p->host, server);
   execute_callback(on_newuser_cb, source_p);
 }
@@ -724,7 +724,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
 
         source_p->umodes |= flag;
         execute_callback(on_umode_change_cb, source_p, MODE_ADD, flag);
-        ilog(L_DEBUG, "Setting umode %c on %s\n", *m, source_p->name);
+        ilog(L_DEBUG, "Setting umode %c on %s", *m, source_p->name);
         m++;
       }
 

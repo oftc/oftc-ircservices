@@ -17,7 +17,7 @@ class RubyServ < ServiceModule
     reply_user(client, client.name + " Said: "+message)
   end
   def umode(client, what, mode)
-    log(ServiceModule::LOG_DEBUG, "UMODE client.name: %s what: %d mode: %d" % [client.name, what, mode])
+    log(ServiceModule::LOG_DEBUG, "UMODE client.name: %s what: %d mode: %08x" % [client.name, what, mode])
   end
   def cmode(clientp, sourcep, channel, params)
     log(ServiceModule::LOG_DEBUG, "Made it to CMODE clientp.name: %s sourcep.name: %s in channel.name: %s | %s" % [clientp.name, sourcep.name, channel.name, params.join(" ")])

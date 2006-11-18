@@ -263,13 +263,13 @@ check_list_entry(const char *table, unsigned int id, const char *value)
   {
     if(match(entry.value, value))
     {
-      ilog(L_DEBUG, "check_list_entry: Found match: %s %s\n", entry.value, value);
+      ilog(L_DEBUG, "check_list_entry: Found match: %s %s", entry.value, value);
       MyFree(entry.value);
       db_list_done(ptr);
       return TRUE;
     }
     
-    ilog(L_DEBUG, "check_list_entry: Not Found match: %s %s\n", entry.value, value);
+    ilog(L_DEBUG, "check_list_entry: Not Found match: %s %s", entry.value, value);
     MyFree(entry.value);
     ptr = db_list_next(ptr, &entry);
   }
@@ -288,7 +288,7 @@ free_regchan(struct RegChannel *regchptr)
 void
 free_nick(struct Nick *nick)
 {
-  ilog(L_DEBUG, "Freeing nick %p for %s\n", nick, nick->nick);
+  ilog(L_DEBUG, "Freeing nick %p for %s", nick, nick->nick);
   MyFree(nick->email);
   nick->email = NULL;
   MyFree(nick->url);

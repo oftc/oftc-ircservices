@@ -375,7 +375,7 @@ chm_nosuch(struct Client *client_p, struct Client *source_p,
     return;
 
   *errors |= SM_ERR_UNKNOWN;
-  ilog(L_DEBUG, "Unknown mode %s %s %c\n", me.name, source_p->name, c);
+  ilog(L_DEBUG, "Unknown mode %s %s %c", me.name, source_p->name, c);
 }
 
 static void
@@ -440,7 +440,7 @@ chm_ban(struct Client *client_p, struct Client *source_p,
   if (alev < CHACCESS_HALFOP)
   {
     if (!(*errors & SM_ERR_NOOPS))
-      ilog(L_DEBUG, "Err, another mode from a non chop\n");
+      ilog(L_DEBUG, "Err, another mode from a non chop");
     *errors |= SM_ERR_NOOPS;
     return;
   }
@@ -495,7 +495,7 @@ chm_except(struct Client *client_p, struct Client *source_p,
   if (alev < CHACCESS_HALFOP)
   {
     if (!(*errors & SM_ERR_NOOPS))
-      ilog(L_DEBUG, "Yet another mode from a non chop\n");
+      ilog(L_DEBUG, "Yet another mode from a non chop");
     *errors |= SM_ERR_NOOPS;
     return;
   }
@@ -543,7 +543,7 @@ chm_invex(struct Client *client_p, struct Client *source_p,
   if (alev < CHACCESS_HALFOP)
   {
     if (!(*errors & SM_ERR_NOOPS))
-      ilog(L_DEBUG, "Invex from non chop\n");
+      ilog(L_DEBUG, "Invex from non chop");
     *errors |= SM_ERR_NOOPS;
     return;
   }

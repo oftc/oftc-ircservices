@@ -175,7 +175,7 @@ load_shared_module(const char *name, const char *dir, const char *fname)
   
   if (!(handle = modload(path, &base)))
   {
-    ilog(L_DEBUG, "Failed to load %s: %s\n", path, dlerror());
+    ilog(L_DEBUG, "Failed to load %s: %s", path, dlerror());
     return 0;
   }
 

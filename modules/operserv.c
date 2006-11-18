@@ -282,7 +282,7 @@ m_raw(struct Service *service, struct Client *client,
   if(buffer[strlen(buffer)-1] == ' ')
     buffer[strlen(buffer)-1] = '\0';
   sendto_server(me.uplink, buffer);
-  ilog(L_DEBUG, "Executing RAW: \"%s\"\n", buffer);
+  ilog(L_DEBUG, "Executing RAW: \"%s\"", buffer);
 }
 
 static void

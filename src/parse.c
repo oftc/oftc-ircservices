@@ -200,7 +200,7 @@ parse(struct Client *client, char *pbuffer, char *bufend)
        */
       if (from == NULL)
       {
-        ilog(L_DEBUG, "from null, sender:%s\n", sender);
+        ilog(L_DEBUG, "from null, sender:%s", sender);
         return;
       }
 
@@ -208,7 +208,7 @@ parse(struct Client *client, char *pbuffer, char *bufend)
 
       if (from->from != client)
       {
-        ilog(L_DEBUG, "from from is not client %s %s %s %s %s\n", 
+        ilog(L_DEBUG, "from from is not client %s %s %s %s %s", 
             from->from->name, client->name, sender, ch, s);
         return;
       }
@@ -249,7 +249,7 @@ parse(struct Client *client, char *pbuffer, char *bufend)
 
     if ((mptr = find_command(ch, &irc_msg_tree)) == NULL)
     {
-      ilog(L_DEBUG, "Unknown Message: %s %s\n", ch, s);
+      ilog(L_DEBUG, "Unknown Message: %s %s", ch, s);
       return;
     }
 
@@ -320,7 +320,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   if (i < mptr->parameters)
   {
     reply_user(service, from, "Insufficient Parameters");
-    ilog(L_DEBUG, "%s sent services a command %s with too few paramters\n",
+    ilog(L_DEBUG, "%s sent services a command %s with too few paramters",
         from->name, mptr->cmd);
   }
   else
@@ -798,7 +798,7 @@ process_privmsg(struct Client *client, struct Client *source,
 
   if ((mptr = find_services_command(ch, &service->msg_tree)) == NULL)
   {
-    ilog(L_DEBUG, "Unknown Message: %s %s for service %s from %s\n", ch, s, 
+    ilog(L_DEBUG, "Unknown Message: %s %s for service %s from %s", ch, s, 
         parv[1], source->name);
     reply_user(service, source, "Unknown command %s.  /msg %s HELP for help.",
         ch, service->name);
@@ -822,7 +822,7 @@ process_privmsg(struct Client *client, struct Client *source,
 
     if(*servpara[1] == '#' && i > 2)
     {
-      ilog(L_DEBUG, "Got %s which is possibly a channel\n", servpara[1]);
+      ilog(L_DEBUG, "Got %s which is possibly a channel", servpara[1]);
       servpara[0] = servpara[1];
       servpara[1] = servpara[2];
       servpara[2] = servpara[0];
@@ -889,7 +889,7 @@ process_privmsg(struct Client *client, struct Client *source,
         if (i < sub->parameters)
         {
           reply_user(service, source, "Insufficient Parameters");
-          ilog(L_DEBUG, "%s sent services a sub command %s with too few paramters\n",
+          ilog(L_DEBUG, "%s sent services a sub command %s with too few paramters",
               client->name, sub->cmd);
           if(oldnick != NULL)
           {

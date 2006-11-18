@@ -46,11 +46,11 @@ serv_connect_callback(fde_t *fd, int status, void *data)
 
   if(status != COMM_OK)
   {
-    ilog(L_DEBUG, "serv_connect_callback: Connect failed :(\n");
+    ilog(L_DEBUG, "serv_connect_callback: Connect failed :(");
     exit(1);
   }
 
-  ilog(L_DEBUG, "serv_connect_callback: Connect succeeded!\n");
+  ilog(L_DEBUG, "serv_connect_callback: Connect succeeded!");
   comm_setselect(fd, COMM_SELECT_READ, read_packet, client, 0);
 
   dlinkAdd(client, &client->node, &global_server_list);
@@ -74,7 +74,7 @@ connect_server()
 
   if(comm_open(&server->fd, AF_INET, SOCK_STREAM, 0, NULL) < 0)
   {
-    ilog(L_DEBUG, "connect_server: Could not open socket\n");
+    ilog(L_DEBUG, "connect_server: Could not open socket");
     exit(1);
   }
 

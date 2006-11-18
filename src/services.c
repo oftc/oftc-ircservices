@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
   init_log(ServicesInfo.logfile);
 
-  ilog(L_DEBUG, "Services starting with name %s description %s sid %s\n",
+  ilog(L_DEBUG, "Services starting with name %s description %s sid %s",
       me.name, me.info, me.id);
 
   me.from = me.servptr = &me;
@@ -102,6 +102,6 @@ int main(int argc, char *argv[])
 void
 services_die(const char *msg, int rboot)
 {
-  ilog(L_DEBUG, "Dying: %s\n", msg);
+  ilog(L_DEBUG, "Dying: %s", msg);
   exit(rboot);
 }
