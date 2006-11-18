@@ -38,6 +38,10 @@ static void m_mod_load(struct Service *, struct Client *, int, char *[]);
 static void m_mod_reload(struct Service *, struct Client *, int, char *[]);
 static void m_mod_unload(struct Service *, struct Client *, int, char *[]);
 static void m_operserv_notimp(struct Service *, struct Client *, int, char *[]);
+static void m_admin(struct Service *, struct Client *, int, char *[]);
+static void m_admin_add(struct Service *, struct Client *, int, char *[]);
+static void m_admin_list(struct Service *, struct Client *, int, char *[]);
+static void m_admin_del(struct Service *, struct Client *, int, char *[]);
 
 // FIXME wrong type of clients may execute
 //
@@ -48,10 +52,10 @@ static struct ServiceMessage help_msgtab = {
 };
 
 static struct SubMessage mod_subs[5] = {
-  { "LIST", 0, 0, -1, -1, m_mod_list },
-  { "LOAD", 0, 1, -1, -1, m_mod_load },
-  { "RELOAD", 0, 1, -1, -1, m_mod_reload },
-  { "UNLOAD", 0, 1, -1, -1, m_mod_unload },
+  { "LIST", 0, 0, OS_MOD_LIST_HELP_SHORT, OS_MOD_LIST_HELP_LONG, m_mod_list },
+  { "LOAD", 0, 1, OS_MOD_LOAD_HELP_SHORT, OS_MOD_LOAD_HELP_LONG, m_mod_load },
+  { "RELOAD", 0, 1, OS_MOD_RELOAD_HELP_SHORT, OS_MOD_RELOAD_HELP_LONG, m_mod_reload },
+  { "UNLOAD", 0, 1, OS_MOD_UNLOAD_HELP_SHORT, OS_MOD_UNLOAD_HELP_LONG, m_mod_unload },
   { NULL, 0, 0, 0, 0, NULL }
 };
 
@@ -70,9 +74,15 @@ static struct ServiceMessage global_msgtab = {
   { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
 };
 
+static struct SubMessage admin_subs[4] = {
+  { "ADD", 0, 0, OS_ADMIN_ADD_HELP_SHORT, OS_ADMIN_ADD_HELP_LONG, m_admin_add },
+  { "LIST", 0, 0, OS_ADMIN_LIST_HELP_SHORT, OS_ADMIN_LIST_HELP_LONG, m_admin_list },
+  { "DEL", 0, 0, OS_ADMIN_DEL_HELP_SHORT, OS_ADMIN_DEL_HELP_LONG, m_admin_del }
+};
+
 static struct ServiceMessage admin_msgtab = {
-  NULL, "ADMIN", 1, 1, OS_ADMIN_HELP_SHORT, OS_ADMIN_HELP_LONG,
-  { m_operserv_notimp, m_operserv_notimp, m_operserv_notimp, m_operserv_notimp }
+  admin_subs, "ADMIN", 1, 1, OS_ADMIN_HELP_SHORT, OS_ADMIN_HELP_LONG,
+  { m_admin, m_admin, m_admin, m_admin}
 };
 
 static struct ServiceMessage session_msgtab = {
@@ -275,9 +285,47 @@ m_raw(struct Service *service, struct Client *client,
   ilog(L_DEBUG, "Executing RAW: \"%s\"\n", buffer);
 }
 
+static void
+m_admin(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  reply_user(service, client, "ADMIN, what?");
+}
+
+static void
+m_admin_add(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  reply_user(service, client, "Add?");
+}
+
+static void
+m_admin_list(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Nick *currnick;
+  void *handle;
+  int i = 0;
+
+  handle = db_nick_list_flags_first(NS_FLAG_ADMIN, &currnick);
+  while(currnick != NULL)
+  {
+    reply_user(service, client, _L(service, client, OS_ADMIN_LIST),
+        i++, currnick->nick);
+    currnick = db_nick_list_flags_next(handle);
+  }
+  db_nick_list_flags_done(handle);
+}
+
+static void
+m_admin_del(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  reply_user(service, client, "Del?");
+}
+
 static void m_operserv_notimp(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
   reply_user(service, client, "This isnt implemented yet.");
-  
 }

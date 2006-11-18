@@ -287,7 +287,7 @@ m_join(struct Client *client_p, struct Client *source_p,
 }
 
 /*
- * ms_tmode()
+ * m_tmode()
  *
  * inputs	- parv[0] = UID
  *		  parv[1] = TS
@@ -321,7 +321,7 @@ m_tmode(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 }
 
 /*
- * ms_bmask()
+ * m_bmask()
  *
  * inputs	- parv[0] = SID
  *		  parv[1] = TS
@@ -334,7 +334,7 @@ m_tmode(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
  *		  to the server the issuing server is connected through
  */
 static void
-ms_bmask(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+m_bmask(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
   static char modebuf[IRC_BUFSIZE];
   static char parabuf[IRC_BUFSIZE];

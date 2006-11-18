@@ -13,8 +13,7 @@ langdir	= $(prefix)/languages
 exec_prefix	= @exec_prefix@
 
 DISTFILES	= nickserv.en.lang \
-	nickserv.rude.lang\
-	nickserv.de.lang \
+	operserv.en.lang \
 	chanserv.en.lang
 
 all:

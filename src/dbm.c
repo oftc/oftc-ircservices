@@ -78,7 +78,7 @@ db_load_driver()
   Database.driv = dbi_conn_get_driver(Database.conn);
 }
 
-dbi_result
+static dbi_result
 db_query(const char *pattern, ...)
 {
   va_list args;
@@ -404,6 +404,54 @@ db_nick_get_string(unsigned int id, const char *key)
   dbi_result_get_fields(result, buffer, &value);
 
   return value;
+}
+
+void *
+db_nick_list_flags_first(unsigned int flags, struct Nick **nick)
+{
+  dbi_result result;
+  unsigned int id;
+
+  if((result = db_query("SELECT id FROM %s WHERE (flags & %d > 0)", 
+          "nickname", flags)) == NULL)
+  {
+    return NULL;
+  }
+
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    printf("db: %d has no access list\n", id);
+    return NULL;
+  }
+
+  if(dbi_result_first_row(result))
+  {
+    dbi_result_get_fields(result, "id.%ui", &id);
+    /* Possibly a little inefficient, but ensures we maintain links */
+    *nick = db_find_nick(db_get_nickname_from_id(id));
+    return result;
+  }
+
+  return NULL;
+}
+
+struct Nick *
+db_nick_list_flags_next(void *result)
+{
+  unsigned int id;
+  
+  if(dbi_result_next_row(result))
+  {
+    dbi_result_get_fields(result, "id.%ui", &id);
+    return db_find_nick(db_get_nickname_from_id(id));
+  }
+  return NULL;
+}
+
+void
+db_nick_list_flags_done(void *result)
+{
+  dbi_result_free(result);
 }
 
 unsigned int
