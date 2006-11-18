@@ -563,6 +563,8 @@ static void
 m_set_desc(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "Channel SET DESCRIPTION from %s for %s", client->name, parv[1]);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
   char desc[512];
@@ -578,6 +580,7 @@ m_set_desc(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_OWN_CHANNEL_ONLY), parv[1]);
+    ilog(L_DEBUG, "Channel SET DESCRIPTION failed for %s on %s (notown)", client->name, parv[1]);
     if (chptr == NULL)
     {
       free_regchan(regchptr);
@@ -590,6 +593,7 @@ m_set_desc(struct Service *service, struct Client *client,
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_DESCRIPTION), 
         parv[1], regchptr->description);
+    ilog(L_DEBUG, "Channel SET DESCRIPTION for %s on %s (INFOONLY)", client->name, parv[1]);
     if (chptr == NULL)
     {
       free_regchan(regchptr);
@@ -607,7 +611,7 @@ m_set_desc(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_DESC), parv[1], desc);
-    global_notice(NULL, "%s (%s@%s) changed description of %s to %s", 
+    ilog(L_NOTICE, "%s (%s@%s) changed description of %s to %s", 
       client->name, client->username, client->host, parv[1], desc);
 
     replace_string(regchptr->description, desc);
@@ -621,6 +625,7 @@ m_set_desc(struct Service *service, struct Client *client,
   {
     free_regchan(regchptr);
   }
+  ilog(L_TRACE, "T: Leaving CS:m_set_desc (%s:%s)", client->name, parv[1]);
 }
 
 /*
@@ -630,6 +635,8 @@ static void
 m_set_url(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "Channel SET URL from %s for %s", client->name, parv[1]);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
 
@@ -664,7 +671,7 @@ m_set_url(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_URL), parv[1], parv[2]);
-    global_notice(NULL, "%s (%s@%s) changed url of %s to %s", 
+    ilog(L_NOTICE, "%s (%s@%s) changed url of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
 
     replace_string(regchptr->url, parv[2]);
@@ -678,6 +685,7 @@ m_set_url(struct Service *service, struct Client *client,
   {
     free_regchan(regchptr);
   }
+  ilog(L_TRACE, "T: Leaving CS:m_set_url(%s:%s)", client->name, parv[1]);
 }
 
 /*
@@ -687,6 +695,8 @@ static void
 m_set_email(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "Channel SET EMAIL from %s for %s", client->name, parv[1]);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
 
@@ -721,7 +731,7 @@ m_set_email(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_EMAIL), parv[1], parv[2]);
-    global_notice(NULL, "%s (%s@%s) changed email of %s to %s", 
+    ilog(L_NOTICE, "%s (%s@%s) changed email of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
 
     replace_string(regchptr->email, parv[2]);
@@ -735,6 +745,7 @@ m_set_email(struct Service *service, struct Client *client,
   {
     free_regchan(regchptr);
   }
+  ilog(L_TRACE, "T: Leaving CS:m_set_email(%s:%s)", client->name, parv[1]);
 }
 
 /*
@@ -744,6 +755,8 @@ static void
 m_set_entrymsg(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "Channel SET ENTRYMSG from %s for %s", client->name, parv[1]);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
   int i; char msg[512];
@@ -784,7 +797,7 @@ m_set_entrymsg(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_MSG), parv[1], msg);
-    global_notice(NULL, "%s (%s@%s) changed entrymsg of %s to %s", 
+    ilog(L_NOTICE, "%s (%s@%s) changed entrymsg of %s to %s", 
       client->name, client->username, client->host, parv[1], msg);
     
     replace_string(regchptr->entrymsg, msg);
@@ -799,6 +812,7 @@ m_set_entrymsg(struct Service *service, struct Client *client,
   {
     free_regchan(regchptr);
   }
+  ilog(L_TRACE, "T: Leaving CS:m_set_entrymsg(%s:%s)", client->name, parv[1]);
 }
 
 
@@ -809,6 +823,8 @@ static void
 m_set_topic(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  ilog(L_TRACE, "Channel SET TOPIC from %s for %s", client->name, parv[1]);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
   int i; char topic[TOPICLEN+1];
@@ -843,7 +859,7 @@ m_set_topic(struct Service *service, struct Client *client,
   {
     reply_user(service, client, 
         _L(chanserv, client, CS_SET_TOPIC), parv[1], topic);
-    global_notice(NULL, "%s (%s@%s) changed TOPIC of %s to %s", 
+    ilog(L_NOTICE, "%s (%s@%s) changed TOPIC of %s to %s", 
       client->name, client->username, client->host, parv[1], topic);
 
     replace_string(regchptr->topic, topic);
@@ -863,6 +879,7 @@ m_set_topic(struct Service *service, struct Client *client,
       free_regchan(regchptr);
     }
   }
+  ilog(L_TRACE, "T: Leaving CS:m_set_topic(%s:%s)", client->name, parv[1]);
 }
 
 /*
@@ -955,6 +972,8 @@ static int
 m_set_flag(struct Service *service, struct Client *client,
            char *channel, char *toggle, int flag, char *flagname)
 {
+  ilog(L_TRACE, "Channel SET FLAG from %s for %s", client->name, channel);
+
   struct Channel *chptr;
   struct RegChannel *regchptr;
   int newflag;
@@ -1017,6 +1036,7 @@ m_set_flag(struct Service *service, struct Client *client,
     }
   }
 
+  ilog(L_TRACE, "T: Leaving CS:m_set_flag(%s:%s)", client->name, channel);
   return 0;
 }
 
