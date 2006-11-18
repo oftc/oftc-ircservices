@@ -71,11 +71,6 @@ static struct ServiceMessage raw_msgtab = {
   { m_noaccess, m_noaccess, m_raw, m_raw }
 };
 
-static struct ServiceMessage global_msgtab = {
-  NULL, "GLOBAL", 1, 1, OS_GLOBAL_HELP_SHORT, OS_GLOBAL_HELP_LONG,
-  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
-};
-
 static struct SubMessage admin_subs[4] = {
   { "ADD", 0, 0, OS_ADMIN_ADD_HELP_SHORT, OS_ADMIN_ADD_HELP_LONG, 
     { m_noaccess, m_noaccess, m_admin_add, m_admin_add } },
@@ -139,7 +134,6 @@ INIT_MODULE(operserv, "$Revision$")
   mod_add_servcmd(&operserv->msg_tree, &help_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &mod_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
-  mod_add_servcmd(&operserv->msg_tree, &global_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &admin_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &session_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &akill_msgtab);
