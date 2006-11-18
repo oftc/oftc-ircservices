@@ -296,7 +296,16 @@ static void
 m_admin_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, client, "Add?");
+  struct Nick *nick = db_find_nick(parv[1]);
+
+  if(nick == NULL)
+  {
+    reply_user(service, client, _L(service, client, OS_NICK_NOTREG), parv[1]);
+    return;
+  }
+  nick->flags |= NS_FLAG_ADMIN;
+  db_nick_set_number(nick->id, "flags", nick->flags);
+  reply_user(service, client, _L(service, client, OS_ADMIN_ADDED), nick->nick);
 }
 
 static void
@@ -312,6 +321,7 @@ m_admin_list(struct Service *service, struct Client *client,
   {
     reply_user(service, client, _L(service, client, OS_ADMIN_LIST),
         i++, currnick->nick);
+    free_nick(currnick);
     currnick = db_nick_list_flags_next(handle);
   }
   db_nick_list_flags_done(handle);

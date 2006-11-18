@@ -78,3 +78,7 @@ OS_QUARENTINE_HELP_LONG
 	moo
 OS_ADMIN_LIST
 	%d: %s
+OS_ADMIN_ADDED
+	%s added to the services admin list.
+OS_NICK_NOTREG
+	%s is not registered with Nickname Services.
