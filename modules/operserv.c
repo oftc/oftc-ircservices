@@ -306,6 +306,7 @@ m_admin_add(struct Service *service, struct Client *client,
   nick->flags |= NS_FLAG_ADMIN;
   db_nick_set_number(nick->id, "flags", nick->flags);
   reply_user(service, client, _L(service, client, OS_ADMIN_ADDED), nick->nick);
+  free_nick(nick);
 }
 
 static void
