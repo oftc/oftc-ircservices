@@ -140,6 +140,7 @@ db_find_nick(const char *nick)
   if(dbi_result_get_numrows(result) == 0)
   {
     printf("db: Nick %s not found\n", nick);
+    dbi_result_free(result);
     return NULL;
   }
 
@@ -396,6 +397,7 @@ db_nick_get_string(unsigned int id, const char *key)
   if(dbi_result_get_numrows(result) == 0)
   {
     printf("db: %s not found\n", key);
+    dbi_result_free(result);
     return NULL;
   }
 
@@ -403,6 +405,8 @@ db_nick_get_string(unsigned int id, const char *key)
 
   dbi_result_first_row(result);
   dbi_result_get_fields(result, buffer, &value);
+
+  dbi_result_free(result);
 
   return value;
 }
@@ -565,6 +569,7 @@ db_find_chan(const char *channel)
   if(dbi_result_get_numrows(result) == 0)
   {
     printf("db: Channel %s not found\n", channel);
+    dbi_result_free(result);
     return NULL;
   }
 
@@ -581,6 +586,8 @@ db_find_chan(const char *channel)
   strlcpy(channel_p->channel, findchannel, sizeof(channel_p->channel));
 
   MyFree(findchannel);
+
+  dbi_result_free(result);
 
   return channel_p;
 }
@@ -671,7 +678,7 @@ db_set_founder(const char *channel, const char *nickname)
     "(SELECT id FROM nickname WHERE lower(nick)=lower(%s)) WHERE "
     "lower(channel)=lower(%s)", "channel", escnick, escchannel);
   if (result != NULL)
-    MyFree(result);
+    dbi_result_free(result);
 
   MyFree(escnick);
   MyFree(escchannel);
@@ -692,7 +699,7 @@ db_chan_success_founder(const char *nickname)
   result = db_query("UPDATE %s SET founder=successor, successor=0 "
     "WHERE successor=%d", "channel", successor_id);
   if (result != NULL)
-    MyFree(result);
+    dbi_result_free(result);
 
   return 0;
 }
@@ -721,7 +728,7 @@ db_set_successor(const char *channel, const char *nickname)
     "(SELECT id FROM nickname WHERE lower(nick)=lower(%s) WHERE channel=%s",
     "channel", escnick, escchannel);
   if (result != NULL)
-    MyFree(result);
+    dbi_result_free(result);
 
   MyFree(escnick);
   MyFree(escchannel);
@@ -852,7 +859,9 @@ db_link_nicks(unsigned int master, unsigned int child)
 
   if(result == NULL)
     return -1;
-  
+
+  dbi_result_free(result);
+
   return 0;
 }
 
@@ -860,14 +869,18 @@ int
 db_is_linked(const char *nick)
 {
   dbi_result result;
-  int ret, id;
-  
-  id = db_get_id_from_nick(nick);
+  int ret;
+  char *escnick;
 
-  if(id <= 0)
-    return FALSE;
+  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
 
-  result = db_query("SELECT link_id FROM nickname_links WHERE link_id=%d", id);
+  result = db_query("SELECT link_id FROM nickname_links WHERE link_id= "
+      "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
+
   if(result == NULL)
     return FALSE;
 
@@ -876,6 +889,7 @@ db_is_linked(const char *nick)
   else
     ret = FALSE;
 
+  MyFree(escnick);
   dbi_result_free(result);
 
   return ret;
@@ -886,15 +900,17 @@ db_unlink_nick(const char *nick)
 {
   dbi_result result;
   struct Nick *nick_p;
-  char *retnick, *retpass, *retcloak;
-  int id;
+  char *retnick, *retpass, *retcloak, *escnick;
 
-  id = db_get_id_from_nick(nick);
+  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
 
-  if(id <= 0)
-    return NULL;
+  result = db_query("DELETE FROM nickname_links WHERE link_id= "
+      "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
 
-  result = db_query("DELETE FROM nickname_links WHERE link_id=%d", id);
   if(result == NULL)
     return NULL;
 
@@ -902,7 +918,7 @@ db_unlink_nick(const char *nick)
 
   if((result = db_query("SELECT id, nick, password, email, cloak, "
       "last_quit_time, reg_time, last_seen, last_used, flags, language "
-      "FROM %s WHERE id=%d", "nickname", id)) == NULL)
+      "FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick)) == NULL)
   {
     return NULL;
   }
@@ -925,6 +941,7 @@ db_unlink_nick(const char *nick)
   MyFree(retnick);
   MyFree(retpass);
   MyFree(retcloak);
+  MyFree(escnick);
 
   dbi_result_free(result);
 
