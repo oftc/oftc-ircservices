@@ -828,41 +828,18 @@ int
 db_list_del_index(const char *table, unsigned int id, unsigned int index)
 {
   dbi_result result;
-  unsigned int delid, numrows, j;
-    
-  if((result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d",
-          table, id)) == NULL)
+
+  if((result = db_query("DELETE FROM %s WHERE id = "
+          "(SELECT id FROM %s AS a WHERE %d = "
+          "(SELECT COUNT(id)+1 FROM %s AS b WHERE b.id < a.id AND b.parent_id = %d) "
+          "AND parent_id = %d)", table, table, index, table, id, id)) == NULL)
   {
+    printf("db: Failed to delete list index\n");
     return 0;
   }
 
-  if((numrows = dbi_result_get_numrows(result)) == 0)
-  {
-    printf("db: %d has no access list\n", id);
-    return 0;
-  }
-
-  if(dbi_result_first_row(result))
-  {
-    for(j = 1; j <= numrows; j++)
-    {
-      if(j == index)
-      {
-        dbi_result_get_fields(result, "id.%ui", &delid);
-        dbi_result_free(result);
-            
-        if((result = db_query("DELETE FROM %s WHERE parent_id=%d AND id=%d", 
-                table, id, delid)) == NULL)
-        {
-          return 0;
-        }
-        return 1;
-      }
-      dbi_result_next_row(result);
-    }
-  }
   dbi_result_free(result);
-  return 0;
+  return 1;
 }
 
 int
