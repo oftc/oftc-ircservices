@@ -43,6 +43,10 @@ static void m_admin(struct Service *, struct Client *, int, char *[]);
 static void m_admin_add(struct Service *, struct Client *, int, char *[]);
 static void m_admin_list(struct Service *, struct Client *, int, char *[]);
 static void m_admin_del(struct Service *, struct Client *, int, char *[]);
+static void m_akill(struct Service *, struct Client *, int, char *[]);
+static void m_akill_add(struct Service *, struct Client *, int, char *[]);
+static void m_akill_list(struct Service *, struct Client *, int, char *[]);
+static void m_akill_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, OS_HELP_SHORT, OS_HELP_LONG,
@@ -91,9 +95,19 @@ static struct ServiceMessage session_msgtab = {
   { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
+static struct SubMessage akill_subs[4] = {
+  { "ADD", 0, 0, OS_AKILL_ADD_HELP_SHORT, OS_AKILL_ADD_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_akill_add, m_akill_add } },
+  { "LIST", 0, 0, OS_AKILL_LIST_HELP_SHORT, OS_AKILL_LIST_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_akill_list, m_akill_list } },
+  { "DEL", 0, 0, OS_AKILL_DEL_HELP_SHORT, OS_AKILL_DEL_HELP_LONG, 
+    { m_noaccess, m_noaccess, m_akill_del, m_akill_del } },
+  { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
+};
+
 static struct ServiceMessage akill_msgtab = {
-  NULL, "AKILL", 1, 1, OS_AKILL_HELP_SHORT, OS_AKILL_HELP_LONG,
-  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
+  akill_subs, "AKILL", 1, 1, OS_AKILL_HELP_SHORT, OS_AKILL_HELP_LONG,
+  { m_noaccess, m_noaccess, m_akill, m_akill }
 };
 
 static struct ServiceMessage exceptions_msgtab = {
@@ -325,7 +339,7 @@ m_admin_list(struct Service *service, struct Client *client,
   handle = db_nick_list_flags_first(NS_FLAG_ADMIN, &currnick);
   while(currnick != NULL)
   {
-    reply_user(service, client, OS_ADMIN_LIST, "", i++, currnick->nick);
+    reply_user(service, client, OS_ADMIN_LIST, i++, currnick->nick);
     free_nick(currnick);
     currnick = db_nick_list_flags_next(handle);
   }
@@ -350,6 +364,42 @@ m_admin_del(struct Service *service, struct Client *client,
   db_nick_set_number(nick->id, "flags", nick->flags);
 
   free_nick(nick);
+}
+
+static void
+m_akill(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  reply_user(service, client, 0, "AKILL, what?");
+}
+
+static void
+m_akill_add(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+}
+
+static void
+m_akill_list(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct AccessEntry entry;
+  void *handle;
+  int i = 1;
+
+  handle = db_list_first("akill", 0, &entry);
+  while(handle != NULL)
+  {
+    reply_user(service, client, OS_AKILL_LIST, i++, entry.value);
+    handle = db_list_next(handle, &entry);
+  }
+  db_nick_list_flags_done(handle);
+}
+
+static void
+m_akill_del(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
 }
 
 static void m_operserv_notimp(struct Service *service, struct Client *client, 

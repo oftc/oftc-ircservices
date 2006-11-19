@@ -759,17 +759,16 @@ db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
 {
   dbi_result result;
     
-  if((result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d", 
-          table, id)) == NULL)
-  {
+  if(id > 0)
+    result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d", table, id);
+  else
+    result = db_query("SELECT id, entry FROM %s", table);
+
+  if(result == NULL)
     return NULL;
-  }
 
   if(dbi_result_get_numrows(result) == 0)
-  {
-    printf("db: %d has no access list\n", id);
     return NULL;
-  }
 
   if(dbi_result_first_row(result))
   {

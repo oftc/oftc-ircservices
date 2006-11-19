@@ -661,7 +661,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 
   nick = client->nickname;
 
-  reply_user(service, client, NS_ACCESS_START, "");
+  reply_user(service, client, NS_ACCESS_START);
  
   if((listptr = db_list_first("nickname_access", nick->id, &entry)) == NULL)
   {
@@ -670,7 +670,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 
   while(listptr != NULL)
   {
-    reply_user(service, client, NS_ACCESS_ENTRY, "", i++, entry.value);
+    reply_user(service, client, NS_ACCESS_ENTRY, i++, entry.value);
     MyFree(entry.value);
     listptr = db_list_next(listptr, &entry);
   }
