@@ -409,7 +409,7 @@ m_set_language(struct Service *service, struct Client *client,
         service->language_table[client->nickname->language][0],
         client->nickname->language);
 
-    reply_user(service, client, NS_AVAIL_LANGUAGE, "");
+    reply_user(service, client, NS_AVAIL_LANGUAGE);
 
     for(i = 0; i < LANG_LAST; i++)
     {
@@ -691,7 +691,7 @@ m_access_del(struct Service *service, struct Client *client, int parc,
   else
     ret = db_list_del("nickname_access", nick->id, parv[1]);
   
-  reply_user(service, client, NS_ACCESS_DEL, "", ret);
+  reply_user(service, client, NS_ACCESS_DEL, ret);
 }
 
 static void
