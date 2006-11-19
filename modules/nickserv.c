@@ -339,7 +339,7 @@ m_identify(struct Service *service, struct Client *client,
     return;
   }
 
-  if(check_nick_pass(nick, parv[1]) == FALSE)
+  if(!check_nick_pass(nick, parv[1]))
   {
     free_nick(nick);
     reply_user(service, client, NS_IDENT_FAIL, client->name);
@@ -712,7 +712,7 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(check_nick_pass(nick, parv[2]) != 0)
+  if(!check_nick_pass(nick, parv[2]))
   {
     free_nick(nick);
     reply_user(service, client, NS_GHOST_FAILED, parv[1]);   
@@ -737,7 +737,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(check_nick_pass(master_nick, parv[2]) != 0)
+  if(!check_nick_pass(master_nick, parv[2]))
   {
     free_nick(master_nick);
     reply_user(service, client, NS_LINK_BADPASS, parv[1]);
