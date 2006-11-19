@@ -341,7 +341,8 @@ m_generic(struct Service *service, struct Client *client,
 
   if(!do_ruby(RB_CALLBACK(rb_singleton_call), fc2params))
   {
-    reply_user(service, client, "An error has occurred, please be patient and report this bug");
+    reply_user(service, client, 0, 
+        "An error has occurred, please be patient and report this bug");
     ilog(L_NOTICE, "Ruby Failed to Execute Command: %s by %s", command, client->name);
   }
 }
@@ -396,7 +397,7 @@ ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE rbmessage)
 
   char *message = StringValueCStr(rbmessage);
 
-  reply_user(service, client, message);
+  reply_user(service, client, 0, message);
   return Qnil;
 }
 

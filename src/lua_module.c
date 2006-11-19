@@ -114,7 +114,7 @@ m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     printf("m_lua: LUA ERROR: %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);
-    reply_user(service, client, "You broke teh lua.");
+    reply_user(service, client, 0, "You broke teh lua.");
   }
 }
 
@@ -313,7 +313,7 @@ lua_reply_user(lua_State *L)
   message = luaL_checkstring(L, 3);
   param = luaL_checkstring(L, 4);
   
-  reply_user(lua_service, client, message, param);
+  reply_user(lua_service, client, 0, message, param);
 
   return 0;
 }
@@ -350,7 +350,7 @@ lua_L(lua_State *L)
   client = (struct Client*) luaL_checkudata(L, 2, "OFTC.client");
   message = luaL_checkinteger(L, 3);
 
-  lua_pushstring(L, _L(lua_service, client, message));
+//  lua_pushstring(L, _L(lua_service, client, message));
 
   return 1;
 }

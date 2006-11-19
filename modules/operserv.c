@@ -153,7 +153,7 @@ static void
 m_noaccess(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  reply_user(service, client, "No access for you.");
+  reply_user(service, client, 0, "No access for you.");
 }
 
 static void
@@ -167,14 +167,14 @@ static void
 m_mod(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  reply_user(service, client, "Unknown MOD command");  
+  reply_user(service, client, 0, "Unknown MOD command");  
 }
 
 static void
 m_mod_list(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  reply_user(service, client, "LIST not implemented");
+  reply_user(service, client, 0, "LIST not implemented");
 }
 
 static void
@@ -188,13 +188,13 @@ m_mod_load(struct Service *service, struct Client *client,
 
   if (find_module(mbn, 0) != NULL)
   {
-    reply_user(service, client, "Module already loaded");
+    reply_user(service, client, OS_MOD_ALREADYLOADED, parm);
     return;
   }
 
   if (parm == NULL)
   {
-    reply_user(service, client, "You need to specify the modules name");
+    reply_user(service, client, 0, "You need to specify the modules name");
     return;
   }
 
@@ -203,12 +203,12 @@ m_mod_load(struct Service *service, struct Client *client,
   if (load_module(parm) == 1)
   {
     global_notice(service, "Module %s loaded", parm);
-    reply_user(service, client,  "Module %s loaded", parm);
+    reply_user(service, client, OS_MOD_LOADED, parm);
   }
   else
   {
     global_notice(service, "Module %s could not be loaded!", parm);
-    reply_user(service, client,  "Module %s could not be loaded!", parm);
+    reply_user(service, client, OS_MOD_LOADFAIL, parm);
   }
 }
 
@@ -227,23 +227,21 @@ m_mod_reload(struct Service *service, struct Client *client,
     global_notice(service,
         "Module %s reload requested by %s, but failed because not loaded",
         parm, client->name);
-    reply_user(service, client,  
-        "Module %s reload requested by %s, but failed because not loaded",
-        parm, client->name);
+    reply_user(service, client, OS_MOD_NOTLOADED, parm, client->name);
     return;
   }
   global_notice(service, "Reloading %s by request of %s", parm, client->name);
-  reply_user(service, client, "Reloading %s", parm, client->name);
+  reply_user(service, client, OS_MOD_RELOADING, parm, client->name);
   unload_module(module);
   if (load_module(parm) == 1)
   {
     global_notice(service, "Module %s loaded", parm);
-    reply_user(service, client,  "Module %s loaded", parm);
+    reply_user(service, client, OS_MOD_LOADED,parm);
   }
   else
   {
     global_notice(service, "Module %s could not be loaded!", parm);
-    reply_user(service, client,  "Module %s could not be loaded!", parm);
+    reply_user(service, client, OS_MOD_LOADFAIL, parm);
   }
 }
 
@@ -262,13 +260,13 @@ m_mod_unload(struct Service *service, struct Client *client,
     global_notice(service,
         "Module %s unload requested by %s, but failed because not loaded",
         parm, client->name);
-    reply_user(service, client,  
+    reply_user(service, client, 0, 
         "Module %s unload requested by %s, but failed because not loaded",
         parm, client->name);
     return;
   }
   global_notice(service, "Unloading %s by request of %s", parm, client->name);
-  reply_user(service, client, "Unloading %s", parm, client->name);
+  reply_user(service, client, OS_MOD_UNLOAD, parm, client->name);
   unload_module(module);
 }
 
@@ -296,7 +294,7 @@ static void
 m_admin(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, client, "ADMIN, what?");
+  reply_user(service, client, 0, "ADMIN, what?");
 }
 
 static void
@@ -307,12 +305,12 @@ m_admin_add(struct Service *service, struct Client *client,
 
   if(nick == NULL)
   {
-    reply_user(service, client, _L(service, client, OS_NICK_NOTREG), parv[1]);
+    reply_user(service, client, OS_NICK_NOTREG, parv[1]);
     return;
   }
   nick->flags |= NS_FLAG_ADMIN;
   db_nick_set_number(nick->id, "flags", nick->flags);
-  reply_user(service, client, _L(service, client, OS_ADMIN_ADDED), nick->nick);
+  reply_user(service, client, OS_ADMIN_ADDED, nick->nick);
   free_nick(nick);
 }
 
@@ -327,8 +325,7 @@ m_admin_list(struct Service *service, struct Client *client,
   handle = db_nick_list_flags_first(NS_FLAG_ADMIN, &currnick);
   while(currnick != NULL)
   {
-    reply_user(service, client, _L(service, client, OS_ADMIN_LIST),
-        i++, currnick->nick);
+    reply_user(service, client, OS_ADMIN_LIST, "", i++, currnick->nick);
     free_nick(currnick);
     currnick = db_nick_list_flags_next(handle);
   }
@@ -345,11 +342,10 @@ m_admin_del(struct Service *service, struct Client *client,
     
   if(nick == NULL || !(nick->flags & NS_FLAG_ADMIN))
   {
-    reply_user(service, client, _L(service, client, OS_ADMIN_NOTADMIN), 
-      parv[1]);
+    reply_user(service, client, OS_ADMIN_NOTADMIN, parv[1]);
     return;
   }
-  reply_user(service, client, _L(service, client, OS_ADMIN_DEL), nick->nick);
+  reply_user(service, client, OS_ADMIN_DEL, nick->nick);
   nick->flags &= ~NS_FLAG_ADMIN;
   db_nick_set_number(nick->id, "flags", nick->flags);
 
@@ -359,5 +355,5 @@ m_admin_del(struct Service *service, struct Client *client,
 static void m_operserv_notimp(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  reply_user(service, client, "This isnt implemented yet.");
+  reply_user(service, client, 0, "This isnt implemented yet.");
 }

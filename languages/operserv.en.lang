@@ -1,79 +1,79 @@
 0 English
 OS_HELP_SHORT
-	Shows this help
+	%s: Shows this help
 OS_HELP_LONG
 	Use HELP to get help on commands.  /msg OperServ HELP command
 OS_MOD_LIST_HELP_SHORT
-	moo
+	%s: moo
 OS_MOD_LIST_HELP_LONG
 	moo
 OS_MOD_LOAD_HELP_SHORT
-	moo
+	%s: moo
 OS_MOD_LOAD_HELP_LONG
 	moo
 OS_MOD_UNLOAD_HELP_SHORT
-	moo
+	%s: moo
 OS_MOD_UNLOAD_HELP_LONG
 	moo
 OS_MOD_RELOAD_HELP_SHORT
-	moo
+	%s: moo
 OS_MOD_RELOAD_HELP_LONG
 	moo
 OS_MOD_HELP_SHORT
-	moo
+	%s: moo
 OS_MOD_HELP_LONG
 	moo
 OS_RAW_HELP_SHORT
-	moo
+	%s: moo
 OS_RAW_HELP_LONG
 	Sends a command to the server directly.  Abuse this and cdlu will bite off
 	your hand.
 OS_GLOBAL_HELP_SHORT
-	moo
+	%s: moo
 OS_GLOBAL_HELP_LONG
 	moo
 OS_ADMIN_HELP_SHORT
-	moo
+	%s: moo
 OS_ADMIN_HELP_LONG
 	moo
 OS_ADMIN_ADD_HELP_SHORT
-	moo
+	%s: moo
 OS_ADMIN_ADD_HELP_LONG
 	moo
 OS_ADMIN_LIST_HELP_SHORT
-	moo	
+	%s: moo	
 OS_ADMIN_LIST_HELP_LONG
 	moo
 OS_ADMIN_DEL_HELP_SHORT
-	moo
+	%s: moo
 OS_ADMIN_DEL_HELP_LONG
 	moo
 OS_SESSION_HELP_SHORT
-	moo
+	%s: moo
 OS_SESSION_HELP_LONG
 	moo
 OS_AKILL_HELP_SHORT
-	moo
+	%s: moo
 OS_AKILL_HELP_LONG
 	moo
 OS_EXCEPTIONS_HELP_SHORT
-	moo
+	%s: moo
 OS_EXCEPTIONS_HELP_LONG
 	moo
 OS_JUPE_HELP_SHORT
-	moo
+	%s: moo
 OS_JUPE_HELP_LONG
 	moo
 OS_SET_HELP_SHORT
-	moo
+	%s: moo
 OS_SET_HELP_LONG
 	moo
 OS_SHUTDOWN_HELP_SHORT
-	moo
+	%s: moo
 OS_SHUTDOWN_HELP_LONG
 	moo
 OS_QUARENTINE_HELP_SHORT
-	moo
+	%s: moo
 OS_QUARENTINE_HELP_LONG
 	moo
 OS_ADMIN_LIST
@@ -86,3 +86,15 @@ OS_ADMIN_NOTADMIN
 	%s is not an admin, or is not registered with Nickname Services.
 OS_ADMIN_DEL
 	%s has been removed as an admin.
+OS_MOD_ALREADYLOADED
+	Module %s is already loaded.
+OS_MOD_LOADED
+	Module %s loaded.
+OS_MOD_LOADFAIL
+	Module %s failed to load.
+OS_MOD_NOTLOADED
+	Module %s is not loaded.
+OS_MOD_RELOADING
+	Module %s is reloading.
+OS_MOD_UNLOAD
+	Module %s unloaded.

@@ -108,14 +108,33 @@ tell_user(struct Service *service, struct Client *client, char *text)
 }
 
 void
-reply_user(struct Service *service, struct Client *client, const char *fmt, ...)
+reply_user(struct Service *service, struct Client *client, unsigned int langid,
+    ...)
 {
-  char buf[IRC_BUFSIZE+1];
+  char buf[IRC_BUFSIZE+1], formatbuf[IRC_BUFSIZE];
   va_list ap;
   char *s, *t;
+  int langused = 0;
+  char *langstr;
   
-  va_start(ap, fmt);
-  vsnprintf(buf, IRC_BUFSIZE, fmt, ap);
+  if(langid != 0)
+  {
+    if(client->nickname == NULL)
+      langstr = service->language_table[0][langid];
+    else
+      langstr = service->language_table[client->nickname->language][langid];
+
+    if(langstr == NULL)
+      langused = 0;
+    else
+      langused = 1;
+  }
+   
+  if(langused)
+    snprintf(formatbuf, IRC_BUFSIZE, "%s", langstr);
+  
+  va_start(ap, langid);
+  vsnprintf(buf, IRC_BUFSIZE, formatbuf, ap);
   va_end(ap);
   s = buf;
   while (*s) 
@@ -199,7 +218,7 @@ do_help(struct Service *service, struct Client *client,
     msg = find_services_command(command, &service->msg_tree);
     if(msg == NULL)
     {
-      reply_user(service, client, "HELP for %s is not available.",
+      reply_user(service, client, 0, "HELP for %s is not available.", 
           command);
       return;
     }
@@ -212,23 +231,22 @@ do_help(struct Service *service, struct Client *client,
       {
         if(strncasecmp(sub->cmd, parv[2], sizeof(sub->cmd)) == 0)
         {
-          reply_user(service, client, _L(service, client, sub->help_long));
+          reply_user(service, client, sub->help_long, "");
           return;   
         }
         sub++;
       }
-      reply_user(service, client, "HELP for %s %s is not available.",
+      reply_user(service, client, 0, "HELP for %s %s is not available.", 
           command, parv[2]);
       return;
     }
 
-    reply_user(service, client, _L(service, client, msg->help_long));
+    reply_user(service, client, msg->help_long, "");
     sub = msg->sub;
     
     while(sub != NULL && sub->cmd != NULL)
     {
-      reply_user(service, client, "\002%s\002: %s", 
-          sub->cmd, _L(service, client, sub->help_short));
+      reply_user(service, client, sub->help_short, "\002%s\002: %s", sub->cmd);
       sub++;
       if(sub->cmd == NULL)
         sub = NULL;

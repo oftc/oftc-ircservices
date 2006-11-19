@@ -27,7 +27,7 @@ extern struct Callback *on_nick_drop_cb;
 
 struct Service *make_service(char *);
 void introduce_service(struct Service *);
-void reply_user(struct Service *, struct Client *, const char *, ...);
+void reply_user(struct Service *, struct Client *, unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
 void cloak_user(struct Client *, char *);
 void send_umode(struct Service *, struct Client *, const char *);
@@ -61,13 +61,6 @@ struct Service
   char *last_command;
   char *language_table[LANG_LAST][LANG_TABLE_SIZE];
   void *data;
-};
-
-enum identify_errors
-{
-  ERR_ID_NOERROR = 0,
-  ERR_ID_NONICK,
-  ERR_ID_WRONGPASS
 };
 
 #endif

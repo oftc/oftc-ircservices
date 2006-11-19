@@ -10,8 +10,4 @@
 
 void load_language(struct Service *service, const char *langfile);
 
-#define _L(s, c, m) ((c)->nickname != NULL) ? \
-          (s)->language_table[(c)->nickname->language][(m)] : \
-          (s)->language_table[0][(m)]
-
 #endif
