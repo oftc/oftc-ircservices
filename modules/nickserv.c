@@ -382,7 +382,7 @@ m_set_password(struct Service *service, struct Client *client,
   snprintf(password, sizeof(password), "%s%s", parv[1], salt);
   
   pass = crypt_pass(password);
-  if(db_nick_set_string(client->nickname->id, "password", pass) == 0)
+  if(db_set_string("nickname", client->nickname->id, "password", pass) == 0)
   {
     reply_user(service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
   }
@@ -421,7 +421,7 @@ m_set_language(struct Service *service, struct Client *client,
   {
     int lang = atoi(parv[1]);
     
-    if(db_nick_set_number(client->nickname->id, "language", lang) == 0)
+    if(db_set_number("nickname", client->nickname->id, "language", lang) == 0)
     {
       client->nickname->language = lang;
       reply_user(service, client, NS_LANGUAGE_SET,
@@ -445,7 +445,7 @@ m_set_url(struct Service *service, struct Client *client,
     return;
   }
   
-  if(db_nick_set_string(nick->id, "url", parv[1]) == 0)
+  if(db_set_string("nickname", nick->id, "url", parv[1]) == 0)
   {
     nick->url = replace_string(nick->url, parv[1]);
     reply_user(service, client, NS_SET_SUCCESS, "URL", nick->url);
@@ -466,7 +466,7 @@ m_set_email(struct Service *service, struct Client *client,
     return;
   }
     
-  if(db_nick_set_string(nick->id, "email", parv[1]) == 0)
+  if(db_set_string("nickname", nick->id, "email", parv[1]) == 0)
   {
     nick->email = replace_string(nick->email, parv[1]);
     reply_user(service, client, NS_SET_SUCCESS, "EMAIL", nick->email);
@@ -504,7 +504,7 @@ m_set_cloak(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_nick_set_number(nick->id, "flags", newflags) == 0)
+  if(db_set_number("nickname", nick->id, "flags", newflags) == 0)
   {
     nick->flags = newflags;
     reply_user(service, client, NS_SET_SUCCESS,
@@ -532,7 +532,7 @@ m_set_cloakstring(struct Service *service, struct Client *client,
     m_notadmin(service, client, parc, parv);
     return;
   }
-  if(db_nick_set_string(nick->id, "cloak", parv[1]) == 0)
+  if(db_set_string("nickname", nick->id, "cloak", parv[1]) == 0)
   {
     strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
     reply_user(service, client, NS_SET_SUCCESS, "CLOAKSTRING", nick->cloak);
@@ -570,7 +570,7 @@ m_set_secure(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_nick_set_number(nick->id, "flags", newflags) == 0)
+  if(db_set_number("nickname", nick->id, "flags", newflags) == 0)
   {
     nick->flags = newflags;
     reply_user(service, client, NS_SET_SUCCESS,
@@ -610,7 +610,7 @@ m_set_enforce(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_nick_set_number(nick->id, "flags", newflags) == 0)
+  if(db_set_number("nickname", nick->id, "flags", newflags) == 0)
   {
     nick->flags = newflags;
     reply_user(service, client, NS_SET_SUCCESS,
@@ -763,7 +763,7 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Nick *nick = client->nickname;
   struct Nick *unlinked_nick;
 
-  if(!db_is_linked(client->name))
+  if(!db_nick_is_linked(client->name))
   {
     reply_user(service, client, NS_UNLINK_NOLINK, client->name);
     return;
@@ -831,7 +831,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if((nick = db_find_nick(parv[1])) != NULL)
   {
-    db_nick_set_number(nick->id, "flags", NS_FLAG_FORBID);
+    db_set_number("nickname", nick->id, "flags", NS_FLAG_FORBID);
     free_nick(nick);
     reply_user(service, client, NS_FORBID_OK, parv[1]);
     return;
@@ -849,7 +849,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  db_nick_set_number(nick->id, "flags", NS_FLAG_FORBID);
+  db_set_number("nickname", nick->id, "flags", NS_FLAG_FORBID);
   reply_user(service, client, NS_FORBID_OK, parv[1]);
   free_nick(nick);
 }
@@ -1002,11 +1002,11 @@ ns_on_quit(va_list args)
 
   if(nick)
   {
-    db_nick_set_string(nick->id, "last_quit", comment);
-    db_nick_set_string(nick->id, "last_host", user->host);
-    db_nick_set_number(nick->id, "last_quit_time", CurrentTime);
-    db_nick_set_number(nick->id, "last_seen", CurrentTime);
-    db_nick_set_number(nick->id, "last_used", CurrentTime);
+    db_set_string("nickname", nick->id, "last_quit", comment);
+    db_set_string("nickname", nick->id, "last_host", user->host);
+    db_set_number("nickname", nick->id, "last_quit_time", CurrentTime);
+    db_set_number("nickname", nick->id, "last_seen", CurrentTime);
+    db_set_number("nickname", nick->id, "last_used", CurrentTime);
     free_nick(nick);
   }
 

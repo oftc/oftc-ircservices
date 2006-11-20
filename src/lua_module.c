@@ -272,7 +272,7 @@ lua_nick_set_email(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
   const char *email = luaL_checkstring(L, 2);
-  int ret = db_nick_set_string(nick->id, "email", email);
+  int ret = db_set_string("nickname", nick->id, "email", email);
 
   if(ret == 0)
   {
@@ -290,7 +290,7 @@ lua_nick_set_language(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
   const int lang = luaL_checkinteger(L, 2);
-  int ret = db_nick_set_number(nick->id, "language", lang);
+  int ret = db_set_number("nickname", nick->id, "language", lang);
 
   if(ret == 0)
   {

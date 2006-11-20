@@ -653,7 +653,7 @@ m_set_desc(struct Service *service, struct Client *client,
     strncat(desc, " ", 1);
   }
 
-  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "description", desc) == 0)
+  if (db_set_string("channel",db_get_id_from_chan(parv[1]), "description", desc) == 0)
   {
     reply_user(service, client, CS_SET_DESC, parv[1], desc);
     ilog(L_NOTICE, "%s (%s@%s) changed description of %s to %s", 
@@ -708,7 +708,7 @@ m_set_url(struct Service *service, struct Client *client,
     return;
   }
 
-  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "url", parv[2]) == 0)
+  if (db_set_string("channel",db_get_id_from_chan(parv[1]), "url", parv[2]) == 0)
   {
     reply_user(service, client, CS_SET_URL, parv[1], parv[2]);
     ilog(L_NOTICE, "%s (%s@%s) changed url of %s to %s", 
@@ -763,7 +763,7 @@ m_set_email(struct Service *service, struct Client *client,
     return;
   }
 
-  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "email", parv[2]) == 0)
+  if (db_set_string("channel",db_get_id_from_chan(parv[1]), "email", parv[2]) == 0)
   {
     reply_user(service, client, CS_SET_EMAIL, parv[1], parv[2]);
     ilog(L_NOTICE, "%s (%s@%s) changed email of %s to %s", 
@@ -824,7 +824,7 @@ m_set_entrymsg(struct Service *service, struct Client *client,
     strncat(msg, " ", 1);
   }
 
-  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "entrymsg", msg) == 0)
+  if (db_set_string("channel",db_get_id_from_chan(parv[1]), "entrymsg", msg) == 0)
   {
     reply_user(service, client, CS_SET_MSG, parv[1], msg);
     ilog(L_NOTICE, "%s (%s@%s) changed entrymsg of %s to %s", 
@@ -881,7 +881,7 @@ m_set_topic(struct Service *service, struct Client *client,
     strncat(topic, " ", 1);
   }
 
-  if (db_chan_set_string(db_get_id_from_chan(parv[1]), "topic", topic) == 0)
+  if (db_set_string("channel",db_get_id_from_chan(parv[1]), "topic", topic) == 0)
   {
     reply_user(service, client, CS_SET_TOPIC, parv[1], topic);
     ilog(L_NOTICE, "%s (%s@%s) changed TOPIC of %s to %s", 
@@ -1038,7 +1038,7 @@ m_set_flag(struct Service *service, struct Client *client,
     newflag &= ~flag;
   }
 
-  if (db_chan_set_number(db_get_id_from_chan(channel), "flags", newflag) == 0 )
+  if (db_set_number("channel", db_get_id_from_chan(channel), "flags", newflag) == 0 )
   {
     reply_user(service, client, CS_SET_SUCCESS, channel, flagname, toggle);
 

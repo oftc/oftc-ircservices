@@ -323,7 +323,7 @@ m_admin_add(struct Service *service, struct Client *client,
     return;
   }
   nick->flags |= NS_FLAG_ADMIN;
-  db_nick_set_number(nick->id, "flags", nick->flags);
+  db_set_number("nickname", nick->id, "flags", nick->flags);
   reply_user(service, client, OS_ADMIN_ADDED, nick->nick);
   free_nick(nick);
 }
@@ -361,7 +361,7 @@ m_admin_del(struct Service *service, struct Client *client,
   }
   reply_user(service, client, OS_ADMIN_DEL, nick->nick);
   nick->flags &= ~NS_FLAG_ADMIN;
-  db_nick_set_number(nick->id, "flags", nick->flags);
+  db_set_number("nickname", nick->id, "flags", nick->flags);
 
   free_nick(nick);
 }

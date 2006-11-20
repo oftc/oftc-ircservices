@@ -1,6 +1,16 @@
 #ifndef OPERSERV_H
 #define OPERSERV_H
 
+struct AKill
+{
+  unsigned int id;
+  char *mask;
+  char *reason;
+  struct Nick *setter;
+  unsigned int time_set;
+  unsigned int duration;
+};
+
 #define OS_HELP_SHORT 1
 #define OS_HELP_LONG 2
 #define OS_MOD_LIST_HELP_SHORT 3

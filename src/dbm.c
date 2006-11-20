@@ -222,30 +222,6 @@ db_get_id_from_nick(const char *nick)
   return id;
 }
 
-char *
-db_get_nickname_from_id(unsigned int id)
-{
-  dbi_result result;
-  char *retnick;
-
-  result = db_query("SELECT nick from nickname WHERE id=%d", id);
-  
-  if(result == NULL)
-    return NULL;
-
-  if(dbi_result_get_numrows(result) == 0)
-  {
-    dbi_result_free(result);
-    return NULL;
-  }
-
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, "nick.%S", &retnick);
-  dbi_result_free(result);
-
-  return retnick;
-}
-
 struct Nick *
 db_register_nick(const char *nick, const char *password, const char *salt,
     const char *email)
@@ -331,7 +307,8 @@ db_delete_nick(const char *nick)
 }
 
 int
-db_nick_set_string(unsigned int id, const char *key, const char *value)
+db_set_string(const char *table, unsigned int id, const char *key, 
+    const char *value)
 {
   dbi_result result;
   char *escvalue;
@@ -342,8 +319,8 @@ db_nick_set_string(unsigned int id, const char *key, const char *value)
     return -1;
   }
   
-  result = db_query("UPDATE %s SET %s=%s WHERE id=%d", "nickname", key, 
-      escvalue, id);
+  result = db_query("UPDATE %s SET %s=%s WHERE id=%d", table, key, escvalue, 
+      id);
   
   MyFree(escvalue);
 
@@ -356,19 +333,131 @@ db_nick_set_string(unsigned int id, const char *key, const char *value)
 }
 
 int
-db_nick_set_number(unsigned int id, const char *key, const unsigned long value)
+db_set_number(const char *table, unsigned int id, const char *key, 
+    const unsigned long value)
 {
   dbi_result result;
 
-  if((result = db_query("UPDATE %s SET %s=%ld WHERE id=%d", 
-          "nickname", key, value, id)) == NULL)
-  {
+  result = db_query("UPDATE %s SET %s=%ld WHERE id=%d", table, key, value, id);
+  if(result == NULL)
     return -1;
-  }
 
   dbi_result_free(result);
 
   return 0;
+}
+
+int
+db_list_add(const char *table, unsigned int id, const char *value)
+{
+  char *escvalue;
+  dbi_result result;
+  
+  if(dbi_driver_quote_string_copy(Database.driv, value, &escvalue) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
+  
+  result = db_query("INSERT INTO %s (parent_id, entry) VALUES(%d, %s)", table, id, 
+      escvalue);
+  
+  MyFree(escvalue);
+  
+  if(result == NULL)
+    return -1;
+
+  dbi_result_free(result);
+  
+  return 0;
+}
+
+void *
+db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
+{
+  dbi_result result;
+    
+  if(id > 0)
+    result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d", table, id);
+  else
+    result = db_query("SELECT id, entry FROM %s", table);
+
+  if(result == NULL)
+    return NULL;
+
+  if(dbi_result_get_numrows(result) == 0)
+    return NULL;
+
+  if(dbi_result_first_row(result))
+  {
+    dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, &entry->value);
+    return result;
+  }
+
+  return NULL;
+}
+
+void *
+db_list_next(void *result, struct AccessEntry *entry)
+{
+  if(dbi_result_next_row(result))
+  {
+    dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, &entry->value);
+    return result;
+  }
+  return NULL;
+}
+
+void
+db_list_done(void *result)
+{
+  dbi_result_free(result);
+}
+
+int
+db_list_del(const char *table, unsigned int id, const char *entry)
+{
+  dbi_result result;
+  char *escentry;
+  int numrows;
+    
+  if(dbi_driver_quote_string_copy(Database.driv, entry, &escentry) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return 0;
+  }
+
+  if((result = db_query("DELETE FROM %s WHERE parent_id=%d AND entry=%s", 
+          table, id, escentry)) == NULL)
+  {
+    MyFree(escentry);
+    return 0;
+  }
+    
+  MyFree(escentry);
+
+  numrows = dbi_result_get_numrows_affected(result);
+
+  dbi_result_free(result);
+  return numrows;
+}
+
+int 
+db_list_del_index(const char *table, unsigned int id, unsigned int index)
+{
+  dbi_result result;
+
+  if((result = db_query("DELETE FROM %s WHERE id = "
+          "(SELECT id FROM %s AS a WHERE %d = "
+          "(SELECT COUNT(id)+1 FROM %s AS b WHERE b.id < a.id AND b.parent_id = %d) "
+          "AND parent_id = %d)", table, table, index, table, id, id)) == NULL)
+  {
+    printf("db: Failed to delete list index\n");
+    return 0;
+  }
+
+  dbi_result_free(result);
+  return 1;
 }
 
 char *
@@ -411,6 +500,109 @@ db_nick_get_string(unsigned int id, const char *key)
   return value;
 }
 
+int
+db_link_nicks(unsigned int master, unsigned int child)
+{
+  dbi_result result;
+
+  result = db_query("INSERT INTO nickname_links (nick_id, link_id) VALUES "
+      "(%d, %d)", master, child);
+
+  if(result == NULL)
+    return -1;
+
+  dbi_result_free(result);
+
+  return 0;
+}
+
+int
+db_nick_is_linked(const char *nick)
+{
+  dbi_result result;
+  int ret;
+  char *escnick;
+
+  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return -1;
+  }
+
+  result = db_query("SELECT link_id FROM nickname_links WHERE link_id= "
+      "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
+
+  if(result == NULL)
+    return FALSE;
+
+  if(dbi_result_get_numrows(result) > 0)
+    ret = TRUE;
+  else
+    ret = FALSE;
+
+  MyFree(escnick);
+  dbi_result_free(result);
+
+  return ret;
+}
+
+struct Nick *
+db_unlink_nick(const char *nick)
+{
+  dbi_result result;
+  struct Nick *nick_p;
+  char *retnick, *retpass, *retcloak, *escnick;
+
+  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return NULL;
+  }
+
+  result = db_query("DELETE FROM nickname_links WHERE link_id= "
+      "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
+
+  if(result == NULL)
+  {
+    MyFree(escnick);
+    return NULL;
+  }
+
+  dbi_result_free(result);
+
+  if((result = db_query("SELECT id, nick, password, email, cloak, "
+      "last_quit_time, reg_time, last_seen, last_used, flags, language "
+      "FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick)) == NULL)
+  {
+    MyFree(escnick);
+    return NULL;
+  }
+
+  MyFree(escnick);
+  
+  nick_p = MyMalloc(sizeof(struct Nick));
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
+      "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l "
+      "flags.%ui language.%ui",
+      &nick_p->id, &retnick, &retpass, &nick_p->email, &retcloak, 
+      &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen, 
+      &nick_p->last_used, &nick_p->flags, &nick_p->language);
+
+  strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
+  strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
+  strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
+
+  printf("db_unlink_link: Found nick %s\n", nick_p->nick);
+
+  MyFree(retnick);
+  MyFree(retpass);
+  MyFree(retcloak);
+
+  dbi_result_free(result);
+
+  return nick_p;
+}
 void *
 db_nick_list_flags_first(unsigned int flags, struct Nick **nick)
 {
@@ -497,47 +689,6 @@ db_get_id_from_chan(const char *chan)
   dbi_result_free(result);
 
   return id;
-}
-
-int
-db_chan_set_string(unsigned int id, const char *key, const char *value)
-{
-  dbi_result result;
-  char *escvalue;
-
-  if(dbi_driver_quote_string_copy(Database.driv, value, &escvalue) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return -1;
-  }
-  
-  result = db_query("UPDATE %s SET %s=%s WHERE id=%d", "channel", key, 
-      escvalue, id);
-  
-  MyFree(escvalue);
-
-  if(result == NULL)
-    return -1;
-
-  dbi_result_free(result);
-
-  return 0;
-}
-
-int
-db_chan_set_number(unsigned int id, const char *key, const unsigned long value)
-{
-  dbi_result result;
-
-  if((result = db_query("UPDATE %s SET %s=%ld WHERE id=%d", 
-          "channel", key, value, id)) == NULL)
-  {
-    return -1;
-  }
-
-  dbi_result_free(result);
-
-  return 0;
 }
 
 struct RegChannel *
@@ -734,221 +885,4 @@ db_set_successor(const char *channel, const char *nickname)
   MyFree(escchannel);
 
   return 0;
-}
-
-int
-db_list_add(const char *table, unsigned int id, const char *value)
-{
-  char *escvalue;
-  dbi_result result;
-  
-  if(dbi_driver_quote_string_copy(Database.driv, value, &escvalue) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return -1;
-  }
-  
-  result = db_query("INSERT INTO %s (parent_id, entry) VALUES(%d, %s)", table, id, 
-      escvalue);
-  
-  MyFree(escvalue);
-  
-  if(result == NULL)
-    return -1;
-
-  dbi_result_free(result);
-  
-  return 0;
-}
-
-void *
-db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
-{
-  dbi_result result;
-    
-  if(id > 0)
-    result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d", table, id);
-  else
-    result = db_query("SELECT id, entry FROM %s", table);
-
-  if(result == NULL)
-    return NULL;
-
-  if(dbi_result_get_numrows(result) == 0)
-    return NULL;
-
-  if(dbi_result_first_row(result))
-  {
-    dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, &entry->value);
-    return result;
-  }
-
-  return NULL;
-}
-
-void *
-db_list_next(void *result, struct AccessEntry *entry)
-{
-  if(dbi_result_next_row(result))
-  {
-    dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, &entry->value);
-    return result;
-  }
-  return NULL;
-}
-
-void
-db_list_done(void *result)
-{
-  dbi_result_free(result);
-}
-
-int
-db_list_del(const char *table, unsigned int id, const char *entry)
-{
-  dbi_result result;
-  char *escentry;
-  int numrows;
-    
-  if(dbi_driver_quote_string_copy(Database.driv, entry, &escentry) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return 0;
-  }
-
-  if((result = db_query("DELETE FROM %s WHERE parent_id=%d AND entry=%s", 
-          table, id, escentry)) == NULL)
-  {
-    MyFree(escentry);
-    return 0;
-  }
-    
-  MyFree(escentry);
-
-  numrows = dbi_result_get_numrows_affected(result);
-
-  dbi_result_free(result);
-  return numrows;
-}
-
-int 
-db_list_del_index(const char *table, unsigned int id, unsigned int index)
-{
-  dbi_result result;
-
-  if((result = db_query("DELETE FROM %s WHERE id = "
-          "(SELECT id FROM %s AS a WHERE %d = "
-          "(SELECT COUNT(id)+1 FROM %s AS b WHERE b.id < a.id AND b.parent_id = %d) "
-          "AND parent_id = %d)", table, table, index, table, id, id)) == NULL)
-  {
-    printf("db: Failed to delete list index\n");
-    return 0;
-  }
-
-  dbi_result_free(result);
-  return 1;
-}
-
-int
-db_link_nicks(unsigned int master, unsigned int child)
-{
-  dbi_result result;
-
-  result = db_query("INSERT INTO nickname_links (nick_id, link_id) VALUES "
-      "(%d, %d)", master, child);
-
-  if(result == NULL)
-    return -1;
-
-  dbi_result_free(result);
-
-  return 0;
-}
-
-int
-db_is_linked(const char *nick)
-{
-  dbi_result result;
-  int ret;
-  char *escnick;
-
-  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return -1;
-  }
-
-  result = db_query("SELECT link_id FROM nickname_links WHERE link_id= "
-      "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
-
-  if(result == NULL)
-    return FALSE;
-
-  if(dbi_result_get_numrows(result) > 0)
-    ret = TRUE;
-  else
-    ret = FALSE;
-
-  MyFree(escnick);
-  dbi_result_free(result);
-
-  return ret;
-}
-
-struct Nick *
-db_unlink_nick(const char *nick)
-{
-  dbi_result result;
-  struct Nick *nick_p;
-  char *retnick, *retpass, *retcloak, *escnick;
-
-  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return NULL;
-  }
-
-  result = db_query("DELETE FROM nickname_links WHERE link_id= "
-      "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
-
-  if(result == NULL)
-  {
-    MyFree(escnick);
-    return NULL;
-  }
-
-  dbi_result_free(result);
-
-  if((result = db_query("SELECT id, nick, password, email, cloak, "
-      "last_quit_time, reg_time, last_seen, last_used, flags, language "
-      "FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick)) == NULL)
-  {
-    MyFree(escnick);
-    return NULL;
-  }
-
-  MyFree(escnick);
-  
-  nick_p = MyMalloc(sizeof(struct Nick));
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
-      "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l "
-      "flags.%ui language.%ui",
-      &nick_p->id, &retnick, &retpass, &nick_p->email, &retcloak, 
-      &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen, 
-      &nick_p->last_used, &nick_p->flags, &nick_p->language);
-
-  strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
-  strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
-  strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
-
-  printf("db_unlink_link: Found nick %s\n", nick_p->nick);
-
-  MyFree(retnick);
-  MyFree(retpass);
-  MyFree(retcloak);
-
-  dbi_result_free(result);
-
-  return nick_p;
 }
