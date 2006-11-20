@@ -911,10 +911,11 @@ db_unlink_nick(const char *nick)
   result = db_query("DELETE FROM nickname_links WHERE link_id= "
       "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
 
-  MyFree(escnick);
-
   if(result == NULL)
+  {
+    MyFree(escnick);
     return NULL;
+  }
 
   dbi_result_free(result);
 
@@ -922,9 +923,12 @@ db_unlink_nick(const char *nick)
       "last_quit_time, reg_time, last_seen, last_used, flags, language "
       "FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick)) == NULL)
   {
+    MyFree(escnick);
     return NULL;
   }
 
+  MyFree(escnick);
+  
   nick_p = MyMalloc(sizeof(struct Nick));
   dbi_result_first_row(result);
   dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
