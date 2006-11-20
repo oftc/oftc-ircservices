@@ -115,7 +115,7 @@ reply_user(struct Service *service, struct Client *client, unsigned int langid,
   va_list ap;
   char *s, *t;
   int langused = 0;
-  char *langstr;
+  char *langstr = NULL;
   
   if(langid != 0)
   {
@@ -123,18 +123,13 @@ reply_user(struct Service *service, struct Client *client, unsigned int langid,
       langstr = service->language_table[0][langid];
     else
       langstr = service->language_table[client->nickname->language][langid];
-
-    if(langstr == NULL)
-      langused = 0;
-    else
-      langused = 1;
   }
    
-  if(langused)
-    snprintf(formatbuf, IRC_BUFSIZE, "%s", langstr);
+  if(langstr == NULL)
+    langstr = "";
   
   va_start(ap, langid);
-  vsnprintf(buf, IRC_BUFSIZE, formatbuf, ap);
+  vsnprintf(buf, IRC_BUFSIZE, langstr, ap);
   va_end(ap);
   s = buf;
   while (*s) 
