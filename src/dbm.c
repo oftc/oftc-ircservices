@@ -905,7 +905,7 @@ db_unlink_nick(const char *nick)
   if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
   {
     printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return -1;
+    return NULL;
   }
 
   result = db_query("DELETE FROM nickname_links WHERE link_id= "
