@@ -911,6 +911,8 @@ db_unlink_nick(const char *nick)
   result = db_query("DELETE FROM nickname_links WHERE link_id= "
       "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
 
+  MyFree(escnick);
+
   if(result == NULL)
     return NULL;
 
@@ -941,7 +943,6 @@ db_unlink_nick(const char *nick)
   MyFree(retnick);
   MyFree(retpass);
   MyFree(retcloak);
-  MyFree(escnick);
 
   dbi_result_free(result);
 
