@@ -188,6 +188,30 @@ db_find_nick(const char *nick)
   return nick_p;
 }
 
+char *    
+db_get_nickname_from_id(unsigned int id)    
+{   
+  dbi_result result;    
+  char *retnick;    
+
+  result = db_query("SELECT nick from nickname WHERE id=%d", id);   
+
+  if(result == NULL)    
+    return NULL;    
+
+  if(dbi_result_get_numrows(result) == 0)   
+  {   
+    dbi_result_free(result);    
+    return NULL;    
+  }   
+
+  dbi_result_first_row(result);   
+  dbi_result_get_fields(result, "nick.%S", &retnick);   
+  dbi_result_free(result);    
+
+  return retnick;   
+}
+
 unsigned int
 db_get_id_from_nick(const char *nick)
 {
@@ -682,29 +706,6 @@ db_unlink_nick(const char *nick)
   dbi_result_free(result);
 
   return nick_p;
-}
-
-  struct Nick *
-db_nick_list_flags_next(void *result)
-{
-  unsigned int id;
-  char *retnick;
-  
-  if(dbi_result_next_row(result))
-  {
-    struct Nick *nick;
-    dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
-    nick = db_find_nick(retnick);
-    MyFree(retnick);
-    return nick;
-  }
-  return NULL;
-}
-
-void
-db_nick_list_flags_done(void *result)
-{
-  dbi_result_free(result);
 }
 
 unsigned int
