@@ -269,7 +269,7 @@ check_list_entry(const char *table, unsigned int id, const char *value)
   struct AccessEntry *entry;
   void *ptr;
 
-  ptr = db_list_first(table, id, ACCESS_LIST, (void**)&entry);
+  ptr = db_list_first(table, ACCESS_LIST, id, (void**)&entry);
 
   while(ptr != NULL)
   {

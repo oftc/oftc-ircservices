@@ -88,6 +88,7 @@ db_query(const char *pattern, ...)
 
   va_start(args, pattern);
   len = vasprintf(&buffer, pattern, args);
+  assert(buffer && *buffer);
   va_end(args);
   if(len == -1)
     return NULL;
@@ -467,6 +468,7 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
         dbi_result_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui "
             "time.%ui duration.%ui", &akill->id, &akill->mask, &akill->reason,
             &id, &akill->time_set, &akill->duration);
+        akill->setter = db_find_nick(db_get_nickname_from_id(id));
         *entry = (void*)akill;
         break;
       }
@@ -936,4 +938,89 @@ db_set_successor(const char *channel, const char *nickname)
   MyFree(escchannel);
 
   return 0;
+}
+
+struct AKill *
+db_find_akill(const char *userhost)
+{
+  dbi_result result;
+  char *escuserhost = NULL;
+  struct AKill *akill;
+  unsigned int id;
+  
+  assert(userhost != NULL);
+
+  if(dbi_driver_quote_string_copy(Database.driv, userhost, &escuserhost) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return NULL;
+  }
+
+  /* XXX Evil - please change */
+  result = db_query("SELECT id, mask, reason, setter, time, duration FROM %s "
+      "WHERE %s ILIKE mask", "akill", escuserhost);
+
+  MyFree(escuserhost);
+  
+  if(result == NULL)
+    return NULL;
+  
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    dbi_result_free(result);
+    return NULL;
+  }
+
+  akill = MyMalloc(sizeof(struct AKill));
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui time.%ui "
+      "duration.%ui", &akill->id, &akill->mask, &akill->reason, &id,
+      &akill->time_set, &akill->duration);
+
+  akill->setter = db_find_nick(db_get_nickname_from_id(id));
+
+  dbi_result_free(result);
+  return akill;
+}
+
+struct AKill *
+db_add_akill(struct AKill *akill)
+{
+  char *escmask = NULL;
+  char *escreason = NULL;
+  char *mask;
+  dbi_result result;
+  
+  DupString(mask, akill->mask);
+  
+  if(dbi_driver_quote_string_copy(Database.driv, akill->mask, &escmask) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    return NULL;
+  }
+
+  if(dbi_driver_quote_string_copy(Database.driv, akill->reason, &escreason) == 0)
+  {
+    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
+    MyFree(escmask);
+    return NULL;
+  }
+
+  result = db_query("INSERT INTO %s (mask, reason, setter, time, duration) "
+      "VALUES(%s, %s, %ld, %ld, %ld)", "akill", escmask, escreason, 
+      akill->setter->id, akill->time_set, akill->duration);
+
+  MyFree(escmask);
+  MyFree(escreason);
+ 
+  if(result == NULL)
+    return NULL;
+  
+  dbi_result_free(result);
+
+  free_akill(akill);
+
+  akill = db_find_akill(mask);
+  MyFree(mask);
+  return akill; 
 }

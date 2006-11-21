@@ -50,4 +50,6 @@ void  db_list_done(void *);
 int   db_list_del(const char *, unsigned int, const char *);
 int   db_list_del_index(const char *, unsigned int, unsigned int);
 
+struct AKill *db_add_akill(struct AKill *akill);
+
 #endif

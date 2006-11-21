@@ -111,4 +111,4 @@ OS_MOD_RELOADING
 OS_MOD_UNLOAD
 	Module %s unloaded.
 OS_AKILL_LIST
-	%d: %s
+	%d: %s(%s) - Set by %s at %s(Expires: %s).

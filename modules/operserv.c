@@ -106,7 +106,7 @@ static struct SubMessage akill_subs[4] = {
 };
 
 static struct ServiceMessage akill_msgtab = {
-  akill_subs, "AKILL", 1, 1, OS_AKILL_HELP_SHORT, OS_AKILL_HELP_LONG,
+  akill_subs, "AKILL", 1, 2, OS_AKILL_HELP_SHORT, OS_AKILL_HELP_LONG,
   { m_noaccess, m_noaccess, m_akill, m_akill }
 };
 
@@ -374,10 +374,21 @@ m_akill(struct Service *service, struct Client *client,
   reply_user(service, client, 0, "AKILL, what?");
 }
 
+/* AKILL ADD user@host reason [duration] */
 static void
 m_akill_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  struct AKill *akill;
+  /* XXX Check that they arent going to akill the entire world */
+  akill = MyMalloc(sizeof(struct AKill));
+  DupString(akill->mask, parv[1]);
+  DupString(akill->reason, parv[2]);
+  akill->setter = client->nickname;
+
+  akill = db_add_akill(akill);
+  /* XXX Execute the akill here */
+  free_akill(akill);
 }
 
 static void
@@ -391,7 +402,8 @@ m_akill_list(struct Service *service, struct Client *client,
   handle = db_list_first("akill", AKILL_LIST, 0, (void**)&akill);
   while(handle != NULL)
   {
-    reply_user(service, client, OS_AKILL_LIST, i++, akill->mask);
+    reply_user(service, client, OS_AKILL_LIST, i++, akill->mask, akill->reason,
+        akill->setter->nick, "sometime", "sometime");
     free_akill(akill);
     handle = db_list_next(handle, AKILL_LIST, (void**)&akill);
   }
