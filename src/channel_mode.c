@@ -437,14 +437,6 @@ chm_ban(struct Client *client_p, struct Client *source_p,
 {
   char *mask = NULL;
 
-  if (alev < CHACCESS_HALFOP)
-  {
-    if (!(*errors & SM_ERR_NOOPS))
-      ilog(L_DEBUG, "Err, another mode from a non chop");
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
-
   mask = nuh_mask[*parn];
   memcpy(mask, parv[*parn], sizeof(nuh_mask[*parn]));
   ++*parn;
@@ -491,14 +483,6 @@ chm_except(struct Client *client_p, struct Client *source_p,
            const char *chname)
 {
   char *mask = NULL;
-
-  if (alev < CHACCESS_HALFOP)
-  {
-    if (!(*errors & SM_ERR_NOOPS))
-      ilog(L_DEBUG, "Yet another mode from a non chop");
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
 
   mask = nuh_mask[*parn];
   memcpy(mask, parv[*parn], sizeof(nuh_mask[*parn]));
