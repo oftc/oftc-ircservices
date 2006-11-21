@@ -655,7 +655,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Nick *nick;
-  struct AccessEntry entry;
+  struct AccessEntry *entry;
   void *listptr;
   int i = 1;
 
@@ -663,16 +663,18 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 
   reply_user(service, client, NS_ACCESS_START);
  
-  if((listptr = db_list_first("nickname_access", nick->id, &entry)) == NULL)
+  if((listptr = db_list_first("nickname_access", ACCESS_LIST, nick->id, 
+          (void**)&entry)) == NULL)
   {
     return;
   }
 
   while(listptr != NULL)
   {
-    reply_user(service, client, NS_ACCESS_ENTRY, i++, entry.value);
-    MyFree(entry.value);
-    listptr = db_list_next(listptr, &entry);
+    reply_user(service, client, NS_ACCESS_ENTRY, i++, entry->value);
+    MyFree(entry->value);
+    MyFree(entry);
+    listptr = db_list_next(listptr, ACCESS_LIST, (void**)&entry);
   }
 
   db_list_done(listptr);

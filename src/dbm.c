@@ -373,14 +373,32 @@ db_list_add(const char *table, unsigned int id, const char *value)
 }
 
 void *
-db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
+db_list_first(const char *table, unsigned int type, unsigned int param, 
+    void **entry)
 {
   dbi_result result;
-    
-  if(id > 0)
-    result = db_query("SELECT id, entry FROM %s WHERE parent_id=%d", table, id);
-  else
-    result = db_query("SELECT id, entry FROM %s", table);
+  char querybuf[1024+1];
+  
+  switch(type)
+  {
+    case ACCESS_LIST:
+      if(param > 0)
+        snprintf(querybuf, 1024, "SELECT id, entry FROM %s WHERE parent_id=%d",
+            table, param);
+      else
+        snprintf(querybuf, 1024, "SELECT id, entry FROM %s", table);
+      break;
+    case NICK_FLAG_LIST:
+      snprintf(querybuf, 1024, "SELECT id, nick FROM %s WHERE (flags & %d > 0)", 
+          table, param);
+      break;
+    case AKILL_LIST:
+      snprintf(querybuf, 1024, "SELECT id, mask, reason, setter, time, "
+          "duration FROM %s", table);
+      break;
+  }
+  
+  result = db_query("%s", querybuf);
 
   if(result == NULL)
     return NULL;
@@ -390,7 +408,45 @@ db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
 
   if(dbi_result_first_row(result))
   {
-    dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, &entry->value);
+    unsigned int id;
+    
+    switch(type)
+    {
+      case ACCESS_LIST:
+      {
+        struct AccessEntry *retentry = MyMalloc(sizeof(struct AccessEntry));
+        
+        dbi_result_get_fields(result, "id.%ui entry.%S", &retentry->id, 
+            &retentry->value);
+        *entry = (void*)retentry;
+        break;
+      }
+      case NICK_FLAG_LIST:
+      {
+        char *retnick;
+        struct Nick *nick;
+        
+        dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
+        /* Possibly a little inefficient, but ensures we maintain
+         * links */
+        nick = db_find_nick(retnick);
+        *entry = (void *)nick;
+        MyFree(retnick);
+        break;
+      }
+      case AKILL_LIST:
+      {
+        struct AKill *akill;
+
+        akill = MyMalloc(sizeof(struct AKill));
+
+        dbi_result_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui "
+            "time.%ui duration.%ui", &akill->id, &akill->mask, &akill->reason,
+            &id, &akill->time_set, &akill->duration);
+        *entry = (void*)akill;
+        break;
+      }
+    }
     return result;
   }
 
@@ -398,11 +454,35 @@ db_list_first(const char *table, unsigned int id, struct AccessEntry *entry)
 }
 
 void *
-db_list_next(void *result, struct AccessEntry *entry)
+db_list_next(void *result, unsigned int type, void **entry)
 {
   if(dbi_result_next_row(result))
   {
-    dbi_result_get_fields(result, "id.%ui entry.%S", &entry->id, &entry->value);
+    switch(type)
+    {
+      case ACCESS_LIST:
+      {
+        struct AccessEntry *retentry = MyMalloc(sizeof(struct AccessEntry));
+        dbi_result_get_fields(result, "id.%ui entry.%S", &retentry->id, 
+            &retentry->value);
+        *entry = (void*)retentry;
+        break;
+      }
+      case NICK_FLAG_LIST:
+      {
+        struct Nick *nick;
+        unsigned int id;
+        char *retnick;
+        
+        dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
+        nick = db_find_nick(retnick);
+        MyFree(retnick);
+        *entry = (void*)nick;
+        break;
+      }
+      case AKILL_LIST:
+        break;
+    }
     return result;
   }
   return NULL;
@@ -603,38 +683,8 @@ db_unlink_nick(const char *nick)
 
   return nick_p;
 }
-void *
-db_nick_list_flags_first(unsigned int flags, struct Nick **nick)
-{
-  dbi_result result;
-  unsigned int id;
-  char *retnick;
 
-  if((result = db_query("SELECT id, nick FROM %s WHERE (flags & %d > 0)", 
-          "nickname", flags)) == NULL)
-  {
-    return NULL;
-  }
-
-  if(dbi_result_get_numrows(result) == 0)
-  {
-    printf("db: %d has no access list\n", id);
-    return NULL;
-  }
-
-  if(dbi_result_first_row(result))
-  {
-    dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
-    /* Possibly a little inefficient, but ensures we maintain links */
-    *nick = db_find_nick(retnick);
-    MyFree(retnick);
-    return result;
-  }
-
-  return NULL;
-}
-
-struct Nick *
+  struct Nick *
 db_nick_list_flags_next(void *result)
 {
   unsigned int id;

@@ -336,14 +336,15 @@ m_admin_list(struct Service *service, struct Client *client,
   void *handle;
   int i = 1;
 
-  handle = db_nick_list_flags_first(NS_FLAG_ADMIN, &currnick);
-  while(currnick != NULL)
+  handle = db_list_first("nickname", NICK_FLAG_LIST, NS_FLAG_ADMIN, 
+      (void**)&currnick);
+  while(handle != NULL)
   {
     reply_user(service, client, OS_ADMIN_LIST, i++, currnick->nick);
     free_nick(currnick);
-    currnick = db_nick_list_flags_next(handle);
+    handle = db_list_next(handle, NICK_FLAG_LIST, (void **)&currnick);
   }
-  db_nick_list_flags_done(handle);
+  db_list_done(handle);
 }
 
 static void
@@ -383,17 +384,18 @@ static void
 m_akill_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct AccessEntry entry;
+  struct AKill *akill;
   void *handle;
   int i = 1;
 
-  handle = db_list_first("akill", 0, &entry);
+  handle = db_list_first("akill", AKILL_LIST, 0, (void**)&akill);
   while(handle != NULL)
   {
-    reply_user(service, client, OS_AKILL_LIST, i++, entry.value);
-    handle = db_list_next(handle, &entry);
+    reply_user(service, client, OS_AKILL_LIST, i++, akill->mask);
+    free_akill(akill);
+    handle = db_list_next(handle, AKILL_LIST, (void**)&akill);
   }
-  db_nick_list_flags_done(handle);
+  db_list_done(handle);
 }
 
 static void

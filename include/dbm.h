@@ -7,6 +7,13 @@ struct AccessEntry
   char *value;
 };
 
+enum db_list_type
+{
+  ACCESS_LIST = 0,
+  NICK_FLAG_LIST,
+  AKILL_LIST
+};
+
 void init_db();
 void db_load_driver();
 
@@ -23,10 +30,6 @@ int   db_delete_nick(const char *);
 char  *db_get_nickname_from_id(unsigned int id);
 unsigned int db_get_id_from_nick(const char *);
 
-void *db_nick_list_flags_first(unsigned int, struct Nick **);
-void db_nick_list_flags_done(void *);
-struct Nick *db_nick_list_flags_next(void *);
-
 int db_link_nicks(unsigned int, unsigned int);
 int db_nick_is_linked(const char *);
 struct Nick *db_unlink_nick(const char *);
@@ -41,8 +44,8 @@ int db_set_successor(const char *, const char *);
 int db_chan_success_founder(const char *);
 
 int   db_list_add(const char *, unsigned int, const char *);
-void *db_list_first(const char *, unsigned int, struct AccessEntry *);
-void *db_list_next(void *, struct AccessEntry *);
+void *db_list_first(const char *, unsigned int, unsigned int, void **);
+void *db_list_next(void *, unsigned int, void **);
 void  db_list_done(void *);
 int   db_list_del(const char *, unsigned int, const char *);
 int   db_list_del_index(const char *, unsigned int, unsigned int);

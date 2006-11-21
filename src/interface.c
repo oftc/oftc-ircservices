@@ -111,10 +111,9 @@ void
 reply_user(struct Service *service, struct Client *client, unsigned int langid,
     ...)
 {
-  char buf[IRC_BUFSIZE+1], formatbuf[IRC_BUFSIZE];
+  char buf[IRC_BUFSIZE+1];
   va_list ap;
   char *s, *t;
-  int langused = 0;
   char *langstr = NULL;
   
   if(langid != 0)
@@ -126,7 +125,7 @@ reply_user(struct Service *service, struct Client *client, unsigned int langid,
   }
    
   if(langstr == NULL)
-    langstr = "";
+    langstr = "%s";
   
   va_start(ap, langid);
   vsnprintf(buf, IRC_BUFSIZE, langstr, ap);
@@ -267,24 +266,28 @@ replace_string(char *str, const char *value)
 int
 check_list_entry(const char *table, unsigned int id, const char *value)
 {
-  struct AccessEntry entry;
+  struct AccessEntry *entry;
   void *ptr;
 
-  ptr = db_list_first(table, id, &entry);
+  ptr = db_list_first(table, id, ACCESS_LIST, (void**)&entry);
 
   while(ptr != NULL)
   {
-    if(match(entry.value, value))
+    if(match(entry->value, value))
     {
-      ilog(L_DEBUG, "check_list_entry: Found match: %s %s", entry.value, value);
-      MyFree(entry.value);
+      ilog(L_DEBUG, "check_list_entry: Found match: %s %s", entry->value, 
+          value);
+      MyFree(entry->value);
+      MyFree(entry);
       db_list_done(ptr);
       return TRUE;
     }
     
-    ilog(L_DEBUG, "check_list_entry: Not Found match: %s %s", entry.value, value);
-    MyFree(entry.value);
-    ptr = db_list_next(ptr, &entry);
+    ilog(L_DEBUG, "check_list_entry: Not Found match: %s %s", entry->value, 
+        value);
+    MyFree(entry->value);
+    MyFree(entry);
+    ptr = db_list_next(ptr, ACCESS_LIST, (void**)&entry);
   }
   db_list_done(ptr);
   return FALSE;
@@ -309,6 +312,16 @@ free_nick(struct Nick *nick)
   MyFree(nick->last_quit);
   nick->last_quit = NULL;
   MyFree(nick);
+}
+
+void
+free_akill(struct AKill *akill)
+{
+  ilog(L_DEBUG, "Freeing akill %p for %s\n", akill, akill->mask);
+  MyFree(akill->mask);
+  MyFree(akill->reason);
+  free_nick(akill->setter);
+  MyFree(akill);
 }
 
 int 
