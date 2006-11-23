@@ -834,6 +834,36 @@ db_register_chan(struct Client *client, char *channelname)
 }
 
 int
+db_chan_access_add(struct ChannelAccessEntry *accessptr)
+{
+  dbi_result result;
+  
+  result = db_query("INSERT INTO chanaccess (nick_id, channel_id, level) VALUES"
+      "(%d, %d, %d) ", accessptr->nick_id, accessptr->channel_id, accessptr->level);
+
+  if(result == NULL)
+    return -1;
+
+  dbi_result_free(result);
+  return 0;
+}
+
+int
+db_chan_access_del(struct RegChannel *regchptr, int nickid)
+{
+  dbi_result result;
+  
+  result = db_query("DELETE FROM %s WHERE channel_id=%d AND nick_id=%d",
+    "channel_access", regchptr->id, nickid);
+  
+  if(result == NULL)
+    return -1;
+
+  dbi_result_free(result);
+  return 0;
+}
+
+int
 db_delete_chan(const char *chan)
 {
   dbi_result result;

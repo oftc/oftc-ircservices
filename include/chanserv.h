@@ -123,6 +123,11 @@ struct RegChannel
 #define CS_SET_SUCCESSOR        67
 #define CS_SET_DESCRIPTION      68
 #define CS_SET_ENTRYMSG         69
+#define CS_FIXME 70
+#define CS_ACCESS_ADD 71
+#define CS_ACCESS_ADD_FAILED 72
+#define CS_ACCESS_DEL 73
+#define CS_ACCESS_DEL_FAILED 74
 
 #endif
 

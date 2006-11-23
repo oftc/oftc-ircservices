@@ -58,6 +58,12 @@ static void m_set_secureops(struct Service *, struct Client *, int, char *[]);
 static void m_set_leaveops(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
 
+static void m_access_del(struct Service *, struct Client *, int, char *[]);
+static void m_access_add(struct Service *, struct Client *, int, char *[]);
+static void m_access_list(struct Service *, struct Client *, int, char *[]);
+static void m_access_view(struct Service *, struct Client *, int, char *[]);
+static void m_access_count(struct Service *, struct Client *, int, char *[]);
+
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -151,15 +157,15 @@ static struct ServiceMessage set_msgtab = {
 
 static struct SubMessage access_sub[6] = {
   { "ADD",   0, 3, -1, -1, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_not_avail, m_access_add, m_access_add, m_access_add } },
   { "DEL",   0, 2, -1, -1, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_not_avail, m_access_del, m_access_del, m_access_del } },
   { "LIST",  0, 2, -1, -1, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_not_avail, m_access_list, m_access_list, m_access_list } },
   { "VIEW",  0, 1, -1, -1, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_not_avail, m_access_view, m_access_view, m_access_view } },
   { "COUNT", 0, 0, -1, -1, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_not_avail, m_access_count, m_access_count, m_access_count } },
   { NULL,    0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
@@ -223,17 +229,53 @@ static struct ServiceMessage info_msgtab = {
   { m_unreg, m_info, m_info, m_info }
 };
 
+// ...
+
+static struct ServiceMessage op_msgtab = {
+  NULL, "OP", 0, 1, -1, -1,
+  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+};
+
+static struct ServiceMessage deop_msgtab = {
+  NULL, "DEOP", 0, 1, -1, -1,
+  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+};
+
+
+static struct ServiceMessage unban_msgtab = {
+  NULL, "UNBAN", 0, 1, -1, -1,
+  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+};
+
+static struct ServiceMessage invite_msgtab = {
+  NULL, "INVITE", 0, 1, -1, -1,
+  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+};
+
+static struct ServiceMessage clear_msgtab = {
+  NULL, "CLEAR", 0, 1, -1, -1,
+  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+};
+
+static struct ServiceMessage aop_msgtab = {
+  NULL, "AOP", 0, 1, -1, -1,
+  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+};
+
+static struct ServiceMessage vop_msgtab = {
+  NULL, "VOP", 0, 1, -1, -1,
+  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+};
+
+static struct ServiceMessage sop_msgtab = {
+  NULL, "SOP", 0, 1, -1, -1,
+  { m_unreg, m_not_avail, m_not_avail, m_not_avail }
+};
+
+
 
 /*
 LIST
-INVITE
-OP
-DEOP
-UNBAN
-CLEAR
-VOP
-AOP
-SOP
 SYNC
 SENDPASS
 */
@@ -604,6 +646,132 @@ m_set_successor(struct Service *service, struct Client *client,
 }
 
 
+static void
+m_access_add(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  ilog(L_TRACE, "CS ACCESS ADD from %s for %s", client->name, parv[1]);
+
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  struct ChannelAccessEntry *cae;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = cs_get_regchan_from_hash_or_db(service, client, chptr, parv[1]);
+
+  if (regchptr->founder != client->nickname->id)
+  {
+    reply_user(service, client, CS_OWN_CHANNEL_ONLY, parv[1]);
+    if (chptr == NULL)
+    {
+      free_regchan(regchptr);
+    }
+    return;
+  }
+
+  cae = malloc(sizeof(struct ChannelAccessEntry));
+  cae->channel_id = regchptr->id;
+  cae->id = 0;
+  cae->level = atoi(parv[3]);
+  cae->nick_id = db_get_id_from_nick(parv[2]);
+
+  if (cae->nick_id == 0)
+  {
+    reply_user(service, client, CS_FIXME);
+    free_regchan(regchptr);
+    MyFree(cae);
+    return;
+  }
+
+  if (db_chan_access_add(cae) == 0)
+  {
+    reply_user(service, client, CS_ACCESS_ADD);
+    ilog(L_DEBUG, "%s (%s@%s) added AE %s(%d) to %s", 
+      client->name, client->username, client->host, parv[2], cae->level, parv[1]);
+
+  }
+  else
+  {
+    reply_user(service, client, CS_ACCESS_ADD_FAILED, parv[1]);
+  }
+
+  if (chptr == NULL)
+  {
+    free_regchan(regchptr);
+  }
+  MyFree(cae);
+  ilog(L_TRACE, "T: Leaving CS:m_access_add");
+}
+
+
+static void
+m_access_del(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  ilog(L_TRACE, "CS ACCESS DEL from %s for %s", client->name, parv[1]);
+
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  int nickid;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = cs_get_regchan_from_hash_or_db(service, client, chptr, parv[1]);
+
+  if (regchptr->founder != client->nickname->id)
+  {
+    reply_user(service, client, CS_OWN_CHANNEL_ONLY, parv[1]);
+    if (chptr == NULL)
+    {
+      free_regchan(regchptr);
+    }
+    return;
+  }
+
+  nickid = db_get_id_from_nick(parv[2]);
+  if (nickid == 0)
+  {
+    reply_user(service, client, CS_FIXME);
+    free_regchan(regchptr);
+    return;
+  }
+
+
+  if (db_chan_access_del(regchptr, nickid) == 0)
+  {
+    reply_user(service, client, CS_ACCESS_DEL);
+    ilog(L_DEBUG, "%s (%s@%s) removed AE %s from %s", 
+      client->name, client->username, client->host, parv[2], parv[1]);
+
+  }
+  else
+  {
+    reply_user(service, client, CS_ACCESS_DEL_FAILED, parv[1]);
+  }
+
+  if (chptr == NULL)
+  {
+    free_regchan(regchptr);
+  }
+  ilog(L_TRACE, "T: Leaving CS:m_access_del");
+}
+
+static void
+m_access_view(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+}
+static void
+m_access_list(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+}
+static void
+m_access_count(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+}
+
+
 /*
  * CHANSERV SET DESC
  */
@@ -611,6 +779,7 @@ static void
 m_set_desc(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+
   ilog(L_TRACE, "Channel SET DESCRIPTION from %s for %s", client->name, parv[1]);
 
   struct Channel *chptr;

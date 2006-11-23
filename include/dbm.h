@@ -7,6 +7,14 @@ struct AccessEntry
   char *value;
 };
 
+struct ChannelAccessEntry
+{
+  unsigned int id;
+  unsigned int nick_id;
+  unsigned int channel_id;
+  unsigned int level;
+};
+
 enum db_list_type
 {
   ACCESS_LIST = 0,
@@ -37,6 +45,9 @@ struct Nick *db_unlink_nick(const char *);
 int db_register_chan(struct Client *, char *);
 int db_delete_chan(const char *);
 struct RegChannel *db_find_chan(const char *);
+
+int  db_chan_access_add(struct ChannelAccessEntry*);
+int  db_chan_access_del(struct RegChannel *, int);
 
 unsigned int db_get_id_from_chan(const char *);
 int db_set_founder(const char *, const char *);
