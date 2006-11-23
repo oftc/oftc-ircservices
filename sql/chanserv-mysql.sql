@@ -13,3 +13,14 @@ CREATE TABLE channel (
   
   UNIQUE (channel)
 )ENGINE=MyISAM;
+
+DROP TABLE IF EXISTS channel_access;
+CREATE TABLE channel_access (
+  id              INTEGER PRIMARY KEY auto_increment,
+  channel_id      INTEGER NOT NULL default '0',
+  nick_id         INTEGER NOT NULL default '0',
+  level           INTEGER NOT NULL default '0',
+
+  UNIQUE (channel_id, nick_id)
+) ENGINE=MyISAM;
+  

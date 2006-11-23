@@ -14,3 +14,16 @@ CREATE TABLE channel(
   FOREIGN KEY (founder) REFERENCES nickname (id),
   UNIQUE (channel)
 );
+
+DROP TABLE channel_access;
+CREATE TABLE channel_access(
+  id             SERIAL PRIMARY KEY,
+  channel_id     INTEGER NOT NULL default '0',
+  nick_id        INTEGER NOT NULL default '0',
+  level          INTEGER NOT NULL default '0',
+
+  FOREIGN KEY (channel_id) REFERENCES channel (id),
+  FOREIGN KEY (nick_id) REFERENCES nickname (id),
+
+  UNIQUE (channel_id, nick_id)
+};
