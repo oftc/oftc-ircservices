@@ -54,6 +54,24 @@ struct RegChannel
 #define  IsChanLeaveops(x)     ((x)->flags & CHSET_LEAVEOPS)
 #define  IsChanVerbose(x)      ((x)->flags & CHSET_VERBOSE)
 
+
+#define CHACCESS_BAN        0x0001
+#define CHACCESS_AUTODEOP   0x0002
+#define CHACCESS_VOICE      0x0004
+#define CHACCESS_OP         0x0008
+#define CHACCESS_INVITE     0x0010
+#define CHACCESS_UNBAN      0x0020
+#define CHACCESS_AKICK      0x0040
+#define CHACCESS_CLEAR      0x0080
+#define CHACCESS_SET        0x0100
+#define CHACCESS_ACCESS     0x0200
+
+#define CHACCESS_AUTOVOICE  0x1000
+#define CHACCESS_AUTOOP     0x2000
+
+
+
+
 #define CS_HELP_REG_SHORT 1
 #define CS_HELP_REG_LONG  2
 #define CS_HELP_SHORT     3 
