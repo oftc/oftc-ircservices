@@ -669,7 +669,7 @@ m_access_add(struct Service *service, struct Client *client,
     return;
   }
 
-  cae = malloc(sizeof(struct ChannelAccessEntry));
+  cae = MyMalloc(sizeof(struct ChannelAccessEntry));
   cae->channel_id = regchptr->id;
   cae->id = 0;
   cae->level = atoi(parv[3]);
