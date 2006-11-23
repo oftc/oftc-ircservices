@@ -22,5 +22,5 @@ CREATE TABLE channel_access (
   level           INTEGER NOT NULL default '0',
 
   UNIQUE (channel_id, nick_id)
-) ENGINE=MyISAM;
+)ENGINE=MyISAM;
   
