@@ -421,6 +421,9 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
       snprintf(querybuf, 1024, "SELECT id, mask, reason, setter, time, "
           "duration FROM %s", table);
       break;
+    case CHACCESS_LIST:
+      snprintf(querybuf, 1024, "SELECT id, channel_id, nick_id, level FROM %s WHERE channel_id=%d", table, param);
+      break;
   }
   
   result = db_query("%s", querybuf);
@@ -472,6 +475,17 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
         *entry = (void*)akill;
         break;
       }
+      case CHACCESS_LIST:
+      {
+        struct ChannelAccessEntry *cae;
+        
+        cae = MyMalloc(sizeof(struct ChannelAccessEntry));
+        
+        dbi_result_get_fields(result, "id.%ui channel_id.%ui nick_id.%ui level.%ui",
+          &cae->id, &cae->channel_id, &cae->nick_id, &cae->level);
+        *entry = (void *)cae;
+        break;
+      }
     }
     return result;
   }
@@ -499,7 +513,7 @@ db_list_next(void *result, unsigned int type, void **entry)
         struct Nick *nick;
         unsigned int id;
         char *retnick;
-        
+
         dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
         nick = db_find_nick(retnick);
         MyFree(retnick);
@@ -508,6 +522,17 @@ db_list_next(void *result, unsigned int type, void **entry)
       }
       case AKILL_LIST:
         break;
+      case CHACCESS_LIST:
+      {
+        struct ChannelAccessEntry *cae;
+
+        cae = MyMalloc(sizeof(struct ChannelAccessEntry));
+
+        dbi_result_get_fields(result, "id.%ui channel_id.%ui nick_id.%ui level.%ui",
+          &cae->id, &cae->channel_id, &cae->nick_id, &cae->level);
+        *entry = (void *)cae;
+        break;
+      }
     }
     return result;
   }
@@ -838,7 +863,7 @@ db_chan_access_add(struct ChannelAccessEntry *accessptr)
 {
   dbi_result result;
 
-  if (cae->id == 0)
+  if (accessptr->id == 0)
   {
     result = db_query("INSERT INTO chanaccess (nick_id, channel_id, level) VALUES"
         "(%d, %d, %d) ", accessptr->nick_id, accessptr->channel_id, accessptr->level);
@@ -878,7 +903,7 @@ db_chan_access_get(int channel_id, int nickid)
   struct ChannelAccessEntry *cae;
   
   result = db_query("SELECT * FROM %s WHERE channel_id=%d AND nick_id=%d",
-    "channel_access", channel_id, nick_id);
+    "channel_access", channel_id, nickid);
   
   if(result == NULL)
     return NULL;

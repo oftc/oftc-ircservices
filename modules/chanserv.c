@@ -24,6 +24,23 @@
 
 #include "stdinc.h"
 
+static struct CHACCESS_LALA ChAccessNames[13] = {
+  { "BAN",       CHACCESS_BAN },
+  { "AUTODEOP",  CHACCESS_AUTODEOP },
+  { "VOICE",     CHACCESS_VOICE },
+  { "OP",        CHACCESS_OP },
+  { "INVITE",    CHACCESS_INVITE },
+  { "UNBAN",     CHACCESS_UNBAN },
+  { "AKICK",     CHACCESS_AKICK },
+  { "CLEAR",     CHACCESS_CLEAR },
+  { "SET",       CHACCESS_SET },
+  { "ACCESS",    CHACCESS_ACCESS },
+  { "AUTOVOICE", CHACCESS_AUTOVOICE },
+  { "AUTOOP",    CHACCESS_AUTOOP },
+  { NULL, 0 }
+};
+
+
 static struct Service *chanserv = NULL;
 
 static dlink_node *cs_cmode_hook;
@@ -645,6 +662,15 @@ m_set_successor(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_set_successor (%s:%s)", client->name, parv[1]);
 }
 
+/**
+ * Calculate a new level, given the old numeric level and another levelname
+ * @param level old level (48)
+ * @param ae level to be added/removed ("+AUTOOP")
+ * @return new level (48 +CHACCESS_AUTOOP)
+ * Given the old level as int and another new levelchange, in form of a word
+ * we return the new level as int
+ * for example: level=48 + newlevel: "+AUTOOP" = 48 + CHACCESS_AUTOOP
+ */
 static long int
 set_access_level_by_name(long int level, char *ae)
 {
@@ -670,17 +696,17 @@ set_access_level_by_name(long int level, char *ae)
   }
   
   int i;
-  struct CHACCESS_LALA *c;
-  for (i=0; c->level != 0; i++)
+  
+  for (i=0; ChAccessNames[i].level != 0; i++)
   {
-    if (strncmp(c->name, ae, strlen(ae) == 0))
+    if (strncmp(ChAccessNames[i].name, ae, strlen(ae) == 0))
     {
       if (dir == 1)
       {
-        level |= c->level;
+        level |= ChAccessNames[i].level;
       } else if (dir == 2)
       {
-        level &= ~c->level;
+        level &= ~ChAccessNames[i].level;
       }
       break;
     }
@@ -723,7 +749,7 @@ m_access_add(struct Service *service, struct Client *client,
     update = 0;
   } else
     update = 1;
-  
+
   if (cae->nick_id == 0)
   {
     reply_user(service, client, CS_FIXME);
@@ -731,13 +757,14 @@ m_access_add(struct Service *service, struct Client *client,
     MyFree(cae);
     return;
   }
-  
-  for (int i = 2; i < parc; i++)
+
+  int i;
+  for (i = 2; i < parc; i++)
   {
     cae->level = set_access_level_by_name(cae->level, parv[i]);
   }
 
-  if (db_chan_access_add(cae, update) == 0)
+  if (db_chan_access_add(cae) == 0)
   {
     reply_user(service, client, CS_ACCESS_ADD);
     ilog(L_DEBUG, "%s (%s@%s) added AE %s(%d) to %s", 
@@ -813,11 +840,46 @@ m_access_view(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
 }
+
 static void
 m_access_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  // FIXME: Permissions unchecked here -mc
+  struct ChannelAccessEntry *cae;
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  void *handle;
+  int i = 1;
+
+  reply_user(service, client, CS_ACCESS_START);
+  
+  chptr = hash_find_channel(parv[1]);
+  regchptr = cs_get_regchan_from_hash_or_db(service, client, chptr, parv[1]);
+
+  handle = db_list_first("nickname", CHACCESS_LIST, regchptr->id, 
+      (void**)&cae);
+
+  if (handle == NULL)
+  {
+    reply_user(service, client, CS_ACCESS_EMPTY);
+    return;
+  }
+
+  while(handle != NULL)
+  {
+    reply_user(service, client, CS_ACCESS_LIST, i++, cae->nick_id);
+    MyFree(cae);
+    handle = db_list_next(handle, CHACCESS_LIST, (void **)&cae);
+  }
+  db_list_done(handle);
+  
+  if (chptr == NULL)
+  {
+    free_regchan(regchptr);
+  }
 }
+
 static void
 m_access_count(struct Service *service, struct Client *client,
     int parc, char *parv[])

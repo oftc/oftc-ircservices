@@ -19,7 +19,8 @@ enum db_list_type
 {
   ACCESS_LIST = 0,
   NICK_FLAG_LIST,
-  AKILL_LIST
+  AKILL_LIST,
+  CHACCESS_LIST
 };
 
 void init_db();
