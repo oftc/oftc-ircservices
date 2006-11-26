@@ -471,6 +471,12 @@ m_info(struct Service *service, struct Client *client,
 
   chptr = hash_find_channel(parv[1]);
   regchptr = cs_get_regchan_from_hash_or_db(service, client, chptr, parv[1]);
+  
+  if (regchptr == NULL)
+  {
+    reply_user(service, client, CS_NOT_REG);
+    return;
+  }
 
   reply_user(service, client, CS_INFO_CHAN, parv[1], 
   db_get_nickname_from_id(regchptr->founder),
