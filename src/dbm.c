@@ -837,9 +837,17 @@ int
 db_chan_access_add(struct ChannelAccessEntry *accessptr)
 {
   dbi_result result;
-  
-  result = db_query("INSERT INTO chanaccess (nick_id, channel_id, level) VALUES"
-      "(%d, %d, %d) ", accessptr->nick_id, accessptr->channel_id, accessptr->level);
+
+  if (cae->id == 0)
+  {
+    result = db_query("INSERT INTO chanaccess (nick_id, channel_id, level) VALUES"
+        "(%d, %d, %d) ", accessptr->nick_id, accessptr->channel_id, accessptr->level);
+  }
+  else
+  {
+    result = db_query("UPDATE chanaccess SET level=%d WHERE id=%d",
+      accessptr->level, accessptr->id);
+  }
 
   if(result == NULL)
     return -1;
@@ -861,6 +869,33 @@ db_chan_access_del(struct RegChannel *regchptr, int nickid)
 
   dbi_result_free(result);
   return 0;
+}
+
+struct ChannelAccessEntry *
+db_chan_access_get(int channel_id, int nickid)
+{
+  dbi_result result;
+  struct ChannelAccessEntry *cae;
+  
+  result = db_query("SELECT * FROM %s WHERE channel_id=%d AND nick_id=%d",
+    "channel_access", channel_id, nick_id);
+  
+  if(result == NULL)
+    return NULL;
+
+  if(dbi_result_get_numrows(result) == 0)
+  {
+    dbi_result_free(result);
+    return NULL;
+  }
+
+  cae = MyMalloc(sizeof(struct ChannelAccessEntry));
+  dbi_result_first_row(result);
+  dbi_result_get_fields(result, "id.%i channel_id.%i nick_id.%i level.%i", 
+    &cae->id, &cae->channel_id, &cae->nick_id, &cae->level);
+
+  dbi_result_free(result);
+  return cae;
 }
 
 int

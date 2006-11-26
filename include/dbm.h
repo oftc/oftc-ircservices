@@ -48,6 +48,7 @@ struct RegChannel *db_find_chan(const char *);
 
 int  db_chan_access_add(struct ChannelAccessEntry*);
 int  db_chan_access_del(struct RegChannel *, int);
+struct ChannelAccessEntry *db_chan_access_get(int, int);
 
 unsigned int db_get_id_from_chan(const char *);
 int db_set_founder(const char *, const char *);

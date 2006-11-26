@@ -645,6 +645,49 @@ m_set_successor(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_set_successor (%s:%s)", client->name, parv[1]);
 }
 
+static long int
+set_access_level_by_name(long int level, char *ae)
+{
+  int dir;
+  char *ptr;
+  
+  if (*ae == '+')
+  {
+    dir = 1;
+    ptr = ae;
+    ptr++;
+  }
+  else if (*ae == '-')
+  {
+    dir = 2;
+    ptr = ae;
+    ptr++;
+  }
+  else
+  {
+    dir = 1;
+    ptr = ae;
+  }
+  
+  int i;
+  struct CHACCESS_LALA *c;
+  for (i=0; c->level != 0; i++)
+  {
+    if (strncmp(c->name, ae, strlen(ae) == 0))
+    {
+      if (dir == 1)
+      {
+        level |= c->level;
+      } else if (dir == 2)
+      {
+        level &= ~c->level;
+      }
+      break;
+    }
+  }
+  
+  return level;
+}
 
 static void
 m_access_add(struct Service *service, struct Client *client,
@@ -655,6 +698,7 @@ m_access_add(struct Service *service, struct Client *client,
   struct Channel *chptr;
   struct RegChannel *regchptr;
   struct ChannelAccessEntry *cae;
+  int update;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = cs_get_regchan_from_hash_or_db(service, client, chptr, parv[1]);
@@ -669,12 +713,17 @@ m_access_add(struct Service *service, struct Client *client,
     return;
   }
 
-  cae = MyMalloc(sizeof(struct ChannelAccessEntry));
-  cae->channel_id = regchptr->id;
-  cae->id = 0;
-  cae->level = atoi(parv[3]);
-  cae->nick_id = db_get_id_from_nick(parv[2]);
-
+  if ( (cae = db_chan_access_get(regchptr->id, db_get_id_from_nick(parv[2]))) == NULL)
+  {
+    cae = MyMalloc(sizeof(struct ChannelAccessEntry));
+    cae->channel_id = regchptr->id;
+    cae->id = 0;
+    cae->level = 0;
+    cae->nick_id = db_get_id_from_nick(parv[2]);
+    update = 0;
+  } else
+    update = 1;
+  
   if (cae->nick_id == 0)
   {
     reply_user(service, client, CS_FIXME);
@@ -682,13 +731,17 @@ m_access_add(struct Service *service, struct Client *client,
     MyFree(cae);
     return;
   }
+  
+  for (int i = 2; i < parc; i++)
+  {
+    cae->level = set_access_level_by_name(cae->level, parv[i]);
+  }
 
-  if (db_chan_access_add(cae) == 0)
+  if (db_chan_access_add(cae, update) == 0)
   {
     reply_user(service, client, CS_ACCESS_ADD);
     ilog(L_DEBUG, "%s (%s@%s) added AE %s(%d) to %s", 
       client->name, client->username, client->host, parv[2], cae->level, parv[1]);
-
   }
   else
   {
@@ -1231,10 +1284,17 @@ m_set_flag(struct Service *service, struct Client *client,
 }
 
 
-/*
- * try to find RegChannel for channel 'name' from the local Channel Hash Table
- * if that doesnt succeed, check the Database
- * return RegChannel if anything found
+/**
+ * @brief Retrieve a struct RegChannel Record from Memory or DB
+ * @param service 
+ * @param client 
+ * @param chptr struct Channel * or NULL
+ * @param name name of Channel
+ * @return struct RegChannel *
+ * At any cost give us the struct RegChannel* associated with name
+ * Rationale:  We need it, regardless wether its in Memory or only in DB
+ *             (Channel exists in Services DB, but is not used now on the network)
+ * So, while we're at it, we can aswell attach the record, if thats possible.
  */
 static struct RegChannel*
 cs_get_regchan_from_hash_or_db(struct Service *service, struct Client *client, struct Channel *chptr, char *name)
@@ -1262,8 +1322,11 @@ cs_get_regchan_from_hash_or_db(struct Service *service, struct Client *client, s
 }
 
 
-/*
- * EVENT: Channel Mode Change
+/**
+ * @brief CS Callback when a ModeChange is received for a Channel
+ * @param args 
+ * @return pass_callback()
+ * We dont do anything yet :-)
  */
 static void *
 cs_on_cmode_change(va_list args) 
@@ -1281,8 +1344,13 @@ cs_on_cmode_change(va_list args)
 }
 
 
-/* 
- * EVENT: Client Joins Channel
+
+/**
+ * @brief CS Callback when a Client joins a Channel
+ * @param args 
+ * @return pass_callback(self, struct Client *, char *)
+ * When a Client joins a Channel:
+ *  - attach struct RegChannel * to struct Channel*
  */
 static void *
 cs_on_client_join(va_list args)
@@ -1313,22 +1381,26 @@ cs_on_client_join(va_list args)
     }
   } else
   {
-    printf("badbad. Client %s joined non-existing Channel %s\n", 
+    ilog(L_ERROR, "badbad. Client %s joined non-existing Channel %s\n", 
         source_p->name, chptr->chname);
   }
 
   return pass_callback(cs_join_hook, source_p, name);
 }
 
-/* 
- * EVENT: Channel is being destroyed
+
+/**
+ * @brief CS Callback when a channel is destroyed.
+ * @param args
+ * @return pass_callback(self, struct Channel *)
+ * When a Channel is destroyed, 
+ *  - we need to detach struct RegChannel from struct Channel->regchan 
  */
 static void*
 cs_on_channel_destroy(va_list args)
 {
   struct Channel *chan = va_arg(args, struct Channel *);
 
-  /* Free regchan from chptr before freeing chptr */
   if (chan->regchan != NULL)
   {
     free_regchan(chan->regchan);
@@ -1338,6 +1410,14 @@ cs_on_channel_destroy(va_list args)
   return pass_callback(cs_channel_destroy_hook, chan);
 }
 
+/**
+ * @brief CS Callback when a nick is dropped
+ * @param args 
+ * @return pass_callback(self, char *)
+ * When a Nick is dropped
+ * - we need to make sure theres no Channel left with the nick as founder
+ * - what to do when the nick is successor? (FIXME)
+ */
 static void*
 cs_on_nick_drop(va_list args)
 {

@@ -69,7 +69,27 @@ struct RegChannel
 #define CHACCESS_AUTOVOICE  0x1000
 #define CHACCESS_AUTOOP     0x2000
 
+// FIXME i didnt come up with a good name.  sorry -mc
+struct CHACCESS_LALA {
+  char *name;
+  int  level;
+};
 
+struct CHACCESS_LALA ChAccessNames[13] = {
+  { "BAN",       CHACCESS_BAN },
+  { "AUTODEOP",  CHACCESS_AUTODEOP },
+  { "VOICE",     CHACCESS_VOICE },
+  { "OP",        CHACCESS_OP },
+  { "INVITE",    CHACCESS_INVITE },
+  { "UNBAN",     CHACCESS_UNBAN },
+  { "AKICK",     CHACCESS_AKICK },
+  { "CLEAR",     CHACCESS_CLEAR },
+  { "SET",       CHACCESS_SET },
+  { "ACCESS",    CHACCESS_ACCESS },
+  { "AUTOVOICE", CHACCESS_AUTOVOICE },
+  { "AUTOOP",    CHACCESS_AUTOOP },
+  { NULL, 0 }
+};
 
 
 #define CS_HELP_REG_SHORT 1
