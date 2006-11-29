@@ -31,8 +31,8 @@
 static void send_message(struct Client *, char *, int);
 
 /*
- *  * iosend_default - append a packet to the client's sendq.
- *   */
+ * iosend_default - append a packet to the client's sendq.
+ */
 void *
 iosend_default(va_list args)
 {
