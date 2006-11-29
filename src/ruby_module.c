@@ -1,5 +1,5 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  oftc-ircservices: an extensible and flexible IRC Services package
  *  ruby_module.c: An interface to run ruby scripts
  *
  *  Copyright (C) 2006 TJ Fontaine and the OFTC Coding department

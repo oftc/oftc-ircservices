@@ -1,5 +1,5 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  oftc-ircservices: an extensible and flexible IRC Services package
  *  hostmask.c: Code to efficiently find IP & hostmask based configs.
  *
  *  Copyright (C) 2005 by the past and present ircd coders, and others.

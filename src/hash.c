@@ -1,5 +1,5 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  oftc-ircservices: an extensible and flexible IRC Services package
  *  hash.c: Maintains hash tables
  *
  *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department

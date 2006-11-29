@@ -1,5 +1,5 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  oftc-ircservices: an extensible and flexible IRC Services package
  *  dbm.c: The database manager
  *
  *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
