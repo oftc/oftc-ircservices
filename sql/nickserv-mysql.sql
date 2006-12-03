@@ -16,6 +16,8 @@ CREATE TABLE nickname (
   last_used       INTEGER NOT NULL default '0',
   flags           INTEGER NOT NULL default '0',
   language        INTEGER NOT NULL default '0',
+  link            INTEGER NOT NULL default '0',
+  KEY link (link),
   UNIQUE (nick)
 )ENGINE=MyISAM;
 
@@ -26,12 +28,4 @@ CREATE TABLE nickname_access (
   entry           VARCHAR(255) NOT NULL default '',
   UNIQUE KEY id (id),
   UNIQUE KEY parent_id (parent_id, entry)
-) TYPE=MyISAM;
-
-DROP TABLE IF EXISTS nickname_links;
-CREATE TABLE nickname_links (
-  nick_id         INTEGER,
-  link_id         INTEGER,
-  KEY nick_id(nick_id),
-  KEY link_id(link_id)
 ) TYPE=MyISAM;

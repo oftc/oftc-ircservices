@@ -16,6 +16,7 @@ CREATE TABLE nickname (
   last_used       INTEGER NOT NULL default '0',
   flags           INTEGER NOT NULL default '0',
   language        INTEGER NOT NULL default '0',
+  link            INTEGER REFERENCES nickname(id),
   UNIQUE (nick)
 );
 
@@ -24,10 +25,4 @@ CREATE TABLE nickname_access (
   id              SERIAL PRIMARY KEY,
   parent_id       INTEGER REFERENCES nickname(id),
   entry           VARCHAR(255) NOT NULL default ''
-);
-
-DROP TABLE nickname_links;
-CREATE TABLE nickname_links (
- nick_id          INTEGER REFERENCES nickname(id),
- link_id          INTEGER REFERENCES nickname(id)
 );
