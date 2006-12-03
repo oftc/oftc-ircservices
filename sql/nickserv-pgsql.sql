@@ -1,28 +1,39 @@
-DROP TABLE nickname CASCADE;
+DROP TABLE account CASCADE;
+CREATE TABLE account (
+  id                  SERIAL PRIMARY KEY,
+  password            CHAR(40),      -- base16 encoded sha1(salt+<userpassword>).  lower case
+  salt                CHAR(16),
+  url                 VARCHAR(255),
+  email               VARCHAR(255),
+  cloak               VARCHAR(255),
+  flag_enforce        BOOLEAN NOT NULL DEFAULT 'False',
+  flag_secure         BOOLEAN NOT NULL DEFAULT 'False',
+  flag_verified       BOOLEAN NOT NULL DEFAULT 'False',
+  flag_forbidden      BOOLEAN NOT NULL DEFAULT 'False',
+  flag_cloak_enabled  BOOLEAN NOT NULL DEFAULT 'False',
+  flag_admin          BOOLEAN NOT NULL DEFAULT 'False',
+  flag_email_verified BOOLEAN NOT NULL DEFAULT 'False',
+  language            INTEGER NOT NULL default '0',
+  last_host           VARCHAR(255),
+  last_realname       VARCHAR(255),
+  last_quit_msg       VARCHAR(512),
+  last_quit_time      INTEGER,
+  reg_time            INTEGER NOT NULL -- The account itself
+);
+
+DROP TABLE nickname;
 CREATE TABLE nickname (
-  id              SERIAL PRIMARY KEY,
-  nick            VARCHAR(255) NOT NULL default '',
-  password        VARCHAR(255) NOT NULL default '',
-  salt            VARCHAR(50)  NOT NULL default '',
-  url             VARCHAR(255),
-  email           VARCHAR(255),
-  cloak           VARCHAR(255),
-  last_host       VARCHAR(255) NOT NULL default '',
-  last_realname   VARCHAR(255) NOT NULL default '',
-  last_quit       VARCHAR(512) NOT NULL default '',
-  last_quit_time  INTEGER NOT NULL default '0',
-  reg_time        INTEGER NOT NULL default '0',
-  last_seen       INTEGER NOT NULL default '0',
-  last_used       INTEGER NOT NULL default '0',
-  flags           INTEGER NOT NULL default '0',
-  language        INTEGER NOT NULL default '0',
-  link            INTEGER REFERENCES nickname(id),
+  nick                VARCHAR(255) NOT NULL,
+  user_id             INTEGER REFERENCES account(id) NOT NULL,
+  reg_time            INTEGER NOT NULL, -- This nickname
+  last_seen           INTEGER,
   UNIQUE (nick)
 );
 
-DROP TABLE nickname_access;
-CREATE TABLE nickname_access (
-  id              SERIAL PRIMARY KEY,
-  parent_id       INTEGER REFERENCES nickname(id),
-  entry           VARCHAR(255) NOT NULL default ''
+DROP TABLE account_access;
+CREATE TABLE account_access (
+  id                  SERIAL PRIMARY KEY,
+  parent_id           INTEGER REFERENCES account(id) NOT NULL,
+  entry               VARCHAR(255) NOT NULL,
+  UNIQUE (id, entry)
 );
