@@ -587,11 +587,11 @@ AC_CHECK_HEADER(zlib.h, [
 
 fi
 
-dnl DBI Checks
+dnl yada Checks
 dnl ==========
 
-AC_CHECK_LIB([dbi], [dbi_initialize], ,[AC_MSG_ERROR([libdbi must be installed to compile services])])
-AC_CHECK_HEADER([dbi/dbi.h], ,[AC_MSG_ERROR([libdbi must be installed to compile services])])
+AC_CHECK_LIB([yada], [yada_init], ,[AC_MSG_ERROR([yada must be installed to compile services])])
+AC_CHECK_HEADER([yada.h], ,[AC_MSG_ERROR([yada must be installed to compile services])])
 
 dnl IO Loop Selection
 dnl =================

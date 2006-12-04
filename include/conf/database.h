@@ -21,16 +21,16 @@
  *  $Id$
  */
 
-#include <dbi/dbi.h>
+#include <yada.h>
 
 struct DatabaseConf
 {
   char *driver;
   char *dbname;
+  char *hostname;
   char *username;
   char *password;
-  dbi_conn conn;
-  dbi_driver driv;
+  yada_t *yada;
 };
 
 EXTERN struct DatabaseConf Database;

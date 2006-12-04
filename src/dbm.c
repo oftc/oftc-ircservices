@@ -23,154 +23,150 @@
  */
 
 #include "stdinc.h"
-#include <dbi/dbi.h>
 #include "conf/conf.h"
-
-static dbi_result db_query(const char *, ...);
+#include <yada.h>
 
 struct Callback *on_nick_drop_cb;
+
+query_t queries[QUERY_COUNT] = { 
+  {  "SELECT n.id, n.nick, n.password, n.salt, n.email, n.cloak, n.last_quit, "
+      "n.last_quit_time, n.reg_time, n.last_seen, n.last_used, n.flags, "
+      "n.language, CASE WHEN nick_id IS NULL THEN 0 ELSE nick_id END as "
+      "parent_id, p.nick as pnick, p.password as ppassword, p.salt as psalt, "
+      "p.email as pemail, p.cloak as pcloak, p.last_quit as plast_quit, "
+      "p.last_quit_time as plast_quit_time, p.reg_time as preg_time, "
+      "p.last_seen as plast_seen, p.last_used as plast_used, p.flags as pflags, "
+      "p.language as planguage FROM nickname as n LEFT OUTER JOIN "
+      "nickname_links ON link_id = n.id "
+      "LEFT OUTER JOIN nickname as p ON p.id = nick_id "
+      "WHERE lower(n.nick)=lower(?v)", NULL, QUERY },
+  { "SELECT nick from nickname WHERE id=?d", NULL, QUERY },
+  { "SELECT id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
+  { "INSERT INTO nickname (nick, password, salt, email, reg_time, last_seen, "
+    "last_used) VALUES(?v, ?v, ?v, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
+  { "DELETE FROM nickname WHERE lower(nick)=lower(?v)", NULL, EXECUTE },
+  { "INSERT INTO nickname_access (parent_id, entry) VALUES(?d, ?v)", 
+    NULL, EXECUTE },
+  { "SELECT id, entry FROM nickname_access WHERE parent_id=?d", NULL, QUERY },
+  { "SELECT id, entry FROM nickname_access", NULL, QUERY },
+  { "SELECT id, nick FROM nickname WHERE (flags & ?d > 0)", NULL, QUERY },
+  { "SELECT id, mask, reason, setter, time, duration FROM akill", NULL, QUERY },
+  { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
+    "channel_id=?d", NULL, QUERY },
+  { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
+  { "SELECT id, channel, description, entrymsg, flags, url, email, topic, "
+    "founder, successor FROM channel WHERE lower(channel)=lower(?v)", 
+    NULL, QUERY },
+  { "INSERT INTO channel (channel, founder) VALUES(?d, "
+          "(SELECT id FROM nickname WHERE lower(nick)=lower(?v)))", 
+          NULL, EXECUTE },
+  { "INSERT INTO channel_access (nick_id, channel_id, level) VALUES (?d, ?d, ?d)", 
+    NULL, EXECUTE } ,
+  { "UPDATE channel_access SET level=?d WHERE id=?d", NULL, EXECUTE },
+  { "DELETE FROM channel_access WHERE channel_id=?d AND nick_id=?d", 
+    NULL, EXECUTE },
+  { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
+    "channel_id=?d AND nick_id=?d", NULL, QUERY },
+  { "DELETE FROM channel WHERE lower(channel)=lower(?v)", NULL, EXECUTE },
+  { "UPDATE channel SET founder="
+    "(SELECT id FROM nickname WHERE lower(nick)=lower(?s)) WHERE "
+    "lower(channel)=lower(?s)", NULL, EXECUTE },
+  { "UPDATE channel SET founder=successor, successor=0 WHERE successor=?d", 
+    NULL, EXECUTE },
+  { "UPDATE channel SET successor=(SELECT id FROM nickname WHERE "
+    "lower(nick)=lower(?v) WHERE channel=?v", NULL, EXECUTE },
+  { "SELECT id, mask, reason, setter, time, duration FROM akill WHERE ?v "
+    "ILIKE mask", NULL, QUERY },
+  { "INSERT INTO akill (mask, reason, setter, time, duration) "
+      "VALUES(?v, ?v, ?d, ?d, ?d)", NULL, EXECUTE }
+};
 
 void
 init_db()
 {
-  int num_drivers = dbi_initialize(NULL);
-
+  char *dbstr;
   memset(&Database, 0, sizeof(Database));
 
-  if(num_drivers >= 0)
-    printf("db: loaded: %d drivers available.\n", num_drivers);
-  else
-  {
-    printf("db: Error loading db.\n");
-    exit(-1);
-  }
+  dbstr = MyMalloc(strlen(Database.driver) + strlen(Database.hostname) + strlen(Database.dbname) +
+      3 /* ::: */ + 1);
+  sprintf(dbstr, "%s:%s::%s", Database.driver, Database.hostname, Database.dbname);
 
-  printf("db: version: %s\n", dbi_version());
-
+  Database.yada = yada_init(dbstr, 0);
+  MyFree(dbstr);
   on_nick_drop_cb = register_callback("Nick DROP Callback", NULL);
 }
 
 void
 db_load_driver()
 {
-  Database.conn = dbi_conn_new(Database.driver);
-  if(Database.conn == NULL)
+  int i;
+
+  if(Database.yada->connect(Database.yada, Database.username, 
+        Database.password) == 0)
   {
-    printf("db: Error loading database driver %s\n", Database.driver);
-    exit(-1);
-  }
-
-  printf("db: Driver %s loaded\n", Database.driver);
-
-  dbi_conn_set_option(Database.conn, "username", Database.username);
-  dbi_conn_set_option(Database.conn, "password", Database.password);
-  dbi_conn_set_option(Database.conn, "dbname", Database.dbname);
-
-  if(dbi_conn_connect(Database.conn) < 0)
-  {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db: Failed to connect to database %s\n", error);
+    printf("db: Failed to connect to database %s\n", Database.yada->errmsg);
   }
   else
     printf("db: Database connection succeeded.\n");
 
-  Database.driv = dbi_conn_get_driver(Database.conn);
+  for(i = 0; i < QUERY_COUNT; i++)
+  {
+    query_t *query = &queries[i];
+    query->rc = Database.yada->prepare(Database.yada, (char*)query->name, 0);
+  }
 }
 
-static dbi_result
-db_query(const char *pattern, ...)
-{
-  va_list args;
-  char *buffer;
-  dbi_result result;
-  int len;
-
-  va_start(args, pattern);
-  len = vasprintf(&buffer, pattern, args);
-  assert(buffer && *buffer);
-  va_end(args);
-  if(len == -1)
-    return NULL;
-
-  printf("db_query: %s\n", buffer);
-  result = dbi_conn_query(Database.conn, buffer);
-  if(result == NULL)
-  {
-    const char *error;
-    dbi_conn_error(Database.conn, &error);
-    printf("db_query: Failed: %s\n", error);
-  }
-  MyFree(buffer);
-  return result;
+#define db_query(ret, id, args...)                                    \
+{                                                                     \
+  yada_rc_t *result = NULL;                                           \
+  query_t   *query;                                                   \
+  int retval = 0;                                                     \
+                                                                      \
+  query = &queries[id];                                               \
+                                                                      \
+  printf("db_query: %d %s\n", id, query->name);                       \
+                                                                      \
+  if(query->type == QUERY)                                            \
+  {                                                                   \
+    result = Database.yada->query(Database.yada, query->rc, args);    \
+    if(result == NULL)                                                \
+      printf("db_query: %d Failed: %s\n", id, Database.yada->errmsg); \
+                                                                      \
+    ret = result;                                                     \
+  }                                                                   \
+  else                                                                \
+  {                                                                   \
+    retval = Database.yada->execute(Database.yada, query->rc, args);  \
+    if(retval == -1)                                                  \
+      printf("db_query: %d Failed: %s\n", id, Database.yada->errmsg); \
+                                                                      \
+    ret = retval;                                                     \
+  }                                                                   \
 }
 
 struct Nick *
 db_find_nick(const char *nick)
 {
-  dbi_result result;
-  char *escnick = NULL;
+  yada_rc_t *result, *brc;
   struct Nick *nick_p;
   char *retnick, *retpass, *retcloak, *retsalt;
   unsigned int id;
 
   assert(nick != NULL);
 
-  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return NULL;
-  }
-
-  result = db_query("SELECT n.id, n.nick, n.password, n.salt, n.email, n.cloak, n.last_quit, "
-      "n.last_quit_time, n.reg_time, n.last_seen, n.last_used, n.flags, n.language, "
-      "CASE WHEN nick_id IS NULL THEN 0 ELSE nick_id END as parent_id, "
-      "p.nick as pnick, p.password as ppassword, p.salt as psalt, "
-      "p.email as pemail, p.cloak as pcloak, p.last_quit as plast_quit, "
-      "p.last_quit_time as plast_quit_time, p.reg_time as preg_time, "
-      "p.last_seen as plast_seen, p.last_used as plast_used, p.flags as pflags, p.language as planguage "
-      "FROM %s as n LEFT OUTER JOIN %s ON link_id = n.id "
-      "LEFT OUTER JOIN nickname as p ON p.id = nick_id "
-      "WHERE lower(n.nick)=lower(%s)",
-      "nickname", "nickname_links", escnick);
-  MyFree(escnick);
+  db_query(result, GET_FULL_NICK, nick);
 
   if(result == NULL)
     return NULL;
-
-  if(dbi_result_get_numrows(result) == 0)
-  {
-    printf("db: Nick %s not found\n", nick);
-    dbi_result_free(result);
-    return NULL;
-  }
-
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, "parent_id.%ui", &id);
-
+ 
   nick_p = MyMalloc(sizeof(struct Nick));
-  dbi_result_first_row(result);
+ 
+  brc = Database.yada->bind(Database.yada, "?d?ps?ps?ps?ps?ps?d?d?d?d?d?d",
+    &nick_p->id, &retnick, &retpass, &retsalt, &retcloak, &nick_p->last_quit,
+    &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen,
+    &nick_p->last_used, &nick_p->flags, &nick_p->language);
 
-  if(id)
-  {
-    dbi_result_get_fields(result, "parent_id.%ui pnick.%S ppassword.%S psalt.%S pemail.%S "
-        "pcloak.%S plast_quit.%S plast_quit_time.%l preg_time.%l plast_seen.%l "
-        "plast_used.%l pflags.%ui planguage.%ui",
-        &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->email, &retcloak, 
-        &nick_p->last_quit, &nick_p->last_quit_time, &nick_p->reg_time, 
-        &nick_p->last_seen, &nick_p->last_used, &nick_p->flags, 
-        &nick_p->language);
-  }
-  else
-  {
-    dbi_result_get_fields(result, "id.%ui nick.%S password.%S salt.%S email.%S "
-        "cloak.%S last_quit.%S last_quit_time.%l reg_time.%l last_seen.%l "
-        "last_used.%l flags.%ui language.%ui",
-        &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->email, &retcloak, 
-        &nick_p->last_quit, &nick_p->last_quit_time, &nick_p->reg_time, 
-        &nick_p->last_seen, &nick_p->last_used, &nick_p->flags, 
-        &nick_p->language);
-  }
+  Database.yada->fetch(Database.yada, result, brc);
 
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
@@ -184,31 +180,29 @@ db_find_nick(const char *nick)
   MyFree(retsalt);
   MyFree(retcloak);
 
-  dbi_result_free(result);
-
   return nick_p;
 }
+
+#if 0
 
 char *    
 db_get_nickname_from_id(unsigned int id)    
 {   
-  dbi_result result;    
+  yada_rc_t * result;    
   char *retnick;    
-
-  result = db_query("SELECT nick from nickname WHERE id=%d", id);   
 
   if(result == NULL)    
     return NULL;    
 
-  if(dbi_result_get_numrows(result) == 0)   
+  if(yada_rc_t *_get_numrows(result) == 0)   
   {   
-    dbi_result_free(result);    
+    yada_rc_t *_free(result);    
     return NULL;    
   }   
 
-  dbi_result_first_row(result);   
-  dbi_result_get_fields(result, "nick.%S", &retnick);   
-  dbi_result_free(result);    
+  yada_rc_t *_first_row(result);   
+  yada_rc_t *_get_fields(result, "nick.%S", &retnick);   
+  yada_rc_t *_free(result);    
 
   return retnick;   
 }
@@ -216,7 +210,7 @@ db_get_nickname_from_id(unsigned int id)
 unsigned int
 db_get_id_from_nick(const char *nick)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char *escnick;
   int id;
 
@@ -226,23 +220,21 @@ db_get_id_from_nick(const char *nick)
     return 0;
   }
 
-  result = db_query("SELECT id from nickname WHERE lower(nick)=lower(%s)", 
-      escnick);
   MyFree(escnick);
   
   if(result == NULL)
     return 0;
 
-  if(dbi_result_get_numrows(result) == 0)
+  if(yada_rc_t *_get_numrows(result) == 0)
   {
     printf("db: WTF. Didn't find nickname entry for %s\n", nick);
-    dbi_result_free(result);
+    yada_rc_t *_free(result);
     return 0;
   }
 
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui", &id);
-  dbi_result_free(result);
+  yada_rc_t *_first_row(result);
+  yada_rc_t *_get_fields(result, "id.%ui", &id);
+  yada_rc_t *_free(result);
 
   return id;
 }
@@ -255,7 +247,7 @@ db_register_nick(const char *nick, const char *password, const char *salt,
   char *escemail = NULL;
   char *escpass = NULL;
   char *escsalt = NULL;
-  dbi_result result;
+  yada_rc_t * result;
   
   assert(nick != NULL);
 
@@ -289,10 +281,6 @@ db_register_nick(const char *nick, const char *password, const char *salt,
     return NULL;
   }
   
-  result = db_query("INSERT INTO %s (nick, password, salt, email, reg_time,"
-      " last_seen, last_used) VALUES(%s, %s, %s, %s, %ld, %ld, %ld)", "nickname", 
-      escnick, escpass, escsalt, escemail, CurrentTime, CurrentTime, CurrentTime);
-
   MyFree(escnick);
   MyFree(escemail);
   MyFree(escpass);
@@ -301,7 +289,7 @@ db_register_nick(const char *nick, const char *password, const char *salt,
   if(result == NULL)
     return NULL;
   
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 
   return db_find_nick(nick); 
 }
@@ -309,7 +297,7 @@ db_register_nick(const char *nick, const char *password, const char *salt,
 int
 db_delete_nick(const char *nick)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char *escnick;
 
   if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
@@ -319,14 +307,13 @@ db_delete_nick(const char *nick)
   }
 
   execute_callback(on_nick_drop_cb, nick);
-  result = db_query("DELETE FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick);
  
   MyFree(escnick);
   
   if(result == NULL)
     return 0;
  
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 
   return 0;
 }
@@ -335,7 +322,7 @@ int
 db_set_string(const char *table, unsigned int id, const char *key, 
     const char *value)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char *escvalue;
 
   if(dbi_driver_quote_string_copy(Database.driv, value, &escvalue) == 0)
@@ -344,15 +331,12 @@ db_set_string(const char *table, unsigned int id, const char *key,
     return -1;
   }
   
-  result = db_query("UPDATE %s SET %s=%s WHERE id=%d", table, key, escvalue, 
-      id);
-  
   MyFree(escvalue);
 
   if(result == NULL)
     return -1;
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 
   return 0;
 }
@@ -361,13 +345,12 @@ int
 db_set_number(const char *table, unsigned int id, const char *key, 
     const unsigned long value)
 {
-  dbi_result result;
+  yada_rc_t * result;
 
-  result = db_query("UPDATE %s SET %s=%ld WHERE id=%d", table, key, value, id);
   if(result == NULL)
     return -1;
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 
   return 0;
 }
@@ -376,7 +359,7 @@ int
 db_list_add(const char *table, unsigned int id, const char *value)
 {
   char *escvalue;
-  dbi_result result;
+  yada_rc_t * result;
   
   if(dbi_driver_quote_string_copy(Database.driv, value, &escvalue) == 0)
   {
@@ -384,15 +367,12 @@ db_list_add(const char *table, unsigned int id, const char *value)
     return -1;
   }
   
-  result = db_query("INSERT INTO %s (parent_id, entry) VALUES(%d, %s)", table, id, 
-      escvalue);
-  
   MyFree(escvalue);
   
   if(result == NULL)
     return -1;
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
   
   return 0;
 }
@@ -401,28 +381,25 @@ void *
 db_list_first(const char *table, unsigned int type, unsigned int param, 
     void **entry)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char querybuf[1024+1];
   
   switch(type)
   {
     case ACCESS_LIST:
       if(param > 0)
-        snprintf(querybuf, 1024, "SELECT id, entry FROM %s WHERE parent_id=%d",
-            table, param);
+        ;
       else
-        snprintf(querybuf, 1024, "SELECT id, entry FROM %s", table);
+        ;
       break;
     case NICK_FLAG_LIST:
-      snprintf(querybuf, 1024, "SELECT id, nick FROM %s WHERE (flags & %d > 0)", 
-          table, param);
+        ;
       break;
     case AKILL_LIST:
-      snprintf(querybuf, 1024, "SELECT id, mask, reason, setter, time, "
-          "duration FROM %s", table);
+      ;
       break;
     case CHACCESS_LIST:
-      snprintf(querybuf, 1024, "SELECT id, channel_id, nick_id, level FROM %s WHERE channel_id=%d", table, param);
+      ;
       break;
   }
   
@@ -431,10 +408,10 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
   if(result == NULL)
     return NULL;
 
-  if(dbi_result_get_numrows(result) == 0)
+  if(yada_rc_t *_get_numrows(result) == 0)
     return NULL;
 
-  if(dbi_result_first_row(result))
+  if(yada_rc_t *_first_row(result))
   {
     unsigned int id;
     
@@ -444,7 +421,7 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
       {
         struct AccessEntry *retentry = MyMalloc(sizeof(struct AccessEntry));
         
-        dbi_result_get_fields(result, "id.%ui entry.%S", &retentry->id, 
+        yada_rc_t *_get_fields(result, "id.%ui entry.%S", &retentry->id, 
             &retentry->value);
         *entry = (void*)retentry;
         break;
@@ -454,7 +431,7 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
         char *retnick;
         struct Nick *nick;
         
-        dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
+        yada_rc_t *_get_fields(result, "id.%ui nick.%S", &id, &retnick);
         /* Possibly a little inefficient, but ensures we maintain
          * links */
         nick = db_find_nick(retnick);
@@ -468,7 +445,7 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
 
         akill = MyMalloc(sizeof(struct AKill));
 
-        dbi_result_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui "
+        yada_rc_t *_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui "
             "time.%ui duration.%ui", &akill->id, &akill->mask, &akill->reason,
             &id, &akill->time_set, &akill->duration);
         akill->setter = db_find_nick(db_get_nickname_from_id(id));
@@ -481,7 +458,7 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
         
         cae = MyMalloc(sizeof(struct ChannelAccessEntry));
         
-        dbi_result_get_fields(result, "id.%ui channel_id.%ui nick_id.%ui level.%ui",
+        yada_rc_t *_get_fields(result, "id.%ui channel_id.%ui nick_id.%ui level.%ui",
           &cae->id, &cae->channel_id, &cae->nick_id, &cae->level);
         *entry = (void *)cae;
         break;
@@ -496,14 +473,14 @@ db_list_first(const char *table, unsigned int type, unsigned int param,
 void *
 db_list_next(void *result, unsigned int type, void **entry)
 {
-  if(dbi_result_next_row(result))
+  if(yada_rc_t *_next_row(result))
   {
     switch(type)
     {
       case ACCESS_LIST:
       {
         struct AccessEntry *retentry = MyMalloc(sizeof(struct AccessEntry));
-        dbi_result_get_fields(result, "id.%ui entry.%S", &retentry->id, 
+        yada_rc_t *_get_fields(result, "id.%ui entry.%S", &retentry->id, 
             &retentry->value);
         *entry = (void*)retentry;
         break;
@@ -514,7 +491,7 @@ db_list_next(void *result, unsigned int type, void **entry)
         unsigned int id;
         char *retnick;
 
-        dbi_result_get_fields(result, "id.%ui nick.%S", &id, &retnick);
+        yada_rc_t *_get_fields(result, "id.%ui nick.%S", &id, &retnick);
         nick = db_find_nick(retnick);
         MyFree(retnick);
         *entry = (void*)nick;
@@ -528,7 +505,7 @@ db_list_next(void *result, unsigned int type, void **entry)
 
         cae = MyMalloc(sizeof(struct ChannelAccessEntry));
 
-        dbi_result_get_fields(result, "id.%ui channel_id.%ui nick_id.%ui level.%ui",
+        yada_rc_t *_get_fields(result, "id.%ui channel_id.%ui nick_id.%ui level.%ui",
           &cae->id, &cae->channel_id, &cae->nick_id, &cae->level);
         *entry = (void *)cae;
         break;
@@ -542,13 +519,13 @@ db_list_next(void *result, unsigned int type, void **entry)
 void
 db_list_done(void *result)
 {
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 }
 
 int
 db_list_del(const char *table, unsigned int id, const char *entry)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char *escentry;
   int numrows;
     
@@ -567,16 +544,16 @@ db_list_del(const char *table, unsigned int id, const char *entry)
     
   MyFree(escentry);
 
-  numrows = dbi_result_get_numrows_affected(result);
+  numrows = yada_rc_t *_get_numrows_affected(result);
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
   return numrows;
 }
 
 int 
 db_list_del_index(const char *table, unsigned int id, unsigned int index)
 {
-  dbi_result result;
+  yada_rc_t * result;
 
   if((result = db_query("DELETE FROM %s WHERE id = "
           "(SELECT id FROM %s AS a WHERE %d = "
@@ -587,158 +564,14 @@ db_list_del_index(const char *table, unsigned int id, unsigned int index)
     return 0;
   }
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
   return 1;
-}
-
-char *
-db_nick_get_string(unsigned int id, const char *key)
-{
-  dbi_result result;
-  char *esckey;
-  char *value;
-  char buffer[512];
-
-  assert(key != NULL);
-  
-  if(dbi_driver_quote_string_copy(Database.driv, key, &esckey) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return NULL;
-  }
-   
-  result = db_query("SELECT %s FROM %s WHERE id=%d", esckey, "nickname", id);
-
-  MyFree(esckey);
-  
-  if(result == NULL)
-    return NULL;
-
-  if(dbi_result_get_numrows(result) == 0)
-  {
-    printf("db: %s not found\n", key);
-    dbi_result_free(result);
-    return NULL;
-  }
-
-  snprintf(buffer, sizeof(buffer), "%s.%%S", key);
-
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, buffer, &value);
-
-  dbi_result_free(result);
-
-  return value;
-}
-
-int
-db_link_nicks(unsigned int master, unsigned int child)
-{
-  dbi_result result;
-
-  result = db_query("INSERT INTO nickname_links (nick_id, link_id) VALUES "
-      "(%d, %d)", master, child);
-
-  if(result == NULL)
-    return -1;
-
-  dbi_result_free(result);
-
-  return 0;
-}
-
-int
-db_nick_is_linked(const char *nick)
-{
-  dbi_result result;
-  int ret;
-  char *escnick;
-
-  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return -1;
-  }
-
-  result = db_query("SELECT link_id FROM nickname_links WHERE link_id= "
-      "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
-
-  if(result == NULL)
-    return FALSE;
-
-  if(dbi_result_get_numrows(result) > 0)
-    ret = TRUE;
-  else
-    ret = FALSE;
-
-  MyFree(escnick);
-  dbi_result_free(result);
-
-  return ret;
-}
-
-struct Nick *
-db_unlink_nick(const char *nick)
-{
-  dbi_result result;
-  struct Nick *nick_p;
-  char *retnick, *retpass, *retcloak, *escnick;
-
-  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return NULL;
-  }
-
-  result = db_query("DELETE FROM nickname_links WHERE link_id= "
-      "(SELECT id FROM nickname WHERE lower(nick) = lower(%s))", escnick);
-
-  if(result == NULL)
-  {
-    MyFree(escnick);
-    return NULL;
-  }
-
-  dbi_result_free(result);
-
-  if((result = db_query("SELECT id, nick, password, email, cloak, "
-      "last_quit_time, reg_time, last_seen, last_used, flags, language "
-      "FROM %s WHERE lower(nick)=lower(%s)", "nickname", escnick)) == NULL)
-  {
-    MyFree(escnick);
-    return NULL;
-  }
-
-  MyFree(escnick);
-  
-  nick_p = MyMalloc(sizeof(struct Nick));
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui nick.%S password.%S email.%S cloak.%S "
-      "last_quit_time.%l reg_time.%l last_seen.%l last_used.%l "
-      "flags.%ui language.%ui",
-      &nick_p->id, &retnick, &retpass, &nick_p->email, &retcloak, 
-      &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen, 
-      &nick_p->last_used, &nick_p->flags, &nick_p->language);
-
-  strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
-  strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
-  strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
-
-  printf("db_unlink_link: Found nick %s\n", nick_p->nick);
-
-  MyFree(retnick);
-  MyFree(retpass);
-  MyFree(retcloak);
-
-  dbi_result_free(result);
-
-  return nick_p;
 }
 
 unsigned int
 db_get_id_from_chan(const char *chan)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char *escchan;
   int id;
 
@@ -748,23 +581,21 @@ db_get_id_from_chan(const char *chan)
     return 0;
   }
 
-  result = db_query("SELECT id from channel WHERE lower(channel)=lower(%s)", 
-      escchan);
   MyFree(escchan);
   
   if(result == NULL)
     return 0;
 
-  if(dbi_result_get_numrows(result) == 0)
+  if(yada_rc_t *_get_numrows(result) == 0)
   {
     printf("db: WTF. Didn't find channel entry for %s\n", chan);
-    dbi_result_free(result);
+    yada_rc_t *_free(result);
     return 0;
   }
 
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui", &id);
-  dbi_result_free(result);
+  yada_rc_t *_first_row(result);
+  yada_rc_t *_get_fields(result, "id.%ui", &id);
+  yada_rc_t *_free(result);
 
   return id;
 }
@@ -772,7 +603,7 @@ db_get_id_from_chan(const char *chan)
 struct RegChannel *
 db_find_chan(const char *channel)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char *escchannel = NULL;
   char *findchannel;
   struct RegChannel *channel_p;
@@ -785,26 +616,21 @@ db_find_chan(const char *channel)
     return NULL;
   }
 
-  result = db_query(
-    "SELECT id, channel, description, entrymsg, flags, url, email, topic, "
-    "founder, successor FROM channel WHERE lower(channel)=lower(%s)", 
-    escchannel);
-
   MyFree(escchannel);
   
   if(result == NULL)
     return NULL;
   
-  if(dbi_result_get_numrows(result) == 0)
+  if(yada_rc_t *_get_numrows(result) == 0)
   {
     printf("db: Channel %s not found\n", channel);
-    dbi_result_free(result);
+    yada_rc_t *_free(result);
     return NULL;
   }
 
   channel_p = MyMalloc(sizeof(struct RegChannel));
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, 
+  yada_rc_t *_first_row(result);
+  yada_rc_t *_get_fields(result, 
       "id.%ui channel.%S description.%S entrymsg.%S flags.%ui "
       "url.%S email.%S topic.%S founder.%ui successor.%ui",
       &channel_p->id, &findchannel, &channel_p->description, 
@@ -816,7 +642,7 @@ db_find_chan(const char *channel)
 
   MyFree(findchannel);
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 
   return channel_p;
 }
@@ -826,7 +652,7 @@ db_register_chan(struct Client *client, char *channelname)
 {
   char *escchannel = NULL;
   char *escfounder = NULL;
-  dbi_result result;
+  yada_rc_t * result;
   
   if(dbi_driver_quote_string_copy(Database.driv, channelname, &escchannel) == 0)
   {
@@ -843,17 +669,13 @@ db_register_chan(struct Client *client, char *channelname)
     return -1;
   }
   
-  result = db_query("INSERT INTO %s (channel, founder) VALUES(%s, "
-          "(SELECT id FROM nickname WHERE lower(nick)=lower(%s)))", 
-          "channel", escchannel, escfounder);
-
   MyFree(escchannel);
   MyFree(escfounder);
  
   if(result == NULL)
     return 0;
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 
   return 0;
 }
@@ -861,72 +683,65 @@ db_register_chan(struct Client *client, char *channelname)
 int
 db_chan_access_add(struct ChannelAccessEntry *accessptr)
 {
-  dbi_result result;
+  yada_rc_t * result;
 
   if (accessptr->id == 0)
   {
-    result = db_query("INSERT INTO chanaccess (nick_id, channel_id, level) VALUES"
-        "(%d, %d, %d) ", accessptr->nick_id, accessptr->channel_id, accessptr->level);
   }
   else
   {
-    result = db_query("UPDATE chanaccess SET level=%d WHERE id=%d",
-      accessptr->level, accessptr->id);
   }
 
   if(result == NULL)
     return -1;
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
   return 0;
 }
 
 int
 db_chan_access_del(struct RegChannel *regchptr, int nickid)
 {
-  dbi_result result;
-  
-  result = db_query("DELETE FROM %s WHERE channel_id=%d AND nick_id=%d",
-    "channel_access", regchptr->id, nickid);
+  yada_rc_t * result;
   
   if(result == NULL)
     return -1;
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
   return 0;
 }
 
 struct ChannelAccessEntry *
 db_chan_access_get(int channel_id, int nickid)
 {
-  dbi_result result;
+  yada_rc_t * result;
   struct ChannelAccessEntry *cae;
   
-  result = db_query("SELECT * FROM %s WHERE channel_id=%d AND nick_id=%d",
+  result = db_query("",
     "channel_access", channel_id, nickid);
   
   if(result == NULL)
     return NULL;
 
-  if(dbi_result_get_numrows(result) == 0)
+  if(yada_rc_t *_get_numrows(result) == 0)
   {
-    dbi_result_free(result);
+    yada_rc_t *_free(result);
     return NULL;
   }
 
   cae = MyMalloc(sizeof(struct ChannelAccessEntry));
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%i channel_id.%i nick_id.%i level.%i", 
+  yada_rc_t *_first_row(result);
+  yada_rc_t *_get_fields(result, "id.%i channel_id.%i nick_id.%i level.%i", 
     &cae->id, &cae->channel_id, &cae->nick_id, &cae->level);
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
   return cae;
 }
 
 int
 db_delete_chan(const char *chan)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char *escchan;
 
   if(dbi_driver_quote_string_copy(Database.driv, chan, &escchan) == 0)
@@ -935,15 +750,13 @@ db_delete_chan(const char *chan)
     return -1;
   }
 
-  if((result = db_query("DELETE FROM %s WHERE lower(channel)=lower(%s)", 
-          "channel", escchan)) == NULL)
   {
     MyFree(escchan);
     return 0;
   }  
   
   MyFree(escchan);
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 
   return 0;
 }
@@ -951,7 +764,7 @@ db_delete_chan(const char *chan)
 int
 db_set_founder(const char *channel, const char *nickname)
 {
-  dbi_result result;
+  yada_rc_t * result;
 
   char *escchannel, *escnick;
 
@@ -968,11 +781,8 @@ db_set_founder(const char *channel, const char *nickname)
     return -1;
   }
 
-  result = db_query("UPDATE %s SET founder="
-    "(SELECT id FROM nickname WHERE lower(nick)=lower(%s)) WHERE "
-    "lower(channel)=lower(%s)", "channel", escnick, escchannel);
   if (result != NULL)
-    dbi_result_free(result);
+    yada_rc_t *_free(result);
 
   MyFree(escnick);
   MyFree(escchannel);
@@ -983,17 +793,16 @@ db_set_founder(const char *channel, const char *nickname)
 int
 db_chan_success_founder(const char *nickname)
 {
-  dbi_result result;
+  yada_rc_t * result;
 
   int successor_id;
 
   successor_id = db_get_id_from_nick(nickname);
 
 
-  result = db_query("UPDATE %s SET founder=successor, successor=0 "
-    "WHERE successor=%d", "channel", successor_id);
+  result = db_query("", "channel", successor_id);
   if (result != NULL)
-    dbi_result_free(result);
+    yada_rc_t *_free(result);
 
   return 0;
 }
@@ -1001,7 +810,7 @@ db_chan_success_founder(const char *nickname)
 int
 db_set_successor(const char *channel, const char *nickname)
 {
-  dbi_result result;
+  yada_rc_t * result;
 
   char *escchannel, *escnick;
 
@@ -1018,11 +827,8 @@ db_set_successor(const char *channel, const char *nickname)
     return -1;
   }
 
-  result = db_query("UPDATE %s SET successor="
-    "(SELECT id FROM nickname WHERE lower(nick)=lower(%s) WHERE channel=%s",
-    "channel", escnick, escchannel);
   if (result != NULL)
-    dbi_result_free(result);
+    yada_rc_t *_free(result);
 
   MyFree(escnick);
   MyFree(escchannel);
@@ -1033,7 +839,7 @@ db_set_successor(const char *channel, const char *nickname)
 struct AKill *
 db_find_akill(const char *userhost)
 {
-  dbi_result result;
+  yada_rc_t * result;
   char *escuserhost = NULL;
   struct AKill *akill;
   unsigned int id;
@@ -1046,30 +852,26 @@ db_find_akill(const char *userhost)
     return NULL;
   }
 
-  /* XXX Evil - please change */
-  result = db_query("SELECT id, mask, reason, setter, time, duration FROM %s "
-      "WHERE %s ILIKE mask", "akill", escuserhost);
-
   MyFree(escuserhost);
   
   if(result == NULL)
     return NULL;
   
-  if(dbi_result_get_numrows(result) == 0)
+  if(yada_rc_t *_get_numrows(result) == 0)
   {
-    dbi_result_free(result);
+    yada_rc_t *_free(result);
     return NULL;
   }
 
   akill = MyMalloc(sizeof(struct AKill));
-  dbi_result_first_row(result);
-  dbi_result_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui time.%ui "
+  yada_rc_t *_first_row(result);
+  yada_rc_t *_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui time.%ui "
       "duration.%ui", &akill->id, &akill->mask, &akill->reason, &id,
       &akill->time_set, &akill->duration);
 
   akill->setter = db_find_nick(db_get_nickname_from_id(id));
 
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
   return akill;
 }
 
@@ -1079,7 +881,7 @@ db_add_akill(struct AKill *akill)
   char *escmask = NULL;
   char *escreason = NULL;
   char *mask;
-  dbi_result result;
+  yada_rc_t * result;
   
   DupString(mask, akill->mask);
   
@@ -1096,17 +898,13 @@ db_add_akill(struct AKill *akill)
     return NULL;
   }
 
-  result = db_query("INSERT INTO %s (mask, reason, setter, time, duration) "
-      "VALUES(%s, %s, %ld, %ld, %ld)", "akill", escmask, escreason, 
-      akill->setter->id, akill->time_set, akill->duration);
-
   MyFree(escmask);
   MyFree(escreason);
  
   if(result == NULL)
     return NULL;
   
-  dbi_result_free(result);
+  yada_rc_t *_free(result);
 
   free_akill(akill);
 
@@ -1114,3 +912,4 @@ db_add_akill(struct AKill *akill)
   MyFree(mask);
   return akill; 
 }
+#endif

@@ -1,6 +1,8 @@
 #ifndef DBMH
 #define DBMH
 
+#include <yada.h>
+
 struct AccessEntry 
 {
   unsigned int id;
@@ -22,6 +24,46 @@ enum db_list_type
   AKILL_LIST,
   CHACCESS_LIST
 };
+
+enum db_queries
+{
+  GET_FULL_NICK = 0,
+  GET_NICK_FROM_ID,
+  GET_NICKID_FROM_NICK,
+  INSERT_NICK,
+  DELETE_NICK,
+  INSERT_NICKACCESS,
+  GET_NICKACCESS,
+  GET_ALL_NICKACCESS,
+  GET_NICK_FLAGS,
+  GET_AKILLS,
+  GET_CHAN_ACCESS,
+  GET_CHANID_FROM_CHAN,
+  GET_FULL_CHAN,
+  INSERT_CHAN,
+  INSERT_CHANACCESS,
+  SET_CHAN_LEVEL,
+  DELETE_CHAN_ACCESS,
+  GET_CHAN_ACCESSES,
+  DELETE_CHAN,
+  SET_CHAN_FOUNDER,
+  SET_CHAN_FOUNDER_AS_SUCCESSOR,
+  SET_CHAN_SUCCESSOR,
+  INSERT_AKILL,
+  GET_AKILL,
+  QUERY_COUNT,
+};
+
+enum query_types {
+  QUERY,
+  EXECUTE
+};
+
+typedef struct query {
+  const char *name;
+  yada_rc_t *rc;
+  int type;
+} query_t;
 
 void init_db();
 void db_load_driver();
