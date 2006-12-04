@@ -116,33 +116,39 @@ db_load_driver()
   }
 }
 
-#define db_query(ret, id, args...)                                    \
+#define db_query(ret, query_id, args...)                              \
 {                                                                     \
-  yada_rc_t *result = NULL;                                           \
-  query_t   *query;                                                   \
-  int retval = 0;                                                     \
+  int id = query_id;                                                  \
+  yada_rc_t *result;                                                  \
+  query_t *query;                                                     \
                                                                       \
   query = &queries[id];                                               \
-                                                                      \
   printf("db_query: %d %s\n", id, query->name);                       \
+  assert(query->type == QUERY);                                       \
                                                                       \
-  if(query->type == QUERY)                                            \
-  {                                                                   \
-    result = Database.yada->query(Database.yada, query->rc, args);    \
-    if(result == NULL)                                                \
-      printf("db_query: %d Failed: %s\n", id, Database.yada->errmsg); \
+  result = Database.yada->query(Database.yada, query->rc, args);      \
+  if(result == NULL)                                                  \
+    printf("db_query: %d Failed: %s\n", id, Database.yada->errmsg);   \
                                                                       \
-    ret = result;                                                     \
-  }                                                                   \
-  else                                                                \
-  {                                                                   \
-    retval = Database.yada->execute(Database.yada, query->rc, args);  \
-    if(retval == -1)                                                  \
-      printf("db_query: %d Failed: %s\n", id, Database.yada->errmsg); \
+  ret = result;                                                       \
+};
+
+#define db_exec(ret, query_id, args...)                               \
+{                                                                     \
+  int id = query_id;                                                  \
+  int result;                                                         \
+  query_t *query;                                                     \
                                                                       \
-    ret = retval;                                                     \
-  }                                                                   \
-}
+  query = &queries[id];                                               \
+  printf("db_exec: %d %s\n", id, query->name);                        \
+  assert(query->type == EXECUTE);                                     \
+                                                                      \
+  retval = Database.yada->execute(Database.yada, query->rc, args);    \
+  if(retval == -1)                                                    \
+    printf("db_exec: %d Failed: %s\n", id, Database.yada->errmsg);    \
+                                                                      \
+  ret = result;                                                       \
+};
 
 struct Nick *
 db_find_nick(const char *nick)
