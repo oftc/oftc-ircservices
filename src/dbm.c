@@ -125,6 +125,7 @@ db_load_driver()
   query = &queries[id];                                               \
   printf("db_query: %d %s\n", id, query->name);                       \
   assert(query->type == QUERY);                                       \
+  assert(query->rc);                                                  \
                                                                       \
   result = Database.yada->query(Database.yada, query->rc, args);      \
   if(result == NULL)                                                  \
@@ -142,6 +143,7 @@ db_load_driver()
   query = &queries[id];                                               \
   printf("db_exec: %d %s\n", id, query->name);                        \
   assert(query->type == EXECUTE);                                     \
+  assert(query->rc);                                                  \
                                                                       \
   retval = Database.yada->execute(Database.yada, query->rc, args);    \
   if(retval == -1)                                                    \
