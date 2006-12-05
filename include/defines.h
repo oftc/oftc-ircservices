@@ -20,6 +20,7 @@
 #define REASONLEN       120
 #define TOPICLEN        300
 #define PASSLEN         40
+#define SALTLEN         16
 #define DATALEN         255
 #define USERHOSTLEN     NICKLEN+USERLEN+1
 #define USERHOST_REPLYLEN       (NICKLEN+HOSTLEN+USERLEN+5)

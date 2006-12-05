@@ -485,7 +485,7 @@ ServiceModule_register_chan(VALUE self, VALUE client, VALUE chan_name)
 static VALUE
 ServiceModule_delete_nick(VALUE self, VALUE client)
 {
-  return db_delete_nick(StringValueCStr(client)) ? Qfalse : Qtrue;
+ // XXX return db_delete_nick(StringValueCStr(client)) ? Qfalse : Qtrue;
 }
 
 static VALUE
@@ -721,7 +721,7 @@ static VALUE
 NickStruct_Flags(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->flags);
+  // XXX Broken needs updating return INT2NUM(nick->flags);
 }
 
 static VALUE
@@ -742,14 +742,14 @@ static VALUE
 NickStruct_LastSeen(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->last_used);
+  // XXX BROKEN update me XXX return INT2NUM(nick->last_used);
 }
 
 static VALUE
 NickStruct_LastUsed(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->last_used);
+  // XXX bROKEn update me XXX return INT2NUM(nick->last_used);
 }
 
 static VALUE

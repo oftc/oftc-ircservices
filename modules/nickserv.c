@@ -480,39 +480,34 @@ m_set_cloak(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
-  unsigned int newflags = nick->flags;
+  unsigned char flag;
   
   if(parc == 0)
   {
     reply_user(service, client, NS_SET_VALUE, "CLOAK", 
-        IsNickCloak(nick) ? "ON" : "OFF");
+        nick->cloak_on ? "ON" : "OFF");
     return;
   }
 
   if(strcasecmp(parv[1], "ON") == 0)
-  {
-    newflags |= NS_FLAG_CLOAK;
-  }
+    flag = 1;
   else if(strcasecmp(parv[1], "OFF") == 0)
-  {
-    newflags &= ~NS_FLAG_CLOAK;
-  }
+    flag = 0;
   else
   {
     reply_user(service, client, NS_SET_VALUE, "CLOAK", 
-        IsNickCloak(nick) ? "ON" : "OFF");
+        nick->cloak_on ? "ON" : "OFF");
     return;
   }
 
-  if(db_set_number("nickname", nick->id, "flags", newflags) == 0)
+  if(db_set_number("nickname", nick->id, "flag_cloak_enables", 
+        flag) == 0)
   {
-    nick->flags = newflags;
-    reply_user(service, client, NS_SET_SUCCESS,
-        "CLOAK", IsNickCloak(nick) ? "ON" : "OFF");
+    nick->cloak_on = flag;
+    reply_user(service, client, NS_SET_SUCCESS, "CLOAK", flag ? "ON" : "OFF");
   }
   else
-    reply_user(service, client, NS_SET_FAILED, 
-        "CLOAK", parv[1]);
+    reply_user(service, client, NS_SET_FAILED, "CLOAK", parv[1]);
 }
 static void
 m_set_cloakstring(struct Service *service, struct Client *client, 
@@ -527,7 +522,7 @@ m_set_cloakstring(struct Service *service, struct Client *client,
   }
     
   /* Need admin to change, but can view no problem */
-  if(!IsServAdmin(client))
+  if(!nick->admin)
   {
     m_notadmin(service, client, parc, parv);
     return;
@@ -546,39 +541,33 @@ m_set_secure(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
-  unsigned int newflags = nick->flags;
+  unsigned char flag;
   
   if(parc == 0)
   {
     reply_user(service, client, NS_SET_VALUE, "SECURE", 
-        IsNickSecure(nick) ? "ON" : "OFF");
+        nick->secure ? "ON" : "OFF");
     return;
   }
 
   if(strcasecmp(parv[1], "ON") == 0)
-  {
-    newflags |= NS_FLAG_SECURE;
-  }
+    flag = 1;
   else if(strcasecmp(parv[1], "OFF") == 0)
-  {
-    newflags &= ~NS_FLAG_SECURE;
-  }
+    flag = 0;
   else
   {
     reply_user(service, client, NS_SET_VALUE, "SECURE", 
-        IsNickSecure(nick) ? "ON" : "OFF");
+        nick->secure ? "ON" : "OFF");
     return;
   }
 
-  if(db_set_number("nickname", nick->id, "flags", newflags) == 0)
+  if(db_set_number("nickname", nick->id, "flag_secure", flag) == 0)
   {
-    nick->flags = newflags;
-    reply_user(service, client, NS_SET_SUCCESS,
-        "SECURE", IsNickSecure(nick) ? "ON" : "OFF");
+    nick->secure = flag;
+    reply_user(service, client, NS_SET_SUCCESS, "SECURE", flag ? "ON" : "OFF");
   }
   else
-    reply_user(service, client, NS_SET_FAILED, 
-        "SECURE", parv[1]);
+    reply_user(service, client, NS_SET_FAILED, "SECURE", parv[1]);
 }
 
 static void
@@ -586,39 +575,33 @@ m_set_enforce(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
-  unsigned int newflags = nick->flags;
+  unsigned char flag;
   
   if(parc == 0)
   {
     reply_user(service, client, NS_SET_VALUE, "ENFORCE", 
-        IsNickEnforce(nick) ? "ON" : "OFF");
+       nick->enforce ? "ON" : "OFF");
     return;
   }
 
   if(strcasecmp(parv[1], "ON") == 0)
-  {
-    newflags |= NS_FLAG_ENFORCE;
-  }
+    flag = 1;
   else if(strcasecmp(parv[1], "OFF") == 0)
-  {
-    newflags &= ~NS_FLAG_ENFORCE;
-  }
+    flag = 0;
   else
   {
     reply_user(service, client, NS_SET_VALUE, "ENFORCE", 
-        IsNickEnforce(nick) ? "ON" : "OFF");
+        nick->enforce ? "ON" : "OFF");
     return;
   }
 
-  if(db_set_number("nickname", nick->id, "flags", newflags) == 0)
+  if(db_set_number("nickname", nick->id, "flag_enforce", flag) == 0)
   {
-    nick->flags = newflags;
-    reply_user(service, client, NS_SET_SUCCESS,
-        "ENFORCE", IsNickEnforce(nick) ? "ON" : "OFF");
+    nick->enforce = flag;
+    reply_user(service, client, NS_SET_SUCCESS, "ENFORCE", flag ? "ON" : "OFF");
   }
   else
-    reply_user(service, client, NS_SET_FAILED, 
-        "ENFORCE", parv[1]);
+    reply_user(service, client, NS_SET_FAILED, "ENFORCE", parv[1]);
 }
 
 static void
@@ -833,7 +816,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if((nick = db_find_nick(parv[1])) != NULL)
   {
-    db_set_number("nickname", nick->id, "flags", NS_FLAG_FORBID);
+    db_set_number("nickname", nick->id, "flag_forbidden", 1);
     free_nick(nick);
     reply_user(service, client, NS_FORBID_OK, parv[1]);
     return;
@@ -851,7 +834,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  db_set_number("nickname", nick->id, "flags", NS_FLAG_FORBID);
+  db_set_number("nickname", nick->id, "flag_forbidden", 1);
   reply_user(service, client, NS_FORBID_OK, parv[1]);
   free_nick(nick);
 }
@@ -892,7 +875,7 @@ ns_on_nick_change(va_list args)
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
-  if(IsNickForbid(nick_p))
+  if(nick_p->forbidden)
   {
     reply_user(nickserv, user, NS_NICK_FORBID_IWILLCHANGE, user->name);
     user->enforce_time = CurrentTime + 60; /* XXX configurable? */
@@ -906,7 +889,7 @@ ns_on_nick_change(va_list args)
   {
     ilog(L_DEBUG, "%s changed nick to %s(found access entry)", oldnick, user->name);
     SetOnAccess(user);
-    if(!IsNickSecure(nick_p))
+    if(!nick_p->secure)
     {
       user->nickname = nick_p;
       identify_user(user);
@@ -914,7 +897,7 @@ ns_on_nick_change(va_list args)
   }
   else
   {
-    if(IsNickEnforce(nick_p))
+    if(nick_p->enforce)
     {
       reply_user(nickserv, user, NS_NICK_IN_USE_IWILLCHANGE, user->name);
       user->enforce_time = CurrentTime + 60; /* XXX configurable? */
@@ -949,7 +932,7 @@ ns_on_newuser(va_list args)
     return pass_callback(ns_newuser_hook, newuser);
   }
 
-  if(IsNickForbid(nick_p))
+  if(nick_p->forbidden)
   {
     reply_user(nickserv, newuser, NS_NICK_FORBID_IWILLCHANGE, newuser->name);
     newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */
@@ -971,7 +954,7 @@ ns_on_newuser(va_list args)
   {
     ilog(L_DEBUG, "new user: %s(found access entry)", newuser->name);
     SetOnAccess(newuser);
-    if(!IsNickSecure(nick_p))
+    if(!nick_p->secure)
     {
       newuser->nickname = nick_p;
       identify_user(newuser);
@@ -979,7 +962,7 @@ ns_on_newuser(va_list args)
   }
   else
   {
-    if(IsNickEnforce(nick_p))
+    if(nick_p->enforce)
     {
       reply_user(nickserv, newuser, NS_NICK_IN_USE_IWILLCHANGE, newuser->name);
       newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */

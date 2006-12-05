@@ -43,7 +43,6 @@ int main(int argc, char *argv[])
   init_interface();
   strcpy(ServicesInfo.logfile, "services.log");
   libio_init(FALSE);
-  init_db();
   init_channel();
   init_conf();
   init_client();
@@ -51,6 +50,7 @@ int main(int argc, char *argv[])
   init_channel_modes();
 
   read_services_conf(TRUE);
+  init_db();
 
   init_log(ServicesInfo.logfile);
 

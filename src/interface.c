@@ -158,7 +158,9 @@ send_nick_change(struct Service *service, struct Client *client,
 void
 identify_user(struct Client *client)
 {
-  if(IsOper(client) && IsServAdmin(client))
+  struct Nick *nick = client->nickname;
+
+  if(IsOper(client) && nick->admin)
     client->service_handler = ADMIN_HANDLER;
   else if(IsOper(client))
     client->service_handler = OPER_HANDLER;
@@ -167,8 +169,8 @@ identify_user(struct Client *client)
 
   SetIdentified(client);
 
-  if(client->nickname->cloak[0] != '\0' && IsNickCloak(client->nickname))
-    cloak_user(client, client->nickname->cloak);
+  if(nick->cloak[0] != '\0' && nick->cloak_on)
+    cloak_user(client, nick->cloak);
 
   execute_callback(on_identify_cb, me.uplink, client);
 }
@@ -269,7 +271,7 @@ check_list_entry(const char *table, unsigned int id, const char *value)
   struct AccessEntry *entry;
   void *ptr;
 
-  ptr = db_list_first(table, ACCESS_LIST, id, (void**)&entry);
+// XXX  ptr = db_list_first(table, ACCESS_LIST, id, (void**)&entry);
 
   while(ptr != NULL)
   {
@@ -279,7 +281,7 @@ check_list_entry(const char *table, unsigned int id, const char *value)
           value);
       MyFree(entry->value);
       MyFree(entry);
-      db_list_done(ptr);
+      // XXX db_list_done(ptr);
       return TRUE;
     }
     
@@ -287,9 +289,9 @@ check_list_entry(const char *table, unsigned int id, const char *value)
         value);
     MyFree(entry->value);
     MyFree(entry);
-    ptr = db_list_next(ptr, ACCESS_LIST, (void**)&entry);
+// XXX    ptr = db_list_next(ptr, ACCESS_LIST, (void**)&entry);
   }
-  db_list_done(ptr);
+// XXX  db_list_done(ptr);
   return FALSE;
 }
 

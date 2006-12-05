@@ -826,7 +826,7 @@ process_privmsg(struct Client *client, struct Client *source,
       servpara[2] = servpara[0];
     }
 
-    if(source->nickname && IsServAdmin(source))
+    if(source->nickname && source->nickname->admin)
     {
       /* It's an admin, if the command lookup fails, try switching
        * the parameters because they could be using a SET <nick> FOO */

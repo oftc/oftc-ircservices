@@ -29,21 +29,18 @@
 struct Callback *on_nick_drop_cb;
 
 query_t queries[QUERY_COUNT] = { 
-  {  "SELECT n.id, n.nick, n.password, n.salt, n.email, n.cloak, n.last_quit, "
-      "n.last_quit_time, n.reg_time, n.last_seen, n.last_used, n.flags, "
-      "n.language, CASE WHEN nick_id IS NULL THEN 0 ELSE nick_id END as "
-      "parent_id, p.nick as pnick, p.password as ppassword, p.salt as psalt, "
-      "p.email as pemail, p.cloak as pcloak, p.last_quit as plast_quit, "
-      "p.last_quit_time as plast_quit_time, p.reg_time as preg_time, "
-      "p.last_seen as plast_seen, p.last_used as plast_used, p.flags as pflags, "
-      "p.language as planguage FROM nickname as n LEFT OUTER JOIN "
-      "nickname_links ON link_id = n.id "
-      "LEFT OUTER JOIN nickname as p ON p.id = nick_id "
-      "WHERE lower(n.nick)=lower(?v)", NULL, QUERY },
-  { "SELECT nick from nickname WHERE id=?d", NULL, QUERY },
-  { "SELECT id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
-  { "INSERT INTO nickname (nick, password, salt, email, reg_time, last_seen, "
-    "last_used) VALUES(?v, ?v, ?v, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
+  { "SELECT id, nick, password, salt, url, email, cloak, flag_enforce, "
+    "flag_secure, flag_verified, flag_forbidden, flag_cloak_enabled, "
+    "flag_admin, flag_email_verified, language, last_host, last_realname, "
+    "last_quit_msg, last_quit_time, account.reg_time, nickname.reg_time, "
+    "last_seen FROM account, nickname WHERE account.id = nickname.user_id AND "
+    "lower(nick) = lower(?v)", NULL, QUERY },
+  { "SELECT nick from nickname WHERE user_id=?d", NULL, QUERY },
+  { "SELECT user_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
+  { "INSERT INTO account (password, salt, email, reg_time) VALUES "
+    "(?v, ?v, ?v, ?d)", NULL, EXECUTE },
+  { "INSERT INTO nickname (nick, user_id, reg_time, last_seen) VALUES "
+    "(?v, ?d, ?d, ?d)", NULL, EXECUTE },
   { "DELETE FROM nickname WHERE lower(nick)=lower(?v)", NULL, EXECUTE },
   { "INSERT INTO nickname_access (parent_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
@@ -85,11 +82,10 @@ void
 init_db()
 {
   char *dbstr;
-  memset(&Database, 0, sizeof(Database));
 
   dbstr = MyMalloc(strlen(Database.driver) + strlen(Database.hostname) + strlen(Database.dbname) +
       3 /* ::: */ + 1);
-  sprintf(dbstr, "%s:%s::%s", Database.driver, Database.hostname, Database.dbname);
+  sprintf(dbstr, "%s:::%s", Database.driver, Database.dbname);
 
   Database.yada = yada_init(dbstr, 0);
   MyFree(dbstr);
@@ -100,6 +96,7 @@ void
 db_load_driver()
 {
   int i;
+  struct Nick *nick;
 
   if(Database.yada->connect(Database.yada, Database.username, 
         Database.password) == 0)
@@ -114,42 +111,45 @@ db_load_driver()
     query_t *query = &queries[i];
     query->rc = Database.yada->prepare(Database.yada, (char*)query->name, 0);
   }
+
+  nick = db_find_nick("test");
+  db_register_nick("test", "moo", "moomoo", "moo@foo.org");
 }
 
 #define db_query(ret, query_id, args...)                              \
 {                                                                     \
-  int id = query_id;                                                  \
-  yada_rc_t *result;                                                  \
-  query_t *query;                                                     \
+  int __id = query_id;                                                \
+  yada_rc_t *__result;                                                \
+  query_t *__query;                                                   \
                                                                       \
-  query = &queries[id];                                               \
-  printf("db_query: %d %s\n", id, query->name);                       \
-  assert(query->type == QUERY);                                       \
-  assert(query->rc);                                                  \
+  __query = &queries[__id];                                           \
+  printf("db_query: %d %s\n", __id, __query->name);                   \
+  assert(__query->type == QUERY);                                     \
+  assert(__query->rc);                                                \
                                                                       \
-  result = Database.yada->query(Database.yada, query->rc, args);      \
-  if(result == NULL)                                                  \
-    printf("db_query: %d Failed: %s\n", id, Database.yada->errmsg);   \
+  __result = Database.yada->query(Database.yada, __query->rc, args);  \
+  if(__result == NULL)                                                \
+    printf("db_query: %d Failed: %s\n", __id, Database.yada->errmsg); \
                                                                       \
-  ret = result;                                                       \
+  ret = __result;                                                     \
 };
 
 #define db_exec(ret, query_id, args...)                               \
 {                                                                     \
-  int id = query_id;                                                  \
-  int result;                                                         \
-  query_t *query;                                                     \
+  int __id = query_id;                                                \
+  int __result;                                                       \
+  query_t *__query;                                                   \
                                                                       \
-  query = &queries[id];                                               \
-  printf("db_exec: %d %s\n", id, query->name);                        \
-  assert(query->type == EXECUTE);                                     \
-  assert(query->rc);                                                  \
+  __query = &queries[__id];                                           \
+  printf("db_exec: %d %s\n", __id, __query->name);                    \
+  assert(__query->type == EXECUTE);                                   \
+  assert(__query->rc);                                                \
                                                                       \
-  retval = Database.yada->execute(Database.yada, query->rc, args);    \
-  if(retval == -1)                                                    \
-    printf("db_exec: %d Failed: %s\n", id, Database.yada->errmsg);    \
+  __result = Database.yada->execute(Database.yada, __query->rc, args);\
+  if(__result == -1)                                                  \
+    printf("db_exec: %d Failed: %s\n", __id, Database.yada->errmsg);  \
                                                                       \
-  ret = result;                                                       \
+  ret = __result;                                                     \
 };
 
 struct Nick *
@@ -169,30 +169,34 @@ db_find_nick(const char *nick)
  
   nick_p = MyMalloc(sizeof(struct Nick));
  
-  brc = Database.yada->bind(Database.yada, "?d?ps?ps?ps?ps?ps?d?d?d?d?d?d",
-    &nick_p->id, &retnick, &retpass, &retsalt, &retcloak, &nick_p->last_quit,
-    &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->last_seen,
-    &nick_p->last_used, &nick_p->flags, &nick_p->language);
+  brc = Database.yada->bind(Database.yada, 
+      "?d?ps?ps?ps?ps?ps?ps?d?d?d?d?d?d?d?d?ps?ps?ps?d?d?d?d",
+    &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->url, &nick_p->email,
+    &retcloak, &nick_p->enforce, &nick_p->secure, &nick_p->verified, 
+    &nick_p->forbidden, &nick_p->cloak_on, &nick_p->admin, 
+    &nick_p->email_verified, &nick_p->language, &nick_p->last_host,
+    &nick_p->last_realname, &nick_p->last_quit,
+    &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->nick_reg_time,
+    &nick_p->last_seen);
 
-  Database.yada->fetch(Database.yada, result, brc);
+  if(Database.yada->fetch(Database.yada, result, brc) == 0)
+  {
+    printf("db_find_nick: '%s' not found.\n", nick);
+    return NULL;
+  }
 
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
   strlcpy(nick_p->salt, retsalt, sizeof(nick_p->salt));
-  strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
+  if(retcloak)
+    strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
 
   printf("db_find_nick: Found nick %s(asked for %s)\n", nick_p->nick, nick);
-
-  MyFree(retnick);
-  MyFree(retpass);
-  MyFree(retsalt);
-  MyFree(retcloak);
 
   return nick_p;
 }
 
 #if 0
-
 char *    
 db_get_nickname_from_id(unsigned int id)    
 {   
@@ -247,60 +251,37 @@ db_get_id_from_nick(const char *nick)
   return id;
 }
 
+#endif
+
 struct Nick *
 db_register_nick(const char *nick, const char *password, const char *salt,
     const char *email)
 {
-  char *escnick = NULL;
-  char *escemail = NULL;
-  char *escpass = NULL;
-  char *escsalt = NULL;
-  yada_rc_t * result;
-  
+  int exec, id;
+
   assert(nick != NULL);
 
-  if(dbi_driver_quote_string_copy(Database.driv, nick, &escnick) == 0)
+  TRANS_BEGIN;
+
+  db_exec(exec, INSERT_ACCOUNT, password, salt, email, CurrentTime);
+  if(exec != -1)
   {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return NULL;
+    id = Database.yada->insert_id(Database.yada, "account", "id");
+    db_exec(exec, INSERT_NICK, nick, id, CurrentTime, CurrentTime);
   }
 
-  if(dbi_driver_quote_string_copy(Database.driv, email, &escemail) == 0)
+  if(exec != -1)
   {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    MyFree(escnick);
+    TRANS_COMMIT;
+  }
+  else
+  {
+    TRANS_ROLLBACK;
     return NULL;
   }
-
-  if(dbi_driver_quote_string_copy(Database.driv, password, &escpass) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    MyFree(escnick);
-    MyFree(escemail);
-    return NULL;
-  }
-  
-  if(dbi_driver_quote_string_copy(Database.driv, salt, &escsalt) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    MyFree(escnick);
-    MyFree(escemail);
-    MyFree(escpass);
-    return NULL;
-  }
-  
-  MyFree(escnick);
-  MyFree(escemail);
-  MyFree(escpass);
-  MyFree(escsalt);
- 
-  if(result == NULL)
-    return NULL;
-  
-  yada_rc_t *_free(result);
-
-  return db_find_nick(nick); 
 }
+
+#if 0
 
 int
 db_delete_nick(const char *nick)

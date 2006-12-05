@@ -8,44 +8,27 @@ struct Nick
   unsigned int id;
   char nick[NICKLEN+1];
   char pass[PASSLEN+1];
-  char salt[PASSLEN+1];
+  char salt[SALTLEN+1];
+  char cloak[HOSTLEN+1];
   char *email;
   char *url;
+  char *last_realname;
+  char *last_host;
   char *last_quit;
-  char cloak[HOSTLEN+1];
   unsigned int status;
-  unsigned int flags;
+  unsigned char enforce;
+  unsigned char secure;
+  unsigned char verified;
+  unsigned char cloak_on;
+  unsigned char admin;
+  unsigned char email_verified;
+  unsigned char forbidden;
   unsigned int language;
   time_t reg_time;
   time_t last_seen;
-  time_t last_used;
   time_t last_quit_time;
+  time_t nick_reg_time;
 };
-
-/* Nick flags */
-#define NS_FLAG_ENFORCE       0x00000001
-#define NS_FLAG_SECURE        0x00000002
-#define NS_FLAG_CLOAK         0x00010000
-#define NS_FLAG_FORBID        0x00020000
-#define NS_FLAG_ADMIN         0x01000000
-
-#define IsServAdmin(x)        ((x)->nickname->flags & NS_FLAG_ADMIN)
-#define IsNickSecure(x)       ((x)->flags & NS_FLAG_SECURE)
-#define IsNickEnforce(x)      ((x)->flags & NS_FLAG_ENFORCE)
-#define IsNickCloak(x)        ((x)->flags & NS_FLAG_CLOAK)
-#define IsNickForbid(x)       ((x)->flags & NS_FLAG_FORBID)
-
-#define SetServAdmin(x)       ((x)->nickname->flags |= NS_FLAG_ADMIN)
-#define SetNickSecure(x)      ((x)->flags |= NS_FLAG_SECURE)
-#define SetNickEnforce(x)     ((x)->flags |= NS_FLAG_ENFORCE)
-#define SetNickCloak(x)       ((x)->flags |= NS_FLAG_CLOAK)
-#define SetNickForbid(x)      ((x)->flags |= NS_FLAG_FORBID)
-
-#define ClearServAdmin(x)     ((x)->nickname->flags &= ~NS_FLAG_ADMIN)
-#define ClearNickSecure(x)    ((x)->flags &= ~NS_FLAG_SECURE)
-#define ClearNickEnforce(x)   ((x)->flags &= ~NS_FLAG_ENFORCE)
-#define ClearNickCloak(x)     ((x)->flags &= ~NS_FLAG_CLOAK)
-#define ClearNickForbid(x)    ((x)->flags &= ~NS_FLAG_FORBID)
 
 /* Language defines */
 

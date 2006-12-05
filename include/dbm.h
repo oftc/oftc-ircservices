@@ -30,6 +30,7 @@ enum db_queries
   GET_FULL_NICK = 0,
   GET_NICK_FROM_ID,
   GET_NICKID_FROM_NICK,
+  INSERT_ACCOUNT,
   INSERT_NICK,
   DELETE_NICK,
   INSERT_NICKACCESS,
@@ -64,6 +65,10 @@ typedef struct query {
   yada_rc_t *rc;
   int type;
 } query_t;
+
+#define TRANS_BEGIN Database.yada->trx(Database.yada, 0)
+#define TRANS_COMMIT Database.yada->commit(Database.yada)
+#define TRANS_ROLLBACK Database.yada->rollback(Database.yada, 0)
 
 void init_db();
 void db_load_driver();

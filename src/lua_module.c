@@ -165,7 +165,7 @@ lua_register_nick(lua_State *L)
   email = luaL_checkstring(L, 3);
 
   /* XXX */
-  nick_p = db_register_nick(nick, password, password, email);
+// XXX  nick_p = db_register_nick(nick, password, password, email);
   if(nick_p == NULL)
   {
     lua_pushnil(L);
@@ -189,7 +189,7 @@ lua_identify_nick(lua_State *L)
   struct Client *client = check_client(L, 1);
   const char *password = luaL_checkstring(L, 2);
   int error = 0;
-
+/* XXX
   if((nick = db_find_nick(client->name)) == NULL)
     error = 1;
   else if(strncmp(nick->pass, servcrypt(password, nick->pass), 
@@ -198,7 +198,7 @@ lua_identify_nick(lua_State *L)
     MyFree(nick);
     error = 2;
   }
-
+*/
   client->nickname = nick;
 
   identify_user(client);
@@ -252,11 +252,11 @@ lua_drop_nick(lua_State *L)
   struct Client *client;
   const char *nick = luaL_checkstring(L, 1);
 
-  if(db_delete_nick(nick) == 0)
-  {
-    lua_pushboolean(L, FALSE);
-    return 1;
-  }
+  // XXX if(db_delete_nick(nick) == 0)
+  //{
+  //  lua_pushboolean(L, FALSE);
+  //  return 1;
+  //}
 
   client = find_client(nick);
   client->service_handler = UNREG_HANDLER;
@@ -272,14 +272,14 @@ lua_nick_set_email(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
   const char *email = luaL_checkstring(L, 2);
-  int ret = db_set_string("nickname", nick->id, "email", email);
+ // XXX int ret = db_set_string("nickname", nick->id, "email", email);
 
-  if(ret == 0)
+  //if(ret == 0)
   {
     strlcpy(nick->email, email, sizeof(nick->email));
     lua_pushboolean(L, 1);
   }
-  else
+ // else
     lua_pushboolean(L, 0);
   
   return 1;
@@ -290,14 +290,14 @@ lua_nick_set_language(lua_State *L)
 {
   struct Nick *nick = check_nick(L, 1);
   const int lang = luaL_checkinteger(L, 2);
-  int ret = db_set_number("nickname", nick->id, "language", lang);
+// XXX  int ret = db_set_number("nickname", nick->id, "language", lang);
 
-  if(ret == 0)
+  //if(ret == 0)
   {
     nick->language = lang;
     lua_pushboolean(L, 1);
   }
-  else
+ // else
     lua_pushboolean(L, 0);
   
   return 1;
