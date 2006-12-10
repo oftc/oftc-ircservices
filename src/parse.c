@@ -320,7 +320,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   if (i < mptr->parameters)
   {
     reply_user(service, from, SERV_INSUFF_PARAM, i, mptr->parameters);
-    ilog(L_DEBUG, "%s sent services a command %s with too few paramters",
+    ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
         from->name, mptr->cmd);
   }
   else
@@ -893,7 +893,7 @@ process_privmsg(struct Client *client, struct Client *source,
         if (i < sub->parameters)
         {
           reply_user(service, source, SERV_INSUFF_PARAM, i, sub->parameters);
-          ilog(L_DEBUG, "%s sent services a sub command %s with too few paramters",
+          ilog(L_DEBUG, "%s sent services a sub command %s with too few parameters",
               client->name, sub->cmd);
           if(oldnick != NULL)
           {
