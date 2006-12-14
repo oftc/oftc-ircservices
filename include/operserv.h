@@ -6,7 +6,7 @@ struct AKill
   unsigned int id;
   char *mask;
   char *reason;
-  struct Nick *setter;
+  char *setter;
   unsigned int time_set;
   unsigned int duration;
 };

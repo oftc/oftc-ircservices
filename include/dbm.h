@@ -17,10 +17,16 @@ struct ChannelAccessEntry
   unsigned int level;
 };
 
+struct DBResult
+{
+  yada_rc_t *rc;
+  yada_rc_t *brc;
+};
+
 enum db_list_type
 {
   ACCESS_LIST = 0,
-  NICK_FLAG_LIST,
+  ADMIN_LIST,
   AKILL_LIST,
   CHACCESS_LIST
 };
@@ -36,7 +42,7 @@ enum db_queries
   INSERT_NICKACCESS,
   GET_NICKACCESS,
   GET_ALL_NICKACCESS,
-  GET_NICK_FLAGS,
+  GET_ADMINS,
   GET_AKILLS,
   GET_CHAN_ACCESS,
   GET_CHANID_FROM_CHAN,
@@ -52,7 +58,23 @@ enum db_queries
   SET_CHAN_SUCCESSOR,
   INSERT_AKILL,
   GET_AKILL,
-  QUERY_COUNT,
+  SET_NICK_PASSWORD,
+  SET_NICK_URL,
+  SET_NICK_EMAIL,
+  SET_NICK_CLOAK,
+  SET_NICK_LAST_QUIT,
+  SET_NICK_LAST_HOST,
+  SET_NICK_LANGUAGE,
+  SET_NICK_LAST_QUITTIME,
+  SET_NICK_LAST_SEEN,
+  SET_NICK_CLOAKON,
+  SET_NICK_SECURE,
+  SET_NICK_ENFORCE,
+  SET_NICK_FORBIDDEN,
+  DELETE_NICKACCESS,
+  DELETE_ALL_NICKACCESS,
+  DELETE_NICKACCESS_IDX,
+  QUERY_COUNT
 };
 
 enum query_types {
@@ -66,16 +88,23 @@ typedef struct query {
   int type;
 } query_t;
 
-#define TRANS_BEGIN Database.yada->trx(Database.yada, 0)
-#define TRANS_COMMIT Database.yada->commit(Database.yada)
-#define TRANS_ROLLBACK Database.yada->rollback(Database.yada, 0)
+#define TransBegin() Database.yada->trx(Database.yada, 0)
+#define TransCommit() Database.yada->commit(Database.yada)
+#define TransRollback() Database.yada->rollback(Database.yada, 0)
+#define Query(m, args...) Database.yada->query(Database.yada, m, args)
+#define Execute(m, args...) Database.yada->execute(Database.yada, m, args)
+#define Bind(m, args...) Database.yada->bind(Database.yada, m, args)
+#define Fetch(r, b) Database.yada->fetch(Database.yada, r, b)
+#define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
+#define Free(r) Database.yada->free(Database.yada, r)
+#define InsertID(t, c) Database.yada->insert_id(Database.yada, t, c)
 
 void init_db();
 void db_load_driver();
 
-int   db_set_string(const char *, unsigned int, const char *, const char *);
-int   db_set_number(const char *, unsigned int, const char *, 
-    const unsigned long);
+int   db_set_string(unsigned int, unsigned int, const char *);
+int   db_set_number(unsigned int, unsigned int, unsigned long);
+int   db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
 struct Nick *db_find_nick(const char *);
@@ -103,12 +132,12 @@ int db_set_founder(const char *, const char *);
 int db_set_successor(const char *, const char *);
 int db_chan_success_founder(const char *);
 
-int   db_list_add(const char *, unsigned int, const char *);
-void *db_list_first(const char *, unsigned int, unsigned int, void **);
+int   db_list_add(unsigned int, const void *);
+void *db_list_first(unsigned int, unsigned int, void **);
 void *db_list_next(void *, unsigned int, void **);
 void  db_list_done(void *);
-int   db_list_del(const char *, unsigned int, const char *);
-int   db_list_del_index(const char *, unsigned int, unsigned int);
+int   db_list_del(unsigned int, unsigned int, const char *);
+int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 
 struct AKill *db_add_akill(struct AKill *akill);
 

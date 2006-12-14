@@ -381,8 +381,6 @@ irc_server_connected(va_list args)
   struct Client *client = va_arg(args, struct Client *);
   dlink_node *ptr;
   
-  ilog(L_DEBUG, "WTFLOL");
-  
   sendto_server(client, "PASS %s TS 5", client->server->pass);
   sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
   irc_sendmsg_server(client, NULL, me.name, me.info);

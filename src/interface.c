@@ -271,6 +271,7 @@ check_list_entry(const char *table, unsigned int id, const char *value)
   struct AccessEntry *entry;
   void *ptr;
 
+#if 0
 // XXX  ptr = db_list_first(table, ACCESS_LIST, id, (void**)&entry);
 
   while(ptr != NULL)
@@ -292,6 +293,7 @@ check_list_entry(const char *table, unsigned int id, const char *value)
 // XXX    ptr = db_list_next(ptr, ACCESS_LIST, (void**)&entry);
   }
 // XXX  db_list_done(ptr);
+#endif
   return FALSE;
 }
 
