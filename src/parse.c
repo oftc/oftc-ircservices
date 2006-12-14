@@ -319,7 +319,8 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
 
   if (i < mptr->parameters)
   {
-    reply_user(service, from, SERV_INSUFF_PARAM, i, mptr->parameters);
+    reply_user(service, from, 0, "Insufficient params.  Got %d need %d",
+        /*SERV_INSUFF_PARAM*/ i, mptr->parameters);
     ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
         from->name, mptr->cmd);
   }
@@ -757,7 +758,7 @@ void
 m_notid(struct Service *service, struct Client *source,
     int parc, char *parv[])
 {
-  reply_user(service, source, 0,/*SERV_NOT_IDENTIFIED*/"Identify first.", 
+  reply_user(service, source, 0,/*SERV_NOT_IDENTIFIED*/"Identify first, %s", 
       source->name);
 }
 
@@ -800,7 +801,8 @@ process_privmsg(struct Client *client, struct Client *source,
   {
     ilog(L_DEBUG, "Unknown Message: %s %s for service %s from %s", ch, s, 
         parv[1], source->name);
-    reply_user(service, source, SERV_UNKNOWN_CMD, ch, service->name);
+    reply_user(service, source, 0, "Unknown command: %s %s" /*SERV_UNKNOWN_CMD*/, 
+        ch, service->name);
     return;
   }
 
@@ -845,8 +847,8 @@ process_privmsg(struct Client *client, struct Client *source,
       {
         if(servpara[2] == NULL)
         {
-          reply_user(service, source, SERV_UNKNOWN_CMD, servpara[1], 
-              service->name);
+          reply_user(service, source, 0, "Unknown command: %s %s", 
+              /*SERV_UNKNOWN_CMD*/ servpara[1], service->name);
           return;
         }
         servpara[0] = servpara[1];
@@ -893,7 +895,8 @@ process_privmsg(struct Client *client, struct Client *source,
         sub->count++;
         if (i < sub->parameters)
         {
-          reply_user(service, source, SERV_INSUFF_PARAM, i, sub->parameters);
+          reply_user(service, source, 0, "Insufficient params got %d need %d",
+              /*SERV_INSUFF_PARAM*/ i, sub->parameters);
           ilog(L_DEBUG, "%s sent services a sub command %s with too few parameters",
               client->name, sub->cmd);
           if(oldnick != NULL)

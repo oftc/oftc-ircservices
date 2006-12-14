@@ -1,31 +1,40 @@
-DROP TABLE IF EXISTS nickname;
-CREATE TABLE nickname (
+DROP TABLE IF EXISTS nickname CASCADE;
+DROP TABLE IF EXISTS account_access CASCADE;
+DROP TABLE IF EXISTS account CASCADE;
+CREATE TABLE account (
   id              INTEGER PRIMARY KEY auto_increment,
-  nick            VARCHAR(255) NOT NULL default '',
-  password        VARCHAR(255) NOT NULL default '',
-  salt            VARCHAR(50)  NOT NULL default '',
-  url             VARCHAR(255),
-  email           VARCHAR(255),
-  cloak           VARCHAR(255),
-  last_host       VARCHAR(255) NOT NULL default '',
-  last_realname   VARCHAR(255) NOT NULL default '',
-  last_quit       VARCHAR(512) NOT NULL default '',
-  last_quit_time  INTEGER NOT NULL default '0',
-  reg_time        INTEGER NOT NULL default '0',
-  last_seen       INTEGER NOT NULL default '0',
-  last_used       INTEGER NOT NULL default '0',
-  flags           INTEGER NOT NULL default '0',
-  language        INTEGER NOT NULL default '0',
-  link            INTEGER NOT NULL default '0',
-  KEY link (link),
-  UNIQUE (nick)
-)ENGINE=MyISAM;
+  password            CHAR(40),      -- base16 encoded sha1(salt+<userpassword>).  lower case
+  salt                CHAR(16),
+  url                 VARCHAR(255),
+  email               VARCHAR(255),
+  cloak               VARCHAR(255),
+  flag_enforce        BOOLEAN NOT NULL DEFAULT FALSE,
+  flag_secure         BOOLEAN NOT NULL DEFAULT FALSE,
+  flag_verified       BOOLEAN NOT NULL DEFAULT FALSE,
+  flag_forbidden      BOOLEAN NOT NULL DEFAULT FALSE,
+  flag_cloak_enabled  BOOLEAN NOT NULL DEFAULT FALSE,
+  flag_admin          BOOLEAN NOT NULL DEFAULT FALSE,
+  flag_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  language            INTEGER NOT NULL default '0',
+  last_host           VARCHAR(255),
+  last_realname       VARCHAR(255),
+  last_quit_msg       VARCHAR(512),
+  last_quit_time      INTEGER,
+  reg_time            INTEGER NOT NULL -- The account itself
+) ENGINE=InnoDB;
 
-DROP TABLE IF EXISTS nickname_access;
-CREATE TABLE nickname_access (
+CREATE TABLE nickname (
+  nick                VARCHAR(255) NOT NULL,
+  user_id             INTEGER NOT NULL,
+  reg_time            INTEGER NOT NULL, -- This nickname
+  last_seen           INTEGER,
+  UNIQUE (nick),
+  FOREIGN KEY (user_id) REFERENCES account(id)
+) ENGINE=InnodB;
+
+CREATE TABLE account_access (
   id              INTEGER PRIMARY KEY auto_increment,
-  parent_id     INTEGER NOT NULL default '0',
-  entry           VARCHAR(255) NOT NULL default '',
-  UNIQUE KEY id (id),
-  UNIQUE KEY parent_id (parent_id, entry)
-) TYPE=MyISAM;
+  parent_id       INTEGER NOT NULL,
+  entry           VARCHAR(255) NOT NULL,
+  FOREIGN KEY (parent_id) REFERENCES account(id)
+) ENGINE=InnoDB;
