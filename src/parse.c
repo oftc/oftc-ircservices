@@ -754,17 +754,18 @@ m_alreadyreg(struct Service *service, struct Client *source, int parc,
 }
 
 void
-m_unreg(struct Service *service, struct Client *source,
+m_notid(struct Service *service, struct Client *source,
     int parc, char *parv[])
 {
-  reply_user(service, source, SERV_NOT_IDENTIFIED, source->name);
+  reply_user(service, source, 0,/*SERV_NOT_IDENTIFIED*/"Identify first.", 
+      source->name);
 }
 
 void
 m_notadmin(struct Service *service, struct Client *source,
     int parc, char *parv[])
 {
-  reply_user(service, source, SERV_ACCESS_DENIED);
+  reply_user(service, source, 0,/*SERV_ACCESS_DENIED*/"No no no.");
 }
 
 void
@@ -856,7 +857,7 @@ process_privmsg(struct Client *client, struct Client *source,
         source->nickname = db_find_nick(para[3]);
         if(source->nickname == NULL)
         {
-          m_unreg(service, source, (i == 0) ? i : i-1, servpara);
+          m_notid(service, source, (i == 0) ? i : i-1, servpara);
           source->nickname = oldnick;
           return;
         }

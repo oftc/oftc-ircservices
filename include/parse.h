@@ -10,7 +10,7 @@ struct ServiceMessage *find_services_command(const char *cmd, struct ServiceMess
 void parse(struct Client *, char *, char *);
 extern void m_ignore(struct Client *, struct Client *, int, char *[]);
 extern void m_servignore(struct Service *, struct Client *, int, char *[]);
-extern void m_unreg(struct Service *, struct Client *, int, char *[]);
+extern void m_notid(struct Service *, struct Client *, int, char *[]);
 extern void m_alreadyreg(struct Service *, struct Client *, int, char *[]);
 extern void m_notadmin(struct Service *, struct Client *, int, char *[]);
 

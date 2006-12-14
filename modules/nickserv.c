@@ -91,58 +91,58 @@ static struct ServiceMessage help_msgtab = {
 
 static struct ServiceMessage drop_msgtab = {
   NULL, "DROP", 0, 0, NS_HELP_DROP_SHORT, NS_HELP_DROP_LONG,
-  { m_unreg, m_drop, m_drop, m_drop }
+  { m_notid, m_drop, m_drop, m_drop }
 };
 
 static struct SubMessage set_sub[9] = {
   { "LANGUAGE"    , 0, 0, -1, -1, 
-    { m_set_language, m_set_language, m_set_language, m_set_language }
+    { m_notid, m_set_language, m_set_language, m_set_language }
   },
   { "PASSWORD"    , 0, 1, -1, -1, 
-    { m_set_password, m_set_password, m_set_password, m_set_password }
+    { m_notid, m_set_password, m_set_password, m_set_password }
   },
   { "URL"         , 0, 0, -1, -1, 
-    { m_set_url, m_set_url, m_set_url, m_set_url }
+    { m_notid, m_set_url, m_set_url, m_set_url }
   },
   { "EMAIL"       , 0, 0, -1, -1, 
-    { m_set_email, m_set_email, m_set_email, m_set_email }
+    { m_notid, m_set_email, m_set_email, m_set_email }
   },
   { "ENFORCE"     , 0, 0, -1, -1, 
-    { m_set_enforce, m_set_enforce, m_set_enforce, m_set_enforce }
+    { m_notid, m_set_enforce, m_set_enforce, m_set_enforce }
   },
   { "SECURE"      , 0, 0, -1, -1, 
-    { m_set_secure, m_set_secure, m_set_secure, m_set_secure }
+    { m_notid, m_set_secure, m_set_secure, m_set_secure }
   },
   { "CLOAK"       , 0, 0, -1, -1, 
-    { m_set_cloak, m_set_cloak, m_set_cloak, m_set_cloak }
+    { m_notid, m_set_cloak, m_set_cloak, m_set_cloak }
   },
   { "CLOAKSTRING" , 0, 0, -1, -1, 
-    { m_set_cloakstring, m_set_cloakstring, m_set_cloakstring, m_set_cloakstring }
+    { m_notid, m_set_cloakstring, m_set_cloakstring, m_set_cloakstring }
   },
   { NULL        , 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage set_msgtab = {
   set_sub, "SET",  0, 0, NS_HELP_SET_SHORT, NS_HELP_SET_LONG,
-  { m_unreg, m_set, m_set, m_set }
+  { m_notid, m_set, m_set, m_set }
 };
 
 static struct SubMessage access_sub[4] = {
   { "ADD", 0, 1, -1, -1, 
-    { m_access_add, m_access_add, m_access_add, m_access_add }
+    { m_notid, m_access_add, m_access_add, m_access_add }
   },
   { "LIST", 0, 0, -1, -1, 
-    { m_access_list, m_access_list, m_access_list, m_access_list }
+    { m_notid, m_access_list, m_access_list, m_access_list }
   },
   { "DEL", 0, 0, -1, -1, 
-    { m_access_del, m_access_del, m_access_del, m_access_del }
+    { m_notid, m_access_del, m_access_del, m_access_del }
   },
   { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage access_msgtab = {
   access_sub, "ACCESS", 0, 0, NS_HELP_ACCESS_SHORT, NS_HELP_ACCESS_LONG,
-  { m_unreg, m_access, m_access, m_access }
+  { m_notid, m_access, m_access, m_access }
 };
 
 static struct ServiceMessage ghost_msgtab = {
@@ -152,12 +152,12 @@ static struct ServiceMessage ghost_msgtab = {
 
 static struct ServiceMessage link_msgtab = {
   NULL, "LINK", 0, 2, NS_HELP_LINK_SHORT, NS_HELP_LINK_LONG,
-  { m_unreg, m_link, m_link, m_link }
+  { m_notid, m_link, m_link, m_link }
 };
 
 static struct ServiceMessage unlink_msgtab = {
   NULL, "UNLINK", 0, 0, NS_HELP_UNLINK_SHORT, NS_HELP_UNLINK_LONG,
-  { m_unreg, m_unlink, m_unlink, m_unlink }
+  { m_notid, m_unlink, m_unlink, m_unlink }
 };
 
 static struct ServiceMessage info_msgtab = {
@@ -999,6 +999,7 @@ ns_on_quit(va_list args)
   {
     db_set_string(SET_NICK_LAST_QUIT, nick->id, comment);
     db_set_string(SET_NICK_LAST_HOST, nick->id, user->host);
+    db_set_string(SET_NICK_LAST_REALNAME, nick->id, user->info);
     db_set_number(SET_NICK_LAST_QUITTIME, nick->id, CurrentTime);
     db_set_number(SET_NICK_LAST_SEEN, nick->id, CurrentTime);
     free_nick(nick);
