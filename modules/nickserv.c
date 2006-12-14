@@ -252,11 +252,8 @@ m_register(struct Service *service, struct Client *client,
 {
   struct Nick *nick;
   char *pass;
-  char password[PASSLEN*2+1];
-  char salt[SALTLEN+1];
+  char password[PASSLEN+SALTLEN+1];
  
-  memset(salt, 0, sizeof(salt));
-
   if(strncasecmp(client->name, "guest", 5) == 0)
   {
     reply_user(service, client, NS_NOREG_GUEST, client->name);
@@ -270,14 +267,18 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  make_random_string(salt, SALTLEN+1);
-  snprintf(password, sizeof(password), "%s%s", parv[1], salt);
+  nick = MyMalloc(sizeof(struct Nick));
+
+  make_random_string(nick->salt, SALTLEN+1);
+  snprintf(password, sizeof(password), "%s%s", parv[1], nick->salt);
 
   pass = crypt_pass(password);
-
-  nick = db_register_nick(client->name, pass, salt, parv[2]);
+  strlcpy(nick->pass, pass, sizeof(nick->pass));
+  strlcpy(nick->nick, client->name, sizeof(nick->nick));
+  DupString(nick->email, parv[2]);
   MyFree(pass);
-  if(nick != NULL)
+
+  if(db_register_nick(nick))
   {
     client->nickname = nick;
     identify_user(client);
@@ -299,14 +300,12 @@ static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  if (!IsIdentified(client)) 
+  if(!IsIdentified(client)) 
   {
     reply_user(service, client, NS_NEED_IDENTIFY, client->name);
   }
 
-  // XXX add some safetynet here XXX
-
-  if (db_delete_nick(client->name) == 0) 
+  if(db_delete_nick(client->name)) 
   {
     client->service_handler = UNREG_HANDLER;
     ClearIdentified(client);
@@ -382,7 +381,7 @@ m_set_password(struct Service *service, struct Client *client,
   snprintf(password, sizeof(password), "%s%s", parv[1], salt);
   
   pass = crypt_pass(password);
-  if(db_set_string(SET_NICK_PASSWORD, client->nickname->id, pass) == 0)
+  if(db_set_string(SET_NICK_PASSWORD, client->nickname->id, pass))
   {
     reply_user(service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
   }
@@ -421,7 +420,7 @@ m_set_language(struct Service *service, struct Client *client,
   {
     int lang = atoi(parv[1]);
     
-    if(db_set_number(SET_NICK_LANGUAGE, client->nickname->id, lang) == 0)
+    if(db_set_number(SET_NICK_LANGUAGE, client->nickname->id, lang))
     {
       client->nickname->language = lang;
       reply_user(service, client, NS_LANGUAGE_SET,
@@ -445,7 +444,7 @@ m_set_url(struct Service *service, struct Client *client,
     return;
   }
   
-  if(db_set_string(SET_NICK_URL, nick->id, parv[1]) == 0)
+  if(db_set_string(SET_NICK_URL, nick->id, parv[1]))
   {
     nick->url = replace_string(nick->url, parv[1]);
     reply_user(service, client, NS_SET_SUCCESS, "URL", nick->url);
@@ -466,7 +465,7 @@ m_set_email(struct Service *service, struct Client *client,
     return;
   }
     
-  if(db_set_string(SET_NICK_EMAIL, nick->id, parv[1]) == 0)
+  if(db_set_string(SET_NICK_EMAIL, nick->id, parv[1]))
   {
     nick->email = replace_string(nick->email, parv[1]);
     reply_user(service, client, NS_SET_SUCCESS, "EMAIL", nick->email);
@@ -500,7 +499,7 @@ m_set_cloak(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_set_bool(SET_NICK_CLOAKON, nick->id, flag) == 0)
+  if(db_set_bool(SET_NICK_CLOAKON, nick->id, flag))
   {
     nick->cloak_on = flag;
     reply_user(service, client, NS_SET_SUCCESS, "CLOAK", flag ? "ON" : "OFF");
@@ -526,7 +525,7 @@ m_set_cloakstring(struct Service *service, struct Client *client,
     m_notadmin(service, client, parc, parv);
     return;
   }
-  if(db_set_string(SET_NICK_CLOAK, nick->id, parv[1]) == 0)
+  if(db_set_string(SET_NICK_CLOAK, nick->id, parv[1]))
   {
     strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
     reply_user(service, client, NS_SET_SUCCESS, "CLOAKSTRING", nick->cloak);
@@ -560,7 +559,7 @@ m_set_secure(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_set_bool(SET_NICK_SECURE, nick->id, flag) == 0)
+  if(db_set_bool(SET_NICK_SECURE, nick->id, flag))
   {
     nick->secure = flag;
     reply_user(service, client, NS_SET_SUCCESS, "SECURE", flag ? "ON" : "OFF");
@@ -594,7 +593,7 @@ m_set_enforce(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_set_bool(SET_NICK_ENFORCE, nick->id, flag) == 0)
+  if(db_set_bool(SET_NICK_ENFORCE, nick->id, flag))
   {
     nick->enforce = flag;
     reply_user(service, client, NS_SET_SUCCESS, "ENFORCE", flag ? "ON" : "OFF");
@@ -626,7 +625,7 @@ m_access_add(struct Service *service, struct Client *client, int parc,
   access.id = nick->id;
   access.value = parv[1];
   
-  if(db_list_add(ACCESS_LIST, (void *)&access) == 0)
+  if(db_list_add(ACCESS_LIST, (void *)&access))
   {
     reply_user(service, client, NS_ACCESS_ADD, parv[1]);
   }
@@ -816,8 +815,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
   char *pass;
-  char password[PASSLEN*2+1];
-  char salt[SALTLEN+1];
+  char password[PASSLEN+SALTLEN+1];
   char randpass[PASSLEN+1];
 
   if((nick = db_find_nick(parv[1])) != NULL)
@@ -827,14 +825,20 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, client, NS_FORBID_OK, parv[1]);
     return;
   }
-  make_random_string(salt, SALTLEN+1);
+
+  nick = MyMalloc(sizeof(struct Nick));
+
+  make_random_string(nick->salt, SALTLEN+1);
   make_random_string(randpass, PASSLEN);
-  snprintf(password, sizeof(password), "%s%s", randpass, salt);
+  snprintf(password, sizeof(password), "%s%s", randpass, nick->salt);
 
   pass = crypt_pass(password);
-  nick = db_register_nick(parv[1], pass, salt, "Forbidden Nick");
+  strlcpy(nick->pass, pass, sizeof(nick->pass));
+  strlcpy(nick->nick, parv[1], sizeof(nick->nick));
+  DupString(nick->email, "Forbidden Nick");
   MyFree(pass);
-  if(nick == NULL)
+  
+  if(!db_register_nick(nick))
   {
     reply_user(service, client, NS_FORBID_FAIL, parv[1]);
     return;

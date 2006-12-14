@@ -39,6 +39,7 @@ enum db_queries
   INSERT_ACCOUNT,
   INSERT_NICK,
   DELETE_NICK,
+  DELETE_ACCOUNT,
   INSERT_NICKACCESS,
   GET_NICKACCESS,
   GET_ALL_NICKACCESS,
@@ -102,17 +103,15 @@ typedef struct query {
 void init_db();
 void db_load_driver();
 
-int   db_set_string(unsigned int, unsigned int, const char *);
-int   db_set_number(unsigned int, unsigned int, unsigned long);
-int   db_set_bool(unsigned int, unsigned int, unsigned char);
+int db_set_string(unsigned int, unsigned int, const char *);
+int db_set_number(unsigned int, unsigned int, unsigned long);
+int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
 struct Nick *db_find_nick(const char *);
-struct Nick *db_register_nick(const char *, const char *, const char *,
-    const char *);
-
-int   db_delete_nick(const char *);
-char  *db_get_nickname_from_id(unsigned int id);
+int db_register_nick(struct Nick *);
+int db_delete_nick(const char *);
+char *db_get_nickname_from_id(unsigned int id);
 unsigned int db_get_id_from_nick(const char *);
 
 int db_link_nicks(unsigned int, unsigned int);
@@ -123,8 +122,8 @@ int db_register_chan(struct Client *, char *);
 int db_delete_chan(const char *);
 struct RegChannel *db_find_chan(const char *);
 
-int  db_chan_access_add(struct ChannelAccessEntry*);
-int  db_chan_access_del(struct RegChannel *, int);
+int db_chan_access_add(struct ChannelAccessEntry*);
+int db_chan_access_del(struct RegChannel *, int);
 struct ChannelAccessEntry *db_chan_access_get(int, int);
 
 unsigned int db_get_id_from_chan(const char *);

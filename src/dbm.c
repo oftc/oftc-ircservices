@@ -42,6 +42,7 @@ query_t queries[QUERY_COUNT] = {
   { "INSERT INTO nickname (nick, user_id, reg_time, last_seen) VALUES "
     "(?v, ?d, ?d, ?d)", NULL, EXECUTE },
   { "DELETE FROM nickname WHERE lower(nick)=lower(?v)", NULL, EXECUTE },
+  { "DELETE FROM account WHERE id=?d", NULL, EXECUTE },
   { "INSERT INTO account_access (parent_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
   { "SELECT id, entry FROM account_access WHERE parent_id=?d", NULL, QUERY },
@@ -279,12 +280,11 @@ db_get_id_from_nick(const char *nick)
   Free(brc);
   Free(rc);
   
-  return 1;  
+  return TRUE;  
 }
 
-struct Nick *
-db_register_nick(const char *nick, const char *password, const char *salt,
-    const char *email)
+int
+db_register_nick(struct Nick *nick)
 {
   int exec, id;
 
@@ -292,21 +292,25 @@ db_register_nick(const char *nick, const char *password, const char *salt,
 
   TransBegin();
 
-  db_exec(exec, INSERT_ACCOUNT, password, salt, email, CurrentTime);
+  db_exec(exec, INSERT_ACCOUNT, nick->pass, nick->salt, nick->email, 
+      CurrentTime);
+
   if(exec != -1)
   {
     id = InsertID("account", "id");
-    db_exec(exec, INSERT_NICK, nick, id, CurrentTime, CurrentTime);
+    db_exec(exec, INSERT_NICK, nick->nick, id, CurrentTime, CurrentTime);
   }
 
   if(exec != -1)
   {
     TransCommit();
+    nick->id = id;
+    return TRUE;
   }
   else
   {
     TransRollback();
-    return NULL;
+    return FALSE;
   }
 }
 
@@ -314,17 +318,33 @@ int
 db_delete_nick(const char *nick)
 {
   int ret;
+  unsigned int id;
 
   /* TODO Do some stuff with constraints and transactions */
+  TransBegin();
+
+  id = db_get_id_from_nick(nick);
+  if(id <= 0)
+  {
+    TransRollback();
+    return FALSE;
+  }
 
   db_exec(ret, DELETE_NICK, nick);
 
-  if(ret == -1)
-    return FALSE;
+  if(ret != -1)
+    db_exec(ret, DELETE_ACCOUNT, id);
 
+  if(ret == -1)
+  {
+    TransRollback();
+    return FALSE;
+  }
+
+  TransCommit();
   execute_callback(on_nick_drop_cb, nick);
  
-  return 1;
+  return TRUE;
 }
 
 int
@@ -369,7 +389,7 @@ db_set_bool(unsigned int key, unsigned int id, unsigned char value)
 int
 db_list_add(unsigned int type, const void *value)
 {
-  int ret;
+  int ret = 0;
 
   switch(type)
   {
@@ -472,7 +492,29 @@ void *
 db_list_next(void *result, unsigned int type, void **entry)
 {
   struct DBResult *res = (struct DBResult *)result;
-  struct AKill *akillval = (struct AKill *)*entry;
+  struct AccessEntry *aeval;
+  struct AKill *akillval;
+  char *strval = (char*)*entry; 
+ 
+  switch(type)
+  {
+    case ACCESS_LIST:
+      aeval = MyMalloc(sizeof(struct AccessEntry));
+      *entry = aeval;
+      break;
+    case ADMIN_LIST:
+      strval = MyMalloc(255+1); /* XXX constant? */
+      *entry = strval;
+      break;
+    case AKILL_LIST:
+      akillval = MyMalloc(sizeof(struct AKill));
+      *entry = akillval;
+     break;
+    case CHACCESS_LIST:
+      break;
+    default:
+      assert(0 == 1);
+  }
 
   if(Fetch(res->rc, res->brc) == 0)
     return NULL;
