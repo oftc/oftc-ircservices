@@ -22,7 +22,7 @@
 #define PASSLEN         40
 #define SALTLEN         16
 #define DATALEN         255
-#define USERHOSTLEN     NICKLEN+USERLEN+1
+#define USERHOSTLEN     USERLEN+HOSTLEN+1+1
 #define USERHOST_REPLYLEN       (NICKLEN+HOSTLEN+USERLEN+5)
 
 #define IRC_MAXSID 3

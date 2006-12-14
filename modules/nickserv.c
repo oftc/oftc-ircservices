@@ -895,7 +895,7 @@ ns_on_nick_change(va_list args)
   }
 
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
-  if(check_list_entry("nickname_access", nick_p->id, userhost))
+  if(check_list_entry(ACCESS_LIST, nick_p->id, userhost))
   {
     ilog(L_DEBUG, "%s changed nick to %s(found access entry)", oldnick, user->name);
     SetOnAccess(user);
@@ -960,7 +960,7 @@ ns_on_newuser(va_list args)
   }
 
   snprintf(userhost, USERHOSTLEN, "%s@%s", newuser->username, newuser->host);
-  if(check_list_entry("nickname_access", nick_p->id, userhost))
+  if(check_list_entry(ACCESS_LIST, nick_p->id, userhost))
   {
     ilog(L_DEBUG, "new user: %s(found access entry)", newuser->name);
     SetOnAccess(newuser);

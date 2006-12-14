@@ -266,13 +266,12 @@ replace_string(char *str, const char *value)
 }
 
 int
-check_list_entry(const char *table, unsigned int id, const char *value)
+check_list_entry(unsigned int type, unsigned int id, const char *value)
 {
   struct AccessEntry *entry;
-  void *ptr;
+  void *ptr, *first;
 
-#if 0
-// XXX  ptr = db_list_first(table, ACCESS_LIST, id, (void**)&entry);
+  first = ptr = db_list_first(type, id, (void**)&entry);
 
   while(ptr != NULL)
   {
@@ -282,7 +281,7 @@ check_list_entry(const char *table, unsigned int id, const char *value)
           value);
       MyFree(entry->value);
       MyFree(entry);
-      // XXX db_list_done(ptr);
+      db_list_done(first);
       return TRUE;
     }
     
@@ -290,10 +289,9 @@ check_list_entry(const char *table, unsigned int id, const char *value)
         value);
     MyFree(entry->value);
     MyFree(entry);
-// XXX    ptr = db_list_next(ptr, ACCESS_LIST, (void**)&entry);
+    ptr = db_list_next(ptr, type, (void**)&entry);
   }
-// XXX  db_list_done(ptr);
-#endif
+  db_list_done(first);
   return FALSE;
 }
 

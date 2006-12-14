@@ -435,11 +435,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   switch(type)
   {
     case ACCESS_LIST:
-      if(param > 0)
-        query = GET_NICKACCESS;
-      else
-        query = GET_ALL_NICKACCESS;
-      
+      query = GET_NICKACCESS;
       aeval = MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
       brc = Bind("?d?ps", &aeval->id, &aeval->value);
