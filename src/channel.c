@@ -60,6 +60,8 @@ make_channel(const char *chname)
   strlcpy(chptr->chname, chname, sizeof(chptr->chname));
   dlinkAdd(chptr, &chptr->node, &global_channel_list);
 
+  chptr->regchan = db_find_chan(chname);
+
   hash_add_channel(chptr);
 
   return chptr;

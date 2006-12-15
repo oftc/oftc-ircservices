@@ -57,7 +57,7 @@ query_t queries[QUERY_COUNT] = {
     "flag_restricted_ops, flag_topic_lock, flag_secure, flag_verbose, url, "
     "email, topic, founder, successor FROM channel WHERE "
     "lower(channel)=lower(?v)", NULL, QUERY },
-  { "INSERT INTO channel (channel, founder) VALUES(?d, ?d)", NULL, EXECUTE },
+  { "INSERT INTO channel (channel, founder) VALUES(?v, ?d)", NULL, EXECUTE },
   { "INSERT INTO channel_access (nick_id, channel_id, level) VALUES (?d, ?d, ?d)", 
     NULL, EXECUTE } ,
   { "UPDATE channel_access SET level=?d WHERE id=?d", NULL, EXECUTE },
@@ -66,13 +66,10 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
     "channel_id=?d AND nick_id=?d", NULL, QUERY },
   { "DELETE FROM channel WHERE lower(channel)=lower(?v)", NULL, EXECUTE },
-  { "UPDATE channel SET founder="
-    "(SELECT id FROM nickname WHERE lower(nick)=lower(?s)) WHERE "
-    "lower(channel)=lower(?s)", NULL, EXECUTE },
+  { "UPDATE channel SET founder=?d WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET founder=successor, successor=0 WHERE successor=?d", 
     NULL, EXECUTE },
-  { "UPDATE channel SET successor=(SELECT id FROM nickname WHERE "
-    "lower(nick)=lower(?v) WHERE channel=?v", NULL, EXECUTE },
+  { "UPDATE channel SET successor=?d WHERE id=?d", NULL, EXECUTE },
   { "SELECT id, mask, reason, setter, time, duration FROM akill WHERE ?v "
     "ILIKE mask", NULL, QUERY },
   { "INSERT INTO akill (mask, reason, setter, time, duration) "
@@ -87,10 +84,10 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE account SET language=?d WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET last_quit_time=?d WHERE id=?d", NULL, EXECUTE },
   { "UPDATE nickname SET last_seen=?d WHERE user_id=?d", NULL, EXECUTE },
-  { "UPDATE account SET flag_cloak_enabled=?s WHERE id=?d", NULL, EXECUTE },
-  { "UPDATE account SET flag_secure=?s WHERE id=?d", NULL, EXECUTE },
-  { "UPDATE account SET flag_enforce=?s WHERE id=?d", NULL, EXECUTE },
-  { "UPDATE account SET flag_forbidden=?s WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE account SET flag_cloak_enabled=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE account SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE account SET flag_enforce=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE account SET flag_forbidden=?B WHERE id=?d", NULL, EXECUTE },
   { "DELETE FROM account_access WHERE parent_id=?d AND entry=?v", NULL,
     EXECUTE },
   { "DELETE FROM account_access WHERE parent_id=?d", NULL, EXECUTE },
@@ -107,7 +104,18 @@ query_t queries[QUERY_COUNT] = {
     "flag_cloak_enabled, flag_admin, flag_email_verified, language, last_host, "
     "last_realname, last_quit_msg, last_quit_time, reg_time FROM account "
     "WHERE id=?d", NULL, EXECUTE },
-  { "SELECT count(*) FROM nickname WHERE user_id=?d", NULL, QUERY},
+  { "SELECT count(*) FROM nickname WHERE user_id=?d", NULL, QUERY },
+  { "UPDATE channel SET description=?v WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET url=?v WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET email=?v WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET entrymsg=?v WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET topic=?v WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_forbidden=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_private=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_restricted_ops=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_topic_lock=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_verbose=?B WHERE id=?d", NULL, EXECUTE },
 };
 
 void
@@ -405,7 +413,7 @@ db_set_bool(unsigned int key, unsigned int id, unsigned char value)
 {
   int ret;
 
-  db_exec(ret, key, value ? "true": "false", id);
+  db_exec(ret, key, value, id);
 
   if(ret == -1)
     return FALSE;
