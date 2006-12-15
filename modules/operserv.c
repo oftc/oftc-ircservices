@@ -322,8 +322,8 @@ m_admin_add(struct Service *service, struct Client *client,
     reply_user(service, client, OS_NICK_NOTREG, parv[1]);
     return;
   }
-  nick->flags |= NS_FLAG_ADMIN;
-  db_set_number("nickname", nick->id, "flags", nick->flags);
+  nick->admin = TRUE;
+  db_set_bool(SET_NICK_ADMIN, nick->id, TRUE);
   reply_user(service, client, OS_ADMIN_ADDED, nick->nick);
   free_nick(nick);
 }
@@ -332,19 +332,19 @@ static void
 m_admin_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct Nick *currnick;
-  void *handle;
+  char *currnick;
+  void *first, *handle;
   int i = 1;
 
-  handle = db_list_first("nickname", NICK_FLAG_LIST, NS_FLAG_ADMIN, 
-      (void**)&currnick);
+  first = handle = db_list_first(ADMIN_LIST, 0, (void**)&currnick);
   while(handle != NULL)
   {
-    reply_user(service, client, OS_ADMIN_LIST, i++, currnick->nick);
-    free_nick(currnick);
-    handle = db_list_next(handle, NICK_FLAG_LIST, (void **)&currnick);
+    reply_user(service, client, OS_ADMIN_LIST, i++, currnick);
+    MyFree(currnick);
+    handle = db_list_next(handle, ADMIN_LIST, (void **)&currnick);
   }
-  db_list_done(handle);
+  if(first != NULL)
+  db_list_done(first);
 }
 
 static void
@@ -355,14 +355,14 @@ m_admin_del(struct Service *service, struct Client *client,
     
   nick = db_find_nick(parv[1]);
     
-  if(nick == NULL || !(nick->flags & NS_FLAG_ADMIN))
+  if(nick == NULL || !(nick->admin))
   {
     reply_user(service, client, OS_ADMIN_NOTADMIN, parv[1]);
     return;
   }
   reply_user(service, client, OS_ADMIN_DEL, nick->nick);
-  nick->flags &= ~NS_FLAG_ADMIN;
-  db_set_number("nickname", nick->id, "flags", nick->flags);
+  nick->admin = FALSE;
+  db_set_bool(SET_NICK_ADMIN, nick->id, FALSE);
 
   free_nick(nick);
 }
@@ -384,9 +384,9 @@ m_akill_add(struct Service *service, struct Client *client,
   akill = MyMalloc(sizeof(struct AKill));
   DupString(akill->mask, parv[1]);
   DupString(akill->reason, parv[2]);
-  akill->setter = client->nickname;
+  akill->setter = client->id;
 
-  akill = db_add_akill(akill);
+//  akill = db_add_akill(akill);
   /* XXX Execute the akill here */
   free_akill(akill);
 }
@@ -396,18 +396,19 @@ m_akill_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct AKill *akill;
-  void *handle;
+  void *handle, *first;
   int i = 1;
 
-  handle = db_list_first("akill", AKILL_LIST, 0, (void**)&akill);
+  first = handle = db_list_first(AKILL_LIST, 0, (void**)&akill);
   while(handle != NULL)
   {
     reply_user(service, client, OS_AKILL_LIST, i++, akill->mask, akill->reason,
-        akill->setter->nick, "sometime", "sometime");
+        akill->setter, "sometime", "sometime");
     free_akill(akill);
     handle = db_list_next(handle, AKILL_LIST, (void**)&akill);
   }
-  db_list_done(handle);
+  if(first)
+    db_list_done(first);
 }
 
 static void

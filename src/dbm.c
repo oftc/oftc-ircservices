@@ -116,6 +116,7 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE channel SET flag_topic_lock=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_verbose=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE account SET flag_admin=?B WHERE id=?d", NULL, EXECUTE },
 };
 
 void

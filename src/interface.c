@@ -325,7 +325,7 @@ free_akill(struct AKill *akill)
   ilog(L_DEBUG, "Freeing akill %p for %s\n", akill, akill->mask);
   MyFree(akill->mask);
   MyFree(akill->reason);
-  free_nick(akill->setter);
+  free(akill->setter);
   MyFree(akill);
 }
 
