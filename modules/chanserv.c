@@ -580,7 +580,7 @@ m_set_founder(struct Service *service, struct Client *client,
     reply_user(service, client, CS_SET_FOUNDER, parv[1], parv[2]);
     ilog(L_NOTICE, "%s (%s@%s) set founder of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
-    regchptr->founder = db_get_id_from_nick(parv[2]); 
+    regchptr->founder = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK); 
   }
   else
   {
@@ -655,7 +655,7 @@ m_set_successor(struct Service *service, struct Client *client,
     reply_user(service, client, CS_SET_SUCC, parv[1], parv[2]);
     ilog(L_NOTICE, "%s (%s@%s) set successor of %s to %s", 
       client->name, client->username, client->host, parv[1], parv[2]);
-   regchptr->successor = db_get_id_from_nick(parv[2]); 
+   regchptr->successor = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK); 
   }
   else
   {
@@ -745,13 +745,14 @@ m_access_add(struct Service *service, struct Client *client,
     return;
   }
 
-  if ( (cae = db_chan_access_get(regchptr->id, db_get_id_from_nick(parv[2]))) == NULL)
+  if ( (cae = db_chan_access_get(regchptr->id, db_get_id_from_name(parv[2],
+            GET_NICKID_FROM_NICK))) == NULL)
   {
     cae = MyMalloc(sizeof(struct ChannelAccessEntry));
     cae->channel_id = regchptr->id;
     cae->id = 0;
     cae->level = 0;
-    cae->nick_id = db_get_id_from_nick(parv[2]);
+    cae->nick_id = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK);
     update = 0;
   } else
     update = 1;
@@ -813,7 +814,7 @@ m_access_del(struct Service *service, struct Client *client,
     return;
   }
 
-  nickid = db_get_id_from_nick(parv[2]);
+  nickid = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK);
   if (nickid == 0)
   {
     reply_user(service, client, CS_FIXME);
@@ -943,7 +944,8 @@ m_set_desc(struct Service *service, struct Client *client,
     strncat(desc, " ", 1);
   }
 
-  if (db_set_string("channel",db_get_id_from_chan(parv[1]), "description", desc) == 0)
+  if(db_set_string("channel", db_get_id_from_name(parv[1], 
+          GET_CHANID_FROM_CHAN), "description", desc) == 0)
   {
     reply_user(service, client, CS_SET_DESC, parv[1], desc);
     ilog(L_NOTICE, "%s (%s@%s) changed description of %s to %s", 

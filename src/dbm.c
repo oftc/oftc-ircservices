@@ -53,12 +53,11 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
     "channel_id=?d", NULL, QUERY },
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
-  { "SELECT id, channel, description, entrymsg, flags, url, email, topic, "
-    "founder, successor FROM channel WHERE lower(channel)=lower(?v)", 
-    NULL, QUERY },
-  { "INSERT INTO channel (channel, founder) VALUES(?d, "
-          "(SELECT id FROM nickname WHERE lower(nick)=lower(?v)))", 
-          NULL, EXECUTE },
+  { "SELECT id, channel, description, entrymsg, flag_forbidden, flag_private, "
+    "flag_restricted_ops, flag_topic_lock, flag_secure, flag_verbose, url, "
+    "email, topic, founder, successor FROM channel WHERE "
+    "lower(channel)=lower(?v)", NULL, QUERY },
+  { "INSERT INTO channel (channel, founder) VALUES(?d, ?d)", NULL, EXECUTE },
   { "INSERT INTO channel_access (nick_id, channel_id, level) VALUES (?d, ?d, ?d)", 
     NULL, EXECUTE } ,
   { "UPDATE channel_access SET level=?d WHERE id=?d", NULL, EXECUTE },
@@ -268,12 +267,12 @@ db_get_nickname_from_id(unsigned int id)
 }
 
 unsigned int
-db_get_id_from_nick(const char *nick)
+db_get_id_from_name(const char *name, unsigned int type)
 {
   yada_rc_t *rc, *brc;
   int ret;
 
-  db_query(rc, GET_NICKID_FROM_NICK, nick);
+  db_query(rc, type, name);
 
   if(rc == NULL)
     return 0;
@@ -281,7 +280,7 @@ db_get_id_from_nick(const char *nick)
   brc = Bind("?d", &ret);
   if(Fetch(rc, brc) == 0)
   {
-    printf("db_get_id_from_nick: '%s' not found.\n", nick);
+    printf("db_get_id_from_name: '%s' not found.\n", name);
     Free(brc);
     Free(rc);
     return 0;
@@ -348,10 +347,10 @@ db_delete_nick(const char *nick)
   int ret;
   unsigned int id;
 
-  /* TODO Do some stuff with constraints and transactions */
+  /* TODO Do some(more?) stuff with constraints and transactions */
   TransBegin();
 
-  id = db_get_id_from_nick(nick);
+  id = db_get_id_from_name(nick, GET_NICKID_FROM_NICK);
   if(id <= 0)
   {
     TransRollback();
@@ -433,8 +432,8 @@ db_list_add(unsigned int type, const void *value)
       struct AKill *akill = (struct AKill *)value;
 
       db_exec(ret, INSERT_AKILL, akill->mask, akill->reason, 
-          db_get_id_from_nick(akill->setter), akill->time_set, 
-          akill->duration);
+          db_get_id_from_name(akill->setter, GET_NICKID_FROM_NICK), 
+          akill->time_set, akill->duration);
       break;
     }
     case CHACCESS_LIST:
@@ -641,150 +640,74 @@ db_unlink_nick(unsigned int id)
   return newid;
 }
 
-#if 0
-unsigned int
-db_get_id_from_chan(const char *chan)
-{
-  yada_rc_t * result;
-  char *escchan;
-  int id;
-
-  if(dbi_driver_quote_string_copy(Database.driv, chan, &escchan) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return 0;
-  }
-
-  MyFree(escchan);
-  
-  if(result == NULL)
-    return 0;
-
-  if(yada_rc_t *_get_numrows(result) == 0)
-  {
-    printf("db: WTF. Didn't find channel entry for %s\n", chan);
-    yada_rc_t *_free(result);
-    return 0;
-  }
-
-  yada_rc_t *_first_row(result);
-  yada_rc_t *_get_fields(result, "id.%ui", &id);
-  yada_rc_t *_free(result);
-
-  return id;
-}
-
 struct RegChannel *
 db_find_chan(const char *channel)
 {
-  yada_rc_t * result;
-  char *escchannel = NULL;
-  char *findchannel;
+  yada_rc_t *rc, *brc;
   struct RegChannel *channel_p;
-  
+  char *retchan;
+
   assert(channel != NULL);
 
-  if(dbi_driver_quote_string_copy(Database.driv, channel, &escchannel) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return NULL;
-  }
+  db_query(rc, GET_FULL_CHAN, channel);
 
-  MyFree(escchannel);
-  
-  if(result == NULL)
+  if(rc == NULL)
     return NULL;
-  
-  if(yada_rc_t *_get_numrows(result) == 0)
-  {
-    printf("db: Channel %s not found\n", channel);
-    yada_rc_t *_free(result);
-    return NULL;
-  }
-
+ 
   channel_p = MyMalloc(sizeof(struct RegChannel));
-  yada_rc_t *_first_row(result);
-  yada_rc_t *_get_fields(result, 
-      "id.%ui channel.%S description.%S entrymsg.%S flags.%ui "
-      "url.%S email.%S topic.%S founder.%ui successor.%ui",
-      &channel_p->id, &findchannel, &channel_p->description, 
-      &channel_p->entrymsg, &channel_p->flags, &channel_p->url,
-      &channel_p->email, &channel_p->topic, &channel_p->founder, 
-      &channel_p->successor);
+ 
+  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?ps?ps?ps?d?d",
+      &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
+      &channel_p->forbidden, &channel_p->priv, &channel_p->restricted_ops,
+      &channel_p->topic_lock, &channel_p->secure, &channel_p->verbose, 
+      &channel_p->url, &channel_p->email, &channel_p->topic, 
+      &channel_p->founder, &channel_p->successor);
 
-  strlcpy(channel_p->channel, findchannel, sizeof(channel_p->channel));
+  if(Fetch(rc, brc) == 0)
+  {
+    printf("db_find_chan: '%s' not found.\n", channel);
+    Free(brc);
+    Free(rc);
+    return NULL;
+  }
 
-  MyFree(findchannel);
+  strlcpy(channel_p->channel, retchan, sizeof(channel_p->channel));
 
-  yada_rc_t *_free(result);
+  if(channel_p->description != NULL)
+    DupString(channel_p->description, channel_p->description);
+  if(channel_p->entrymsg != NULL)
+    DupString(channel_p->entrymsg, channel_p->entrymsg);
+  if(channel_p->url != NULL)
+    DupString(channel_p->url, channel_p->url);
+  if(channel_p->email != NULL)
+    DupString(channel_p->email, channel_p->email);
+  if(channel_p->topic != NULL)
+    DupString(channel_p->topic, channel_p->topic);
+
+  printf("db_find_chan: Found nick %s\n", channel_p->channel);
+
+  Free(brc);
+  Free(rc);
 
   return channel_p;
 }
 
 int
-db_register_chan(struct Client *client, char *channelname)
+db_register_chan(struct RegChannel *chan)
 {
-  char *escchannel = NULL;
-  char *escfounder = NULL;
-  yada_rc_t * result;
-  
-  if(dbi_driver_quote_string_copy(Database.driv, channelname, &escchannel) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    MyFree(escchannel);
-    return -1;
-  }
+  int ret;
 
-  if(dbi_driver_quote_string_copy(Database.driv, client->name, &escfounder) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    MyFree(escchannel);
-    MyFree(escfounder);
-    return -1;
-  }
-  
-  MyFree(escchannel);
-  MyFree(escfounder);
- 
-  if(result == NULL)
-    return 0;
+  db_exec(ret, INSERT_CHAN, chan->channel, chan->founder);
 
-  yada_rc_t *_free(result);
+  if(ret == -1)
+    return FALSE;
 
-  return 0;
+  chan->id = InsertID("channel", "id");
+
+  return TRUE;
 }
 
-int
-db_chan_access_add(struct ChannelAccessEntry *accessptr)
-{
-  yada_rc_t * result;
-
-  if (accessptr->id == 0)
-  {
-  }
-  else
-  {
-  }
-
-  if(result == NULL)
-    return -1;
-
-  yada_rc_t *_free(result);
-  return 0;
-}
-
-int
-db_chan_access_del(struct RegChannel *regchptr, int nickid)
-{
-  yada_rc_t * result;
-  
-  if(result == NULL)
-    return -1;
-
-  yada_rc_t *_free(result);
-  return 0;
-}
-
+#if 0
 struct ChannelAccessEntry *
 db_chan_access_get(int channel_id, int nickid)
 {
@@ -811,30 +734,21 @@ db_chan_access_get(int channel_id, int nickid)
   yada_rc_t *_free(result);
   return cae;
 }
+#endif
 
 int
 db_delete_chan(const char *chan)
 {
-  yada_rc_t * result;
-  char *escchan;
+  int ret;
 
-  if(dbi_driver_quote_string_copy(Database.driv, chan, &escchan) == 0)
-  {
-    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
-    return -1;
-  }
+  db_exec(ret, DELETE_CHAN, chan);
 
-  {
-    MyFree(escchan);
-    return 0;
-  }  
-  
-  MyFree(escchan);
-  yada_rc_t *_free(result);
-
-  return 0;
+  if(ret == -1)
+    return FALSE;
+  return TRUE;
 }
 
+#if 0
 int
 db_set_founder(const char *channel, const char *nickname)
 {
@@ -871,8 +785,7 @@ db_chan_success_founder(const char *nickname)
 
   int successor_id;
 
-  successor_id = db_get_id_from_nick(nickname);
-
+  successor_id = db_get_id_from_name(nickname, GET_NICKID_FROM_NICK);
 
   result = db_query("", "channel", successor_id);
   if (result != NULL)

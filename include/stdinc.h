@@ -19,6 +19,7 @@
 
 #include "client.h"
 #include "connection.h"
+#include "chanserv.h"
 #include "dbm.h"
 #include "hash.h"
 #include "packet.h"
@@ -35,5 +36,4 @@
 #include "operserv.h"
 #include "interface.h"
 #include "nickserv.h"
-#include "chanserv.h"
 #include "crypt.h"

@@ -1,7 +1,7 @@
 DROP TABLE channel;
 CREATE TABLE channel(
   id                    SERIAL PRIMARY KEY,
-  channel               VARCHAR(30) NOT NULL,
+  channel               VARCHAR(255) NOT NULL,
   founder               INTEGER NOT NULL REFERENCES account(id),
   successor             INTEGER REFERENCES account(id),
   flag_forbidden        BOOLEAN NOT NULL DEFAULT 'False', -- channel is forbidden.  it may not be used

@@ -14,46 +14,13 @@ struct RegChannel
   char *url;
   char *email;
   char *topic;
-  unsigned int flags;
+  char forbidden;
+  char priv;
+  char restricted_ops;
+  char topic_lock;
+  char secure;
+  char verbose;
 };
-
-/* channel flag defines */
-#define CHSET_KEEPTOPIC  0x00000001
-#define CHSET_SECUREOPS  0x00000002
-#define CHSET_PRIVATE    0x00000004
-#define CHSET_TOPICLOCK  0x00000008
-#define CHSET_RESTRICTED 0x00000010
-#define CHSET_LEAVEOPS   0x00000020
-#define CHSET_SECURE     0x00000040
-#define CHSET_VERBOSE    0x00000800
-
-#define  SetChanKeeptopic(x)    ((x)->flags |= CHSET_KEEPTOPIC)
-#define  SetChanTopiclock(x)    ((x)->flags |= CHSET_TOPICLOCK)
-#define  SetChanPrivate(x)      ((x)->flags |= CHSET_PRIVATE)
-#define  SetChanRestricted(x)   ((x)->flags |= CHSET_RESTRICTED)
-#define  SetChanSecure(x)       ((x)->flags |= CHSET_SECURE)
-#define  SetChanSecureops(x)    ((x)->flags |= CHSET_SECUREOPS)
-#define  SetChanLeaveops(x)     ((x)->flags |= CHSET_LEAVEOPS)
-#define  SetChanVerbose(x)      ((x)->flags |= CHSET_VERBOSE)
-
-#define  ClearChanKeeptopic(x)    ((x)->flags &= ~CHSET_KEEPTOPIC)
-#define  ClearChanTopiclock(x)    ((x)->flags &= ~CHSET_TOPICLOCK)
-#define  ClearChanPrivate(x)      ((x)->flags &= ~CHSET_PRIVATE)
-#define  ClearChanRestricted(x)   ((x)->flags &= ~CHSET_RESTRICTED)
-#define  ClearChanSecure(x)       ((x)->flags &= ~CHSET_SECURE)
-#define  ClearChanSecureops(x)    ((x)->flags &= ~CHSET_SECUREOPS)
-#define  ClearChanLeaveops(x)     ((x)->flags &= ~CHSET_LEAVEOPS)
-#define  ClearChanVerbose(x)      ((x)->flags &= ~CHSET_VERBOSE)
-
-#define  IsChanKeeptopic(x)    ((x)->flags & CHSET_KEEPTOPIC)
-#define  IsChanTopiclock(x)    ((x)->flags & CHSET_TOPICLOCK)
-#define  IsChanPrivate(x)      ((x)->flags & CHSET_PRIVATE)
-#define  IsChanRestricted(x)   ((x)->flags & CHSET_RESTRICTED)
-#define  IsChanSecure(x)       ((x)->flags & CHSET_SECURE)
-#define  IsChanSecureops(x)    ((x)->flags & CHSET_SECUREOPS)
-#define  IsChanLeaveops(x)     ((x)->flags & CHSET_LEAVEOPS)
-#define  IsChanVerbose(x)      ((x)->flags & CHSET_VERBOSE)
-
 
 #define CHACCESS_BAN        0x0001
 #define CHACCESS_AUTODEOP   0x0002
