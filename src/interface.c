@@ -273,6 +273,9 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
 
   first = ptr = db_list_first(type, id, (void**)&entry);
 
+  if(ptr == NULL)
+    return FALSE;
+
   while(ptr != NULL)
   {
     if(match(entry->value, value))

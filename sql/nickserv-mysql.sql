@@ -36,5 +36,5 @@ CREATE TABLE account_access (
   id              INTEGER PRIMARY KEY auto_increment,
   parent_id       INTEGER NOT NULL,
   entry           VARCHAR(255) NOT NULL,
-  FOREIGN KEY (parent_id) REFERENCES account(id)
+  FOREIGN KEY (parent_id) REFERENCES account(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;

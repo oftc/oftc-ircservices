@@ -716,7 +716,6 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_link(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-#if 0
   struct Nick *nick, *master_nick;
 
   nick = client->nickname;
@@ -733,7 +732,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(db_link_nicks(master_nick->id, nick->id) != 0)
+  if(!db_link_nicks(master_nick->id, nick->id))
   {
     free_nick(master_nick);
     reply_user(service, client, NS_LINK_FAIL, parv[1]);
@@ -744,28 +743,17 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
   reply_user(service, client, NS_LINK_OK, nick->nick, parv[1]);
   free_nick(nick);
   nick = NULL;
-#endif
 }
 
 static void
 m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
-  struct Nick *unlinked_nick;
 
-//  if(!db_nick_is_linked(client->name))
-//  {
- //   reply_user(service, client, NS_UNLINK_NOLINK, client->name);
- //   return;
- // }
-/*  if((unlinked_nick = db_unlink_nick(client->name)) != NULL)
-  {
+  if((nick->id = db_unlink_nick(nick->id)) > 0)
     reply_user(service, client, NS_UNLINK_OK, client->name);
-    free_nick(nick);
-    client->nickname = unlinked_nick;
-  }
   else
-    reply_user(service, client, NS_UNLINK_FAILED, client->name);*/
+    reply_user(service, client, NS_UNLINK_FAILED, client->name);
 }
 
 static void
@@ -866,17 +854,25 @@ ns_on_nick_change(va_list args)
   char *oldnick       = va_arg(args, char *);
   struct Nick *nick_p;
   char userhost[USERHOSTLEN+1]; 
+  int oldid = 0;
 
   ilog(L_DEBUG, "%s changing nick to %s", oldnick, user->name);
  
   dlinkFindDelete(&nick_enforce_list, user);
+
   if(IsIdentified(user))
   {
-    /* XXX Check links */
     user->service_handler = UNREG_HANDLER;
     ClearIdentified(user);
     /* XXX Use unidentify event */
     send_umode(nickserv, user, "-R");
+
+    if(user->nickname)
+    {
+      oldid = user->nickname->id;
+      free_nick(user->nickname);
+      user->nickname = NULL;
+    }
   }
 
   if((nick_p = db_find_nick(user->name)) == NULL)
@@ -894,10 +890,18 @@ ns_on_nick_change(va_list args)
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
+  if(oldid == nick_p->id)
+  {
+    user->nickname = nick_p;
+    identify_user(user);
+    return pass_callback(ns_nick_hook, user, oldnick);
+  }
+ 
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
   if(check_list_entry(ACCESS_LIST, nick_p->id, userhost))
   {
-    ilog(L_DEBUG, "%s changed nick to %s(found access entry)", oldnick, user->name);
+    ilog(L_DEBUG, "%s changed nick to %s(found access entry)", oldnick, 
+        user->name);
     SetOnAccess(user);
     if(!nick_p->secure)
     {

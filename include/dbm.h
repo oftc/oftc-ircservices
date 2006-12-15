@@ -75,6 +75,9 @@ enum db_queries
   DELETE_NICKACCESS,
   DELETE_ALL_NICKACCESS,
   DELETE_NICKACCESS_IDX,
+  SET_NICK_LINK,
+  INSERT_NICK_CLONE,
+  GET_NICK_COUNT,
   QUERY_COUNT
 };
 
@@ -115,8 +118,7 @@ char *db_get_nickname_from_id(unsigned int id);
 unsigned int db_get_id_from_nick(const char *);
 
 int db_link_nicks(unsigned int, unsigned int);
-int db_nick_is_linked(const char *);
-struct Nick *db_unlink_nick(const char *);
+unsigned int db_unlink_nick(unsigned int);
 
 int db_register_chan(struct Client *, char *);
 int db_delete_chan(const char *);

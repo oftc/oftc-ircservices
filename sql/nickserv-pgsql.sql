@@ -33,7 +33,7 @@ CREATE TABLE nickname (
 DROP TABLE account_access;
 CREATE TABLE account_access (
   id                  SERIAL PRIMARY KEY,
-  parent_id           INTEGER REFERENCES account(id) NOT NULL,
+  parent_id           INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
   entry               VARCHAR(255) NOT NULL,
   UNIQUE (id, entry)
 );

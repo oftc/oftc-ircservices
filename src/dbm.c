@@ -99,6 +99,16 @@ query_t queries[QUERY_COUNT] = {
           "(SELECT id FROM account_access AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM account_access AS b WHERE b.id < a.id AND "
           "b.parent_id = ?d) AND parent_id = ?d)", NULL, EXECUTE },
+  { "UPDATE nickname SET user_id=?d WHERE user_id=?d", NULL, EXECUTE },
+  { "INSERT INTO account (password, salt, url, email, cloak, flag_enforce, "
+    "flag_secure, flag_verified, flag_forbidden, flag_cloak_enabled, "
+    "flag_admin, flag_email_verified, language, last_host, last_realname, "
+    "last_quit_msg, last_quit_time, reg_time) SELECT password, salt, url, "
+    "email, cloak, flag_enforce, flag_secure, flag_verified, flag_forbidden, "
+    "flag_cloak_enabled, flag_admin, flag_email_verified, language, last_host, "
+    "last_realname, last_quit_msg, last_quit_time, reg_time FROM account "
+    "WHERE id=?d", NULL, EXECUTE },
+  { "SELECT count(*) FROM nickname WHERE user_id=?d", NULL, QUERY},
 };
 
 void
@@ -314,6 +324,24 @@ db_register_nick(struct Nick *nick)
   }
 }
 
+static int
+db_get_num_nicks(unsigned int id)
+{
+  int count;
+  yada_rc_t *rc, *brc;
+
+  brc = Bind("?d", &count);
+  db_query(rc, GET_NICK_COUNT, id);
+
+  if(rc == NULL)
+    return 0;
+
+  if(Fetch(rc, brc) == 0)
+    return 0;
+
+  return count;
+}
+
 int
 db_delete_nick(const char *nick)
 {
@@ -332,7 +360,7 @@ db_delete_nick(const char *nick)
 
   db_exec(ret, DELETE_NICK, nick);
 
-  if(ret != -1)
+  if(ret != -1 && db_get_num_nicks(id) == 0)
     db_exec(ret, DELETE_ACCOUNT, id);
 
   if(ret == -1)
@@ -565,6 +593,52 @@ db_list_del_index(unsigned int type, unsigned int id, unsigned int index)
     return 0;
 
   return ret;
+}
+
+int    
+db_link_nicks(unsigned int master, unsigned int child)
+{
+  int ret;
+
+  TransBegin();
+
+  db_exec(ret, SET_NICK_LINK, master, child);
+  if(ret != -1)
+    db_exec(ret, DELETE_ACCOUNT, child);
+
+  if(ret == -1)
+  {
+    TransRollback();
+    return FALSE;
+  }
+
+  TransCommit();
+  return TRUE;
+}
+
+unsigned int 
+db_unlink_nick(unsigned int id)
+{
+  int ret;
+  unsigned int newid;
+
+  TransBegin();
+
+  db_exec(ret, INSERT_NICK_CLONE, id);
+  if(ret != -1)
+  {
+    newid = InsertID("account", "id");
+    db_exec(ret, SET_NICK_LINK, id, newid);
+  }
+
+  if(ret == -1)
+  {
+    TransRollback();
+    return 0;
+  }
+  
+  TransCommit();
+  return newid;
 }
 
 #if 0
