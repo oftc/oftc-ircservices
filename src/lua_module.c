@@ -114,7 +114,7 @@ m_lua(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     printf("m_lua: LUA ERROR: %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);
-    reply_user(service, client, 0, "You broke teh lua.");
+    reply_user(service, service, client, 0, "You broke teh lua.");
   }
 }
 
@@ -313,7 +313,7 @@ lua_reply_user(lua_State *L)
   message = luaL_checkstring(L, 3);
   param = luaL_checkstring(L, 4);
   
-  reply_user(lua_service, client, 0, message, param);
+  reply_user(lua_service, lua_service, client, 0, message, param);
 
   return 0;
 }
@@ -324,7 +324,7 @@ lua_load_language(lua_State *L)
   struct Service *lua_service = check_service(L, 1);
   const char *language = luaL_checkstring(L, 2);
   
-  load_language(lua_service, language);
+  load_language(lua_service->languages, language);
 
   return 0;
 }
@@ -335,7 +335,7 @@ lua_language_name(lua_State *L)
   struct Service *lua_service = check_service(L, 1);
   const int language = luaL_checkinteger(L, 2);
 
-  lua_pushstring(L, lua_service->language_table[language][0]);
+  lua_pushstring(L, lua_service->languages[language].name);
 
   return 1;
 }

@@ -177,7 +177,7 @@ INIT_MODULE(nickserv, "$Revision$")
   dlinkAdd(nickserv, &nickserv->node, &services_list);
   hash_add_service(nickserv);
   introduce_service(nickserv);
-  load_language(nickserv, "nickserv.en");
+  load_language(nickserv->languages, "nickserv.en");
 //  load_language(nickserv, "nickserv.rude");
 //  load_language(nickserv, "nickserv.de");
 
@@ -256,19 +256,19 @@ m_register(struct Service *service, struct Client *client,
  
   if(strncasecmp(client->name, "guest", 5) == 0)
   {
-    reply_user(service, client, NS_NOREG_GUEST, client->name);
+    reply_user(service, service, client, NS_NOREG_GUEST, client->name);
     return;
   }
 
   if(db_is_forbid(client->name))
   {
-    reply_user(service, client, NS_NOREG_FORBID, client->name);
+    reply_user(service, service, client, NS_NOREG_FORBID, client->name);
     return;
   }
     
   if((nick = db_find_nick(client->name)) != NULL)
   {
-    reply_user(service, client, NS_ALREADY_REG, client->name); 
+    reply_user(service, service, client, NS_ALREADY_REG, client->name); 
     free_nick(nick);
     return;
   }
@@ -289,13 +289,13 @@ m_register(struct Service *service, struct Client *client,
     client->nickname = nick;
     identify_user(client);
 
-    reply_user(service, client, NS_REG_COMPLETE, client->name);
+    reply_user(service, service, client, NS_REG_COMPLETE, client->name);
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
         client->username, client->host, nick->nick);
 
     return;
   }
-  reply_user(service, client, NS_REG_FAIL, client->name);
+  reply_user(service, service, client, NS_REG_FAIL, client->name);
 }
 
 
@@ -308,7 +308,7 @@ m_drop(struct Service *service, struct Client *client,
 {
   if(!IsIdentified(client)) 
   {
-    reply_user(service, client, NS_NEED_IDENTIFY, client->name);
+    reply_user(service, service, client, NS_NEED_IDENTIFY, client->name);
   }
 
   if(db_delete_nick(client->name)) 
@@ -317,7 +317,7 @@ m_drop(struct Service *service, struct Client *client,
     ClearIdentified(client);
     send_umode(nickserv, client, "-R");
 
-    reply_user(service, client, NS_NICK_DROPPED, client->name);
+    reply_user(service, service, client, NS_NICK_DROPPED, client->name);
     global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
       client->username, client->host, client->name);
   } 
@@ -325,7 +325,7 @@ m_drop(struct Service *service, struct Client *client,
   {
     global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", client->name, 
       client->username, client->host, client->name);
-    reply_user(service, client, NS_NICK_DROPFAIL, client->name);
+    reply_user(service, service, client, NS_NICK_DROPFAIL, client->name);
   }
 }
 
@@ -340,21 +340,21 @@ m_identify(struct Service *service, struct Client *client,
 
   if((nick = db_find_nick(client->name)) == NULL)
   {
-    reply_user(service, client, NS_REG_FIRST, client->name);
+    reply_user(service, service, client, NS_REG_FIRST, client->name);
     return;
   }
 
   if(!check_nick_pass(nick, parv[1]))
   {
     free_nick(nick);
-    reply_user(service, client, NS_IDENT_FAIL, client->name);
+    reply_user(service, service, client, NS_IDENT_FAIL, client->name);
     return;
   }
   client->nickname = nick;
   dlinkFindDelete(&nick_enforce_list, client);
 
   identify_user(client);
-  reply_user(service, client, NS_IDENTIFIED, client->name);
+  reply_user(service, service, client, NS_IDENTIFIED, client->name);
 }
 
 static void
@@ -367,7 +367,7 @@ m_help(struct Service *service, struct Client *client,
 static void
 m_set(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  reply_user(service, client, 0, "Unknown SET option");
+  reply_user(service, service, client, 0, "Unknown SET option");
 }
 
 static void
@@ -389,11 +389,11 @@ m_set_password(struct Service *service, struct Client *client,
   pass = crypt_pass(password);
   if(db_set_string(SET_NICK_PASSWORD, client->nickname->id, pass))
   {
-    reply_user(service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
+    reply_user(service, service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
   }
   else
   {
-    reply_user(service, client, NS_SET_FAILED, "PASSWORD", "hidden");
+    reply_user(service, service, client, NS_SET_FAILED, "PASSWORD", "hidden");
     MyFree(pass);
     return;
   }
@@ -410,16 +410,16 @@ m_set_language(struct Service *service, struct Client *client,
   {
     int i;
 
-    reply_user(service, client, NS_CURR_LANGUAGE,
-        service->language_table[client->nickname->language][0],
+    reply_user(service, service, client, NS_CURR_LANGUAGE,
+        service->languages[client->nickname->language].name,
         client->nickname->language);
 
-    reply_user(service, client, NS_AVAIL_LANGUAGE);
+    reply_user(service, service, client, NS_AVAIL_LANGUAGE);
 
     for(i = 0; i < LANG_LAST; i++)
     {
-      reply_user(service, client, NS_LANG_LIST, i, 
-          service->language_table[i][0]);
+      reply_user(service, service, client, NS_LANG_LIST, i, 
+          service->languages[i].name);
     }
   }
   else
@@ -429,11 +429,11 @@ m_set_language(struct Service *service, struct Client *client,
     if(db_set_number(SET_NICK_LANGUAGE, client->nickname->id, lang))
     {
       client->nickname->language = lang;
-      reply_user(service, client, NS_LANGUAGE_SET,
-          service->language_table[lang][0], lang); 
+      reply_user(service, service, client, NS_LANGUAGE_SET,
+          service->languages[lang].name, lang); 
     }
     else
-      reply_user(service, client, 0, ":(");
+      reply_user(service, service, client, 0, ":(");
   }
 }
 
@@ -445,7 +445,7 @@ m_set_url(struct Service *service, struct Client *client,
   
   if(parc == 0)
   {
-    reply_user(service, client, NS_SET_VALUE, 
+    reply_user(service, service, client, NS_SET_VALUE, 
         "URL", nick->url);
     return;
   }
@@ -453,10 +453,10 @@ m_set_url(struct Service *service, struct Client *client,
   if(db_set_string(SET_NICK_URL, nick->id, parv[1]))
   {
     nick->url = replace_string(nick->url, parv[1]);
-    reply_user(service, client, NS_SET_SUCCESS, "URL", nick->url);
+    reply_user(service, service, client, NS_SET_SUCCESS, "URL", nick->url);
   }
   else
-    reply_user(service, client, NS_SET_FAILED, "URL", parv[1]);
+    reply_user(service, service, client, NS_SET_FAILED, "URL", parv[1]);
 }
 
 static void
@@ -467,17 +467,17 @@ m_set_email(struct Service *service, struct Client *client,
   
   if(parc == 0)
   {
-    reply_user(service, client, NS_SET_VALUE, "EMAIL", nick->email);
+    reply_user(service, service, client, NS_SET_VALUE, "EMAIL", nick->email);
     return;
   }
     
   if(db_set_string(SET_NICK_EMAIL, nick->id, parv[1]))
   {
     nick->email = replace_string(nick->email, parv[1]);
-    reply_user(service, client, NS_SET_SUCCESS, "EMAIL", nick->email);
+    reply_user(service, service, client, NS_SET_SUCCESS, "EMAIL", nick->email);
   }
   else
-    reply_user(service, client, NS_SET_FAILED, "EMAIL", parv[1]);
+    reply_user(service, service, client, NS_SET_FAILED, "EMAIL", parv[1]);
 }
 
 static void
@@ -489,7 +489,7 @@ m_set_cloak(struct Service *service, struct Client *client,
   
   if(parc == 0)
   {
-    reply_user(service, client, NS_SET_VALUE, "CLOAK", 
+    reply_user(service, service, client, NS_SET_VALUE, "CLOAK", 
         nick->cloak_on ? "ON" : "OFF");
     return;
   }
@@ -500,7 +500,7 @@ m_set_cloak(struct Service *service, struct Client *client,
     flag = 0;
   else
   {
-    reply_user(service, client, NS_SET_VALUE, "CLOAK", 
+    reply_user(service, service, client, NS_SET_VALUE, "CLOAK", 
         nick->cloak_on ? "ON" : "OFF");
     return;
   }
@@ -508,10 +508,10 @@ m_set_cloak(struct Service *service, struct Client *client,
   if(db_set_bool(SET_NICK_CLOAKON, nick->id, flag))
   {
     nick->cloak_on = flag;
-    reply_user(service, client, NS_SET_SUCCESS, "CLOAK", flag ? "ON" : "OFF");
+    reply_user(service, service, client, NS_SET_SUCCESS, "CLOAK", flag ? "ON" : "OFF");
   }
   else
-    reply_user(service, client, NS_SET_FAILED, "CLOAK", parv[1]);
+    reply_user(service, service, client, NS_SET_FAILED, "CLOAK", parv[1]);
 }
 static void
 m_set_cloakstring(struct Service *service, struct Client *client, 
@@ -521,7 +521,7 @@ m_set_cloakstring(struct Service *service, struct Client *client,
  
   if(parc == 0)
   {
-    reply_user(service, client, NS_SET_VALUE, "CLOAKSTRING", nick->cloak);
+    reply_user(service, service, client, NS_SET_VALUE, "CLOAKSTRING", nick->cloak);
     return;
   }
     
@@ -534,10 +534,10 @@ m_set_cloakstring(struct Service *service, struct Client *client,
   if(db_set_string(SET_NICK_CLOAK, nick->id, parv[1]))
   {
     strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
-    reply_user(service, client, NS_SET_SUCCESS, "CLOAKSTRING", nick->cloak);
+    reply_user(service, service, client, NS_SET_SUCCESS, "CLOAKSTRING", nick->cloak);
   }
   else
-    reply_user(service, client, NS_SET_FAILED, "CLOAKSTRING", parv[1]);
+    reply_user(service, service, client, NS_SET_FAILED, "CLOAKSTRING", parv[1]);
 }
 
 static void
@@ -549,7 +549,7 @@ m_set_secure(struct Service *service, struct Client *client,
   
   if(parc == 0)
   {
-    reply_user(service, client, NS_SET_VALUE, "SECURE", 
+    reply_user(service, service, client, NS_SET_VALUE, "SECURE", 
         nick->secure ? "ON" : "OFF");
     return;
   }
@@ -560,7 +560,7 @@ m_set_secure(struct Service *service, struct Client *client,
     flag = 0;
   else
   {
-    reply_user(service, client, NS_SET_VALUE, "SECURE", 
+    reply_user(service, service, client, NS_SET_VALUE, "SECURE", 
         nick->secure ? "ON" : "OFF");
     return;
   }
@@ -568,10 +568,10 @@ m_set_secure(struct Service *service, struct Client *client,
   if(db_set_bool(SET_NICK_SECURE, nick->id, flag))
   {
     nick->secure = flag;
-    reply_user(service, client, NS_SET_SUCCESS, "SECURE", flag ? "ON" : "OFF");
+    reply_user(service, service, client, NS_SET_SUCCESS, "SECURE", flag ? "ON" : "OFF");
   }
   else
-    reply_user(service, client, NS_SET_FAILED, "SECURE", parv[1]);
+    reply_user(service, service, client, NS_SET_FAILED, "SECURE", parv[1]);
 }
 
 static void
@@ -583,7 +583,7 @@ m_set_enforce(struct Service *service, struct Client *client,
   
   if(parc == 0)
   {
-    reply_user(service, client, NS_SET_VALUE, "ENFORCE", 
+    reply_user(service, service, client, NS_SET_VALUE, "ENFORCE", 
        nick->enforce ? "ON" : "OFF");
     return;
   }
@@ -594,7 +594,7 @@ m_set_enforce(struct Service *service, struct Client *client,
     flag = 0;
   else
   {
-    reply_user(service, client, NS_SET_VALUE, "ENFORCE", 
+    reply_user(service, service, client, NS_SET_VALUE, "ENFORCE", 
         nick->enforce ? "ON" : "OFF");
     return;
   }
@@ -602,16 +602,16 @@ m_set_enforce(struct Service *service, struct Client *client,
   if(db_set_bool(SET_NICK_ENFORCE, nick->id, flag))
   {
     nick->enforce = flag;
-    reply_user(service, client, NS_SET_SUCCESS, "ENFORCE", flag ? "ON" : "OFF");
+    reply_user(service, service, client, NS_SET_SUCCESS, "ENFORCE", flag ? "ON" : "OFF");
   }
   else
-    reply_user(service, client, NS_SET_FAILED, "ENFORCE", parv[1]);
+    reply_user(service, service, client, NS_SET_FAILED, "ENFORCE", parv[1]);
 }
 
 static void
 m_access(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  reply_user(service, client, 0, 
+  reply_user(service, service, client, 0, 
       "Syntax: ACCESS {ADD | DEL | LIST} [mask | list]");
 }
 
@@ -624,7 +624,7 @@ m_access_add(struct Service *service, struct Client *client, int parc,
 
   if(strchr(parv[1], '@') == NULL)
   {
-    reply_user(service, client, NS_ACCESS_INVALID, parv[1]);
+    reply_user(service, service, client, NS_ACCESS_INVALID, parv[1]);
     return;
   }
 
@@ -633,11 +633,11 @@ m_access_add(struct Service *service, struct Client *client, int parc,
   
   if(db_list_add(ACCESS_LIST, (void *)&access))
   {
-    reply_user(service, client, NS_ACCESS_ADD, parv[1]);
+    reply_user(service, service, client, NS_ACCESS_ADD, parv[1]);
   }
   else
   {
-    reply_user(service, client, NS_ACCESS_ADDFAIL, parv[1]);
+    reply_user(service, service, client, NS_ACCESS_ADDFAIL, parv[1]);
   }
 }
 
@@ -652,7 +652,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 
   nick = client->nickname;
 
-  reply_user(service, client, NS_ACCESS_START);
+  reply_user(service, service, client, NS_ACCESS_START);
  
   if((listptr = db_list_first(ACCESS_LIST, nick->id, (void**)&entry)) == NULL)
   {
@@ -663,7 +663,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 
   while(listptr != NULL)
   {
-    reply_user(service, client, NS_ACCESS_ENTRY, i++, entry->value);
+    reply_user(service, service, client, NS_ACCESS_ENTRY, i++, entry->value);
     MyFree(entry->value);
     MyFree(entry);
     listptr = db_list_next(listptr, ACCESS_LIST, (void**)&entry);
@@ -685,7 +685,7 @@ m_access_del(struct Service *service, struct Client *client, int parc,
   else
     ret = db_list_del(DELETE_NICKACCESS, nick->id, parv[1]);
   
-  reply_user(service, client, NS_ACCESS_DEL, ret);
+  reply_user(service, service, client, NS_ACCESS_DEL, ret);
 }
 
 static void
@@ -695,31 +695,31 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(find_client(parv[1]) == NULL)
   {
-    reply_user(service, client, NS_GHOST_NOTONLINE, parv[1]);
+    reply_user(service, service, client, NS_GHOST_NOTONLINE, parv[1]);
     return;
   }
 
   if((nick = db_find_nick(parv[1])) == NULL)
   {
-    reply_user(service, client, NS_REG_FIRST, parv[1]);
+    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
     return;
   }
 
   if(ircncmp(client->name, parv[1], NICKLEN) == 0)
   {
     free_nick(nick);
-    reply_user(service, client, NS_GHOST_NOSELF, parv[1]);
+    reply_user(service, service, client, NS_GHOST_NOSELF, parv[1]);
     return;
   }
 
   if(!check_nick_pass(nick, parv[2]))
   {
     free_nick(nick);
-    reply_user(service, client, NS_GHOST_FAILED, parv[1]);   
+    reply_user(service, service, client, NS_GHOST_FAILED, parv[1]);   
     return;
   }
 
-  reply_user(service, client, NS_GHOST_SUCCESS, parv[1]);
+  reply_user(service, service, client, NS_GHOST_SUCCESS, parv[1]);
   /* XXX Turn this into send_kill */
   sendto_server(me.uplink, ":%s KILL %s :%s (GHOST Command recieved from %s)", 
       service->name, parv[1], "services.oftc.net", client->name);
@@ -733,26 +733,26 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
   nick = client->nickname;
   if((master_nick = db_find_nick(parv[1])) == NULL)
   {
-    reply_user(service, client, NS_LINK_NOMASTER, parv[1]);
+    reply_user(service, service, client, NS_LINK_NOMASTER, parv[1]);
     return;
   }
 
   if(!check_nick_pass(master_nick, parv[2]))
   {
     free_nick(master_nick);
-    reply_user(service, client, NS_LINK_BADPASS, parv[1]);
+    reply_user(service, service, client, NS_LINK_BADPASS, parv[1]);
     return;
   }
 
   if(!db_link_nicks(master_nick->id, nick->id))
   {
     free_nick(master_nick);
-    reply_user(service, client, NS_LINK_FAIL, parv[1]);
+    reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
     return;
   }
   strlcpy(master_nick->nick, nick->nick, sizeof(master_nick->nick));
   client->nickname = master_nick;
-  reply_user(service, client, NS_LINK_OK, nick->nick, parv[1]);
+  reply_user(service, service, client, NS_LINK_OK, nick->nick, parv[1]);
   free_nick(nick);
   nick = NULL;
 }
@@ -763,9 +763,9 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Nick *nick = client->nickname;
 
   if((nick->id = db_unlink_nick(nick->id)) > 0)
-    reply_user(service, client, NS_UNLINK_OK, client->name);
+    reply_user(service, service, client, NS_UNLINK_OK, client->name);
   else
-    reply_user(service, client, NS_UNLINK_FAILED, client->name);
+    reply_user(service, service, client, NS_UNLINK_FAILED, client->name);
 }
 
 static void
@@ -783,7 +783,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     {
       if((nick = db_find_nick(client->name)) == NULL)
       {
-        reply_user(service, client, NS_REG_FIRST, client->name);
+        reply_user(service, service, client, NS_REG_FIRST, client->name);
         return;
       }
     }
@@ -792,7 +792,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     if((nick = db_find_nick(parv[1])) == NULL)
     {
-      reply_user(service, client, NS_REG_FIRST,
+      reply_user(service, service, client, NS_REG_FIRST,
           parv[1]);
       return;
     }
@@ -806,20 +806,20 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     strftime(quittime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", 
         gmtime(&nick->last_quit_time));
       
-  reply_user(service, client, NS_INFO, regtime, (nick->last_quit == NULL) ? 
+  reply_user(service, service, client, NS_INFO, regtime, (nick->last_quit == NULL) ? 
       "Unknown" : nick->last_quit, quittime, nick->email, (nick->url == NULL) ?
       "Not set" : nick->url, (nick->cloak == NULL) ? "Not set" : nick->cloak);
 
   if(IsIdentified(client) && client->nickname == nick)
   {
-    reply_user(service, client, NS_LANGUAGE_SET,
-        service->language_table[nick->language][0], nick->language); 
+    reply_user(service, service, client, NS_LANGUAGE_SET,
+        service->languages[nick->language].name, nick->language); 
 
-    reply_user(service, client, NS_INFO_OPTION, "ENFORCE", nick->enforce ? "ON" :
+    reply_user(service, service, client, NS_INFO_OPTION, "ENFORCE", nick->enforce ? "ON" :
         "OFF");
-    reply_user(service, client, NS_INFO_OPTION, "SECURE", nick->secure ? "ON" :
+    reply_user(service, service, client, NS_INFO_OPTION, "SECURE", nick->secure ? "ON" :
         "OFF");
-    reply_user(service, client, NS_INFO_OPTION, "CLOAK", nick->cloak_on ? "ON" :
+    reply_user(service, service, client, NS_INFO_OPTION, "CLOAK", nick->cloak_on ? "ON" :
         "OFF");
   }
  
@@ -840,11 +840,11 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(!db_forbid_nick(parv[1]))
   {
-    reply_user(service, client, NS_FORBID_FAIL, parv[1]);
+    reply_user(service, service, client, NS_FORBID_FAIL, parv[1]);
     return;
   }
 
-  reply_user(service, client, NS_FORBID_OK, parv[1]);
+  reply_user(service, service, client, NS_FORBID_OK, parv[1]);
 }
 
 static void*
@@ -887,7 +887,7 @@ ns_on_nick_change(va_list args)
 
   if(db_is_forbid(user->name))
   {
-    reply_user(nickserv, user, NS_NICK_FORBID_IWILLCHANGE, user->name);
+    reply_user(nickserv, nickserv, user, NS_NICK_FORBID_IWILLCHANGE, user->name);
     user->enforce_time = CurrentTime + 10; /* XXX configurable? */
     dlinkAdd(user, make_dlink_node(), &nick_enforce_list);
     return pass_callback(ns_nick_hook, user, oldnick);
@@ -922,13 +922,13 @@ ns_on_nick_change(va_list args)
   {
     if(nick_p->enforce)
     {
-      reply_user(nickserv, user, NS_NICK_IN_USE_IWILLCHANGE, user->name);
+      reply_user(nickserv, nickserv, user, NS_NICK_IN_USE_IWILLCHANGE, user->name);
       user->enforce_time = CurrentTime + 60; /* XXX configurable? */
       dlinkAdd(user, make_dlink_node(), &nick_enforce_list);
     }
     else
     {
-      reply_user(nickserv, user, NS_NICK_IN_USE, user->name);
+      reply_user(nickserv, nickserv, user, NS_NICK_IN_USE, user->name);
     }
  
     ilog(L_DEBUG, "%s changed nick to %s(no access entry)", oldnick, user->name);
@@ -951,7 +951,7 @@ ns_on_newuser(va_list args)
 
   if(db_is_forbid(newuser->name))
   {
-    reply_user(nickserv, newuser, NS_NICK_FORBID_IWILLCHANGE, newuser->name);
+    reply_user(nickserv, nickserv, newuser, NS_NICK_FORBID_IWILLCHANGE, newuser->name);
     newuser->enforce_time = CurrentTime + 10; /* XXX configurable? */
     dlinkAdd(newuser, make_dlink_node(), &nick_enforce_list);
     return pass_callback(ns_newuser_hook, newuser);
@@ -965,7 +965,7 @@ ns_on_newuser(va_list args)
 
  if(IsIdentified(newuser))
   {
-    reply_user(nickserv, newuser, NS_NICK_AUTOID, newuser->name);
+    reply_user(nickserv, nickserv, newuser, NS_NICK_AUTOID, newuser->name);
     newuser->nickname = nick_p;
     identify_user(newuser);
     return pass_callback(ns_newuser_hook, newuser);
@@ -986,13 +986,13 @@ ns_on_newuser(va_list args)
   {
     if(nick_p->enforce)
     {
-      reply_user(nickserv, newuser, NS_NICK_IN_USE_IWILLCHANGE, newuser->name);
+      reply_user(nickserv, nickserv, newuser, NS_NICK_IN_USE_IWILLCHANGE, newuser->name);
       newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */
       dlinkAdd(newuser, make_dlink_node(), &nick_enforce_list);
     }
     else
     {
-      reply_user(nickserv, newuser, NS_NICK_IN_USE, newuser->name);
+      reply_user(nickserv, nickserv, newuser, NS_NICK_IN_USE, newuser->name);
     }
     ilog(L_DEBUG, "new user:%s(no access entry)", newuser->name);
   }

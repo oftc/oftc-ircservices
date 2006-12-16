@@ -28,7 +28,8 @@ extern struct Callback *on_nick_drop_cb;
 
 struct Service *make_service(char *);
 void introduce_service(struct Service *);
-void reply_user(struct Service *, struct Client *, unsigned int, ...);
+void reply_user(struct Service *,struct Service *, struct Client *, 
+    unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
 void cloak_user(struct Client *, char *);
 void init_interface();
@@ -62,8 +63,10 @@ struct Service
   char name[NICKLEN+1];
   struct ServiceMessageTree msg_tree;
   char *last_command;
-  char *language_table[LANG_LAST][LANG_TABLE_SIZE];
+  struct LanguageFile languages[LANG_LAST];
   void *data;
 };
+
+extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
 #endif

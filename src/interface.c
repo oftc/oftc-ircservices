@@ -46,6 +46,8 @@ struct Callback *on_newuser_cb;
 struct Callback *on_identify_cb;
 struct Callback *on_channel_destroy_cb;
 
+struct LanguageFile ServicesLanguages[LANG_LAST];
+
 void
 init_interface()
 {
@@ -69,6 +71,8 @@ init_interface()
   on_identify_cb      = register_callback("Identify Callback", NULL);
   on_newuser_cb       = register_callback("New user coming to us", NULL);
   on_channel_destroy_cb = register_callback("Channel is being destroyed", NULL);
+
+  load_language(ServicesLanguages, "services.en");
 }
 
 struct Service *
@@ -110,20 +114,27 @@ tell_user(struct Service *service, struct Client *client, char *text)
 }
 
 void
-reply_user(struct Service *service, struct Client *client, unsigned int langid,
+reply_user(struct Service *source, struct Service *service, 
+    struct Client *client, unsigned int langid,
     ...)
 {
   char buf[IRC_BUFSIZE+1];
   va_list ap;
   char *s, *t;
   char *langstr = NULL;
+  struct LanguageFile *languages;
+
+  if(service == NULL)
+    languages = ServicesLanguages;
+  else
+    languages = service->languages;
   
   if(langid != 0)
   {
     if(client->nickname == NULL)
-      langstr = service->language_table[0][langid];
+      langstr = languages[0].entries[langid];
     else
-      langstr = service->language_table[client->nickname->language][langid];
+      langstr = languages[client->nickname->language].entries[langid];
   }
    
   if(langstr == NULL)
@@ -139,7 +150,7 @@ reply_user(struct Service *service, struct Client *client, unsigned int langid,
     s += strcspn(s, "\n");
     if (*s)
       *s++ = 0;
-    execute_callback(send_notice_cb, me.uplink, service->name, client->name, 
+    execute_callback(send_notice_cb, me.uplink, source->name, client->name, 
         *t != '\0' ? t : " ");
   }
 }
@@ -222,8 +233,7 @@ do_help(struct Service *service, struct Client *client,
     msg = find_services_command(command, &service->msg_tree);
     if(msg == NULL)
     {
-      reply_user(service, client, 0, "HELP for %s is not available.", 
-          command);
+      reply_user(service, NULL, client, SERV_HELP_NOT_AVAIL, command);
       return;
     }
 
@@ -235,25 +245,24 @@ do_help(struct Service *service, struct Client *client,
       {
         if(strncasecmp(sub->cmd, parv[2], sizeof(sub->cmd)) == 0)
         {
-          reply_user(service, client, sub->help_long, "");
+          reply_user(service, service, client, sub->help_long, "");
           return;   
         }
         sub++;
       }
-      reply_user(service, client, 0, "HELP for %s %s is not available.", 
-          command, parv[2]);
+      reply_user(service, service, client, SERV_SUB_HELP_NOT_AVIL, command, parv[2]);
       return;
     }
 
-    reply_user(service, client, msg->help_long, "");
+    reply_user(service, service, client, msg->help_long, "");
     sub = msg->sub;
     
     while(sub != NULL && sub->cmd != NULL)
     {
       if(sub->help_short > 0)
-        reply_user(service, client, sub->help_short, sub->cmd);
+        reply_user(service, service, client, sub->help_short, sub->cmd);
       else
-        reply_user(service, client, 0, sub->cmd);
+        reply_user(service, service, client, 0, sub->cmd);
 
       sub++;
       if(sub->cmd == NULL)

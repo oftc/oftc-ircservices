@@ -8,6 +8,12 @@
 
 #define LANG_TABLE_SIZE 128
 
-void load_language(struct Service *service, const char *langfile);
+struct LanguageFile
+{
+  char *name;
+  char *entries[LANG_TABLE_SIZE];
+};
+
+void load_language(struct LanguageFile *, const char *);
 
 #endif

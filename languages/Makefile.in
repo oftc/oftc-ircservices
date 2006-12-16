@@ -14,7 +14,8 @@ exec_prefix	= @exec_prefix@
 
 DISTFILES	= nickserv.en.lang \
 	operserv.en.lang \
-	chanserv.en.lang
+	chanserv.en.lang \
+	services.en.lang
 
 all:
 

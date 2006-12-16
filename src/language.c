@@ -25,7 +25,7 @@
 #include "stdinc.h"
 
 void
-load_language(struct Service *service, const char *langfile)
+load_language(struct LanguageFile *language, const char *langfile)
 {
   FBFILE *file;
   char buffer[256];
@@ -36,8 +36,7 @@ load_language(struct Service *service, const char *langfile)
 
   if((file = fbopen(buffer, "r")) == NULL)
   {
-    ilog(L_DEBUG, "Failed to open language file %s for service %s(%s)", langfile,
-        service->name, buffer);
+    ilog(L_DEBUG, "Failed to open language file %s (%s)", langfile, buffer);
     return;
   }
   
@@ -45,8 +44,7 @@ load_language(struct Service *service, const char *langfile)
   fbgets(buffer, sizeof(buffer), file);
   if((s = strchr(buffer, ' ')) == NULL)
   {
-    ilog(L_DEBUG, "Language file %s for service %s is invalid", langfile,
-        service->name);
+    ilog(L_DEBUG, "Language file %s is invalid", langfile);
     return;
   }
 
@@ -56,10 +54,9 @@ load_language(struct Service *service, const char *langfile)
   if(s[strlen(s) - 1] == '\n')
     s[strlen(s) - 1] = '\0';
   
-  DupString(service->language_table[lang][i], s);
+  DupString(language[lang].name, s);
   
-  ilog(L_DEBUG, "Loading language %d(%s) for service %s", lang, langfile,
-      service->name);
+  ilog(L_DEBUG, "Loading language %d(%s)", lang, langfile);
 
   while(fbgets(buffer, sizeof(buffer), file) != NULL)
   {
@@ -74,11 +71,11 @@ load_language(struct Service *service, const char *langfile)
     s = buffer;
     s++;
 
-    if(service->language_table[lang][i] != NULL)
+    if(language[lang].entries[i] != NULL)
     {
-      ptr = MyMalloc(strlen(service->language_table[lang][i]) + strlen(s)+1);
-      strcpy(ptr, service->language_table[lang][i]);
-      MyFree(service->language_table[lang][i]);
+      ptr = MyMalloc(strlen(language[lang].entries[i]) + strlen(s)+1);
+      strcpy(ptr, language[lang].entries[i]);
+      MyFree(language[lang].entries[i]);
       strcat(ptr, s);
     }
     else
@@ -86,6 +83,6 @@ load_language(struct Service *service, const char *langfile)
       ptr = MyMalloc(strlen(s)+1);
       strcpy(ptr, s);
     }
-    service->language_table[lang][i] = ptr;
+    language[lang].entries[i] = ptr;
   }
 }

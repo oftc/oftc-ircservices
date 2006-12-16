@@ -143,7 +143,7 @@ INIT_MODULE(operserv, "$Revision$")
   hash_add_service(operserv);
   introduce_service(operserv);
 
-  load_language(operserv, "operserv.en");
+  load_language(operserv->languages, "operserv.en");
 
   mod_add_servcmd(&operserv->msg_tree, &help_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &mod_msgtab);
@@ -167,7 +167,7 @@ static void
 m_noaccess(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  reply_user(service, client, 0, "No access for you.");
+  reply_user(service, service, client, 0, "No access for you.");
 }
 
 static void
@@ -181,14 +181,14 @@ static void
 m_mod(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  reply_user(service, client, 0, "Unknown MOD command");  
+  reply_user(service, service, client, 0, "Unknown MOD command");  
 }
 
 static void
 m_mod_list(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  reply_user(service, client, 0, "LIST not implemented");
+  reply_user(service, service, client, 0, "LIST not implemented");
 }
 
 static void
@@ -202,13 +202,13 @@ m_mod_load(struct Service *service, struct Client *client,
 
   if (find_module(mbn, 0) != NULL)
   {
-    reply_user(service, client, OS_MOD_ALREADYLOADED, parm);
+    reply_user(service, service, client, OS_MOD_ALREADYLOADED, parm);
     return;
   }
 
   if (parm == NULL)
   {
-    reply_user(service, client, 0, "You need to specify the modules name");
+    reply_user(service, service, client, 0, "You need to specify the modules name");
     return;
   }
 
@@ -217,12 +217,12 @@ m_mod_load(struct Service *service, struct Client *client,
   if (load_module(parm) == 1)
   {
     global_notice(service, "Module %s loaded", parm);
-    reply_user(service, client, OS_MOD_LOADED, parm);
+    reply_user(service, service, client, OS_MOD_LOADED, parm);
   }
   else
   {
     global_notice(service, "Module %s could not be loaded!", parm);
-    reply_user(service, client, OS_MOD_LOADFAIL, parm);
+    reply_user(service, service, client, OS_MOD_LOADFAIL, parm);
   }
 }
 
@@ -241,21 +241,21 @@ m_mod_reload(struct Service *service, struct Client *client,
     global_notice(service,
         "Module %s reload requested by %s, but failed because not loaded",
         parm, client->name);
-    reply_user(service, client, OS_MOD_NOTLOADED, parm, client->name);
+    reply_user(service, service, client, OS_MOD_NOTLOADED, parm, client->name);
     return;
   }
   global_notice(service, "Reloading %s by request of %s", parm, client->name);
-  reply_user(service, client, OS_MOD_RELOADING, parm, client->name);
+  reply_user(service, service, client, OS_MOD_RELOADING, parm, client->name);
   unload_module(module);
   if (load_module(parm) == 1)
   {
     global_notice(service, "Module %s loaded", parm);
-    reply_user(service, client, OS_MOD_LOADED,parm);
+    reply_user(service, service, client, OS_MOD_LOADED,parm);
   }
   else
   {
     global_notice(service, "Module %s could not be loaded!", parm);
-    reply_user(service, client, OS_MOD_LOADFAIL, parm);
+    reply_user(service, service, client, OS_MOD_LOADFAIL, parm);
   }
 }
 
@@ -274,13 +274,13 @@ m_mod_unload(struct Service *service, struct Client *client,
     global_notice(service,
         "Module %s unload requested by %s, but failed because not loaded",
         parm, client->name);
-    reply_user(service, client, 0, 
+    reply_user(service, service, client, 0, 
         "Module %s unload requested by %s, but failed because not loaded",
         parm, client->name);
     return;
   }
   global_notice(service, "Unloading %s by request of %s", parm, client->name);
-  reply_user(service, client, OS_MOD_UNLOAD, parm, client->name);
+  reply_user(service, service, client, OS_MOD_UNLOAD, parm, client->name);
   unload_module(module);
 }
 
@@ -308,7 +308,7 @@ static void
 m_admin(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, client, 0, "ADMIN, what?");
+  reply_user(service, service, client, 0, "ADMIN, what?");
 }
 
 static void
@@ -319,12 +319,12 @@ m_admin_add(struct Service *service, struct Client *client,
 
   if(nick == NULL)
   {
-    reply_user(service, client, OS_NICK_NOTREG, parv[1]);
+    reply_user(service, service, client, OS_NICK_NOTREG, parv[1]);
     return;
   }
   nick->admin = TRUE;
   db_set_bool(SET_NICK_ADMIN, nick->id, TRUE);
-  reply_user(service, client, OS_ADMIN_ADDED, nick->nick);
+  reply_user(service, service, client, OS_ADMIN_ADDED, nick->nick);
   free_nick(nick);
 }
 
@@ -339,7 +339,7 @@ m_admin_list(struct Service *service, struct Client *client,
   first = handle = db_list_first(ADMIN_LIST, 0, (void**)&currnick);
   while(handle != NULL)
   {
-    reply_user(service, client, OS_ADMIN_LIST, i++, currnick);
+    reply_user(service, service, client, OS_ADMIN_LIST, i++, currnick);
     MyFree(currnick);
     handle = db_list_next(handle, ADMIN_LIST, (void **)&currnick);
   }
@@ -357,10 +357,10 @@ m_admin_del(struct Service *service, struct Client *client,
     
   if(nick == NULL || !(nick->admin))
   {
-    reply_user(service, client, OS_ADMIN_NOTADMIN, parv[1]);
+    reply_user(service, service, client, OS_ADMIN_NOTADMIN, parv[1]);
     return;
   }
-  reply_user(service, client, OS_ADMIN_DEL, nick->nick);
+  reply_user(service, service, client, OS_ADMIN_DEL, nick->nick);
   nick->admin = FALSE;
   db_set_bool(SET_NICK_ADMIN, nick->id, FALSE);
 
@@ -371,7 +371,7 @@ static void
 m_akill(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, client, 0, "AKILL, what?");
+  reply_user(service, service, client, 0, "AKILL, what?");
 }
 
 /* AKILL ADD user@host reason [duration] */
@@ -402,7 +402,7 @@ m_akill_list(struct Service *service, struct Client *client,
   first = handle = db_list_first(AKILL_LIST, 0, (void**)&akill);
   while(handle != NULL)
   {
-    reply_user(service, client, OS_AKILL_LIST, i++, akill->mask, akill->reason,
+    reply_user(service, service, client, OS_AKILL_LIST, i++, akill->mask, akill->reason,
         akill->setter, "sometime", "sometime");
     free_akill(akill);
     handle = db_list_next(handle, AKILL_LIST, (void**)&akill);
@@ -420,5 +420,5 @@ m_akill_del(struct Service *service, struct Client *client,
 static void m_operserv_notimp(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  reply_user(service, client, 0, "This isnt implemented yet.");
+  reply_user(service, service, client, 0, "This isnt implemented yet.");
 }
