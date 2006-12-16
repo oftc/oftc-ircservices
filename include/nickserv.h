@@ -122,6 +122,7 @@ struct Nick
 #define NS_FORBID_OK 89
 #define NS_FORBID_FAIL 90
 #define NS_NOREG_GUEST 91
-#define NS_LANG_LIST 92
+#define NS_NOREG_FORBID 92
+#define NS_LANG_LIST 93
 
 #endif

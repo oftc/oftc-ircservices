@@ -259,6 +259,12 @@ m_register(struct Service *service, struct Client *client,
     reply_user(service, client, NS_NOREG_GUEST, client->name);
     return;
   }
+
+  if(db_is_forbid(client->name))
+  {
+    reply_user(service, client, NS_NOREG_FORBID, client->name);
+    return;
+  }
     
   if((nick = db_find_nick(client->name)) != NULL)
   {
@@ -859,7 +865,7 @@ ns_on_nick_change(va_list args)
   if(db_is_forbid(user->name))
   {
     reply_user(nickserv, user, NS_NICK_FORBID_IWILLCHANGE, user->name);
-    user->enforce_time = CurrentTime + 60; /* XXX configurable? */
+    user->enforce_time = CurrentTime + 10; /* XXX configurable? */
     dlinkAdd(user, make_dlink_node(), &nick_enforce_list);
     return pass_callback(ns_nick_hook, user, oldnick);
   }
@@ -923,7 +929,7 @@ ns_on_newuser(va_list args)
   if(db_is_forbid(newuser->name))
   {
     reply_user(nickserv, newuser, NS_NICK_FORBID_IWILLCHANGE, newuser->name);
-    newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */
+    newuser->enforce_time = CurrentTime + 10; /* XXX configurable? */
     dlinkAdd(newuser, make_dlink_node(), &nick_enforce_list);
     return pass_callback(ns_newuser_hook, newuser);
   }
