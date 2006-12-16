@@ -7,19 +7,69 @@ CS_HELP_SHORT
 	%s: Shows this help.
 CS_HELP_LONG
 	Shows this help message.  Use HELP <command> for help with a commmand.
-CS_REGISTER_NICK
-	Nick %s is not registered.
-CS_ALREADY_REG
-	Channel %s is already registered.
-CS_REG_SUCCESS
-	Channel %s successfully registered.
-CS_REG_FAIL
-	Failed to register Channel %s.
-CS_NAMESTART_HASH
-	Channelname needs to start with a hash
-CS_SET_SHORT
+CS_HELP_SET_FOUNDER_SHORT
+	%s: Sets the Channels Founder
+CS_HELP_SET_FOUNDER_LONG
+	Usage:  SET channel FOUNDER nick
+CS_HELP_SET_SUCC_SHORT
+	%s: Sets the Channels successor when the founder drops his nick
+CS_HELP_SET_SUCC_LONG
+	Usage:  SET channel SUCCESSOR nick
+CS_HELP_SET_DESC_SHORT
+	%s: Set the Channel Description
+CS_HELP_SET_DESC_LONG
+	Usage:  SET channel DESCRIPTION nick
+CS_HELP_SET_URL_SHORT
+	%s: Set the Channels Homepage
+CS_HELP_SET_URL_LONG
+	SET channel URL url
+CS_HELP_SET_EMAIL_SHORT
+	%s: Sets the Channels Contact- or Mailinglist email Address
+CS_HELP_SET_EMAIL_LONG
+	SET channel EMAIL email
+CS_HELP_SET_ENTRYMSG_SHORT
+	%s: Sets an automatic greeting when a Client joins a channel
+CS_HELP_SET_ENTRYMSG_LONG
+	SET channel ENTRYMSG message
+CS_HELP_SET_TOPIC_SHORT
+	%s: Sets the Channels topic
+CS_HELP_SET_TOPIC_LONG
+	SET channel TOPIC topic
+CS_HELP_SET_TOPICLOCK_SHORT
+	%s: Dis/Enable Topic Lock
+CS_HELP_SET_TOPICLOCK_LONG
+	SET channel TOPICLOCK on|off
+CS_HELP_SET_PRIVATE_SHORT
+	%s: Dis/Enable Private Option
+CS_HELP_SET_PRIVATE_LONG
+	Set channel PRIVATE on|off
+CS_HELP_SET_RESTRICTED_SHORT
+	%s: Dis/Enable Restricted Option
+CS_HELP_SET_RESTRICTED_LONG
+	SET channel RESTRICTED on|off
+CS_HELP_SET_SECURE_SHORT
+	%s: Dis/Enable Security Option
+CS_HELP_SET_SECURE_LONG
+	SET channel SECURE on|off
+CS_HELP_SET_VERBOSE_SHORT
+	%s: Be more verbose when someone messes with Chanserv Features on a channel
+CS_HELP_SET_VERBOSE_LONG
+	SET channel VERBOSE on|off
+CS_HELP_SET_MLOCK_SHORT
+	%s: Set MLOCK
+CS_HELP_SET_MLOCK_LONG
+	SET mlock 
+CS_HELP_SET_AUTOLIMIT_SHORT
+	%s: Autolimit
+CS_HELP_SET_AUTOLIMIT_LONG
+	Autolimit
+CS_HELP_SET_CLEARBANS_SHORT
+	%s: Clearbans
+CS_HELP_SET_CLEARBANS_LONG
+	Clearbans
+CS_HELP_SET_SHORT
 	%s: Sets various stati on a channel
-CS_SET_LONG
+CS_HELP_SET_LONG
 	FOUNDER     Sets the Founder of a channel
 	SUCCESSOR   Sets the Successor of a channel
 	PASSWORD    Sets the Password of a channel
@@ -36,6 +86,68 @@ CS_SET_LONG
 	SECUREOPS   enable stricter control of chanop status
 	LEAVEOPS    never deop user except with DEOP command
 	VERBOSE     Send a notice to a channel when actions are taken
+CS_HELP_AKICK_ADD_SHORT
+	%s: moo
+CS_HELP_AKICK_ADD_LONG
+	moo
+CS_HELP_AKICK_DEL_SHORT
+	%s: moo
+CS_HELP_AKICK_DEL_LONG
+	moo
+CS_HELP_AKICK_LIST_SHORT
+	%s: moo
+CS_HELP_AKICK_LIST_LONG
+	moo
+CS_HELP_AKICK_VIEW_SHORT
+	%s: moo
+CS_HELP_AKICK_VIEW_LONG
+	moo
+CS_HELP_AKICK_ENFORCE_SHORT
+	%s: moo
+CS_HELP_AKICK_ENFORCE_LONG
+	moo
+CS_HELP_AKICK_COUNT_SHORT
+	%s: moo
+CS_HELP_AKICK_COUNT_LONG
+	moo
+CS_HELP_AKICK_SHORT
+	%s: moo
+CS_HELP_AKICK_LONG
+	moo
+CS_HELP_DROP_SHORT
+	%s: moo
+CS_HELP_DROP_LONG
+	moo
+CS_HELP_INFO_SHORT
+	%s: moo
+CS_HELP_INFO_LONG
+	moo
+CS_HELP_OP_SHORT
+	%s: moo
+CS_HELP_OP_LONG
+	moo
+CS_HELP_UNBAN_SHORT
+	%s: moo
+CS_HELP_UNBAN_LONG
+	moo
+CS_HELP_INVITE_SHORT
+	%s: moo
+CS_HELP_INVITE_LONG
+	moo
+CS_HELP_CLEAR_SHORT
+	%s: moo
+CS_HELP_CLEAR_LONG
+	moo
+CS_REGISTER_NICK
+	Nick %s is not registered.
+CS_ALREADY_REG
+	Channel %s is already registered.
+CS_REG_SUCCESS
+	Channel %s successfully registered.
+CS_REG_FAIL
+	Failed to register Channel %s.
+CS_NAMESTART_HASH
+	Channelname needs to start with a hash
 CS_NOT_ONCHAN
 	You are not on that Channel
 CS_NOT_OPPED
@@ -48,6 +160,12 @@ CS_DROPPED
 	Channel %s has been dropped
 CS_DROP_FAILED
 	Dropping of Channel %s has failed.
+CS_SET_SUCCESSOR
+	Successor of %s is set to %s
+CS_SET_DESCRIPTION
+	Description of %s is set to %s
+CS_SET_ENTRYMSG
+	Entrymsg of %s is set to "%s"
 CS_SET_FOUNDER
 	Founder of channel %s has been set to %s
 CS_SET_FOUNDER_FAILED
@@ -72,38 +190,16 @@ CS_SET_MSG
 	Entry message of channel %s has been set to %s
 CS_SET_MSG_FAILED
 	Setting eMail Address of %s has failed
-CS_SET_FOUNDER_SHORT
-	%s: Sets the Channels Founder
-CS_SET_FOUNDER_LONG
-	Usage:  SET channel FOUNDER nick
-CS_SET_SUCC_SHORT
-	%s: Sets the Channels successor when the founder drops his nick
-CS_SET_SUCC_LONG
-	Usage:  SET channel SUCCESSOR nick
-CS_SET_DESC_SHORT
-	%s: Set the Channel Description
-CS_SET_DESC_LONG
-	Usage:  SET channel DESCRIPTION nick
-CS_SET_URL_SHORT
-	%s: Set the Channels Homepage
-CS_SET_URL_LONG
-	SET channel URL url
-CS_SET_EMAIL_SHORT
-	%s: Sets the Channels Contact- or Mailinglist email Address
-CS_SET_EMAIL_LONG
-	SET channel EMAIL email
-CS_SET_ENTRYMSG_SHORT
-	%s: Sets an automatic greeting when a Client joins a channel
-CS_SET_ENTRYMSG_LONG
-	SET channel ENTRYMSG message
-CS_SET_TOPIC_SHORT
-	%s: Sets the Channels topic
-CS_SET_TOPIC_LONG
-	SET channel TOPIC topic
 CS_SET_TOPIC
 	Topic for %s has been set to %s
 CS_SET_TOPIC_FAILED
 	Failed to set Topic for %s
+CS_SET_FLAG
+	%s is set to %s on %s
+CS_SET_SUCCESS
+	On %s, %s has been set to %s
+CS_SET_FAILED
+	Changing %s on %s failed.	
 CS_NOT_EXIST
 	Channel does not exist. XXX
 CS_INFO_CHAN
@@ -116,47 +212,3 @@ CS_INFO_CHAN
 	Topic:       %s
 	EntryMsg:    %s
 	Flags:       %s %s %s %s %s %s %s
-CS_SET_FLAG
-	%s is set to %s on %s
-CS_SET_SUCCESS
-	On %s, %s has been set to %s
-CS_SET_FAILED
-	Changing %s on %s failed.	
-CS_SET_KEEPTOPIC_SHORT
-	%s: Dis/Enable Topic Retention
-CS_SET_KEEPTOPIC_LONG
-	SET channel KEEPTOPIC on|off
-CS_SET_TOPICLOCK_SHORT
-	%s: Dis/Enable Topic Lock
-CS_SET_TOPICLOCK_LONG
-	SET channel TOPICLOCK on|off
-CS_SET_PRIVATE_SHORT
-	%s: Dis/Enable Private Option
-CS_SET_PRIVATE_LONG
-	Set channel PRIVATE on|off
-CS_SET_RESTRICTED_SHORT
-	%s: Dis/Enable Restricted Option
-CS_SET_RESTRICTED_LONG
-	SET channel RESTRICTED on|off
-CS_SET_SECURE_SHORT
-	%s: Dis/Enable Security Option
-CS_SET_SECURE_LONG
-	SET channel SECURE on|off
-CS_SET_SECUREOPS_SHORT
-	%s: Users not on an Access list will not be allowed to gain chanop status
-CS_SET_SECUREOPS_LONG
-	SET channel SECUREOPS on|off
-CS_SET_LEAVEOPS_SHORT
-	%s: Dont ever let someone deop without using DEOP
-CS_SET_LEAVEOPS_LONG
-	SET channel LEAVEOPS on|off
-CS_SET_VERBOSE_SHORT
-	%s: Be more verbose when someone messes with Chanserv Features on a channel
-CS_SET_VERBOSE_LONG
-	SET channel VERBOSE on|off
-CS_SET_SUCCESSOR
-	Successor of %s is set to %s
-CS_SET_DESCRIPTION
-	Description of %s is set to %s
-CS_SET ENTRYMSG
-	Entrymsg of %s is set to "%s"

@@ -72,12 +72,13 @@ static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
 static void m_set_secure(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
 
+#if 0
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
 static void m_access_view(struct Service *, struct Client *, int, char *[]);
 static void m_access_count(struct Service *, struct Client *, int, char *[]);
-
+#endif
 
 /* temp */
 static void m_not_avail(struct Service *, struct Client *, int, char *[]);
@@ -95,58 +96,50 @@ static struct ServiceMessage help_msgtab = {
   { m_help, m_help, m_help, m_help }
 };
 
-/* 
- * contrary to old services:  /msg chanserv ACCESS #channel ADD foo bar baz
- * we do this:                /msg chanserv ACCESS ADD #channel foo bar baz
- * this is not nice, but fits our structure better
- */
 static struct SubMessage set_sub[] = {
-  { "FOUNDER",     0, 1, CS_SET_FOUNDER_SHORT, CS_SET_FOUNDER_LONG, 
+  { "FOUNDER",     0, 1, CS_HELP_SET_FOUNDER_SHORT, CS_HELP_SET_FOUNDER_LONG, 
     { m_set_founder, m_set_founder, m_set_founder, m_set_founder }
   },
-  { "SUCCESSOR",   0, 1, CS_SET_SUCC_SHORT, CS_SET_SUCC_LONG, 
+  { "SUCCESSOR",   0, 1, CS_HELP_SET_SUCC_SHORT, CS_HELP_SET_SUCC_LONG, 
     { m_set_successor, m_set_successor, m_set_successor, m_set_successor }
   },
-  { "PASSWORD",    0, 1, -1, -1, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
-  },
-  { "DESC",        0, 1, CS_SET_DESC_SHORT, CS_SET_DESC_LONG, 
+  { "DESC",        0, 1, CS_HELP_SET_DESC_SHORT, CS_HELP_SET_DESC_LONG, 
     { m_set_desc, m_set_desc, m_set_desc, m_set_desc }
   },
-  { "URL",         0, 1, CS_SET_URL_SHORT, CS_SET_URL_LONG, 
+  { "URL",         0, 1, CS_HELP_SET_URL_SHORT, CS_HELP_SET_URL_LONG, 
     { m_set_url, m_set_url, m_set_url, m_set_url }
   },
-  { "EMAIL",       0, 1, CS_SET_EMAIL_SHORT, CS_SET_EMAIL_LONG, 
+  { "EMAIL",       0, 1, CS_HELP_SET_EMAIL_SHORT, CS_HELP_SET_EMAIL_LONG, 
     { m_set_email, m_set_email, m_set_email, m_set_email }
   },
-  { "ENTRYMSG",    0, 1, CS_SET_ENTRYMSG_SHORT, CS_SET_ENTRYMSG_LONG, 
+  { "ENTRYMSG",    0, 1, CS_HELP_SET_ENTRYMSG_SHORT, CS_HELP_SET_ENTRYMSG_LONG, 
     { m_set_entrymsg, m_set_entrymsg, m_set_entrymsg, m_set_entrymsg }
   },
-  { "TOPIC",       0, 1, CS_SET_TOPIC_SHORT, CS_SET_TOPIC_LONG, 
+  { "TOPIC",       0, 1, CS_HELP_SET_TOPIC_SHORT, CS_HELP_SET_TOPIC_LONG, 
     { m_set_topic, m_set_topic, m_set_topic, m_set_topic }
   },
-  { "TOPICLOCK",   0, 1, CS_SET_TOPICLOCK_SHORT, CS_SET_TOPICLOCK_LONG, 
+  { "TOPICLOCK",   0, 1, CS_HELP_SET_TOPICLOCK_SHORT, CS_HELP_SET_TOPICLOCK_LONG, 
     { m_set_topiclock, m_set_topiclock, m_set_topiclock, m_set_topiclock }
   },
-  { "MLOCK",       0, 1, -1, -1, 
+  { "MLOCK",       0, 1, CS_HELP_SET_MLOCK_SHORT, CS_HELP_SET_MLOCK_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
   }, // +kl-mnt
-  { "PRIVATE",     0, 1, CS_SET_PRIVATE_SHORT, CS_SET_PRIVATE_LONG, 
+  { "PRIVATE",     0, 1, CS_HELP_SET_PRIVATE_SHORT, CS_HELP_SET_PRIVATE_LONG, 
     { m_set_private, m_set_private, m_set_private, m_set_private }
   },
-  { "RESTRICTED",  0, 1, CS_SET_RESTRICTED_SHORT, CS_SET_RESTRICTED_LONG, 
+  { "RESTRICTED",  0, 1, CS_HELP_SET_RESTRICTED_SHORT, CS_HELP_SET_RESTRICTED_LONG, 
     { m_set_restricted, m_set_restricted, m_set_restricted, m_set_restricted }
   },
-  { "SECURE",      0, 1, CS_SET_SECURE_SHORT, CS_SET_SECURE_LONG, 
+  { "SECURE",      0, 1, CS_HELP_SET_SECURE_SHORT, CS_HELP_SET_SECURE_LONG, 
     { m_set_secure, m_set_secure, m_set_secure, m_set_secure }
   },
-  { "VERBOSE",     0, 1, CS_SET_VERBOSE_SHORT, CS_SET_VERBOSE_LONG, 
+  { "VERBOSE",     0, 1, CS_HELP_SET_VERBOSE_SHORT, CS_HELP_SET_VERBOSE_LONG, 
     { m_set_verbose, m_set_verbose, m_set_verbose, m_set_verbose }
   },
-  { "AUTOLIMIT",   0, 1, -1, -1, 
+  { "AUTOLIMIT",   0, 1, CS_HELP_SET_AUTOLIMIT_SHORT, CS_HELP_SET_AUTOLIMIT_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
   }, // 5:2:2
-  { "CLEARBANS",   0, 1, -1, -1, 
+  { "CLEARBANS",   0, 1, CS_HELP_SET_CLEARBANS_SHORT, CS_HELP_SET_CLEARBANS_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
   }, // 120
   { NULL,          0, 0,  0,  0, 
@@ -155,26 +148,27 @@ static struct SubMessage set_sub[] = {
 };
 
 static struct ServiceMessage set_msgtab = {
-  set_sub, "SET", 0, 0, CS_SET_SHORT, CS_SET_LONG,
+  set_sub, "SET", 0, 0, CS_HELP_SET_SHORT, CS_HELP_SET_LONG,
   { m_notid, m_set, m_set, m_set }
 };
 
+#if 0
 static struct SubMessage access_sub[6] = {
-  { "ADD",   0, 3, -1, -1, 
+  { "ADD",   0, 3, CS_HELP_ACCESS_ADD_SHORT, CS_HELP_ACCESS_ADD_LONG, 
     { m_not_avail, m_access_add, m_access_add, m_access_add } },
-  { "DEL",   0, 2, -1, -1, 
+  { "DEL",   0, 2, CS_HELP_ACCESS_DEL_SHORT, CS_HELP_ACCESS_DEL_LONG, 
     { m_not_avail, m_access_del, m_access_del, m_access_del } },
-  { "LIST",  0, 2, -1, -1, 
+  { "LIST",  0, 2, CS_HELP_ACCESS_LIST_SHORT, CS_HELP_ACCESS_LIST_LONG, 
     { m_not_avail, m_access_list, m_access_list, m_access_list } },
-  { "VIEW",  0, 1, -1, -1, 
+  { "VIEW",  0, 1, CS_HELP_ACCESS_VIEW_SHORT, CS_HELP_ACCESS_VIEW_LONG, 
     { m_not_avail, m_access_view, m_access_view, m_access_view } },
-  { "COUNT", 0, 0, -1, -1, 
+  { "COUNT", 0, 0, CS_HELP_ACCESS_COUNT_SHORT, CS_HELP_ACCESS_COUNT_LONG, 
     { m_not_avail, m_access_count, m_access_count, m_access_count } },
   { NULL,    0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage access_msgtab = {
-  access_sub, "ACCESS", 0, 0, -1, -1, 
+  access_sub, "ACCESS", 0, 0, CS_HELP_ACCESS_SHORT, CS_HELP_ACCESS_LONG, 
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
 
@@ -193,90 +187,67 @@ static struct SubMessage levels_sub[6] = {
 };
 
 static struct ServiceMessage levels_msgtab = {
-  levels_sub, "LEVELS", 0, 0, -1, -1,
+  levels_sub, "LEVELS", 0, 0, CS_HELP_LEVELS_SHORT, CS_HELP_LEVELS_LONG,
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
+#endif
 
 static struct SubMessage akick_sub[7] = {
-  { "ADD",     0, 2, -1, -1, 
+  { "ADD",     0, 2, CS_HELP_AKICK_ADD_SHORT, CS_HELP_AKICK_ADD_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail } }, 
-  { "DEL",     0, 1, -1, -1, 
+  { "DEL",     0, 1, CS_HELP_AKICK_DEL_SHORT, CS_HELP_AKICK_DEL_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
-  { "LIST",    0, 1, -1, -1, 
+  { "LIST",    0, 1, CS_HELP_AKICK_LIST_SHORT, CS_HELP_AKICK_LIST_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
-  { "VIEW",    0, 1, -1, -1, 
+  { "VIEW",    0, 1, CS_HELP_AKICK_VIEW_SHORT, CS_HELP_AKICK_VIEW_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
-  { "ENFORCE", 0, 0, -1, -1, 
+  { "ENFORCE", 0, 0, CS_HELP_AKICK_ENFORCE_SHORT, CS_HELP_AKICK_ENFORCE_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
-  { "COUNT",   0, 0, -1, -1, 
+  { "COUNT",   0, 0, CS_HELP_AKICK_COUNT_SHORT, CS_HELP_AKICK_COUNT_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
   { NULL,      0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage akick_msgtab = {
-  akick_sub, "AKICK", 0, 0, -1, -1,
+  akick_sub, "AKICK", 0, 0, CS_HELP_AKICK_SHORT, CS_HELP_AKICK_LONG,
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
 
 static struct ServiceMessage drop_msgtab = {
-  NULL, "DROP", 0, 1, -1, -1,
+  NULL, "DROP", 0, 1, CS_HELP_DROP_SHORT, CS_HELP_DROP_LONG,
   { m_notid, m_drop, m_drop, m_drop }
 };
 
-static struct ServiceMessage identify_msgtab = {
-  NULL, "IDENTIFY", 0, 1, -1, -1,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
-};
-
 static struct ServiceMessage info_msgtab = {
-  NULL, "INFO", 0, 1, -1, -1,
+  NULL, "INFO", 0, 1, CS_HELP_INFO_SHORT, CS_HELP_INFO_LONG,
   { m_notid, m_info, m_info, m_info }
 };
 
-// ...
-
 static struct ServiceMessage op_msgtab = {
-  NULL, "OP", 0, 1, -1, -1,
+  NULL, "OP", 0, 1, CS_HELP_OP_SHORT, CS_HELP_OP_LONG,
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
 
 static struct ServiceMessage deop_msgtab = {
-  NULL, "DEOP", 0, 1, -1, -1,
+  NULL, "DEOP", 0, 1, CS_HELP_DROP_SHORT, CS_HELP_DROP_LONG,
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
 
 
 static struct ServiceMessage unban_msgtab = {
-  NULL, "UNBAN", 0, 1, -1, -1,
+  NULL, "UNBAN", 0, 1, CS_HELP_UNBAN_SHORT, CS_HELP_UNBAN_LONG,
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
 
 static struct ServiceMessage invite_msgtab = {
-  NULL, "INVITE", 0, 1, -1, -1,
+  NULL, "INVITE", 0, 1, CS_HELP_INVITE_SHORT, CS_HELP_INVITE_LONG,
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
 
 static struct ServiceMessage clear_msgtab = {
-  NULL, "CLEAR", 0, 1, -1, -1,
+  NULL, "CLEAR", 0, 1, CS_HELP_CLEAR_SHORT, CS_HELP_CLEAR_LONG,
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
-
-static struct ServiceMessage aop_msgtab = {
-  NULL, "AOP", 0, 1, -1, -1,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
-};
-
-static struct ServiceMessage vop_msgtab = {
-  NULL, "VOP", 0, 1, -1, -1,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
-};
-
-static struct ServiceMessage sop_msgtab = {
-  NULL, "SOP", 0, 1, -1, -1,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
-};
-
-
 
 /*
 LIST
@@ -300,10 +271,14 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &drop_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &akick_msgtab);
-  mod_add_servcmd(&chanserv->msg_tree, &identify_msgtab);
-  mod_add_servcmd(&chanserv->msg_tree, &levels_msgtab);
-  mod_add_servcmd(&chanserv->msg_tree, &access_msgtab);
+//  mod_add_servcmd(&chanserv->msg_tree, &levels_msgtab);
+//  mod_add_servcmd(&chanserv->msg_tree, &access_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &info_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &op_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &deop_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &clear_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &unban_msgtab);
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
   cs_channel_destroy_hook = 
@@ -510,7 +485,7 @@ static void
 m_set(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, client, CS_SET_LONG, "");
+  reply_user(service, client, CS_HELP_SET_LONG, "");
 }
 
 /*
