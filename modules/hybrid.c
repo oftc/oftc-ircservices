@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id$
+ *  $Id: /local/oftc-ircservices/trunk/modules/irc.c 1209 2006-11-18T10:15:05.833958Z stu  $
  */
 
 #include "stdinc.h"
@@ -159,7 +159,7 @@ static dlink_node *newuser_hook;
 static dlink_node *privmsg_hook;
 static dlink_node *notice_hook;
 
-INIT_MODULE(irc, "$Revision$")
+INIT_MODULE(irc, "$Revision: 1209 $")
 {
   connected_hook = install_hook(connected_cb, irc_server_connected);
   newuser_hook = install_hook(send_newuser_cb, irc_sendmsg_nick);
@@ -380,6 +380,8 @@ irc_server_connected(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
   dlink_node *ptr;
+  
+  ilog(L_DEBUG, "WTFLOL");
   
   sendto_server(client, "PASS %s TS 5", client->server->pass);
   sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
@@ -731,7 +733,7 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
   {
     isnew = 1;
     chptr = make_channel(parv[2]);
-   // XXX what were you thinking?! chptr->regchan = db_find_chan(parv[2]); // the result doesnt matter here -mc
+    chptr->regchan = db_find_chan(parv[2]); // the result doesnt matter here -mc
     ilog(L_DEBUG, "Created channel %s", parv[2]);
   }
 
@@ -1263,3 +1265,5 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
     }
   }
 }
+
+

@@ -1,0 +1,15 @@
+0 English
+SERV_HELP_NOT_AVAIL
+	HELP for %s is not available.
+SERV_SUB_HELP_NOT_AVIL
+	HELP for %s %s is not available.
+SERV_HELP_SHORT
+	%s: %s
+SERV_UNKNOWN_CMD
+	Unknown command %s, /msg %s HELP for help.
+SERV_INSUFF_PARAM
+	Insufficient paramters.  Expected at least %d, got %d.
+SERV_NOT_IDENTIFIED
+	Nickname %s is not identified to nickname services.
+SERV_ACCESS_DENIED
+	Access to that command is restricted to IRC Operators or services admins.
