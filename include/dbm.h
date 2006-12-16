@@ -71,7 +71,6 @@ enum db_queries
   SET_NICK_CLOAKON,
   SET_NICK_SECURE,
   SET_NICK_ENFORCE,
-  SET_NICK_FORBIDDEN,
   DELETE_NICKACCESS,
   DELETE_ALL_NICKACCESS,
   DELETE_NICKACCESS_IDX,
@@ -90,6 +89,9 @@ enum db_queries
   SET_CHAN_SECURE,
   SET_CHAN_VERBOSE,
   SET_NICK_ADMIN,
+  INSERT_FORBID,
+  GET_FORBID,
+  DELETE_FORBID,
   QUERY_COUNT
 };
 
@@ -128,6 +130,10 @@ int db_register_nick(struct Nick *);
 int db_delete_nick(const char *);
 char *db_get_nickname_from_id(unsigned int);
 unsigned int db_get_id_from_name(const char *, unsigned int);
+
+int db_forbid_nick(const char *nick);
+int db_is_forbid(const char *nick);
+int db_delete_forbid(const char *nick);
 
 int db_link_nicks(unsigned int, unsigned int);
 unsigned int db_unlink_nick(unsigned int);

@@ -802,39 +802,20 @@ static void
 m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
-  char *pass;
-  char password[PASSLEN+SALTLEN+1];
-  char randpass[PASSLEN+1];
 
   if((nick = db_find_nick(parv[1])) != NULL)
   {
-    db_set_bool(SET_NICK_FORBIDDEN, nick->id, TRUE);
+    db_delete_nick(nick->nick);
     free_nick(nick);
-    reply_user(service, client, NS_FORBID_OK, parv[1]);
-    return;
   }
 
-  nick = MyMalloc(sizeof(struct Nick));
-
-  make_random_string(nick->salt, SALTLEN+1);
-  make_random_string(randpass, PASSLEN);
-  snprintf(password, sizeof(password), "%s%s", randpass, nick->salt);
-
-  pass = crypt_pass(password);
-  strlcpy(nick->pass, pass, sizeof(nick->pass));
-  strlcpy(nick->nick, parv[1], sizeof(nick->nick));
-  DupString(nick->email, "Forbidden Nick");
-  MyFree(pass);
-  
-  if(!db_register_nick(nick))
+  if(!db_forbid_nick(parv[1]))
   {
     reply_user(service, client, NS_FORBID_FAIL, parv[1]);
     return;
   }
 
-  db_set_bool(SET_NICK_FORBIDDEN, nick->id, TRUE);
   reply_user(service, client, NS_FORBID_OK, parv[1]);
-  free_nick(nick);
 }
 
 static void*
@@ -875,18 +856,17 @@ ns_on_nick_change(va_list args)
     }
   }
 
-  if((nick_p = db_find_nick(user->name)) == NULL)
-  {
-    ilog(L_DEBUG, "Nick Change: %s->%s(nick not registered)", oldnick, user->name);
-    return pass_callback(ns_nick_hook, user, oldnick);
-  }
-
-  if(nick_p->forbidden)
+  if(db_is_forbid(user->name))
   {
     reply_user(nickserv, user, NS_NICK_FORBID_IWILLCHANGE, user->name);
     user->enforce_time = CurrentTime + 60; /* XXX configurable? */
     dlinkAdd(user, make_dlink_node(), &nick_enforce_list);
-    free_nick(nick_p);
+    return pass_callback(ns_nick_hook, user, oldnick);
+  }
+
+  if((nick_p = db_find_nick(user->name)) == NULL)
+  {
+    ilog(L_DEBUG, "Nick Change: %s->%s(nick not registered)", oldnick, user->name);
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
@@ -940,22 +920,21 @@ ns_on_newuser(va_list args)
 
   ilog(L_DEBUG, "New User: %s!", newuser->name);
 
+  if(db_is_forbid(newuser->name))
+  {
+    reply_user(nickserv, newuser, NS_NICK_FORBID_IWILLCHANGE, newuser->name);
+    newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */
+    dlinkAdd(newuser, make_dlink_node(), &nick_enforce_list);
+    return pass_callback(ns_newuser_hook, newuser);
+  }
+ 
   if((nick_p = db_find_nick(newuser->name)) == NULL)
   {
     ilog(L_DEBUG, "New user: %s(nick not registered)", newuser->name);
     return pass_callback(ns_newuser_hook, newuser);
   }
 
-  if(nick_p->forbidden)
-  {
-    reply_user(nickserv, newuser, NS_NICK_FORBID_IWILLCHANGE, newuser->name);
-    newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */
-    dlinkAdd(newuser, make_dlink_node(), &nick_enforce_list);
-    free_nick(nick_p);
-    return pass_callback(ns_newuser_hook, newuser);
-  }
-
-  if(IsIdentified(newuser))
+ if(IsIdentified(newuser))
   {
     reply_user(nickserv, newuser, NS_NICK_AUTOID, newuser->name);
     newuser->nickname = nick_p;

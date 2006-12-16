@@ -9,7 +9,6 @@ CREATE TABLE account (
   flag_enforce        BOOLEAN NOT NULL DEFAULT 'False',
   flag_secure         BOOLEAN NOT NULL DEFAULT 'False',
   flag_verified       BOOLEAN NOT NULL DEFAULT 'False',
-  flag_forbidden      BOOLEAN NOT NULL DEFAULT 'False',
   flag_cloak_enabled  BOOLEAN NOT NULL DEFAULT 'False',
   flag_admin          BOOLEAN NOT NULL DEFAULT 'False',
   flag_email_verified BOOLEAN NOT NULL DEFAULT 'False',
@@ -28,6 +27,11 @@ CREATE TABLE nickname (
   reg_time            INTEGER NOT NULL, -- This nickname
   last_seen           INTEGER,
   UNIQUE (nick)
+);
+
+DROP TABLE forbidden_nickname;
+CREATE TABLE forbidden_nickname (
+  nick                VARCHAR(255) NOT NULL PRIMARY KEY
 );
 
 DROP TABLE account_access;

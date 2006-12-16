@@ -30,7 +30,7 @@ struct Callback *on_nick_drop_cb;
 
 query_t queries[QUERY_COUNT] = { 
   { "SELECT id, nick, password, salt, url, email, cloak, flag_enforce, "
-    "flag_secure, flag_verified, flag_forbidden, flag_cloak_enabled, "
+    "flag_secure, flag_verified, flag_cloak_enabled, "
     "flag_admin, flag_email_verified, language, last_host, last_realname, "
     "last_quit_msg, last_quit_time, account.reg_time, nickname.reg_time, "
     "last_seen FROM account, nickname WHERE account.id = nickname.user_id AND "
@@ -87,7 +87,6 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE account SET flag_cloak_enabled=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_enforce=?B WHERE id=?d", NULL, EXECUTE },
-  { "UPDATE account SET flag_forbidden=?B WHERE id=?d", NULL, EXECUTE },
   { "DELETE FROM account_access WHERE parent_id=?d AND entry=?v", NULL,
     EXECUTE },
   { "DELETE FROM account_access WHERE parent_id=?d", NULL, EXECUTE },
@@ -97,10 +96,10 @@ query_t queries[QUERY_COUNT] = {
           "b.parent_id = ?d) AND parent_id = ?d)", NULL, EXECUTE },
   { "UPDATE nickname SET user_id=?d WHERE user_id=?d", NULL, EXECUTE },
   { "INSERT INTO account (password, salt, url, email, cloak, flag_enforce, "
-    "flag_secure, flag_verified, flag_forbidden, flag_cloak_enabled, "
+    "flag_secure, flag_verified, flag_cloak_enabled, "
     "flag_admin, flag_email_verified, language, last_host, last_realname, "
     "last_quit_msg, last_quit_time, reg_time) SELECT password, salt, url, "
-    "email, cloak, flag_enforce, flag_secure, flag_verified, flag_forbidden, "
+    "email, cloak, flag_enforce, flag_secure, flag_verified, "
     "flag_cloak_enabled, flag_admin, flag_email_verified, language, last_host, "
     "last_realname, last_quit_msg, last_quit_time, reg_time FROM account "
     "WHERE id=?d", NULL, EXECUTE },
@@ -117,6 +116,11 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE channel SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_verbose=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_admin=?B WHERE id=?d", NULL, EXECUTE },
+  { "INSERT INTO forbidden_nickname (nick) VALUES (?v)", NULL, EXECUTE },
+  { "SELECT nick FROM forbidden_nickname WHERE lower(nick)=lower(?v)",
+    NULL, QUERY },
+  { "DELETE FROM forbidden_nickname WHERE lower(nick)=lower(?v)", 
+    NULL, EXECUTE },
 };
 
 void
@@ -205,10 +209,10 @@ db_find_nick(const char *nick)
  
   nick_p = MyMalloc(sizeof(struct Nick));
  
-  brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
+  brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
     &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->url, &nick_p->email,
     &retcloak, &nick_p->enforce, &nick_p->secure, &nick_p->verified, 
-    &nick_p->forbidden, &nick_p->cloak_on, &nick_p->admin, 
+    &nick_p->cloak_on, &nick_p->admin, 
     &nick_p->email_verified, &nick_p->language, &nick_p->last_host,
     &nick_p->last_realname, &nick_p->last_quit,
     &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->nick_reg_time,
@@ -330,6 +334,53 @@ db_register_nick(struct Nick *nick)
     TransRollback();
     return FALSE;
   }
+}
+
+int 
+db_forbid_nick(const char *nick)
+{
+  int ret;
+
+  db_exec(ret, INSERT_FORBID, nick);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
+}
+
+int 
+db_is_forbid(const char *nick)
+{
+  yada_rc_t *rc, *brc;
+  char *n;
+  int ret;
+
+  brc = Bind("?ps", &n);
+  db_query(rc, GET_FORBID, nick);
+
+  if(rc == NULL)
+    return FALSE;
+
+  ret = Fetch(rc, brc);
+  
+  Free(rc);
+  Free(brc);
+
+  return ret;
+}
+
+int 
+db_delete_forbid(const char *nick)
+{
+  int ret;
+
+  db_exec(ret, DELETE_FORBID, nick);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
 }
 
 static int

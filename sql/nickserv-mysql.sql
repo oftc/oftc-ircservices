@@ -1,6 +1,8 @@
 DROP TABLE IF EXISTS nickname CASCADE;
 DROP TABLE IF EXISTS account_access CASCADE;
 DROP TABLE IF EXISTS account CASCADE;
+DROP TABLE IF EXISTS forbidden_nickname;
+
 CREATE TABLE account (
   id              INTEGER PRIMARY KEY auto_increment,
   password            CHAR(40),      -- base16 encoded sha1(salt+<userpassword>).  lower case
@@ -11,7 +13,6 @@ CREATE TABLE account (
   flag_enforce        BOOLEAN NOT NULL DEFAULT FALSE,
   flag_secure         BOOLEAN NOT NULL DEFAULT FALSE,
   flag_verified       BOOLEAN NOT NULL DEFAULT FALSE,
-  flag_forbidden      BOOLEAN NOT NULL DEFAULT FALSE,
   flag_cloak_enabled  BOOLEAN NOT NULL DEFAULT FALSE,
   flag_admin          BOOLEAN NOT NULL DEFAULT FALSE,
   flag_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
@@ -31,6 +32,10 @@ CREATE TABLE nickname (
   UNIQUE (nick),
   FOREIGN KEY (user_id) REFERENCES account(id)
 ) ENGINE=InnodB;
+
+CREATE TABLE forbidden_nickname (
+  nick                VARCHAR(255) NOT NULL PRIMARY KEY
+) ENGINE=InnoDB;
 
 CREATE TABLE account_access (
   id              INTEGER PRIMARY KEY auto_increment,

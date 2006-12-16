@@ -22,7 +22,6 @@ struct Nick
   unsigned char cloak_on;
   unsigned char admin;
   unsigned char email_verified;
-  unsigned char forbidden;
   unsigned int language;
   time_t reg_time;
   time_t last_seen;
