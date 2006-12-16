@@ -699,7 +699,7 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(strncmp(client->name, parv[1], NICKLEN) == 0)
+  if(ircncmp(client->name, parv[1], NICKLEN) == 0)
   {
     free_nick(nick);
     reply_user(service, client, NS_GHOST_NOSELF, parv[1]);
