@@ -693,7 +693,7 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
 
-  if(hash_find_client(parv[1]) == NULL)
+  if(find_client(parv[1]) == NULL)
   {
     reply_user(service, client, NS_GHOST_NOTONLINE, parv[1]);
     return;
