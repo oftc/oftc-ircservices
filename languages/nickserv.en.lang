@@ -193,6 +193,8 @@ NS_GHOST_FAILED
 	GHOST failed on nickname %s.
 NS_GHOST_NOSELF         
 	You cannot GHOST yourself, %s.
+NS_GHOST_NOTONLINE
+	%s is not online to GHOST.
 NS_LINK_NOMASTER        
 	Master nickname %s not registered.
 NS_LINK_BADPASS         
