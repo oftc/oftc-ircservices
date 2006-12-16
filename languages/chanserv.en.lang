@@ -70,22 +70,7 @@ CS_HELP_SET_CLEARBANS_LONG
 CS_HELP_SET_SHORT
 	%s: Sets various stati on a channel
 CS_HELP_SET_LONG
-	FOUNDER     Sets the Founder of a channel
-	SUCCESSOR   Sets the Successor of a channel
-	PASSWORD    Sets the Password of a channel
-	DESCRIPTION Sets a Description for the channel
-	URL         Sets the Homepage of the channel
-	EMAIL       Sets an Contact- or Mailinglistaddress for the channel
-	ENTRYMSG    Sets an autogreet for everyone joining the channel
-	TOPIC       Sets the topic on the channel
-	KEEPTOPIC   Retain Topic when not in use
-	TOPICLOCK   Topic can only be changed with SET TOPIC
-	PRIVATE     Hide Channel from LIST command
-	RESTRICTED  Restrict access to a chanel
-	SECURE      activate security feature
-	SECUREOPS   enable stricter control of chanop status
-	LEAVEOPS    never deop user except with DEOP command
-	VERBOSE     Send a notice to a channel when actions are taken
+	Set stuff.  List of stuff to set follows:
 CS_HELP_AKICK_ADD_SHORT
 	%s: moo
 CS_HELP_AKICK_ADD_LONG

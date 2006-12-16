@@ -242,7 +242,11 @@ do_help(struct Service *service, struct Client *client,
     
     while(sub != NULL && sub->cmd != NULL)
     {
-      reply_user(service, client, sub->help_short, "\002%s\002: %s", sub->cmd);
+      if(sub->help_short > 0)
+        reply_user(service, client, sub->help_short, sub->cmd);
+      else
+        reply_user(service, client, 0, sub->cmd);
+
       sub++;
       if(sub->cmd == NULL)
         sub = NULL;

@@ -95,28 +95,28 @@ static struct ServiceMessage drop_msgtab = {
 };
 
 static struct SubMessage set_sub[9] = {
-  { "LANGUAGE"    , 0, 0, -1, -1, 
+  { "LANGUAGE"    , 0, 0, NS_HELP_SET_LANG_SHORT, NS_HELP_SET_LANG_LONG, 
     { m_notid, m_set_language, m_set_language, m_set_language }
   },
-  { "PASSWORD"    , 0, 1, -1, -1, 
+  { "PASSWORD"    , 0, 1, NS_HELP_SET_PASS_SHORT, NS_HELP_SET_PASS_LONG, 
     { m_notid, m_set_password, m_set_password, m_set_password }
   },
-  { "URL"         , 0, 0, -1, -1, 
+  { "URL"         , 0, 0, NS_HELP_SET_URL_SHORT, NS_HELP_SET_URL_LONG, 
     { m_notid, m_set_url, m_set_url, m_set_url }
   },
-  { "EMAIL"       , 0, 0, -1, -1, 
+  { "EMAIL"       , 0, 0, NS_HELP_SET_EMAIL_SHORT, NS_HELP_SET_EMAIL_LONG, 
     { m_notid, m_set_email, m_set_email, m_set_email }
   },
-  { "ENFORCE"     , 0, 0, -1, -1, 
+  { "ENFORCE"     , 0, 0, NS_HELP_SET_ENFORCE_SHORT, NS_HELP_SET_ENFORCE_LONG, 
     { m_notid, m_set_enforce, m_set_enforce, m_set_enforce }
   },
-  { "SECURE"      , 0, 0, -1, -1, 
+  { "SECURE"      , 0, 0, NS_HELP_SET_SECURE_SHORT, NS_HELP_SET_SECURE_LONG, 
     { m_notid, m_set_secure, m_set_secure, m_set_secure }
   },
-  { "CLOAK"       , 0, 0, -1, -1, 
+  { "CLOAK"       , 0, 0, NS_HELP_SET_CLOAK_SHORT, NS_HELP_SET_CLOAK_LONG, 
     { m_notid, m_set_cloak, m_set_cloak, m_set_cloak }
   },
-  { "CLOAKSTRING" , 0, 0, -1, -1, 
+  { "CLOAKSTRING" , 0, 0, NS_HELP_SET_CLOAKSTRING_SHORT, NS_HELP_SET_CLOAKSTRING_LONG, 
     { m_notid, m_set_cloakstring, m_set_cloakstring, m_set_cloakstring }
   },
   { NULL        , 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
@@ -128,13 +128,13 @@ static struct ServiceMessage set_msgtab = {
 };
 
 static struct SubMessage access_sub[4] = {
-  { "ADD", 0, 1, -1, -1, 
+  { "ADD", 0, 1, NS_HELP_ACCESS_ADD_SHORT, NS_HELP_ACCESS_ADD_LONG, 
     { m_notid, m_access_add, m_access_add, m_access_add }
   },
-  { "LIST", 0, 0, -1, -1, 
+  { "LIST", 0, 0, NS_HELP_ACCESS_LIST_SHORT, NS_HELP_ACCESS_LIST_LONG, 
     { m_notid, m_access_list, m_access_list, m_access_list }
   },
-  { "DEL", 0, 0, -1, -1, 
+  { "DEL", 0, 0, NS_HELP_ACCESS_DEL_SHORT, NS_HELP_ACCESS_DEL_LONG, 
     { m_notid, m_access_del, m_access_del, m_access_del }
   },
   { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
