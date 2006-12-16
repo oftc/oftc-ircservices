@@ -12,6 +12,7 @@ extern struct Callback *send_gnotice_cb;
 extern struct Callback *send_umode_cb;
 extern struct Callback *send_cloak_cb;
 extern struct Callback *send_nick_cb;
+extern struct Callback *send_akill_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -30,11 +31,12 @@ void introduce_service(struct Service *);
 void reply_user(struct Service *, struct Client *, unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
 void cloak_user(struct Client *, char *);
-void send_umode(struct Service *, struct Client *, const char *);
 void init_interface();
 void do_help(struct Service *, struct Client *, const char *, int, char **);
 void identify_user(struct Client *);
 void send_nick_change(struct Service *, struct Client *, const char *);
+void send_umode(struct Service *, struct Client *, const char *);
+void send_akill(struct Service *, struct Client *, struct AKill *);
 
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
 void chain_squit(struct Client *, struct Client *, char *);

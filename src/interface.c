@@ -32,6 +32,7 @@ struct Callback *send_gnotice_cb;
 struct Callback *send_umode_cb;
 struct Callback *send_cloak_cb;
 struct Callback *send_nick_cb;
+struct Callback *send_akill_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -57,6 +58,7 @@ init_interface()
   send_umode_cb       = register_callback("Set UMODE", NULL);
   send_cloak_cb       = register_callback("Cloak an user", NULL);
   send_nick_cb        = register_callback("Send a new nickname", NULL);
+  send_akill_cb       = register_callback("Send AKILL to network", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
@@ -153,6 +155,12 @@ send_nick_change(struct Service *service, struct Client *client,
     const char *newnick)
 {
   execute_callback(send_nick_cb, me.uplink, client, newnick);
+}
+
+void
+send_akill(struct Service *service, struct Client *client, struct AKill *akill)
+{
+  execute_callback(send_akill_cb, me.uplink, client, akill);
 }
   
 void
