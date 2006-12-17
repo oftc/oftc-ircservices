@@ -207,12 +207,8 @@ static struct SubMessage akick_sub[] = {
     { m_notid, m_akick_del, m_akick_del, m_akick_del } },
   { "LIST",    0, 1, CS_HELP_AKICK_LIST_SHORT, CS_HELP_AKICK_LIST_LONG, 
     { m_notid, m_akick_list, m_akick_list, m_akick_list} },
-  { "VIEW",    0, 1, CS_HELP_AKICK_VIEW_SHORT, CS_HELP_AKICK_VIEW_LONG, 
-    { m_notid, m_not_avail, m_not_avail, m_not_avail } },
   { "ENFORCE", 0, 0, CS_HELP_AKICK_ENFORCE_SHORT, CS_HELP_AKICK_ENFORCE_LONG, 
     { m_notid, m_akick_enforce, m_akick_enforce, m_akick_enforce } },
-  { "COUNT",   0, 0, CS_HELP_AKICK_COUNT_SHORT, CS_HELP_AKICK_COUNT_LONG, 
-    { m_notid, m_not_avail, m_not_avail, m_not_avail } },
   { NULL,      0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
