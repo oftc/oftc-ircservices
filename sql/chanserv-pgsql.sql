@@ -1,4 +1,4 @@
-DROP TABLE channel;
+DROP TABLE channel CASCADE;
 CREATE TABLE channel(
   id                    SERIAL PRIMARY KEY,
   channel               VARCHAR(255) NOT NULL,
@@ -21,9 +21,20 @@ CREATE TABLE channel(
 DROP TABLE channel_access;
 CREATE TABLE channel_access(
   id                   SERIAL PRIMARY KEY,
-  channel_id           INTEGER NOT NULL REFERENCES channel (id),
+  channel_id           INTEGER NOT NULL REFERENCES channel(id),
   nick_id              INTEGER NOT NULL REFERENCES account(id),
   level                INTEGER NOT NULL,
-
   UNIQUE (channel_id, nick_id)
+);
+
+DROP TABLE channel_akick;
+CREATE TABLE channel_akick(
+  id                  SERIAL PRIMARY KEY,
+  channel_id          INTEGER NOT NULL REFERENCES channel(id),
+  nick_id             INTEGER NOT NULL REFERENCES account(id), -- If a nickname akick
+  setter              INTEGER NOT NULL REFERENCES account(id),
+  mask                VARCHAR(255), -- If a mask akick
+  reason              VARCHAR(512),
+  time                INTEGER NOT NULL,
+  duration            INTEGER NOT NULL
 );

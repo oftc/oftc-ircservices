@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS channel_access;
+DROP TABLE IF EXISTS channel_akick;
 DROP TABLE IF EXISTS channel;
 CREATE TABLE channel (
   id                      INTEGER PRIMARY KEY auto_increment,
@@ -22,12 +23,25 @@ CREATE TABLE channel (
 )ENGINE=InnoDB;
 
 CREATE TABLE channel_access (
-  id              INTEGER PRIMARY KEY auto_increment,
-  channel_id      INTEGER NOT NULL,
-  nick_id         INTEGER NOT NULL,
-  level           INTEGER NOT NULL,
-  FOREIGN KEY (channel_id) REFERENCES channel(id),
-  FOREIGN KEY (nick_id) REFERENCES account(id),
+  id                      INTEGER PRIMARY KEY auto_increment,
+  channel_id              INTEGER NOT NULL,
+  nick_id                 INTEGER NOT NULL,
+  level                   INTEGER NOT NULL,
+  FOREIGN KEY (channel_id)REFERENCES channel(id),
+  FOREIGN KEY (nick_id)   REFERENCES account(id),
   UNIQUE (channel_id, nick_id)
 )ENGINE=InnoDB;
   
+CREATE TABLE channel_akick(
+  id                      SERIAL PRIMARY KEY,
+  channel_id              INTEGER NOT NULL, 
+  nick_id                 INTEGER NOT NULL, -- If a nickname akick
+  setter                  INTEGER NOT NULL, 
+  mask                    VARCHAR(255), -- If a mask akick
+  reason                  VARCHAR(512),              
+  time                    INTEGER NOT NULL,
+  duration                INTEGER NOT NULL,
+  FOREIGN KEY (channel_id)REFERENCES channel(id),
+  FOREIGN KEY (nick_id)   REFERENCES account(id),
+  FOREIGN KEY (setter)    REFERENCES account(id)
+);
