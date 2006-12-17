@@ -5,7 +5,7 @@ CREATE TABLE channel (
   id                      INTEGER PRIMARY KEY auto_increment,
   channel                 VARCHAR(255) NOT NULL,
   founder                 INTEGER NOT NULL,
-  successor               INTEGER NOT NULL,
+  successor               INTEGER,
   flag_forbidden          BOOLEAN NOT NULL DEFAULT FALSE, -- channel is forbidden.  it may not be used
   flag_private            BOOLEAN NOT NULL DEFAULT FALSE, -- do not show up in list of channels
   flag_restricted_ops     BOOLEAN NOT NULL DEFAULT FALSE, -- only people on the access list can hold channel operator status
@@ -35,13 +35,13 @@ CREATE TABLE channel_access (
 CREATE TABLE channel_akick(
   id                      SERIAL PRIMARY KEY,
   channel_id              INTEGER NOT NULL, 
-  nick_id                 INTEGER NOT NULL, -- If a nickname akick
+  target                  INTEGER, -- If a nickname akick
   setter                  INTEGER NOT NULL, 
   mask                    VARCHAR(255), -- If a mask akick
   reason                  VARCHAR(512),              
   time                    INTEGER NOT NULL,
   duration                INTEGER NOT NULL,
   FOREIGN KEY (channel_id)REFERENCES channel(id),
-  FOREIGN KEY (nick_id)   REFERENCES account(id),
+  FOREIGN KEY (target)    REFERENCES account(id),
   FOREIGN KEY (setter)    REFERENCES account(id)
 );

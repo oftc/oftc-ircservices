@@ -77,6 +77,7 @@ static void m_akick(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
+static void m_akick_del(struct Service *, struct Client *, int, char *[]);
 
 #if 0
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
@@ -202,7 +203,7 @@ static struct SubMessage akick_sub[] = {
   { "ADD",     0, 2, CS_HELP_AKICK_ADD_SHORT, CS_HELP_AKICK_ADD_LONG, 
     { m_notid, m_akick_add, m_akick_add, m_akick_add } }, 
   { "DEL",     0, 1, CS_HELP_AKICK_DEL_SHORT, CS_HELP_AKICK_DEL_LONG, 
-    { m_notid, m_not_avail, m_not_avail, m_not_avail } },
+    { m_notid, m_akick_del, m_akick_del, m_akick_del } },
   { "LIST",    0, 1, CS_HELP_AKICK_LIST_SHORT, CS_HELP_AKICK_LIST_LONG, 
     { m_notid, m_akick_list, m_akick_list, m_akick_list} },
   { "VIEW",    0, 1, CS_HELP_AKICK_VIEW_SHORT, CS_HELP_AKICK_VIEW_LONG, 
@@ -1175,6 +1176,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   struct Nick *nick;
   struct Channel *chptr;
   struct RegChannel *regchptr;
+  char reason[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
@@ -1212,8 +1214,12 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   DupString(akick->channel, parv[1]);
   akick->time_set = CurrentTime;
   akick->duration = 0;
+
   if(parv[3] != NULL)
-    DupString(akick->reason, parv[3]);
+  {
+    join_params(reason, parc-2, &parv[3]);
+    DupString(akick->reason, reason);
+  }
   else
     DupString(akick->reason, "You are not permitted on this channel");
 
@@ -1273,6 +1279,34 @@ m_akick_list(struct Service *service, struct Client *client,
 
   if(chptr == NULL)
     free_regchan(regchptr);
+}
+
+static void
+m_akick_del(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  int index, ret;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  index = atoi(parv[2]);
+  if(index > 0)
+    ret = db_list_del_index(DELETE_AKICK_IDX, regchptr->id, index);
+  else if(strchr(parv[2], '@') != NULL)
+    ret = db_list_del(DELETE_AKICK_MASK, regchptr->id, parv[2]);
+  else
+    ret = db_list_del(DELETE_AKICK_ACCOUNT, regchptr->id, parv[2]);
+
+  reply_user(service, service, client, CS_AKICK_DEL, ret);
 }
 
 static int 

@@ -121,12 +121,21 @@ query_t queries[QUERY_COUNT] = {
     NULL, QUERY },
   { "DELETE FROM forbidden_nickname WHERE lower(nick)=lower(?v)", 
     NULL, EXECUTE },
-  { "INSERT INTO channel_akick (channel_id, nick_id, setter, mask, reason, "
-    "time, duration) VALUES (?d, ?d, ?d, ?v, ?v, ?d, ?d)", NULL, EXECUTE },
-  { "SELECT channel_akick.id, channel.channel, nick_id, setter, mask, reason, time, duration FROM "
+  { "INSERT INTO channel_akick (channel_id, target, setter, reason, "
+    "time, duration) VALUES (?d, ?d, ?d, ?v, ?d, ?d)", NULL, EXECUTE },
+  { "INSERT INTO channel_akick (channel_id, setter, reason, mask, "
+    "time, duration) VALUES (?d, ?d, ?v, ?v, ?d, ?d)", NULL, EXECUTE },
+  { "SELECT channel_akick.id, channel.channel, target, setter, mask, reason, time, duration FROM "
     "channel_akick, channel WHERE channel_id=?d AND channel.id=channel_id", 
     NULL, QUERY },
-  { "DELETE FROM channel_akick WHERE channel_id=?d", NULL, EXECUTE },
+  { "DELETE FROM channel_akick WHERE id = "
+          "(SELECT id FROM channel_akick AS a WHERE ?d = "
+          "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
+          "b.channel_id = ?d) AND channel_id = ?d)", NULL, EXECUTE },
+  { "DELETE FROM channel_akick WHERE channel_id=?d AND mask=?v", NULL, 
+    EXECUTE },
+  { "DELETE FROM channel_akick WHERE channel_id=?d AND target IN (SELECT user_id "
+    "FROM nickname WHERE lower(nick)=lower(?v))", NULL, EXECUTE },
 };
 
 void
@@ -499,9 +508,20 @@ db_list_add(unsigned int type, const void *value)
       break;
     case AKICK_LIST:
       id = db_get_id_from_name(akickval->channel, GET_CHANID_FROM_CHAN);
-      db_exec(ret, INSERT_AKICK, id, akickval->target,
-          akickval->setter, akickval->mask, akickval->reason,
-          akickval->time_set, akickval->duration);
+      if(akickval->target != 0)
+      {
+        db_exec(ret, INSERT_AKICK_ACCOUNT, id, akickval->target,
+            akickval->setter, akickval->reason, akickval->time_set, 
+            akickval->duration);
+      }
+      else if(akickval->mask != NULL)
+      {
+        db_exec(ret, INSERT_AKICK_MASK, id, akickval->setter, 
+            akickval->reason, akickval->mask, akickval->time_set, 
+            akickval->duration);
+      }
+      else
+        assert(0 == 1);
       break;
     case CHACCESS_LIST:
       break;
@@ -657,7 +677,7 @@ db_list_del(unsigned int type, unsigned int id, const char *param)
 {
   int ret;
 
-  if(type == DELETE_NICKACCESS)
+  if(id > 0)
   {
     db_exec(ret, type, id, param);
   }

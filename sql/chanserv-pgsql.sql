@@ -31,7 +31,7 @@ DROP TABLE channel_akick;
 CREATE TABLE channel_akick(
   id                  SERIAL PRIMARY KEY,
   channel_id          INTEGER NOT NULL REFERENCES channel(id),
-  nick_id             INTEGER NOT NULL REFERENCES account(id), -- If a nickname akick
+  target              INTEGER REFERENCES account(id), -- If a nickname akick
   setter              INTEGER NOT NULL REFERENCES account(id),
   mask                VARCHAR(255), -- If a mask akick
   reason              VARCHAR(512),
