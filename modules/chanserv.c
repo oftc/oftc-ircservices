@@ -78,6 +78,7 @@ static void m_akick(struct Service *, struct Client *, int, char *[]);
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
 static void m_akick_del(struct Service *, struct Client *, int, char *[]);
+static void m_akick_enforce(struct Service *, struct Client *, int, char *[]);
 
 #if 0
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
@@ -200,7 +201,7 @@ static struct ServiceMessage levels_msgtab = {
 #endif
 
 static struct SubMessage akick_sub[] = {
-  { "ADD",     0, 2, CS_HELP_AKICK_ADD_SHORT, CS_HELP_AKICK_ADD_LONG, 
+  { "ADD",     0, 3, CS_HELP_AKICK_ADD_SHORT, CS_HELP_AKICK_ADD_LONG, 
     { m_notid, m_akick_add, m_akick_add, m_akick_add } }, 
   { "DEL",     0, 1, CS_HELP_AKICK_DEL_SHORT, CS_HELP_AKICK_DEL_LONG, 
     { m_notid, m_akick_del, m_akick_del, m_akick_del } },
@@ -209,14 +210,14 @@ static struct SubMessage akick_sub[] = {
   { "VIEW",    0, 1, CS_HELP_AKICK_VIEW_SHORT, CS_HELP_AKICK_VIEW_LONG, 
     { m_notid, m_not_avail, m_not_avail, m_not_avail } },
   { "ENFORCE", 0, 0, CS_HELP_AKICK_ENFORCE_SHORT, CS_HELP_AKICK_ENFORCE_LONG, 
-    { m_notid, m_not_avail, m_not_avail, m_not_avail } },
+    { m_notid, m_akick_enforce, m_akick_enforce, m_akick_enforce } },
   { "COUNT",   0, 0, CS_HELP_AKICK_COUNT_SHORT, CS_HELP_AKICK_COUNT_LONG, 
     { m_notid, m_not_avail, m_not_avail, m_not_avail } },
   { NULL,      0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage akick_msgtab = {
-  akick_sub, "AKICK", 0, 0, CS_HELP_AKICK_SHORT, CS_HELP_AKICK_LONG,
+  akick_sub, "AKICK", 0, 1, CS_HELP_AKICK_SHORT, CS_HELP_AKICK_LONG,
   { m_notid, m_akick, m_akick, m_akick }
 };
 
@@ -1228,9 +1229,18 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   else
     reply_user(service, service, client, CS_AKICK_ADDFAIL, parv[2]);
 
-  free_akick(akick);
   if(chptr == NULL)
     free_regchan(regchptr);
+  else
+  {
+    int numkicks = 0;
+
+    numkicks = enforce_akick(service, chptr, akick);
+    reply_user(service, service, client, CS_AKICK_ENFORCE, regchptr->channel,
+      numkicks);
+  }
+
+  free_akick(akick);
 }
 
 static void
@@ -1307,6 +1317,39 @@ m_akick_del(struct Service *service, struct Client *client,
     ret = db_list_del(DELETE_AKICK_ACCOUNT, regchptr->id, parv[2]);
 
   reply_user(service, service, client, CS_AKICK_DEL, ret);
+}
+
+static void
+m_akick_enforce(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  int numkicks = 0;
+  dlink_node *ptr;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  DLINK_FOREACH(ptr, chptr->members.head)
+  {
+    struct Membership *ms = ptr->data;
+    struct Client *client = ms->client_p;
+
+    numkicks += enforce_matching_akick(service, chptr, client);
+  }
+
+  reply_user(service, service, client, CS_AKICK_ENFORCE, regchptr->channel,
+      numkicks);
+
+  if(chptr == NULL)
+    free_regchan(regchptr);
 }
 
 static int 
@@ -1448,6 +1491,8 @@ cs_on_client_join(va_list args)
   /* Find Channel in hash */
   if ((chptr = hash_find_channel(name)) != NULL)
   {
+    if(enforce_matching_akick(chanserv, chptr, source_p))
+        return pass_callback(cs_join_hook, source_p, name);
     /* regchan attached, good */
     if ( chptr->regchan != NULL)
     {

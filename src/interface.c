@@ -33,6 +33,8 @@ struct Callback *send_umode_cb;
 struct Callback *send_cloak_cb;
 struct Callback *send_nick_cb;
 struct Callback *send_akill_cb;
+struct Callback *send_kick_cb;
+struct Callback *send_cmode_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -61,6 +63,8 @@ init_interface()
   send_cloak_cb       = register_callback("Cloak an user", NULL);
   send_nick_cb        = register_callback("Send a new nickname", NULL);
   send_akill_cb       = register_callback("Send AKILL to network", NULL);
+  send_kick_cb        = register_callback("Send KICK to network", NULL);
+  send_cmode_cb       = register_callback("Send Channel MODE", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
@@ -172,6 +176,28 @@ void
 send_akill(struct Service *service, struct Client *client, struct AKill *akill)
 {
   execute_callback(send_akill_cb, me.uplink, client, akill);
+}
+
+void
+send_cmode(struct Service *service, struct Channel *chptr, const char *mode,
+    const char *param)
+{
+  execute_callback(send_cmode_cb, me.uplink, service->name, chptr->chname, 
+      mode, param);
+}
+
+void
+kick_user(struct Service *service, struct Channel *chptr, const char *client, 
+    const char *reason)
+{
+  execute_callback(send_kick_cb, me.uplink, service->name, chptr->chname, 
+      client, reason);
+}
+
+void
+ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
+{
+  send_cmode(service, chptr, "+b", mask);
 }
   
 void
@@ -317,6 +343,105 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
   }
   db_list_done(first);
   return FALSE;
+}
+
+int enforce_matching_akick(struct Service *service, struct Channel *chptr, 
+    struct Client *client)
+{
+  struct AKick *akick;
+  void *ptr, *first;
+
+  first = ptr = db_list_first(AKICK_LIST, chptr->regchan->id, (void**)&akick);
+
+  if(ptr == NULL)
+    return FALSE;
+
+  while(ptr != NULL)
+  {
+    if(enforce_client_akick(service, chptr, client, akick))
+    {
+      free_akick(akick);
+      db_list_done(first);
+      return TRUE;
+    }
+    free_akick(akick);
+    ptr = db_list_next(ptr, AKICK_LIST, (void**)&akick);
+  }
+
+  return FALSE;
+}
+
+int
+enforce_client_akick(struct Service *service, struct Channel *chptr, 
+    struct Client *client, struct AKick *akick)
+{
+  struct irc_ssaddr addr;
+  struct split_nuh_item nuh;
+  char name[NICKLEN];
+  char user[USERLEN + 1];
+  char host[HOSTLEN + 1];
+  int type, bits, kick = 0;
+
+  if(akick->mask == NULL)
+  {
+    char *nick = db_get_nickname_from_id(akick->target);
+    if(ircncmp(nick, client->name, NICKLEN) == 0)
+    {
+      snprintf(host, HOSTLEN, "%s!*@*", nick);
+      ban_mask(service, chptr, host);
+      kick_user(service, chptr, client->name, akick->reason);
+      return TRUE;
+    }
+    return FALSE;
+  }
+  DupString(nuh.nuhmask, akick->mask);
+
+  nuh.nickptr  = name;
+  nuh.userptr  = user;
+  nuh.hostptr  = host;
+
+  nuh.nicksize = sizeof(name);
+  nuh.usersize = sizeof(user);
+  nuh.hostsize = sizeof(host);
+
+  split_nuh(&nuh);
+
+  type = parse_netmask(host, &addr, &bits);
+
+  if(match(name, client->name) && match(user, client->username))
+  {
+    switch(type)
+    {
+      case HM_HOST:
+        if(match(host, client->host))
+          kick = 1;
+        break;
+    }
+    if(kick)
+    {
+      ban_mask(service, chptr, akick->mask);
+      kick_user(service, chptr, client->name, akick->reason);
+    }
+  }
+  MyFree(nuh.nuhmask);
+  return kick;
+}
+
+int
+enforce_akick(struct Service *service, struct Channel *chptr, 
+    struct AKick *akick)
+{
+  dlink_node *ptr;
+  int numkicks = 0;
+
+  DLINK_FOREACH(ptr, chptr->members.head)
+  {
+    struct Membership *ms = ptr->data;
+    struct Client *client = ms->client_p;
+
+    numkicks += enforce_client_akick(service, chptr, client, akick);
+  }
+  return numkicks;
 }
 
 void

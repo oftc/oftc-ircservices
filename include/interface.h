@@ -13,6 +13,8 @@ extern struct Callback *send_umode_cb;
 extern struct Callback *send_cloak_cb;
 extern struct Callback *send_nick_cb;
 extern struct Callback *send_akill_cb;
+extern struct Callback *send_kick_cb;
+extern struct Callback *send_cmode_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -38,6 +40,7 @@ void identify_user(struct Client *);
 void send_nick_change(struct Service *, struct Client *, const char *);
 void send_umode(struct Service *, struct Client *, const char *);
 void send_akill(struct Service *, struct Client *, struct AKill *);
+void send_cmode(struct Service *, struct Channel *, const char *, const char *);
 
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
 void chain_squit(struct Client *, struct Client *, char *);
@@ -50,6 +53,10 @@ char *replace_string(char *, const char *);
 int check_list_entry(unsigned int, unsigned int, const char *);
 int check_nick_pass(struct Nick *, const char *);
 void make_random_string(char *, size_t);
+int enforce_matching_akick(struct Service *, struct Channel *, struct Client *);
+int enforce_akick(struct Service *, struct Channel *, struct AKick *);
+int enforce_client_akick(struct Service *, struct Channel *, struct Client *,
+    struct AKick *);
 
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);

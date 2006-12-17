@@ -41,6 +41,8 @@ static void remove_a_mode(struct Channel *, struct Client *, int, char);
 static void *irc_sendmsg_nick(va_list);
 static void *irc_sendmsg_privmsg(va_list);
 static void *irc_sendmsg_notice(va_list);
+static void *irc_sendmsg_kick(va_list);
+static void *irc_sendmsg_cmode(va_list);
 static void *irc_server_connected(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
@@ -158,6 +160,8 @@ static dlink_node *connected_hook;
 static dlink_node *newuser_hook;
 static dlink_node *privmsg_hook;
 static dlink_node *notice_hook;
+static dlink_node *kick_hook;
+static dlink_node *cmode_hook;
 
 INIT_MODULE(irc, "$Revision$")
 {
@@ -165,6 +169,8 @@ INIT_MODULE(irc, "$Revision$")
   newuser_hook = install_hook(send_newuser_cb, irc_sendmsg_nick);
   privmsg_hook = install_hook(send_privmsg_cb, irc_sendmsg_privmsg);
   notice_hook  = install_hook(send_notice_cb, irc_sendmsg_notice);
+  kick_hook    = install_hook(send_kick_cb, irc_sendmsg_kick);
+  cmode_hook   = install_hook(send_cmode_cb, irc_sendmsg_cmode);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -286,6 +292,33 @@ irc_sendmsg_notice(va_list args)
   return NULL;
 }
 
+static void *
+irc_sendmsg_kick(va_list args)
+{
+  struct Client *client   = va_arg(args, struct Client *);
+  char          *source   = va_arg(args, char *);
+  char          *channel  = va_arg(args, char *); 
+  char          *target   = va_arg(args, char *);
+  char          *reason   = va_arg(args, char *);
+  
+  sendto_server(client, ":%s KICK %s %s :%s", 
+      (source != NULL) ? source : me.name, channel, target, reason);
+  return NULL;
+}
+
+static void *
+irc_sendmsg_cmode(va_list args)
+{
+  struct Client *client   = va_arg(args, struct Client *);
+  char          *source   = va_arg(args, char *);
+  char          *channel  = va_arg(args, char *); 
+  char          *mode     = va_arg(args, char *);
+  char          *param    = va_arg(args, char *);
+  
+  sendto_server(client, ":%s MODE %s %s %s", 
+      (source != NULL) ? source : me.name, channel, mode, param);
+  return NULL;
+}
 
 #if 0
 

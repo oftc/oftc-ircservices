@@ -155,5 +155,6 @@ struct CHACCESS_LALA {
 #define CS_AKICK_LIST 99
 #define CS_AKICK_LISTEND 100
 #define CS_AKICK_DEL 101
+#define CS_AKICK_ENFORCE 102
 
 #endif

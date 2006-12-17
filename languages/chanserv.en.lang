@@ -209,3 +209,5 @@ CS_AKICK_LISTEND
 	End of AKICK list for %s.
 CS_AKICK_DEL
 	%d AKICK entries deleted.
+CS_AKICK_ENFORCE
+	On channel %s, %d users affected by AKICK enforcement.
