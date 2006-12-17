@@ -150,62 +150,62 @@ CS_SET_SUCCESSOR
 CS_SET_DESCRIPTION
 	Description of %s is set to %s
 CS_SET_ENTRYMSG
-	Entrymsg of %s is set to "%s"
+	Entrymsg of %s is set to "%s"
 CS_SET_FOUNDER
 	Founder of channel %s has been set to %s
 CS_SET_FOUNDER_FAILED
 	Setting founder of channel %s to %s has failed
 CS_SET_SUCC
-	Successor of channel %s has been set to %s
+	Successor of channel %s has been set to %s
 CS_SET_SUCC_FAILED
-	Setting successor of channel %s to %s has failed
+	Setting successor of channel %s to %s has failed
 CS_SET_DESC
-	Description of channel %s has been set to %s
+	Description of channel %s has been set to %s
 CS_SET_DESC_FAILED
-	Setting Description of channel %s has failed
+	Setting Description of channel %s has failed
 CS_SET_URL
-	URL of channel %s has been set to %s
+	URL of channel %s has been set to %s
 CS_SET_URL_FAILED
-	Setting URL of channel %s has failed
+	Setting URL of channel %s has failed
 CS_SET_EMAIL
-	eMail Adress of channel %s has been changed to %s
+	eMail Adress of channel %s has been changed to %s
 CS_SET_EMAIL_FAILED
-	Setting eMail Address of channel %s has failed
+	Setting eMail Address of channel %s has failed
 CS_SET_MSG
-	Entry message of channel %s has been set to %s
+	Entry message of channel %s has been set to %s
 CS_SET_MSG_FAILED
-	Setting eMail Address of %s has failed
+	Setting eMail Address of %s has failed
 CS_SET_TOPIC
-	Topic for %s has been set to %s
+	Topic for %s has been set to %s
 CS_SET_TOPIC_FAILED
-	Failed to set Topic for %s
+	Failed to set Topic for %s
 CS_SET_FLAG
-	%s is set to %s on %s
+	%s is set to %s on %s
 CS_SET_SUCCESS
-	On %s, %s has been set to %s
+	On %s, %s has been set to %s
 CS_SET_FAILED
-	Changing %s on %s failed.	
+	Changing %s on %s failed.	
 CS_NOT_EXIST
 	Channel does not exist. XXX
 CS_INFO_CHAN
-	Channel Information about %s
-	Founder:     %s
-	Successor:   %s
-	Description: %s
-	URL:         %s
-	eMail:       %s
-	Topic:       %s
-	EntryMsg:    %s
+	Channel Information about %s
+	Founder:     %s
+	Successor:   %s
+	Description: %s
+	URL:         %s
+	eMail:       %s
+	Topic:       %s
+	EntryMsg:    %s
 	Flags:       %s %s %s %s %s %s %s
 CS_AKICK_NONICK
-	%s is not a registered nickname. Try a mask instead.
+	%s is not a registered nickname. Try a mask instead.
 CS_AKICK_ADDED
-	AKICK %s added.
+	AKICK %s added.
 CS_AKICK_ADDFAIL
-	AKICK %s failed to be added.
+	AKICK %s failed to be added.
 CS_AKICK_LIST
-	%d: %s (%s) Set by %s Set at: %s Expires: %s
+	%d: %s (%s) Set by %s Set at: %s Expires: %s
 CS_AKICK_LISTEND
-	End of AKICK list for %s.
+	End of AKICK list for %s.
 CS_AKICK_DEL
-	%d AKICK entries deleted.
+	%d AKICK entries deleted.
