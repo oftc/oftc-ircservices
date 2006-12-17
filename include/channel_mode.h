@@ -120,6 +120,7 @@ void unset_chcap_usage_counts(struct Client *);
 EXTERN void channel_modes(struct Channel *, struct Client *, char *, char *);
 
 EXTERN int add_id(struct Client *, struct Channel *, char *, int);
+EXTERN int del_id(struct Channel *, char *, int);
 EXTERN void set_channel_mode(struct Client *, struct Client *, struct Channel *,
                              struct Membership *, int, char **, char *);
 EXTERN void clear_ban_cache(struct Channel *);

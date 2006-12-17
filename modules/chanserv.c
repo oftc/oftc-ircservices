@@ -1399,7 +1399,8 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  dlink_node *ptr;
+  dlink_node *ptr, *nptr;
+  int numbans = 0;
  
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr->regchan;
@@ -1415,7 +1416,7 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
     return;
   }
 
-  DLINK_FOREACH(ptr, chptr->banlist.head)
+  DLINK_FOREACH_SAFE(ptr, nptr, chptr->banlist.head)
   {
     const struct Ban *banptr = ptr->data;
     char ban[IRC_BUFSIZE+1];
@@ -1423,10 +1424,10 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
     snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
         banptr->host);
     unban_mask(service, chptr, ban);
+    numbans++;
   }
 
-  reply_user(service, service, client, CS_CLEAR_BANS, chptr->banlist.length,
-      regchptr->channel);
+  reply_user(service, service, client, CS_CLEAR_BANS, numbans, regchptr->channel);
 }
 
 static void

@@ -197,13 +197,17 @@ kick_user(struct Service *service, struct Channel *chptr, const char *client,
 void
 ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
+  struct Client *client = find_client(service->name);
+
   send_cmode(service, chptr, "+b", mask);
+  add_id(client, chptr, (char*)mask, CHFL_BAN);
 }
 
 void
 unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
   send_cmode(service, chptr, "-b", mask);
+  del_id(chptr, (char*)mask, CHFL_BAN);
 }
   
 void

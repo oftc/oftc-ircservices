@@ -169,7 +169,7 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
  * output	- 0 for failure, 1 for success
  * side effects	-
  */
-static int
+int
 del_id(struct Channel *chptr, char *banid, int type)
 {
   dlink_list *list = NULL;
