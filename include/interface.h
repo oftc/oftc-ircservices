@@ -54,6 +54,7 @@ void make_random_string(char *, size_t);
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
 void free_akill(struct AKill *);
+void free_akick(struct AKick *);
 
 struct Service
 {

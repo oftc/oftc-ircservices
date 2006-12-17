@@ -22,6 +22,18 @@ struct RegChannel
   char verbose;
 };
 
+struct AKick
+{
+  unsigned int id;
+  char *channel;
+  unsigned int target;
+  unsigned int setter;
+  char *mask;
+  char *reason;
+  time_t time_set;
+  time_t duration;
+};
+
 #define CHACCESS_BAN        0x0001
 #define CHACCESS_AUTODEOP   0x0002
 #define CHACCESS_VOICE      0x0004
@@ -137,5 +149,10 @@ struct CHACCESS_LALA {
 #define CS_SET_FAILED 93
 #define CS_NOT_EXIST 94
 #define CS_INFO_CHAN 95
+#define CS_AKICK_NONICK 96
+#define CS_AKICK_ADDED 97
+#define CS_AKICK_ADDFAIL 98
+#define CS_AKICK_LIST 99
+#define CS_AKICK_LISTEND 100
 
 #endif

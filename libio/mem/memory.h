@@ -64,6 +64,9 @@ MyFree(void *x)
 LIBIO_EXTERN inline void
 _DupString(char **x, const char *y)
 {
+  if(y == NULL)
+    return;
+
   (*x) = malloc(strlen(y) + 1);
 
   if (x == NULL)

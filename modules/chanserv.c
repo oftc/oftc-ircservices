@@ -24,7 +24,8 @@
 
 #include "stdinc.h"
 
-static struct CHACCESS_LALA ChAccessNames[13] = {
+#if 0
+static struct CHACCESS_LALA ChAccessNames[] = {
   { "BAN",       CHACCESS_BAN },
   { "AUTODEOP",  CHACCESS_AUTODEOP },
   { "VOICE",     CHACCESS_VOICE },
@@ -39,7 +40,7 @@ static struct CHACCESS_LALA ChAccessNames[13] = {
   { "AUTOOP",    CHACCESS_AUTOOP },
   { NULL, 0 }
 };
-
+#endif
 
 static struct Service *chanserv = NULL;
 
@@ -71,6 +72,11 @@ static void m_set_private(struct Service *, struct Client *, int, char *[]);
 static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
 static void m_set_secure(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
+
+static void m_akick(struct Service *, struct Client *, int, char *[]);
+
+static void m_akick_add(struct Service *, struct Client *, int, char *[]);
+static void m_akick_list(struct Service *, struct Client *, int, char *[]);
 
 #if 0
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
@@ -192,25 +198,25 @@ static struct ServiceMessage levels_msgtab = {
 };
 #endif
 
-static struct SubMessage akick_sub[7] = {
+static struct SubMessage akick_sub[] = {
   { "ADD",     0, 2, CS_HELP_AKICK_ADD_SHORT, CS_HELP_AKICK_ADD_LONG, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } }, 
+    { m_notid, m_akick_add, m_akick_add, m_akick_add } }, 
   { "DEL",     0, 1, CS_HELP_AKICK_DEL_SHORT, CS_HELP_AKICK_DEL_LONG, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_notid, m_not_avail, m_not_avail, m_not_avail } },
   { "LIST",    0, 1, CS_HELP_AKICK_LIST_SHORT, CS_HELP_AKICK_LIST_LONG, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_notid, m_akick_list, m_akick_list, m_akick_list} },
   { "VIEW",    0, 1, CS_HELP_AKICK_VIEW_SHORT, CS_HELP_AKICK_VIEW_LONG, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_notid, m_not_avail, m_not_avail, m_not_avail } },
   { "ENFORCE", 0, 0, CS_HELP_AKICK_ENFORCE_SHORT, CS_HELP_AKICK_ENFORCE_LONG, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_notid, m_not_avail, m_not_avail, m_not_avail } },
   { "COUNT",   0, 0, CS_HELP_AKICK_COUNT_SHORT, CS_HELP_AKICK_COUNT_LONG, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail } },
+    { m_notid, m_not_avail, m_not_avail, m_not_avail } },
   { NULL,      0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
 };
 
 static struct ServiceMessage akick_msgtab = {
   akick_sub, "AKICK", 0, 0, CS_HELP_AKICK_SHORT, CS_HELP_AKICK_LONG,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
+  { m_notid, m_akick, m_akick, m_akick }
 };
 
 static struct ServiceMessage drop_msgtab = {
@@ -298,9 +304,6 @@ CLEANUP_MODULE
 }
 
 
-/*
- * CHANSERV REGISTER
- */
 static void 
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -368,10 +371,6 @@ m_register(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_register (%s:%s)", client->name, parv[1]);
 }
 
-
-/* 
- * CHANSERV DROP
- */
 static void 
 m_drop(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -430,9 +429,6 @@ m_not_avail(struct Service *service, struct Client *client,
     "   Bug the Devs! ;-)");
 }
 
-/*
- * CHANSERV INFO
- */
 static void
 m_info(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -447,7 +443,7 @@ m_info(struct Service *service, struct Client *client,
   
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
 
@@ -468,9 +464,6 @@ m_info(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_info (%s:%s)", client->name, parv[1]);
 }
 
-/*
- * CHANSERV HELP
- */
 static void
 m_help(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -478,19 +471,13 @@ m_help(struct Service *service, struct Client *client,
   do_help(service, client, parv[1], parc, parv);
 }
 
-/*
- * CHANSERV SET
- */
 static void
 m_set(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  reply_user(service, service, client, CS_HELP_SET_LONG, "");
+  do_help(service, client, "SET", parc, parv);
 }
 
-/*
- * CHANSERV SET FOUNDER
- */
 static void
 m_set_founder(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -507,7 +494,7 @@ m_set_founder(struct Service *service, struct Client *client,
 
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
 
@@ -563,9 +550,6 @@ m_set_founder(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_set_foudner (%s:%s)", client->name, parv[1]);
 }
 
-/*
- * CHANSERV SET SUCCESSOR
- */
 static void
 m_set_successor(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -582,7 +566,7 @@ m_set_successor(struct Service *service, struct Client *client,
 
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
 
@@ -640,6 +624,7 @@ m_set_successor(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_set_successor (%s:%s)", client->name, parv[1]);
 }
 
+#if 0
 /**
  * Calculate a new level, given the old numeric level and another levelname
  * @param level old level (48)
@@ -697,7 +682,6 @@ static void
 m_access_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-#if 0
   ilog(L_TRACE, "CS ACCESS ADD from %s for %s", client->name, parv[1]);
 
   struct Channel *chptr;
@@ -762,7 +746,6 @@ m_access_add(struct Service *service, struct Client *client,
   }
   MyFree(cae);
   ilog(L_TRACE, "T: Leaving CS:m_access_add");
-#endif
 }
 
 
@@ -770,7 +753,6 @@ static void
 m_access_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-#if 0
   ilog(L_TRACE, "CS ACCESS DEL from %s for %s", client->name, parv[1]);
 
   struct Channel *chptr;
@@ -817,7 +799,6 @@ m_access_del(struct Service *service, struct Client *client,
     free_regchan(regchptr);
   }
   ilog(L_TRACE, "T: Leaving CS:m_access_del");
-#endif
 }
 
 static void
@@ -830,7 +811,6 @@ static void
 m_access_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-#if 0
   // FIXME: Permissions unchecked here -mc
   struct ChannelAccessEntry *cae;
   struct Channel *chptr;
@@ -864,7 +844,6 @@ m_access_list(struct Service *service, struct Client *client,
   {
     free_regchan(regchptr);
   }
-#endif
 }
 
 static void
@@ -872,11 +851,8 @@ m_access_count(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
 }
+#endif
 
-
-/*
- * CHANSERV SET DESC
- */
 static void
 m_set_desc(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -893,7 +869,7 @@ m_set_desc(struct Service *service, struct Client *client,
 
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
 
@@ -934,9 +910,6 @@ m_set_desc(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_set_desc (%s:%s)", client->name, parv[1]);
 }
 
-/*
- * CHANSERV SET URL
- */
 static void
 m_set_url(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -951,7 +924,7 @@ m_set_url(struct Service *service, struct Client *client,
 
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
  
@@ -987,9 +960,6 @@ m_set_url(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_set_url(%s:%s)", client->name, parv[1]);
 }
 
-/*
- * CHANSERV SET EMAIL
- */
 static void
 m_set_email(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -1004,7 +974,7 @@ m_set_email(struct Service *service, struct Client *client,
 
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
 
@@ -1041,9 +1011,6 @@ m_set_email(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_set_email(%s:%s)", client->name, parv[1]);
 }
 
-/*
- * CHANSERV SET ENTRYMSG
- */
 static void
 m_set_entrymsg(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -1059,7 +1026,7 @@ m_set_entrymsg(struct Service *service, struct Client *client,
 
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
 
@@ -1097,10 +1064,6 @@ m_set_entrymsg(struct Service *service, struct Client *client,
   ilog(L_TRACE, "T: Leaving CS:m_set_entrymsg(%s:%s)", client->name, parv[1]);
 }
 
-
-/*
- * CHANSERV SET TOPIC
- */
 static void
 m_set_topic(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -1117,7 +1080,7 @@ m_set_topic(struct Service *service, struct Client *client,
 
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
 
@@ -1197,6 +1160,121 @@ m_set_verbose(struct Service *service, struct Client *client,
   m_set_flag(service, client, parv[1], parv[2], SET_CHAN_VERBOSE, "VERBOSE");
 }
 
+static void
+m_akick(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  do_help(service, client, "AKICK", parc, parv);
+}
+
+/* AKICK ADD (nick|mask) reason */
+static void
+m_akick_add(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct AKick *akick;
+  struct Nick *nick;
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  akick = MyMalloc(sizeof(struct AKick));
+  if(strchr(parv[2], '@') == NULL)
+  {
+    /* Nickname based akick */
+    if((nick = db_find_nick(parv[2])) == NULL)
+    {
+      reply_user(service, service, client, CS_AKICK_NONICK, parv[2]);
+      MyFree(akick);
+      if(chptr == NULL)
+        free_regchan(regchptr);
+      return;
+    }
+    akick->mask = NULL;
+    akick->target = nick->id;
+    free_nick(nick);
+  }
+  else
+  {
+    /* mask based akick */
+    akick->target = 0;
+    DupString(akick->mask, parv[2]);
+  }
+
+  akick->setter = client->nickname->id;
+  DupString(akick->channel, parv[1]);
+  akick->time_set = CurrentTime;
+  akick->duration = 0;
+  if(parv[3] != NULL)
+    DupString(akick->reason, parv[3]);
+  else
+    DupString(akick->reason, "You are not permitted on this channel");
+
+  if(db_list_add(AKICK_LIST, akick))
+    reply_user(service, service, client, CS_AKICK_ADDED, parv[2]);
+  else
+    reply_user(service, service, client, CS_AKICK_ADDFAIL, parv[2]);
+
+  free_akick(akick);
+  if(chptr == NULL)
+    free_regchan(regchptr);
+}
+
+static void
+m_akick_list(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct AKick *akick;
+  void *handle, *first;
+  int i = 1;
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  first = handle = db_list_first(AKICK_LIST, regchptr->id, (void**)&akick);
+  while(handle != NULL)
+  {
+    char *who, *whoset;
+
+    if(akick->target == 0)
+      who = akick->mask;
+    else
+      who = db_get_nickname_from_id(akick->target);
+
+    whoset = db_get_nickname_from_id(akick->setter);
+
+    reply_user(service, service, client, CS_AKICK_LIST, i++, who, akick->reason,
+        whoset, "sometime", "sometime");
+    free_akick(akick);
+    if(akick->target != 0)
+      MyFree(who);
+    MyFree(whoset);
+    handle = db_list_next(handle, AKICK_LIST, (void**)&akick);
+  }
+  if(first)
+    db_list_done(first);
+
+  reply_user(service, service, client, CS_AKICK_LISTEND, parv[1]);
+
+  if(chptr == NULL)
+    free_regchan(regchptr);
+}
+
 static int 
 m_set_flag(struct Service *service, struct Client *client,
            char *channel, char *toggle, int type, char *flagname)
@@ -1212,7 +1290,7 @@ m_set_flag(struct Service *service, struct Client *client,
 
   if (regchptr == NULL)
   {
-    reply_user(service, service, client, CS_NOT_REG);
+    reply_user(service, service, client, CS_NOT_REG, channel);
     return -1;
   }
 

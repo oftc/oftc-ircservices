@@ -121,6 +121,12 @@ query_t queries[QUERY_COUNT] = {
     NULL, QUERY },
   { "DELETE FROM forbidden_nickname WHERE lower(nick)=lower(?v)", 
     NULL, EXECUTE },
+  { "INSERT INTO channel_akick (channel_id, nick_id, setter, mask, reason, "
+    "time, duration) VALUES (?d, ?d, ?d, ?v, ?v, ?d, ?d)", NULL, EXECUTE },
+  { "SELECT channel_akick.id, channel.channel, nick_id, setter, mask, reason, time, duration FROM "
+    "channel_akick, channel WHERE channel_id=?d AND channel.id=channel_id", 
+    NULL, QUERY },
+  { "DELETE FROM channel_akick WHERE channel_id=?d", NULL, EXECUTE },
 };
 
 void
@@ -477,25 +483,26 @@ int
 db_list_add(unsigned int type, const void *value)
 {
   int ret = 0;
+  struct AccessEntry *aeval = (struct AccessEntry *)value;
+  struct AKill *akillval = (struct AKill *)value;
+  struct AKick *akickval = (struct AKick *)value;
+  unsigned int id;
 
   switch(type)
   {
     case ACCESS_LIST:
-    {
-      struct AccessEntry *entry = (struct AccessEntry *)value;
-      
-      db_exec(ret, INSERT_NICKACCESS, entry->id, entry->value);
+      db_exec(ret, INSERT_NICKACCESS, aeval->id, aeval->value);
       break;
-    }
     case AKILL_LIST:
-    {
-      struct AKill *akill = (struct AKill *)value;
-
-      db_exec(ret, INSERT_AKILL, akill->mask, akill->reason, 
-          db_get_id_from_name(akill->setter, GET_NICKID_FROM_NICK), 
-          akill->time_set, akill->duration);
+      db_exec(ret, INSERT_AKILL, akillval->mask, akillval->reason, 
+          akillval->setter, akillval->time_set, akillval->duration);
       break;
-    }
+    case AKICK_LIST:
+      id = db_get_id_from_name(akickval->channel, GET_CHANID_FROM_CHAN);
+      db_exec(ret, INSERT_AKICK, id, akickval->target,
+          akickval->setter, akickval->mask, akickval->reason,
+          akickval->time_set, akickval->duration);
+      break;
     case CHACCESS_LIST:
       break;
     default:
@@ -513,11 +520,12 @@ void *
 db_list_first(unsigned int type, unsigned int param, void **entry)
 {
   yada_rc_t *rc, *brc;
-  unsigned int query;
+  char *strval = (char*)*entry; 
   struct AccessEntry *aeval;
   struct AKill *akillval;
-  char *strval = (char*)*entry; 
+  struct AKick *akickval;
   struct DBResult *result;
+  unsigned int query;
   
   switch(type)
   {
@@ -542,6 +550,14 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       brc = Bind("?d?ps?ps?ps?d?d?d", &akillval->id, &akillval->mask, 
           &akillval->reason, &akillval->setter, &akillval->time_set, 
           &akillval->duration);
+    case AKICK_LIST:
+      query = GET_AKICKS;
+
+      akickval = MyMalloc(sizeof(struct AKick));
+      *entry = akickval;
+      brc = Bind("?d?ps?d?d?ps?ps?d?d", &akickval->id, &akickval->channel,
+          &akickval->target, &akickval->setter, &akickval->mask, 
+          &akickval->reason, &akickval->time_set, &akickval->duration);
       break;
     case CHACCESS_LIST:
       query = GET_CHAN_ACCESS;
@@ -565,7 +581,12 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   {
     DupString(akillval->mask, akillval->mask);
     DupString(akillval->reason, akillval->reason);
-    DupString(akillval->setter, akillval->setter);
+  }
+  else if(type == AKICK_LIST)
+  {
+    DupString(akickval->mask, akickval->mask);
+    DupString(akickval->reason, akickval->reason);
+    DupString(akickval->channel, akickval->channel);
   }
 
   return (void*)result;
@@ -577,6 +598,7 @@ db_list_next(void *result, unsigned int type, void **entry)
   struct DBResult *res = (struct DBResult *)result;
   struct AccessEntry *aeval;
   struct AKill *akillval;
+  struct AKick *akickval;
   char *strval = (char*)*entry; 
  
   switch(type)
@@ -592,6 +614,10 @@ db_list_next(void *result, unsigned int type, void **entry)
     case AKILL_LIST:
       akillval = MyMalloc(sizeof(struct AKill));
       *entry = akillval;
+      break;
+    case AKICK_LIST:
+      akickval = MyMalloc(sizeof(struct AKick));
+      *entry = akickval;
      break;
     case CHACCESS_LIST:
       break;
@@ -606,7 +632,12 @@ db_list_next(void *result, unsigned int type, void **entry)
   {
     DupString(akillval->mask, akillval->mask);
     DupString(akillval->reason, akillval->reason);
-    DupString(akillval->setter, akillval->setter);
+  }
+  else if(type == AKICK_LIST)
+  {
+    DupString(akickval->mask, akickval->mask);
+    DupString(akickval->reason, akickval->reason);
+    DupString(akickval->channel, akickval->channel);
   }
 
   return result;
@@ -767,6 +798,18 @@ db_register_chan(struct RegChannel *chan)
   return TRUE;
 }
 
+int
+db_delete_chan(const char *chan)
+{
+  int ret;
+
+  db_exec(ret, DELETE_CHAN, chan);
+
+  if(ret == -1)
+    return FALSE;
+  return TRUE;
+}
+
 #if 0
 struct ChannelAccessEntry *
 db_chan_access_get(int channel_id, int nickid)
@@ -793,49 +836,6 @@ db_chan_access_get(int channel_id, int nickid)
 
   yada_rc_t *_free(result);
   return cae;
-}
-#endif
-
-int
-db_delete_chan(const char *chan)
-{
-  int ret;
-
-  db_exec(ret, DELETE_CHAN, chan);
-
-  if(ret == -1)
-    return FALSE;
-  return TRUE;
-}
-
-#if 0
-int
-db_set_founder(const char *channel, const char *nickname)
-{
-  yada_rc_t * result;
-
-  char *escchannel, *escnick;
-
-  if(dbi_driver_quote_string_copy(Database.driv, nickname, &escnick) == 0)
-  {
-    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
-    return -1;
-  }
-
-  if(dbi_driver_quote_string_copy(Database.driv, channel, &escchannel) == 0)
-  {
-    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
-    MyFree(escnick);
-    return -1;
-  }
-
-  if (result != NULL)
-    yada_rc_t *_free(result);
-
-  MyFree(escnick);
-  MyFree(escchannel);
-
-  return 0;
 }
 
 int

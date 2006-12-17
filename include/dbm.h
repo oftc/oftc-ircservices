@@ -28,7 +28,8 @@ enum db_list_type
   ACCESS_LIST = 0,
   ADMIN_LIST,
   AKILL_LIST,
-  CHACCESS_LIST
+  CHACCESS_LIST,
+  AKICK_LIST
 };
 
 enum db_queries
@@ -92,6 +93,9 @@ enum db_queries
   INSERT_FORBID,
   GET_FORBID,
   DELETE_FORBID,
+  INSERT_AKICK,
+  GET_AKICKS,
+  DELETE_AKICK,
   QUERY_COUNT
 };
 

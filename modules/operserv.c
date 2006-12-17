@@ -384,7 +384,7 @@ m_akill_add(struct Service *service, struct Client *client,
   akill = MyMalloc(sizeof(struct AKill));
   DupString(akill->mask, parv[1]);
   DupString(akill->reason, parv[2]);
-  akill->setter = client->id;
+  akill->setter = client->nickname->id;
 
 //  akill = db_add_akill(akill);
   /* XXX Execute the akill here */

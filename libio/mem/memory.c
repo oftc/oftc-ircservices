@@ -62,6 +62,9 @@ MyFree(void *x)
 void
 _DupString(char **x, const char *y)
 {
+  if(y == NULL)
+    return;
+
   (*x) = malloc(strlen(y) + 1);
   strcpy((*x), y);
 }
