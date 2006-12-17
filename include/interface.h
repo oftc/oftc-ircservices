@@ -58,6 +58,10 @@ int enforce_akick(struct Service *, struct Channel *, struct AKick *);
 int enforce_client_akick(struct Service *, struct Channel *, struct Client *,
     struct AKick *);
 
+void kick_user(struct Service *, struct Channel *, const char *, const char *);
+void ban_mask(struct Service *, struct Channel *, const char *);
+void unban_mask(struct Service *, struct Channel *, const char *);
+
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
 void free_akill(struct AKill *);

@@ -199,6 +199,12 @@ ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
   send_cmode(service, chptr, "+b", mask);
 }
+
+void
+unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
+{
+  send_cmode(service, chptr, "-b", mask);
+}
   
 void
 identify_user(struct Client *client)

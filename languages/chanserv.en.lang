@@ -115,6 +115,26 @@ CS_HELP_CLEAR_SHORT
 	%s: moo
 CS_HELP_CLEAR_LONG
 	moo
+CS_HELP_CLEAR_MODES_SHORT
+	moo
+CS_HELP_CLEAR_MODES_LONG
+	moo
+CS_HELP_CLEAR_BANS_SHORT
+	moo
+CS_HELP_CLEAR_BANS_LONG
+	moo
+CS_HELP_CLEAR_OPS_SHORT
+	moo
+CS_HELP_CLEAR_OPS_LONG
+	moo
+CS_HELP_CLEAR_VOICES_SHORT
+	moo
+CS_HELP_CLEAR_VOICES_LONG
+	moo
+CS_HELP_CLEAR_UESRS_SHORT
+	moo
+CS_HELP_CLEAR_USERS_LONG
+	moo
 CS_REGISTER_NICK
 	Nick %s is not registered.
 CS_ALREADY_REG
@@ -203,3 +223,7 @@ CS_AKICK_DEL
 	%d AKICK entries deleted.
 CS_AKICK_ENFORCE
 	On channel %s, %d users affected by AKICK enforcement.
+CS_CHAN_NOT_USED
+	Unable to execute command because %s is not in use.
+CS_CLEAR_BANS
+	Removed %d bans from channel %s

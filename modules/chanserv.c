@@ -80,6 +80,14 @@ static void m_akick_list(struct Service *, struct Client *, int, char *[]);
 static void m_akick_del(struct Service *, struct Client *, int, char *[]);
 static void m_akick_enforce(struct Service *, struct Client *, int, char *[]);
 
+static void m_clear(struct Service *, struct Client *, int, char *[]);
+
+static void m_clear_modes(struct Service *, struct Client *, int, char *[]);
+static void m_clear_bans(struct Service *, struct Client *, int, char *[]);
+static void m_clear_ops(struct Service *, struct Client *, int, char *[]);
+static void m_clear_voices(struct Service *, struct Client *, int, char *[]);
+static void m_clear_users(struct Service *, struct Client *, int, char *[]);
+
 #if 0
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
@@ -248,9 +256,23 @@ static struct ServiceMessage invite_msgtab = {
   { m_notid, m_not_avail, m_not_avail, m_not_avail }
 };
 
+static struct SubMessage clear_sub[] = {
+  { "MODES",  0, 1, CS_HELP_CLEAR_MODES_SHORT, CS_HELP_CLEAR_MODES_LONG, 
+    { m_notid, m_clear_modes, m_clear_modes, m_clear_modes } }, 
+  { "BANS",   0, 1, CS_HELP_CLEAR_BANS_SHORT, CS_HELP_CLEAR_BANS_LONG, 
+    { m_notid, m_clear_bans, m_clear_bans, m_clear_bans } },
+  { "OPS",    0, 1, CS_HELP_CLEAR_OPS_SHORT, CS_HELP_CLEAR_OPS_LONG, 
+    { m_notid, m_clear_ops, m_clear_ops, m_clear_ops } },
+  { "VOICES", 0, 0, CS_HELP_CLEAR_VOICES_SHORT, CS_HELP_CLEAR_VOICES_LONG, 
+    { m_notid, m_clear_voices, m_clear_voices, m_clear_voices } },
+  { "USERS",  0, 0, CS_HELP_CLEAR_UESRS_SHORT, CS_HELP_CLEAR_USERS_LONG, 
+    { m_notid, m_clear_users, m_clear_users, m_clear_users } },
+  { NULL,     0, 0,  0,  0, { NULL, NULL, NULL, NULL } }
+};
+
 static struct ServiceMessage clear_msgtab = {
-  NULL, "CLEAR", 0, 1, CS_HELP_CLEAR_SHORT, CS_HELP_CLEAR_LONG,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
+  clear_sub, "CLEAR", 0, 1, CS_HELP_CLEAR_SHORT, CS_HELP_CLEAR_LONG,
+  { m_notid, m_clear, m_clear, m_clear }
 };
 
 /*
@@ -1346,6 +1368,116 @@ m_akick_enforce(struct Service *service, struct Client *client,
 
   if(chptr == NULL)
     free_regchan(regchptr);
+}
+
+static void
+m_clear(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  do_help(service, client, "CLEAR", parc, parv);
+}
+
+static void
+m_clear_modes(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+ 
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+}
+
+static void
+m_clear_bans(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  dlink_node *ptr;
+ 
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr->regchan;
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  DLINK_FOREACH(ptr, chptr->banlist.head)
+  {
+    const struct Ban *banptr = ptr->data;
+    char ban[IRC_BUFSIZE+1];
+
+    snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
+        banptr->host);
+    unban_mask(service, chptr, ban);
+  }
+
+  reply_user(service, service, client, CS_CLEAR_BANS, chptr->banlist.length,
+      regchptr->channel);
+}
+
+static void
+m_clear_ops(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+ 
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+}
+
+static void
+m_clear_voices(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+ 
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+}
+
+static void
+m_clear_users(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+ 
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
 }
 
 static int 
