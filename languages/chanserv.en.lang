@@ -227,3 +227,9 @@ CS_CHAN_NOT_USED
 	Unable to execute command because %s is not in use.
 CS_CLEAR_BANS
 	Removed %d bans from channel %s
+CS_CLEAR_OPS
+	Removed %d ops from channel %s
+CS_CLEAR_VOICES
+	Removed %d voices from channel %s
+CS_CLEAR_USERS
+	Removed all(%d) users from channel %s

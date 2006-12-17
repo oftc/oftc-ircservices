@@ -59,6 +59,8 @@ int enforce_client_akick(struct Service *, struct Channel *, struct Client *,
     struct AKick *);
 
 void kick_user(struct Service *, struct Channel *, const char *, const char *);
+void deop_user(struct Service *, struct Channel *, struct Client *);
+void devoice_user(struct Service *, struct Channel *, struct Client *);
 void ban_mask(struct Service *, struct Channel *, const char *);
 void unban_mask(struct Service *, struct Channel *, const char *);
 

@@ -195,6 +195,19 @@ kick_user(struct Service *service, struct Channel *chptr, const char *client,
 }
 
 void
+deop_user(struct Service *service, struct Channel *chptr, struct Client *client)
+{
+  send_cmode(service, chptr, "-o", client->name);
+}
+
+void
+devoice_user(struct Service *service, struct Channel *chptr, 
+    struct Client *client)
+{
+  send_cmode(service, chptr, "-v", client->name);
+}
+
+void
 ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
   struct Client *client = find_client(service->name);

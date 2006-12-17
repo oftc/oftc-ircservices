@@ -1427,7 +1427,8 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
     numbans++;
   }
 
-  reply_user(service, service, client, CS_CLEAR_BANS, numbans, regchptr->channel);
+  reply_user(service, service, client, CS_CLEAR_BANS, numbans, 
+      regchptr->channel);
 }
 
 static void
@@ -1436,15 +1437,36 @@ m_clear_ops(struct Service *service, struct Client *client, int parc,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
+  dlink_node *ptr;
+  int opcount = 0;
  
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr->regchan;
 
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
   if(regchptr == NULL)
   {
     reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
+
+  DLINK_FOREACH(ptr, chptr->members.head)
+  {
+    struct Membership *ms = ptr->data;
+    struct Client *target = ms->client_p;
+
+    if(has_member_flags(ms, CHFL_CHANOP))
+    {
+      deop_user(service, chptr, target);
+      opcount++;
+    }
+  }
+  reply_user(service, service, client, CS_CLEAR_OPS, opcount, 
+      regchptr->channel);
 }
 
 static void
@@ -1453,15 +1475,36 @@ m_clear_voices(struct Service *service, struct Client *client, int parc,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
+  dlink_node *ptr;
+  int voicecount = 0;
  
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr->regchan;
 
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
   if(regchptr == NULL)
   {
     reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
+
+  DLINK_FOREACH(ptr, chptr->members.head)
+  {
+    struct Membership *ms = ptr->data;
+    struct Client *target = ms->client_p;
+
+    if(has_member_flags(ms, CHFL_VOICE))
+    {
+      devoice_user(service, chptr, target);
+      voicecount++;
+    }
+  }
+  reply_user(service, service, client, CS_CLEAR_VOICES, voicecount, 
+      regchptr->channel);
 }
 
 static void
@@ -1470,15 +1513,37 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
+  dlink_node *ptr, *nptr;
+  char buf[IRC_BUFSIZE+1];
+  int usercount = 0;
  
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr->regchan;
 
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
   if(regchptr == NULL)
   {
     reply_user(service, service, client, CS_NOT_REG, parv[1]);
     return;
   }
+
+  snprintf(buf, IRC_BUFSIZE, "CLEAR USERS command used by %s", client->name);
+
+  DLINK_FOREACH_SAFE(ptr, nptr, chptr->members.head)
+  {
+    struct Membership *ms = ptr->data;
+    struct Client *target = ms->client_p;
+
+    kick_user(service, chptr, target->name, buf);
+    usercount++;
+  }
+
+  reply_user(service, service, client, CS_CLEAR_USERS, usercount, 
+      regchptr->channel);
 }
 
 static int 

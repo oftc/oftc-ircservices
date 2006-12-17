@@ -164,5 +164,8 @@ struct CHACCESS_LALA {
 #define CS_AKICK_ENFORCE 108
 #define CS_CHAN_NOT_USED 109
 #define CS_CLEAR_BANS 110
+#define CS_CLEAR_OPS 111
+#define CS_CLEAR_VOICES 112
+#define CS_CLEAR_USERS 113
 
 #endif
