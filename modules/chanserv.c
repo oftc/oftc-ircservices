@@ -91,6 +91,7 @@ static void m_clear_users(struct Service *, struct Client *, int, char *[]);
 static void m_op(struct Service *, struct Client *, int, char *[]);
 static void m_deop(struct Service *, struct Client *, int, char *[]);
 static void m_invite(struct Service *, struct Client *, int, char *[]);
+static void m_unban(struct Service *, struct Client *, int, char *[]);
 
 #if 0
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
@@ -249,7 +250,7 @@ static struct ServiceMessage deop_msgtab = {
 
 static struct ServiceMessage unban_msgtab = {
   NULL, "UNBAN", 0, 1, CS_HELP_UNBAN_SHORT, CS_HELP_UNBAN_LONG,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
+  { m_notid, m_unban, m_unban, m_unban }
 };
 
 static struct ServiceMessage invite_msgtab = {
@@ -1668,6 +1669,45 @@ m_invite(struct Service *service, struct Client *client, int parc, char *parv[])
 
   invite_user(service, chptr, target);
   reply_user(service, service, client, CS_INVITED, target->name, parv[1]);
+}
+
+static void
+m_unban(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  struct Ban *banp;
+  int numbans = 0;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr->regchan;
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  banp = find_bmask(client, &chptr->banlist);
+  while(banp != NULL)
+  {
+    char ban[IRC_BUFSIZE+1];
+
+    snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banp->name, banp->username,
+        banp->host);
+    unban_mask(service, chptr, ban);
+    numbans++;
+
+    banp = find_bmask(client, &chptr->banlist);
+  }
+
+  reply_user(service, service, client, CS_CLEAR_BANS, numbans,
+      regchptr->channel);
 }
 
 static int 

@@ -8,6 +8,7 @@ struct Membership *find_channel_link(struct Client *, struct Channel *);
 void add_user_to_channel(struct Channel *, struct Client *, unsigned int, int);
 void destroy_channel(struct Channel *);
 void remove_user_from_channel(struct Membership *);
+struct Ban *find_bmask(const struct Client *, const dlink_list *const);
 
 struct Channel
 {

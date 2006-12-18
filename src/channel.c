@@ -207,3 +207,39 @@ add_user_to_channel(struct Channel *chptr, struct Client *who,
   dlinkAdd(ms, &ms->usernode, &who->channel);
 }
 
+struct Ban *
+find_bmask(const struct Client *who, const dlink_list *const list)
+{
+  const dlink_node *ptr = NULL;
+
+  DLINK_FOREACH(ptr, list->head)
+  {
+    struct Ban *bp = ptr->data;
+
+    if (match(bp->name, who->name) && match(bp->username, who->username))
+    {
+      switch (bp->type)
+      {
+        case HM_HOST:
+          if (match(bp->host, who->host) || match(bp->host, who->sockhost))
+            return bp;
+          break;
+#if 0
+        case HM_IPV4:
+          if (who->localClient->aftype == AF_INET)
+            if (match_ipv4(&who->localClient->ip, &bp->addr, bp->bits))
+              return bp;
+          break;
+        case HM_IPV6:
+          if (who->localClient->aftype == AF_INET6)
+            if (match_ipv6(&who->localClient->ip, &bp->addr, bp->bits))
+              return bp;
+          break;
+#endif
+        default:
+          assert(0);
+      }
+    }
+  }
+  return NULL;
+}
