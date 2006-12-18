@@ -239,3 +239,9 @@ CS_OP
 	User %s given ops on %s.
 CS_DEOP	
 	User %s deopped on %s.
+CS_NICK_NOT_ONLINE
+	User %s is not online.
+CS_ALREADY_ON_CHAN
+	User %s is already on channel %s.
+CS_INVITED
+	User %s has been invited to %s.

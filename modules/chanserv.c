@@ -90,6 +90,7 @@ static void m_clear_users(struct Service *, struct Client *, int, char *[]);
 
 static void m_op(struct Service *, struct Client *, int, char *[]);
 static void m_deop(struct Service *, struct Client *, int, char *[]);
+static void m_invite(struct Service *, struct Client *, int, char *[]);
 
 #if 0
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
@@ -142,7 +143,7 @@ static struct SubMessage set_sub[] = {
   },
   { "MLOCK",       0, 1, CS_HELP_SET_MLOCK_SHORT, CS_HELP_SET_MLOCK_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
-  }, // +kl-mnt
+  }, 
   { "PRIVATE",     0, 1, CS_HELP_SET_PRIVATE_SHORT, CS_HELP_SET_PRIVATE_LONG, 
     { m_set_private, m_set_private, m_set_private, m_set_private }
   },
@@ -157,13 +158,11 @@ static struct SubMessage set_sub[] = {
   },
   { "AUTOLIMIT",   0, 1, CS_HELP_SET_AUTOLIMIT_SHORT, CS_HELP_SET_AUTOLIMIT_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
-  }, // 5:2:2
+  },
   { "CLEARBANS",   0, 1, CS_HELP_SET_CLEARBANS_SHORT, CS_HELP_SET_CLEARBANS_LONG, 
     { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
-  }, // 120
-  { NULL,          0, 0,  0,  0, 
-    { m_not_avail, m_not_avail, m_not_avail, m_not_avail }
-  } 
+  },
+  { NULL,          0, 0,  0,  0, { NULL, NULL, NULL, NULL } } 
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -255,7 +254,7 @@ static struct ServiceMessage unban_msgtab = {
 
 static struct ServiceMessage invite_msgtab = {
   NULL, "INVITE", 0, 1, CS_HELP_INVITE_SHORT, CS_HELP_INVITE_LONG,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
+  { m_notid, m_invite, m_invite, m_invite}
 };
 
 static struct SubMessage clear_sub[] = {
@@ -1580,6 +1579,7 @@ m_op(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, CS_NOT_ON_CHAN, parv[2], parv[1]);
     return;
   }
+
   if(!has_member_flags(ms, CHFL_CHANOP))
   {
     op_user(service, chptr, target);
@@ -1619,11 +1619,55 @@ m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, CS_NOT_ON_CHAN, parv[2], parv[1]);
     return;
   }
+
   if(has_member_flags(ms, CHFL_CHANOP))
   {
     deop_user(service, chptr, target);
     reply_user(service, service, client, CS_DEOP, target->name, parv[1]);
   }
+}
+
+static void
+m_invite(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  struct Client *target;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr->regchan;
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  if(parv[2] == NULL)
+    target = client;
+  else
+    target = find_client(parv[2]);
+
+  if(target == NULL)
+  {
+    reply_user(service, service, client, CS_NICK_NOT_ONLINE, parv[2]);
+    return;
+  }
+
+  if(find_channel_link(target, chptr) != NULL)
+  {
+    reply_user(service, service, client, CS_ALREADY_ON_CHAN, target->name, 
+        parv[1]);
+    return;
+  }
+
+  invite_user(service, chptr, target);
+  reply_user(service, service, client, CS_INVITED, target->name, parv[1]);
 }
 
 static int 

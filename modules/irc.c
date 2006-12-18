@@ -43,6 +43,7 @@ static void *irc_sendmsg_privmsg(va_list);
 static void *irc_sendmsg_notice(va_list);
 static void *irc_sendmsg_kick(va_list);
 static void *irc_sendmsg_cmode(va_list);
+static void *irc_sendmsg_invite(va_list);
 static void *irc_server_connected(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
@@ -162,15 +163,17 @@ static dlink_node *privmsg_hook;
 static dlink_node *notice_hook;
 static dlink_node *kick_hook;
 static dlink_node *cmode_hook;
+static dlink_node *invite_hook;
 
 INIT_MODULE(irc, "$Revision$")
 {
-  connected_hook = install_hook(connected_cb, irc_server_connected);
-  newuser_hook = install_hook(send_newuser_cb, irc_sendmsg_nick);
-  privmsg_hook = install_hook(send_privmsg_cb, irc_sendmsg_privmsg);
-  notice_hook  = install_hook(send_notice_cb, irc_sendmsg_notice);
-  kick_hook    = install_hook(send_kick_cb, irc_sendmsg_kick);
-  cmode_hook   = install_hook(send_cmode_cb, irc_sendmsg_cmode);
+  connected_hook  = install_hook(connected_cb, irc_server_connected);
+  newuser_hook    = install_hook(send_newuser_cb, irc_sendmsg_nick);
+  privmsg_hook    = install_hook(send_privmsg_cb, irc_sendmsg_privmsg);
+  notice_hook     = install_hook(send_notice_cb, irc_sendmsg_notice);
+  kick_hook       = install_hook(send_kick_cb, irc_sendmsg_kick);
+  cmode_hook      = install_hook(send_cmode_cb, irc_sendmsg_cmode);
+  invite_hook     = install_hook(send_invite_cb, irc_sendmsg_invite);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -317,6 +320,19 @@ irc_sendmsg_cmode(va_list args)
   
   sendto_server(client, ":%s MODE %s %s %s", 
       (source != NULL) ? source : me.name, channel, mode, param);
+  return NULL;
+}
+
+static void *
+irc_sendmsg_invite(va_list args)
+{
+  struct Client   *uplink   = va_arg(args, struct Client *);
+  struct Service  *source   = va_arg(args, struct Service *);
+  struct Channel  *channel  = va_arg(args, struct Channel *); 
+  struct Client   *target   = va_arg(args, struct Client *);
+  
+  sendto_server(uplink, ":%s INVITE %s %s 1", 
+      (source != NULL) ? source->name : me.name, target->name, channel->chname);
   return NULL;
 }
 

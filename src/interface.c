@@ -35,6 +35,7 @@ struct Callback *send_nick_cb;
 struct Callback *send_akill_cb;
 struct Callback *send_kick_cb;
 struct Callback *send_cmode_cb;
+struct Callback *send_invite_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -65,6 +66,7 @@ init_interface()
   send_akill_cb       = register_callback("Send AKILL to network", NULL);
   send_kick_cb        = register_callback("Send KICK to network", NULL);
   send_cmode_cb       = register_callback("Send Channel MODE", NULL);
+  send_invite_cb      = register_callback("Send INVITE", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
@@ -211,6 +213,12 @@ devoice_user(struct Service *service, struct Channel *chptr,
     struct Client *client)
 {
   send_cmode(service, chptr, "-v", client->name);
+}
+
+void
+invite_user(struct Service *service, struct Channel *chptr, struct Client *client)
+{
+  execute_callback(send_invite_cb, me.uplink, service, chptr, client);
 }
 
 void

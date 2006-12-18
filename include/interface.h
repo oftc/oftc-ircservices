@@ -15,6 +15,7 @@ extern struct Callback *send_nick_cb;
 extern struct Callback *send_akill_cb;
 extern struct Callback *send_kick_cb;
 extern struct Callback *send_cmode_cb;
+extern struct Callback *send_invite_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -62,6 +63,7 @@ void kick_user(struct Service *, struct Channel *, const char *, const char *);
 void op_user(struct Service *, struct Channel *, struct Client *);
 void deop_user(struct Service *, struct Channel *, struct Client *);
 void devoice_user(struct Service *, struct Channel *, struct Client *);
+void invite_user(struct Service *, struct Channel *, struct Client *);
 void ban_mask(struct Service *, struct Channel *, const char *);
 void unban_mask(struct Service *, struct Channel *, const char *);
 

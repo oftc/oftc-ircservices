@@ -54,6 +54,7 @@ struct CHACCESS_LALA {
   int  level;
 };
 
+
 #define CS_HELP_REG_SHORT 1
 #define CS_HELP_REG_LONG 2
 #define CS_HELP_SHORT 3
@@ -170,5 +171,8 @@ struct CHACCESS_LALA {
 #define CS_NOT_ON_CHAN 114
 #define CS_OP 115
 #define CS_DEOP 116
+#define CS_NICK_NOT_ONLINE 117
+#define CS_ALREADY_ON_CHAN 118
+#define CS_INVITED 119
 
 #endif
