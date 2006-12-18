@@ -557,10 +557,8 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       break;
     case ADMIN_LIST:
       query = GET_ADMINS;
-
-      strval = MyMalloc(255+1); /* XXX constant? */
       *entry = strval;
-      brc = Bind("?s", strval);
+      brc = Bind("?ps", entry);
       break;
     case AKILL_LIST:
       query = GET_AKILLS;
@@ -628,7 +626,6 @@ db_list_next(void *result, unsigned int type, void **entry)
       *entry = aeval;
       break;
     case ADMIN_LIST:
-      strval = MyMalloc(255+1); /* XXX constant? */
       *entry = strval;
       break;
     case AKILL_LIST:

@@ -340,7 +340,6 @@ m_admin_list(struct Service *service, struct Client *client,
   while(handle != NULL)
   {
     reply_user(service, service, client, OS_ADMIN_LIST, i++, currnick);
-    MyFree(currnick);
     handle = db_list_next(handle, ADMIN_LIST, (void **)&currnick);
   }
   if(first != NULL)
