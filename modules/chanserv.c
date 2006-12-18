@@ -88,6 +88,9 @@ static void m_clear_ops(struct Service *, struct Client *, int, char *[]);
 static void m_clear_voices(struct Service *, struct Client *, int, char *[]);
 static void m_clear_users(struct Service *, struct Client *, int, char *[]);
 
+static void m_op(struct Service *, struct Client *, int, char *[]);
+static void m_deop(struct Service *, struct Client *, int, char *[]);
+
 #if 0
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
@@ -237,14 +240,13 @@ static struct ServiceMessage info_msgtab = {
 
 static struct ServiceMessage op_msgtab = {
   NULL, "OP", 0, 1, CS_HELP_OP_SHORT, CS_HELP_OP_LONG,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
+  { m_notid, m_op, m_op, m_op }
 };
 
 static struct ServiceMessage deop_msgtab = {
   NULL, "DEOP", 0, 1, CS_HELP_DROP_SHORT, CS_HELP_DROP_LONG,
-  { m_notid, m_not_avail, m_not_avail, m_not_avail }
+  { m_notid, m_deop, m_deop, m_deop }
 };
-
 
 static struct ServiceMessage unban_msgtab = {
   NULL, "UNBAN", 0, 1, CS_HELP_UNBAN_SHORT, CS_HELP_UNBAN_LONG,
@@ -305,6 +307,7 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &clear_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &unban_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
   cs_channel_destroy_hook = 
@@ -322,7 +325,6 @@ CLEANUP_MODULE
   hash_del_service(chanserv);
   dlinkDelete(&chanserv->node, &services_list);
 }
-
 
 static void 
 m_register(struct Service *service, struct Client *client, 
@@ -1544,6 +1546,50 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
 
   reply_user(service, service, client, CS_CLEAR_USERS, usercount, 
       regchptr->channel);
+}
+
+static void
+m_op(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  struct Client *target;
+  struct Membership *ms;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr->regchan;
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  if(parv[2] == NULL)
+    target = client;
+  else
+    target = find_client(parv[2]);
+
+  if(target == NULL || (ms = find_channel_link(target, chptr)) == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_ON_CHAN, parv[2], parv[1]);
+    return;
+  }
+  if(!has_member_flags(ms, CHFL_CHANOP))
+  {
+    op_user(service, chptr, target);
+    reply_user(service, service, client, CS_OP, parv[2], parv[1]);
+  }
+}
+
+static void
+m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
+{
 }
 
 static int 

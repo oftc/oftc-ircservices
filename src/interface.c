@@ -195,6 +195,12 @@ kick_user(struct Service *service, struct Channel *chptr, const char *client,
 }
 
 void
+op_user(struct Service *service, struct Channel *chptr, struct Client *client)
+{
+  send_cmode(service, chptr, "+o", client->name);
+}
+
+void
 deop_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
   send_cmode(service, chptr, "-o", client->name);

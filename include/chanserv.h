@@ -167,5 +167,7 @@ struct CHACCESS_LALA {
 #define CS_CLEAR_OPS 111
 #define CS_CLEAR_VOICES 112
 #define CS_CLEAR_USERS 113
+#define CS_NOT_ON_CHAN 114
+#define CS_OP 115
 
 #endif
