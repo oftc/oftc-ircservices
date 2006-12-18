@@ -1583,13 +1583,47 @@ m_op(struct Service *service, struct Client *client, int parc, char *parv[])
   if(!has_member_flags(ms, CHFL_CHANOP))
   {
     op_user(service, chptr, target);
-    reply_user(service, service, client, CS_OP, parv[2], parv[1]);
+    reply_user(service, service, client, CS_OP, target->name, parv[1]);
   }
 }
 
 static void
 m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
 {
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  struct Client *target;
+  struct Membership *ms;
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr->regchan;
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+  if(regchptr == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_REG, parv[1]);
+    return;
+  }
+
+  if(parv[2] == NULL)
+    target = client;
+  else
+    target = find_client(parv[2]);
+
+  if(target == NULL || (ms = find_channel_link(target, chptr)) == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_ON_CHAN, parv[2], parv[1]);
+    return;
+  }
+  if(has_member_flags(ms, CHFL_CHANOP))
+  {
+    deop_user(service, chptr, target);
+    reply_user(service, service, client, CS_DEOP, target->name, parv[1]);
+  }
 }
 
 static int 

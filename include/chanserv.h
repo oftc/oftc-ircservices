@@ -169,5 +169,6 @@ struct CHACCESS_LALA {
 #define CS_CLEAR_USERS 113
 #define CS_NOT_ON_CHAN 114
 #define CS_OP 115
+#define CS_DEOP 116
 
 #endif

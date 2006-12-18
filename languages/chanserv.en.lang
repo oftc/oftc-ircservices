@@ -237,4 +237,5 @@ CS_NOT_ON_CHAN
 	User %s not on channel %s
 CS_OP
 	User %s given ops on %s.
-	
+CS_DEOP	
+	User %s deopped on %s.
