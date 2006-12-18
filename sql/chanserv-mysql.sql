@@ -31,17 +31,17 @@ CREATE TABLE channel_access (
   FOREIGN KEY (nick_id)   REFERENCES account(id),
   UNIQUE (channel_id, nick_id)
 )ENGINE=InnoDB;
-  
+
 CREATE TABLE channel_akick(
   id                      SERIAL PRIMARY KEY,
-  channel_id              INTEGER NOT NULL, 
+  channel_id              INTEGER NOT NULL,
   target                  INTEGER, -- If a nickname akick
-  setter                  INTEGER NOT NULL, 
+  setter                  INTEGER,
   mask                    VARCHAR(255), -- If a mask akick
-  reason                  VARCHAR(512),              
+  reason                  VARCHAR(512),
   time                    INTEGER NOT NULL,
   duration                INTEGER NOT NULL,
   FOREIGN KEY (channel_id)REFERENCES channel(id),
   FOREIGN KEY (target)    REFERENCES account(id),
-  FOREIGN KEY (setter)    REFERENCES account(id)
+  FOREIGN KEY (setter)    REFERENCES account(id) ON DELETE SET NULL
 );
