@@ -76,11 +76,11 @@ static struct ServiceMessage raw_msgtab = {
 };
 
 static struct SubMessage admin_subs[4] = {
-  { "ADD", 0, 0, OS_ADMIN_ADD_HELP_SHORT, OS_ADMIN_ADD_HELP_LONG, 
+  { "ADD", 0, 1, OS_ADMIN_ADD_HELP_SHORT, OS_ADMIN_ADD_HELP_LONG, 
     { m_noaccess, m_noaccess, m_admin_add, m_admin_add } },
   { "LIST", 0, 0, OS_ADMIN_LIST_HELP_SHORT, OS_ADMIN_LIST_HELP_LONG, 
     { m_noaccess, m_noaccess, m_admin_list, m_admin_list } },
-  { "DEL", 0, 0, OS_ADMIN_DEL_HELP_SHORT, OS_ADMIN_DEL_HELP_LONG, 
+  { "DEL", 0, 1, OS_ADMIN_DEL_HELP_SHORT, OS_ADMIN_DEL_HELP_LONG, 
     { m_noaccess, m_noaccess, m_admin_del, m_admin_del } },
   { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
 };
