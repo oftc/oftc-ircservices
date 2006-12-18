@@ -22,16 +22,15 @@ CREATE TABLE account (
 
 DROP TABLE nickname;
 CREATE TABLE nickname (
-  nick                VARCHAR(255) NOT NULL,
+  nick                VARCHAR(255) PRIMARY KEY,
   user_id             INTEGER REFERENCES account(id) NOT NULL,
   reg_time            INTEGER NOT NULL, -- This nickname
-  last_seen           INTEGER,
-  UNIQUE (nick)
+  last_seen           INTEGER
 );
 
 DROP TABLE forbidden_nickname;
 CREATE TABLE forbidden_nickname (
-  nick                VARCHAR(255) NOT NULL PRIMARY KEY
+  nick                VARCHAR(255) PRIMARY KEY
 );
 
 DROP TABLE account_access;
