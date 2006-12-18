@@ -95,6 +95,10 @@ NS_HELP_SET_CLOAKSTRING_SHORT
 	%s
 NS_HELP_SET_CLOAKSTRING_LONG
 	moo
+NS_HELP_SET_MASTER_SHORT
+	moo
+NS_HELP_SET_MASTER_LONG
+	moo
 NS_HELP_GHOST_SHORT			
 	%s: Terminate a GHOST IRC session.
 NS_HELP_GHOST_LONG     
@@ -241,3 +245,9 @@ NS_NOREG_FORBID
 	You may not register %s because it is forbidden to be used.
 NS_LANG_LIST
 	%d : %s
+NS_MASTER_NOT_LINKED
+	%s is not linked to your nickname.
+NS_MASTER_SET_OK
+	Master nickname set to %s.
+NS_MASTER_SET_FAIL
+	Failed to set master nickname to %s.

@@ -65,6 +65,8 @@ static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_cloak(struct Service *, struct Client *, int, char *[]);
 static void m_set_cloakstring(struct Service *, struct Client *, int, char *[]);
+static void m_set_master(struct Service *, struct Client *, int, char *[]);
+
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
@@ -94,7 +96,7 @@ static struct ServiceMessage drop_msgtab = {
   { m_notid, m_drop, m_drop, m_drop }
 };
 
-static struct SubMessage set_sub[9] = {
+static struct SubMessage set_sub[] = {
   { "LANGUAGE"    , 0, 0, NS_HELP_SET_LANG_SHORT, NS_HELP_SET_LANG_LONG, 
     { m_notid, m_set_language, m_set_language, m_set_language }
   },
@@ -119,6 +121,9 @@ static struct SubMessage set_sub[9] = {
   { "CLOAKSTRING" , 0, 0, NS_HELP_SET_CLOAKSTRING_SHORT, NS_HELP_SET_CLOAKSTRING_LONG, 
     { m_notid, m_set_cloakstring, m_set_cloakstring, m_set_cloakstring }
   },
+  { "MASTER", 0, 1, NS_HELP_SET_MASTER_SHORT, NS_HELP_SET_MASTER_LONG,
+    { m_notid, m_set_master, m_set_master, m_set_master }
+  },
   { NULL        , 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
 };
 
@@ -127,7 +132,7 @@ static struct ServiceMessage set_msgtab = {
   { m_notid, m_set, m_set, m_set }
 };
 
-static struct SubMessage access_sub[4] = {
+static struct SubMessage access_sub[] = {
   { "ADD", 0, 1, NS_HELP_ACCESS_ADD_SHORT, NS_HELP_ACCESS_ADD_LONG, 
     { m_notid, m_access_add, m_access_add, m_access_add }
   },
@@ -513,6 +518,7 @@ m_set_cloak(struct Service *service, struct Client *client,
   else
     reply_user(service, service, client, NS_SET_FAILED, "CLOAK", parv[1]);
 }
+
 static void
 m_set_cloakstring(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -606,6 +612,24 @@ m_set_enforce(struct Service *service, struct Client *client,
   }
   else
     reply_user(service, service, client, NS_SET_FAILED, "ENFORCE", parv[1]);
+}
+
+static void
+m_set_master(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+  struct Nick *nick = client->nickname;
+
+  if(db_get_id_from_name(parv[1], GET_NICKID_FROM_NICK) != nick->id)
+  {
+    reply_user(service, service, client, NS_MASTER_NOT_LINKED, parv[1]);
+    return;
+  }
+
+  if(db_set_string(SET_NICK_MASTER, nick->id, parv[1]))
+    reply_user(service, service, client, NS_MASTER_SET_OK, parv[1]);
+  else
+    reply_user(service, service, client, NS_MASTER_SET_FAIL, parv[1]);
 }
 
 static void
