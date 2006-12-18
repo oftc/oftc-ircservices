@@ -388,6 +388,9 @@ int enforce_matching_akick(struct Service *service, struct Channel *chptr,
   struct AKick *akick;
   void *ptr, *first;
 
+  if(chptr->regchan == NULL)
+    return FALSE;
+
   first = ptr = db_list_first(AKICK_LIST, chptr->regchan->id, (void**)&akick);
 
   if(ptr == NULL)
