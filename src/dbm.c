@@ -29,16 +29,16 @@
 struct Callback *on_nick_drop_cb;
 
 query_t queries[QUERY_COUNT] = { 
-  { "SELECT id, nick, password, salt, url, email, cloak, flag_enforce, "
+  { "SELECT id, primary_nick, password, salt, url, email, cloak, flag_enforce, "
     "flag_secure, flag_verified, flag_cloak_enabled, "
     "flag_admin, flag_email_verified, language, last_host, last_realname, "
     "last_quit_msg, last_quit_time, account.reg_time, nickname.reg_time, "
     "last_seen FROM account, nickname WHERE account.id = nickname.user_id AND "
     "lower(nick) = lower(?v)", NULL, QUERY },
-  { "SELECT nick from nickname WHERE user_id=?d", NULL, QUERY },
+  { "SELECT primary_nick from account WHERE id=?d", NULL, QUERY },
   { "SELECT user_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
-  { "INSERT INTO account (password, salt, email, reg_time) VALUES "
-    "(?v, ?v, ?v, ?d)", NULL, EXECUTE },
+  { "INSERT INTO account (primary_nick, password, salt, email, reg_time) VALUES "
+    "(?v, ?v, ?v, ?v, ?d)", NULL, EXECUTE },
   { "INSERT INTO nickname (nick, user_id, reg_time, last_seen) VALUES "
     "(?v, ?d, ?d, ?d)", NULL, EXECUTE },
   { "DELETE FROM nickname WHERE lower(nick)=lower(?v)", NULL, EXECUTE },
@@ -46,10 +46,9 @@ query_t queries[QUERY_COUNT] = {
   { "INSERT INTO account_access (parent_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
   { "SELECT id, entry FROM account_access WHERE parent_id=?d", NULL, QUERY },
-  { "SELECT nick FROM account, nickname WHERE account.id = nickname.user_id AND "
-    "flag_admin=true", NULL, QUERY },
-  { "SELECT akill.id, nick, mask, reason, time, duration FROM nickname, akill "
-    "WHERE setter = nickname.user_id", NULL, QUERY },
+  { "SELECT primary_nick FROM account WHERE flag_admin=true", NULL, QUERY },
+  { "SELECT akill.id, primary_nick, mask, reason, time, duration FROM "
+    "account, akill WHERE setter = account.id", NULL, QUERY },
   { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
     "channel_id=?d", NULL, QUERY },
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
@@ -329,7 +328,7 @@ db_register_nick(struct Nick *nick)
 
   TransBegin();
 
-  db_exec(exec, INSERT_ACCOUNT, nick->pass, nick->salt, nick->email, 
+  db_exec(exec, INSERT_ACCOUNT, nick->nick, nick->pass, nick->salt, nick->email, 
       CurrentTime);
 
   if(exec != -1)

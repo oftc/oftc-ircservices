@@ -1,6 +1,7 @@
 DROP TABLE account CASCADE;
 CREATE TABLE account (
   id                  SERIAL PRIMARY KEY,
+  primary_nick        VARCHAR(255) REFERENCES nickname(nick),
   password            CHAR(40),      -- base16 encoded sha1(salt+<userpassword>).  lower case
   salt                CHAR(16),
   url                 VARCHAR(255),
@@ -20,7 +21,7 @@ CREATE TABLE account (
   reg_time            INTEGER NOT NULL -- The account itself
 );
 
-DROP TABLE nickname;
+DROP TABLE nickname CASCADE;
 CREATE TABLE nickname (
   nick                VARCHAR(255) PRIMARY KEY,
   user_id             INTEGER REFERENCES account(id) NOT NULL,
