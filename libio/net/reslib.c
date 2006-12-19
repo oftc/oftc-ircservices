@@ -82,6 +82,7 @@
 
 #include "stdinc.h"
 #include "reslib.h"
+#include <ctype.h>
 
 #define NS_TYPE_ELT             0x40 /* EDNS0 extended label type */
 #define DNS_LABELTYPE_BITSTRING 0x41

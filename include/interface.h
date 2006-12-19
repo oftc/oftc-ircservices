@@ -4,6 +4,37 @@
 struct Service;
 struct Client;
 
+enum ServiceBanType
+{
+  AKICK_BAN = 0,
+  AKILL_BAN
+};
+
+struct Service
+{
+  dlink_node node;
+  struct Service *hnext;
+
+  char name[NICKLEN+1];
+  struct ServiceMessageTree msg_tree;
+  char *last_command;
+  struct LanguageFile languages[LANG_LAST];
+  void *data;
+};
+
+struct ServiceBan
+{
+  unsigned int id;
+  unsigned int type;
+  char *channel;
+  unsigned int target;
+  unsigned int setter;
+  char *mask;
+  char *reason;
+  time_t time_set;
+  time_t duration;
+};
+
 extern dlink_list services_list;
 extern struct Callback *send_newuser_cb;
 extern struct Callback *send_privmsg_cb;
@@ -40,7 +71,7 @@ void do_help(struct Service *, struct Client *, const char *, int, char **);
 void identify_user(struct Client *);
 void send_nick_change(struct Service *, struct Client *, const char *);
 void send_umode(struct Service *, struct Client *, const char *);
-void send_akill(struct Service *, struct Client *, struct AKill *);
+void send_akill(struct Service *, struct Client *, struct ServiceBan *);
 void send_cmode(struct Service *, struct Channel *, const char *, const char *);
 
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
@@ -55,9 +86,9 @@ int check_list_entry(unsigned int, unsigned int, const char *);
 int check_nick_pass(struct Nick *, const char *);
 void make_random_string(char *, size_t);
 int enforce_matching_akick(struct Service *, struct Channel *, struct Client *);
-int enforce_akick(struct Service *, struct Channel *, struct AKick *);
-int enforce_client_akick(struct Service *, struct Channel *, struct Client *,
-    struct AKick *);
+int enforce_akick(struct Service *, struct Channel *, struct ServiceBan *);
+int enforce_client_serviceban(struct Service *, struct Channel *, struct Client *,
+    struct ServiceBan *);
 
 void kick_user(struct Service *, struct Channel *, const char *, const char *);
 void op_user(struct Service *, struct Channel *, struct Client *);
@@ -69,20 +100,8 @@ void unban_mask(struct Service *, struct Channel *, const char *);
 
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
-void free_akill(struct AKill *);
-void free_akick(struct AKick *);
-
-struct Service
-{
-  dlink_node node;
-  struct Service *hnext;
-
-  char name[NICKLEN+1];
-  struct ServiceMessageTree msg_tree;
-  char *last_command;
-  struct LanguageFile languages[LANG_LAST];
-  void *data;
-};
+void free_akill(struct ServiceBan *);
+void free_akick(struct ServiceBan *);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 

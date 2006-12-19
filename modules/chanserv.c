@@ -1193,7 +1193,7 @@ static void
 m_akick_add(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  struct AKick *akick;
+  struct ServiceBan *akick;
   struct Nick *nick;
   struct Channel *chptr;
   struct RegChannel *regchptr;
@@ -1208,7 +1208,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
     return;
   }
 
-  akick = MyMalloc(sizeof(struct AKick));
+  akick = MyMalloc(sizeof(struct ServiceBan));
   if(strchr(parv[2], '@') == NULL)
   {
     /* Nickname based akick */
@@ -1267,7 +1267,7 @@ static void
 m_akick_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct AKick *akick;
+  struct ServiceBan *akick;
   void *handle, *first;
   int i = 1;
   struct Channel *chptr;

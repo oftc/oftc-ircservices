@@ -175,7 +175,7 @@ send_nick_change(struct Service *service, struct Client *client,
 }
 
 void
-send_akill(struct Service *service, struct Client *client, struct AKill *akill)
+send_akill(struct Service *service, struct Client *client, struct ServiceBan *akill)
 {
   execute_callback(send_akill_cb, me.uplink, client, akill);
 }
@@ -385,7 +385,7 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
 int enforce_matching_akick(struct Service *service, struct Channel *chptr, 
     struct Client *client)
 {
-  struct AKick *akick;
+  struct ServiceBan *akick;
   void *ptr, *first;
 
   if(chptr->regchan == NULL)
@@ -398,7 +398,7 @@ int enforce_matching_akick(struct Service *service, struct Channel *chptr,
 
   while(ptr != NULL)
   {
-    if(enforce_client_akick(service, chptr, client, akick))
+    if(enforce_client_serviceban(service, chptr, client, akick))
     {
       free_akick(akick);
       db_list_done(first);
@@ -412,29 +412,46 @@ int enforce_matching_akick(struct Service *service, struct Channel *chptr,
 }
 
 int
-enforce_client_akick(struct Service *service, struct Channel *chptr, 
-    struct Client *client, struct AKick *akick)
+enforce_akick(struct Service *service, struct Channel *chptr, 
+    struct ServiceBan *akick)
+{
+  dlink_node *ptr;
+  int numkicks = 0;
+
+  DLINK_FOREACH(ptr, chptr->members.head)
+  {
+    struct Membership *ms = ptr->data;
+    struct Client *client = ms->client_p;
+
+    numkicks += enforce_client_serviceban(service, chptr, client, akick);
+  }
+  return numkicks;
+}
+
+int
+enforce_client_serviceban(struct Service *service, struct Channel *chptr, 
+    struct Client *client, struct ServiceBan *sban)
 {
   struct irc_ssaddr addr;
   struct split_nuh_item nuh;
   char name[NICKLEN];
   char user[USERLEN + 1];
   char host[HOSTLEN + 1];
-  int type, bits, kick = 0;
+  int type, bits, found = 0;
 
-  if(akick->mask == NULL)
+  if(sban->mask == NULL)
   {
-    char *nick = db_get_nickname_from_id(akick->target);
+    char *nick = db_get_nickname_from_id(sban->target);
     if(ircncmp(nick, client->name, NICKLEN) == 0)
     {
       snprintf(host, HOSTLEN, "%s!*@*", nick);
       ban_mask(service, chptr, host);
-      kick_user(service, chptr, client->name, akick->reason);
+      kick_user(service, chptr, client->name, sban->reason);
       return TRUE;
     }
     return FALSE;
   }
-  DupString(nuh.nuhmask, akick->mask);
+  DupString(nuh.nuhmask, sban->mask);
 
   nuh.nickptr  = name;
   nuh.userptr  = user;
@@ -454,34 +471,17 @@ enforce_client_akick(struct Service *service, struct Channel *chptr,
     {
       case HM_HOST:
         if(match(host, client->host))
-          kick = 1;
+          found = 1;
         break;
     }
-    if(kick)
+    if(found)
     {
-      ban_mask(service, chptr, akick->mask);
-      kick_user(service, chptr, client->name, akick->reason);
+      ban_mask(service, chptr, sban->mask);
+      kick_user(service, chptr, client->name, sban->reason);
     }
   }
   MyFree(nuh.nuhmask);
-  return kick;
-}
-
-int
-enforce_akick(struct Service *service, struct Channel *chptr, 
-    struct AKick *akick)
-{
-  dlink_node *ptr;
-  int numkicks = 0;
-
-  DLINK_FOREACH(ptr, chptr->members.head)
-  {
-    struct Membership *ms = ptr->data;
-    struct Client *client = ms->client_p;
-
-    numkicks += enforce_client_akick(service, chptr, client, akick);
-  }
-  return numkicks;
+  return found;
 }
 
 void
@@ -506,7 +506,7 @@ free_nick(struct Nick *nick)
 }
 
 void
-free_akill(struct AKill *akill)
+free_akill(struct ServiceBan *akill)
 {
   ilog(L_DEBUG, "Freeing akill %p for %s\n", akill, akill->mask);
   MyFree(akill->mask);
@@ -515,7 +515,7 @@ free_akill(struct AKill *akill)
 }
 
 void
-free_akick(struct AKick *akick)
+free_akick(struct ServiceBan *akick)
 {
   ilog(L_DEBUG, "Freeing akick %p for %s\n", akick, akick->mask);
   MyFree(akick->mask);

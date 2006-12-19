@@ -187,7 +187,7 @@ lua_identify_nick(lua_State *L)
 {
   struct Nick *nick;
   struct Client *client = check_client(L, 1);
-  const char *password = luaL_checkstring(L, 2);
+//  const char *password = luaL_checkstring(L, 2);
   int error = 0;
 /* XXX
   if((nick = db_find_nick(client->name)) == NULL)
@@ -344,7 +344,7 @@ static int
 lua_L(lua_State *L)
 {
   struct Client *client;
-  struct Service *lua_service = check_service(L, 1);
+//  struct Service *lua_service = check_service(L, 1);
   int message;
 
   client = (struct Client*) luaL_checkudata(L, 2, "OFTC.client");

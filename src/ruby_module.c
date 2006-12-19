@@ -117,7 +117,6 @@ static VALUE NickStruct_Flags(VALUE);
 static VALUE NickStruct_Language(VALUE);
 static VALUE NickStruct_RegTime(VALUE);
 static VALUE NickStruct_LastSeen(VALUE);
-static VALUE NickStruct_LastUsed(VALUE);
 static VALUE NickStruct_LastQuit(VALUE);
 static void Init_NickStruct(void);
 
@@ -485,7 +484,7 @@ ServiceModule_register_chan(VALUE self, VALUE client, VALUE chan_name)
 static VALUE
 ServiceModule_delete_nick(VALUE self, VALUE client)
 {
- // XXX return db_delete_nick(StringValueCStr(client)) ? Qfalse : Qtrue;
+  return db_delete_nick(StringValueCStr(client)) ? Qfalse : Qtrue;
 }
 
 static VALUE
@@ -720,8 +719,9 @@ NickStruct_Status(VALUE self)
 static VALUE
 NickStruct_Flags(VALUE self)
 {
-  struct Nick *nick = rb_rbnick2cnick(self);
+  //struct Nick *nick = rb_rbnick2cnick(self);
   // XXX Broken needs updating return INT2NUM(nick->flags);
+  return Qnil;
 }
 
 static VALUE
@@ -742,14 +742,7 @@ static VALUE
 NickStruct_LastSeen(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  // XXX BROKEN update me XXX return INT2NUM(nick->last_used);
-}
-
-static VALUE
-NickStruct_LastUsed(VALUE self)
-{
-  struct Nick *nick = rb_rbnick2cnick(self);
-  // XXX bROKEn update me XXX return INT2NUM(nick->last_used);
+  return INT2NUM(nick->last_seen);
 }
 
 static VALUE
@@ -774,7 +767,6 @@ Init_NickStruct(void)
   rb_define_method(cNickStruct, "language", NickStruct_Language, 0);
   rb_define_method(cNickStruct, "reg_time", NickStruct_RegTime, 0);
   rb_define_method(cNickStruct, "last_seen", NickStruct_LastSeen, 0);
-  rb_define_method(cNickStruct, "last_used", NickStruct_LastUsed, 0);
   rb_define_method(cNickStruct, "last_quit", NickStruct_LastQuit, 0);
 }
 

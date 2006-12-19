@@ -22,18 +22,6 @@ struct RegChannel
   char verbose;
 };
 
-struct AKick
-{
-  unsigned int id;
-  char *channel;
-  unsigned int target;
-  unsigned int setter;
-  char *mask;
-  char *reason;
-  time_t time_set;
-  time_t duration;
-};
-
 #define CHACCESS_BAN        0x0001
 #define CHACCESS_AUTODEOP   0x0002
 #define CHACCESS_VOICE      0x0004

@@ -493,8 +493,7 @@ db_list_add(unsigned int type, const void *value)
 {
   int ret = 0;
   struct AccessEntry *aeval = (struct AccessEntry *)value;
-  struct AKill *akillval = (struct AKill *)value;
-  struct AKick *akickval = (struct AKick *)value;
+  struct ServiceBan *banval = (struct ServiceBan *)value;
   unsigned int id;
 
   switch(type)
@@ -503,22 +502,22 @@ db_list_add(unsigned int type, const void *value)
       db_exec(ret, INSERT_NICKACCESS, aeval->id, aeval->value);
       break;
     case AKILL_LIST:
-      db_exec(ret, INSERT_AKILL, akillval->mask, akillval->reason, 
-          akillval->setter, akillval->time_set, akillval->duration);
+      db_exec(ret, INSERT_AKILL, banval->mask, banval->reason, 
+          banval->setter, banval->time_set, banval->duration);
       break;
     case AKICK_LIST:
-      id = db_get_id_from_name(akickval->channel, GET_CHANID_FROM_CHAN);
-      if(akickval->target != 0)
+      id = db_get_id_from_name(banval->channel, GET_CHANID_FROM_CHAN);
+      if(banval->target != 0)
       {
-        db_exec(ret, INSERT_AKICK_ACCOUNT, id, akickval->target,
-            akickval->setter, akickval->reason, akickval->time_set, 
-            akickval->duration);
+        db_exec(ret, INSERT_AKICK_ACCOUNT, id, banval->target,
+            banval->setter, banval->reason, banval->time_set, 
+            banval->duration);
       }
-      else if(akickval->mask != NULL)
+      else if(banval->mask != NULL)
       {
-        db_exec(ret, INSERT_AKICK_MASK, id, akickval->setter, 
-            akickval->reason, akickval->mask, akickval->time_set, 
-            akickval->duration);
+        db_exec(ret, INSERT_AKICK_MASK, id, banval->setter, 
+            banval->reason, banval->mask, banval->time_set, 
+            banval->duration);
       }
       else
         assert(0 == 1);
@@ -542,8 +541,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   yada_rc_t *rc, *brc;
   char *strval = (char*)*entry; 
   struct AccessEntry *aeval;
-  struct AKill *akillval;
-  struct AKick *akickval;
+  struct ServiceBan *banval;
   struct DBResult *result;
   unsigned int query;
   
@@ -563,19 +561,19 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     case AKILL_LIST:
       query = GET_AKILLS;
 
-      akillval = MyMalloc(sizeof(struct AKill));
-      *entry = akillval;
-      brc = Bind("?d?ps?ps?ps?d?d?d", &akillval->id, &akillval->mask, 
-          &akillval->reason, &akillval->setter, &akillval->time_set, 
-          &akillval->duration);
+      banval = MyMalloc(sizeof(struct ServiceBan));
+      *entry = banval;
+      brc = Bind("?d?ps?ps?ps?d?d?d", &banval->id, &banval->mask, 
+          &banval->reason, &banval->setter, &banval->time_set, 
+          &banval->duration);
     case AKICK_LIST:
       query = GET_AKICKS;
 
-      akickval = MyMalloc(sizeof(struct AKick));
-      *entry = akickval;
-      brc = Bind("?d?ps?d?d?ps?ps?d?d", &akickval->id, &akickval->channel,
-          &akickval->target, &akickval->setter, &akickval->mask, 
-          &akickval->reason, &akickval->time_set, &akickval->duration);
+      banval = MyMalloc(sizeof(struct ServiceBan));
+      *entry = banval;
+      brc = Bind("?d?ps?d?d?ps?ps?d?d", &banval->id, &banval->channel,
+          &banval->target, &banval->setter, &banval->mask, 
+          &banval->reason, &banval->time_set, &banval->duration);
       break;
     case CHACCESS_LIST:
       query = GET_CHAN_ACCESS;
@@ -597,14 +595,14 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   
   if(type == AKILL_LIST)
   {
-    DupString(akillval->mask, akillval->mask);
-    DupString(akillval->reason, akillval->reason);
+    DupString(banval->mask, banval->mask);
+    DupString(banval->reason, banval->reason);
   }
   else if(type == AKICK_LIST)
   {
-    DupString(akickval->mask, akickval->mask);
-    DupString(akickval->reason, akickval->reason);
-    DupString(akickval->channel, akickval->channel);
+    DupString(banval->mask, banval->mask);
+    DupString(banval->reason, banval->reason);
+    DupString(banval->channel, banval->channel);
   }
 
   return (void*)result;
@@ -615,8 +613,7 @@ db_list_next(void *result, unsigned int type, void **entry)
 {
   struct DBResult *res = (struct DBResult *)result;
   struct AccessEntry *aeval;
-  struct AKill *akillval;
-  struct AKick *akickval;
+  struct ServiceBan *banval;
   char *strval = (char*)*entry; 
  
   switch(type)
@@ -629,12 +626,12 @@ db_list_next(void *result, unsigned int type, void **entry)
       *entry = strval;
       break;
     case AKILL_LIST:
-      akillval = MyMalloc(sizeof(struct AKill));
-      *entry = akillval;
+      banval = MyMalloc(sizeof(struct ServiceBan));
+      *entry = banval;
       break;
     case AKICK_LIST:
-      akickval = MyMalloc(sizeof(struct AKick));
-      *entry = akickval;
+      banval = MyMalloc(sizeof(struct ServiceBan));
+      *entry = banval;
      break;
     case CHACCESS_LIST:
       break;
@@ -647,14 +644,14 @@ db_list_next(void *result, unsigned int type, void **entry)
 
   if(type == AKILL_LIST)
   {
-    DupString(akillval->mask, akillval->mask);
-    DupString(akillval->reason, akillval->reason);
+    DupString(banval->mask, banval->mask);
+    DupString(banval->reason, banval->reason);
   }
   else if(type == AKICK_LIST)
   {
-    DupString(akickval->mask, akickval->mask);
-    DupString(akickval->reason, akickval->reason);
-    DupString(akickval->channel, akickval->channel);
+    DupString(banval->mask, banval->mask);
+    DupString(banval->reason, banval->reason);
+    DupString(banval->channel, banval->channel);
   }
 
   return result;
@@ -900,12 +897,12 @@ db_set_successor(const char *channel, const char *nickname)
   return 0;
 }
 
-struct AKill *
+struct ServiceBan *
 db_find_akill(const char *userhost)
 {
   yada_rc_t * result;
   char *escuserhost = NULL;
-  struct AKill *akill;
+  struct ServiceBan *akill;
   unsigned int id;
   
   assert(userhost != NULL);
@@ -927,7 +924,7 @@ db_find_akill(const char *userhost)
     return NULL;
   }
 
-  akill = MyMalloc(sizeof(struct AKill));
+  akill = MyMalloc(sizeof(struct ServiceBan));
   yada_rc_t *_first_row(result);
   yada_rc_t *_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui time.%ui "
       "duration.%ui", &akill->id, &akill->mask, &akill->reason, &id,
@@ -939,8 +936,8 @@ db_find_akill(const char *userhost)
   return akill;
 }
 
-struct AKill *
-db_add_akill(struct AKill *akill)
+struct ServiceBan *
+db_add_akill(struct ServiceBan *akill)
 {
   char *escmask = NULL;
   char *escreason = NULL;

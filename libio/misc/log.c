@@ -34,6 +34,8 @@
 # endif
 #endif
 
+struct Service;
+void global_notice(struct Service *, char *, ...);
 
 /* some older syslogs would overflow at 2024 */
 #define LOG_BUFSIZE 2000

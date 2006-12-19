@@ -65,7 +65,8 @@ char *crypt_pass(char *password)
   unsigned char md_value[EVP_MAX_MD_SIZE];
   char buffer[41];
   char *ret;
-  int md_len, i, j, high, low;
+  int i, j, high, low;
+  unsigned int md_len;
 
   OpenSSL_add_all_digests();
 

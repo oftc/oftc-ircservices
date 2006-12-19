@@ -378,9 +378,9 @@ static void
 m_akill_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct AKill *akill;
+  struct ServiceBan *akill;
   /* XXX Check that they arent going to akill the entire world */
-  akill = MyMalloc(sizeof(struct AKill));
+  akill = MyMalloc(sizeof(struct ServiceBan));
   DupString(akill->mask, parv[1]);
   DupString(akill->reason, parv[2]);
   akill->setter = client->nickname->id;
@@ -394,7 +394,7 @@ static void
 m_akill_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct AKill *akill;
+  struct ServiceBan *akill;
   void *handle, *first;
   int i = 1;
 
