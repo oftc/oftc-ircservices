@@ -57,8 +57,8 @@ enum db_queries
   SET_CHAN_FOUNDER,
   SET_CHAN_FOUNDER_AS_SUCCESSOR,
   SET_CHAN_SUCCESSOR,
-  INSERT_AKILL,
   GET_AKILL,
+  INSERT_AKILL,
   SET_NICK_PASSWORD,
   SET_NICK_URL,
   SET_NICK_EMAIL,
@@ -100,6 +100,7 @@ enum db_queries
   DELETE_AKICK_MASK,
   DELETE_AKICK_ACCOUNT,
   SET_NICK_MASTER,
+  DELETE_AKILL,
   QUERY_COUNT
 };
 
@@ -150,12 +151,12 @@ int db_register_chan(struct RegChannel *);
 int db_delete_chan(const char *);
 struct RegChannel *db_find_chan(const char *);
 
+struct ServiceBan *db_find_akill(const char *);
+
 int db_chan_access_add(struct ChannelAccessEntry*);
 int db_chan_access_del(struct RegChannel *, int);
 struct ChannelAccessEntry *db_chan_access_get(int, int);
 
-int db_set_founder(const char *, const char *);
-int db_set_successor(const char *, const char *);
 int db_chan_success_founder(const char *);
 
 int   db_list_add(unsigned int, const void *);
@@ -165,6 +166,5 @@ void  db_list_done(void *);
 int   db_list_del(unsigned int, unsigned int, const char *);
 int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 
-struct AKill *db_add_akill(struct AKill *akill);
 
 #endif

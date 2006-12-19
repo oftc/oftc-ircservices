@@ -44,6 +44,7 @@ extern struct Callback *send_umode_cb;
 extern struct Callback *send_cloak_cb;
 extern struct Callback *send_nick_cb;
 extern struct Callback *send_akill_cb;
+extern struct Callback *send_unakill_cb;
 extern struct Callback *send_kick_cb;
 extern struct Callback *send_cmode_cb;
 extern struct Callback *send_invite_cb;
@@ -71,7 +72,8 @@ void do_help(struct Service *, struct Client *, const char *, int, char **);
 void identify_user(struct Client *);
 void send_nick_change(struct Service *, struct Client *, const char *);
 void send_umode(struct Service *, struct Client *, const char *);
-void send_akill(struct Service *, struct Client *, struct ServiceBan *);
+void send_akill(struct Service *, char *, struct ServiceBan *);
+void remove_akill(struct Service *, struct ServiceBan *);
 void send_cmode(struct Service *, struct Channel *, const char *, const char *);
 
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
@@ -85,7 +87,8 @@ char *replace_string(char *, const char *);
 int check_list_entry(unsigned int, unsigned int, const char *);
 int check_nick_pass(struct Nick *, const char *);
 void make_random_string(char *, size_t);
-int enforce_matching_akick(struct Service *, struct Channel *, struct Client *);
+int enforce_matching_serviceban(struct Service *, struct Channel *, 
+    struct Client *);
 int enforce_akick(struct Service *, struct Channel *, struct ServiceBan *);
 int enforce_client_serviceban(struct Service *, struct Channel *, struct Client *,
     struct ServiceBan *);
@@ -100,8 +103,7 @@ void unban_mask(struct Service *, struct Channel *, const char *);
 
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
-void free_akill(struct ServiceBan *);
-void free_akick(struct ServiceBan *);
+void free_serviceban(struct ServiceBan *);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 

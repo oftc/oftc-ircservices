@@ -112,3 +112,9 @@ OS_MOD_UNLOAD
 	Module %s unloaded.
 OS_AKILL_LIST
 	%d: %s(%s) - Set by %s at %s(Expires: %s).
+OS_AKILL_ADDOK
+	AKILL %s added.
+OS_AKILL_ADDFAIL
+	AKILL %s failed to be added.
+OS_AKILL_DEL
+	%d AKILL(s) deleted.

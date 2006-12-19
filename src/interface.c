@@ -33,6 +33,7 @@ struct Callback *send_umode_cb;
 struct Callback *send_cloak_cb;
 struct Callback *send_nick_cb;
 struct Callback *send_akill_cb;
+struct Callback *send_unakill_cb;
 struct Callback *send_kick_cb;
 struct Callback *send_cmode_cb;
 struct Callback *send_invite_cb;
@@ -64,6 +65,7 @@ init_interface()
   send_cloak_cb       = register_callback("Cloak an user", NULL);
   send_nick_cb        = register_callback("Send a new nickname", NULL);
   send_akill_cb       = register_callback("Send AKILL to network", NULL);
+  send_unakill_cb     = register_callback("Send UNAKILL", NULL);
   send_kick_cb        = register_callback("Send KICK to network", NULL);
   send_cmode_cb       = register_callback("Send Channel MODE", NULL);
   send_invite_cb      = register_callback("Send INVITE", NULL);
@@ -175,9 +177,16 @@ send_nick_change(struct Service *service, struct Client *client,
 }
 
 void
-send_akill(struct Service *service, struct Client *client, struct ServiceBan *akill)
+send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
 {
-  execute_callback(send_akill_cb, me.uplink, client, akill);
+  execute_callback(send_akill_cb, me.uplink, service, setter, akill->mask,
+      akill->reason);
+}
+
+void
+remove_akill(struct Service *service, struct ServiceBan *akill)
+{
+  execute_callback(send_unakill_cb, me.uplink, service, akill->mask);
 }
 
 void
@@ -382,30 +391,36 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
   return FALSE;
 }
 
-int enforce_matching_akick(struct Service *service, struct Channel *chptr, 
+int enforce_matching_serviceban(struct Service *service, struct Channel *chptr, 
     struct Client *client)
 {
-  struct ServiceBan *akick;
+  struct ServiceBan *sban;
   void *ptr, *first;
 
-  if(chptr->regchan == NULL)
+  if(chptr != NULL && chptr->regchan == NULL)
     return FALSE;
 
-  first = ptr = db_list_first(AKICK_LIST, chptr->regchan->id, (void**)&akick);
+  if(chptr != NULL)
+    first = ptr = db_list_first(AKICK_LIST, chptr->regchan->id, (void**)&sban);
+  else
+    first = ptr = db_list_first(AKILL_LIST, 0, (void**)&sban);
 
   if(ptr == NULL)
     return FALSE;
 
   while(ptr != NULL)
   {
-    if(enforce_client_serviceban(service, chptr, client, akick))
+    if(enforce_client_serviceban(service, chptr, client, sban))
     {
-      free_akick(akick);
+      free_serviceban(sban);
       db_list_done(first);
       return TRUE;
     }
-    free_akick(akick);
-    ptr = db_list_next(ptr, AKICK_LIST, (void**)&akick);
+    free_serviceban(sban);
+    if(chptr != NULL)
+      ptr = db_list_next(ptr, AKICK_LIST, (void**)&sban);
+    else
+      ptr = db_list_next(ptr, AKILL_LIST, (void**)&sban);
   }
 
   return FALSE;
@@ -439,7 +454,7 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
   char host[HOSTLEN + 1];
   int type, bits, found = 0;
 
-  if(sban->mask == NULL)
+  if(sban->mask == NULL && sban->type == AKICK_BAN)
   {
     char *nick = db_get_nickname_from_id(sban->target);
     if(ircncmp(nick, client->name, NICKLEN) == 0)
@@ -476,8 +491,18 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
     }
     if(found)
     {
-      ban_mask(service, chptr, sban->mask);
-      kick_user(service, chptr, client->name, sban->reason);
+      if(sban->type == AKICK_BAN)
+      {
+        ban_mask(service, chptr, sban->mask);
+        kick_user(service, chptr, client->name, sban->reason);
+      }
+      else if(sban->type == AKILL_BAN)
+      {
+        char *setter = db_get_nickname_from_id(sban->setter);
+
+        send_akill(service, setter, sban);
+        MyFree(setter);
+      }
     }
   }
   MyFree(nuh.nuhmask);
@@ -506,22 +531,13 @@ free_nick(struct Nick *nick)
 }
 
 void
-free_akill(struct ServiceBan *akill)
+free_serviceban(struct ServiceBan *ban)
 {
-  ilog(L_DEBUG, "Freeing akill %p for %s\n", akill, akill->mask);
-  MyFree(akill->mask);
-  MyFree(akill->reason);
-  MyFree(akill);
-}
-
-void
-free_akick(struct ServiceBan *akick)
-{
-  ilog(L_DEBUG, "Freeing akick %p for %s\n", akick, akick->mask);
-  MyFree(akick->mask);
-  MyFree(akick->reason);
-  MyFree(akick->channel);
-  MyFree(akick);
+  ilog(L_DEBUG, "Freeing serviceban %p for %s\n", ban, ban->mask);
+  MyFree(ban->mask);
+  MyFree(ban->reason);
+  MyFree(ban->channel);
+  MyFree(ban);
 }
 
 int 

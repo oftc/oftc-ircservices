@@ -1209,6 +1209,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   }
 
   akick = MyMalloc(sizeof(struct ServiceBan));
+  akick->type = AKICK_BAN;
   if(strchr(parv[2], '@') == NULL)
   {
     /* Nickname based akick */
@@ -1260,7 +1261,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
       numkicks);
   }
 
-  free_akick(akick);
+  free_serviceban(akick);
 }
 
 static void
@@ -1296,7 +1297,7 @@ m_akick_list(struct Service *service, struct Client *client,
 
     reply_user(service, service, client, CS_AKICK_LIST, i++, who, akick->reason,
         whoset, "sometime", "sometime");
-    free_akick(akick);
+    free_serviceban(akick);
     if(akick->target != 0)
       MyFree(who);
     MyFree(whoset);
@@ -1362,7 +1363,7 @@ m_akick_enforce(struct Service *service, struct Client *client,
     struct Membership *ms = ptr->data;
     struct Client *client = ms->client_p;
 
-    numkicks += enforce_matching_akick(service, chptr, client);
+    numkicks += enforce_matching_serviceban(service, chptr, client);
   }
 
   reply_user(service, service, client, CS_AKICK_ENFORCE, regchptr->channel,
@@ -1849,7 +1850,7 @@ cs_on_client_join(va_list args)
   /* Find Channel in hash */
   if ((chptr = hash_find_channel(name)) != NULL)
   {
-    if(enforce_matching_akick(chanserv, chptr, source_p))
+    if(enforce_matching_serviceban(chanserv, chptr, source_p))
         return pass_callback(cs_join_hook, source_p, name);
     /* regchan attached, good */
     if ( chptr->regchan != NULL)

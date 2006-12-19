@@ -30,6 +30,10 @@
 
 static struct Service *operserv = NULL;
 
+static dlink_node *os_newuser_hook;
+
+static void *os_on_newuser(va_list);
+
 static void m_noaccess(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_raw(struct Service *, struct Client *, int, char *[]);
@@ -53,7 +57,7 @@ static struct ServiceMessage help_msgtab = {
   { m_noaccess, m_noaccess, m_help, m_help}
 };
 
-static struct SubMessage mod_subs[5] = {
+static struct SubMessage mod_subs[] = {
   { "LIST", 0, 0, OS_MOD_LIST_HELP_SHORT, OS_MOD_LIST_HELP_LONG, 
     { m_noaccess, m_noaccess, m_mod_list, m_mod_list } },
   { "LOAD", 0, 1, OS_MOD_LOAD_HELP_SHORT, OS_MOD_LOAD_HELP_LONG, 
@@ -75,7 +79,7 @@ static struct ServiceMessage raw_msgtab = {
   { m_noaccess, m_noaccess, m_raw, m_raw }
 };
 
-static struct SubMessage admin_subs[4] = {
+static struct SubMessage admin_subs[] = {
   { "ADD", 0, 1, OS_ADMIN_ADD_HELP_SHORT, OS_ADMIN_ADD_HELP_LONG, 
     { m_noaccess, m_noaccess, m_admin_add, m_admin_add } },
   { "LIST", 0, 0, OS_ADMIN_LIST_HELP_SHORT, OS_ADMIN_LIST_HELP_LONG, 
@@ -95,8 +99,8 @@ static struct ServiceMessage session_msgtab = {
   { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
 };
 
-static struct SubMessage akill_subs[4] = {
-  { "ADD", 0, 0, OS_AKILL_ADD_HELP_SHORT, OS_AKILL_ADD_HELP_LONG, 
+static struct SubMessage akill_subs[] = {
+  { "ADD", 0, 3, OS_AKILL_ADD_HELP_SHORT, OS_AKILL_ADD_HELP_LONG, 
     { m_noaccess, m_noaccess, m_akill_add, m_akill_add } },
   { "LIST", 0, 0, OS_AKILL_LIST_HELP_SHORT, OS_AKILL_LIST_HELP_LONG, 
     { m_noaccess, m_noaccess, m_akill_list, m_akill_list } },
@@ -145,6 +149,8 @@ INIT_MODULE(operserv, "$Revision$")
 
   load_language(operserv->languages, "operserv.en");
 
+  os_newuser_hook = install_hook(on_newuser_cb, os_on_newuser);
+
   mod_add_servcmd(&operserv->msg_tree, &help_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &mod_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
@@ -161,6 +167,7 @@ INIT_MODULE(operserv, "$Revision$")
 
 CLEANUP_MODULE
 {
+  uninstall_hook(on_newuser_cb, os_on_newuser);
 }
 
 static void
@@ -379,15 +386,29 @@ m_akill_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct ServiceBan *akill;
+  char reason[IRC_BUFSIZE+1];
+
   /* XXX Check that they arent going to akill the entire world */
   akill = MyMalloc(sizeof(struct ServiceBan));
-  DupString(akill->mask, parv[1]);
-  DupString(akill->reason, parv[2]);
-  akill->setter = client->nickname->id;
 
-//  akill = db_add_akill(akill);
-  /* XXX Execute the akill here */
-  free_akill(akill);
+  akill->type = AKILL_BAN;
+  DupString(akill->mask, parv[1]);
+
+  join_params(reason, parc-1, &parv[2]);
+
+  DupString(akill->reason, reason);
+  akill->setter = client->nickname->id;
+  akill->time_set = CurrentTime;
+
+  if(!db_list_add(AKILL_LIST, akill))
+  {
+    reply_user(service, service, client, OS_AKILL_ADDFAIL, parv[1]);
+    return;
+  }
+  
+  reply_user(service, service, client, OS_AKILL_ADDOK, parv[1]);
+  send_akill(service, client->name, akill);
+  free_serviceban(akill);
 }
 
 static void
@@ -401,9 +422,12 @@ m_akill_list(struct Service *service, struct Client *client,
   first = handle = db_list_first(AKILL_LIST, 0, (void**)&akill);
   while(handle != NULL)
   {
-    reply_user(service, service, client, OS_AKILL_LIST, i++, akill->mask, akill->reason,
-        akill->setter, "sometime", "sometime");
-    free_akill(akill);
+    char *setter = db_get_nickname_from_id(akill->setter);
+
+    reply_user(service, service, client, OS_AKILL_LIST, i++, akill->mask, 
+        akill->reason, setter, "sometime", "sometime");
+    free_serviceban(akill);
+    MyFree(setter);
     handle = db_list_next(handle, AKILL_LIST, (void**)&akill);
   }
   if(first)
@@ -414,10 +438,35 @@ static void
 m_akill_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  int ret = 0;
+  struct ServiceBan *akill;
+
+  if((akill = db_find_akill(parv[1])) == NULL)
+  {
+    reply_user(service, service, client, OS_AKILL_DEL, 0);
+    return;
+  }
+  
+  ret = db_list_del(DELETE_AKILL, 0, parv[1]);
+  remove_akill(service, akill);
+  reply_user(service, service, client, OS_AKILL_DEL, ret);
 }
 
 static void m_operserv_notimp(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
   reply_user(service, service, client, 0, "This isnt implemented yet.");
+}
+
+static void *
+os_on_newuser(va_list args)
+{
+  struct Client *newuser = va_arg(args, struct Client*);
+  
+  if(IsMe(newuser->from))
+    return pass_callback(os_newuser_hook, newuser);
+
+  enforce_matching_serviceban(operserv, NULL, newuser); 
+
+  return pass_callback(os_newuser_hook, newuser);
 }

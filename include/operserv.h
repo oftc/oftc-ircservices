@@ -57,5 +57,8 @@
 #define OS_MOD_RELOADING 54
 #define OS_MOD_UNLOAD 55
 #define OS_AKILL_LIST 56
+#define OS_AKILL_ADDOK 57
+#define OS_AKILL_ADDFAIL 58
+#define OS_AKILL_DEL 59
 
 #endif

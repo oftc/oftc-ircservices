@@ -47,8 +47,8 @@ query_t queries[QUERY_COUNT] = {
     NULL, EXECUTE },
   { "SELECT id, entry FROM account_access WHERE parent_id=?d", NULL, QUERY },
   { "SELECT primary_nick FROM account WHERE flag_admin=true", NULL, QUERY },
-  { "SELECT akill.id, primary_nick, mask, reason, time, duration FROM "
-    "account, akill WHERE setter = account.id", NULL, QUERY },
+  { "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
+    NULL, QUERY },
   { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
     "channel_id=?d", NULL, QUERY },
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
@@ -69,8 +69,8 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE channel SET founder=successor, successor=0 WHERE successor=?d", 
     NULL, EXECUTE },
   { "UPDATE channel SET successor=?d WHERE id=?d", NULL, EXECUTE },
-  { "SELECT id, mask, reason, setter, time, duration FROM akill WHERE ?v "
-    "ILIKE mask", NULL, QUERY },
+  { "SELECT id, mask, reason, setter, time, duration FROM akill WHERE mask=?v",
+    NULL, QUERY },
   { "INSERT INTO akill (mask, reason, setter, time, duration) "
       "VALUES(?v, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
   { "UPDATE account SET password=?v WHERE id=?d", NULL, EXECUTE },
@@ -136,6 +136,7 @@ query_t queries[QUERY_COUNT] = {
   { "DELETE FROM channel_akick WHERE channel_id=?d AND target IN (SELECT user_id "
     "FROM nickname WHERE lower(nick)=lower(?v))", NULL, EXECUTE },
   { "UPDATE account SET primary_nick=?v WHERE id=?d", NULL, EXECUTE },
+  { "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
 };
 
 void
@@ -563,9 +564,9 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
 
       banval = MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
-      brc = Bind("?d?ps?ps?ps?d?d?d", &banval->id, &banval->mask, 
-          &banval->reason, &banval->setter, &banval->time_set, 
-          &banval->duration);
+      brc = Bind("?d?d?ps?ps?d?d", &banval->id, &banval->setter, &banval->mask, 
+          &banval->reason, &banval->time_set, &banval->duration);
+      break;
     case AKICK_LIST:
       query = GET_AKICKS;
 
@@ -597,12 +598,14 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   {
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
+    banval->type = AKILL_BAN;
   }
   else if(type == AKICK_LIST)
   {
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
     DupString(banval->channel, banval->channel);
+    banval->type = AKICK_BAN;
   }
 
   return (void*)result;
@@ -644,11 +647,13 @@ db_list_next(void *result, unsigned int type, void **entry)
 
   if(type == AKILL_LIST)
   {
+    banval->type = AKILL_BAN;
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
   }
   else if(type == AKICK_LIST)
   {
+    banval->type = AKICK_BAN;
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
     DupString(banval->channel, banval->channel);
@@ -868,109 +873,41 @@ db_chan_success_founder(const char *nickname)
   return 0;
 }
 
-int
-db_set_successor(const char *channel, const char *nickname)
-{
-  yada_rc_t * result;
-
-  char *escchannel, *escnick;
-
-  if(dbi_driver_quote_string_copy(Database.driv, nickname, &escnick) == 0)
-  {
-    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
-    return -1;
-  }
-
-  if(dbi_driver_quote_string_copy(Database.driv, channel, &escchannel) == 0)
-  {
-    printf("db: Failed to delete channel: dbi_driver_quote_string_copy\n");
-    MyFree(escnick);
-    return -1;
-  }
-
-  if (result != NULL)
-    yada_rc_t *_free(result);
-
-  MyFree(escnick);
-  MyFree(escchannel);
-
-  return 0;
-}
+#endif
 
 struct ServiceBan *
-db_find_akill(const char *userhost)
+db_find_akill(const char *mask)
 {
-  yada_rc_t * result;
-  char *escuserhost = NULL;
+  yada_rc_t *rc, *brc;
   struct ServiceBan *akill;
-  unsigned int id;
-  
-  assert(userhost != NULL);
 
-  if(dbi_driver_quote_string_copy(Database.driv, userhost, &escuserhost) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return NULL;
-  }
+  assert(mask != NULL);
 
-  MyFree(escuserhost);
-  
-  if(result == NULL)
-    return NULL;
-  
-  if(yada_rc_t *_get_numrows(result) == 0)
-  {
-    yada_rc_t *_free(result);
-    return NULL;
-  }
+  db_query(rc, GET_AKILL, mask);
 
+  if(rc == NULL)
+    return NULL;
+ 
   akill = MyMalloc(sizeof(struct ServiceBan));
-  yada_rc_t *_first_row(result);
-  yada_rc_t *_get_fields(result, "id.%ui mask.%S reason.%S setter.%ui time.%ui "
-      "duration.%ui", &akill->id, &akill->mask, &akill->reason, &id,
-      &akill->time_set, &akill->duration);
+ 
+  brc = Bind("?d?ps?ps?d?d?d", &akill->id, &akill->mask, &akill->reason,
+      &akill->setter, &akill->time_set, &akill->duration);
 
-  akill->setter = db_find_nick(db_get_nickname_from_id(id));
+  if(Fetch(rc, brc) == 0)
+  {
+    printf("db_find_akill: '%s' not found.\n", mask);
+    Free(brc);
+    Free(rc);
+    return NULL;
+  }
 
-  yada_rc_t *_free(result);
+  DupString(akill->mask, akill->mask);
+  DupString(akill->reason, akill->reason);
+
+  printf("db_find_akill: Found akill %s(asked for %s)\n", akill->mask, mask);
+
+  Free(brc);
+  Free(rc);
+
   return akill;
 }
-
-struct ServiceBan *
-db_add_akill(struct ServiceBan *akill)
-{
-  char *escmask = NULL;
-  char *escreason = NULL;
-  char *mask;
-  yada_rc_t * result;
-  
-  DupString(mask, akill->mask);
-  
-  if(dbi_driver_quote_string_copy(Database.driv, akill->mask, &escmask) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    return NULL;
-  }
-
-  if(dbi_driver_quote_string_copy(Database.driv, akill->reason, &escreason) == 0)
-  {
-    printf("db: Failed to query: dbi_driver_quote_string_copy\n");
-    MyFree(escmask);
-    return NULL;
-  }
-
-  MyFree(escmask);
-  MyFree(escreason);
- 
-  if(result == NULL)
-    return NULL;
-  
-  yada_rc_t *_free(result);
-
-  free_akill(akill);
-
-  akill = db_find_akill(mask);
-  MyFree(mask);
-  return akill; 
-}
-#endif
