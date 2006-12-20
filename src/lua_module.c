@@ -124,13 +124,11 @@ lua_register_command(lua_State *L)
   struct ServiceMessage *handler_msgtab;
   struct Service *lua_service = check_service(L, 1);;
   const char *command = luaL_checkstring(L, 2); 
-  int i;
 
   handler_msgtab = MyMalloc(sizeof(struct ServiceMessage));
   
   handler_msgtab->cmd = command;
-  for(i = 0; i < SERVICES_LAST_HANDLER_TYPE; i++)
-    handler_msgtab->handlers[i] = m_lua;
+  handler_msgtab->handler = m_lua;
 
   mod_add_servcmd(&lua_service->msg_tree, handler_msgtab);
 
@@ -259,7 +257,6 @@ lua_drop_nick(lua_State *L)
   //}
 
   client = find_client(nick);
-  client->service_handler = UNREG_HANDLER;
   ClearIdentified(client);
 
   lua_pushboolean(L, TRUE);

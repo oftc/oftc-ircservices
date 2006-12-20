@@ -9,11 +9,11 @@ struct AccessEntry
   char *value;
 };
 
-struct ChannelAccessEntry
+struct ChanAccess
 {
   unsigned int id;
-  unsigned int nick_id;
-  unsigned int channel_id;
+  unsigned int account;
+  unsigned int channel;
   unsigned int level;
 };
 
@@ -45,18 +45,16 @@ enum db_queries
   GET_NICKACCESS,
   GET_ADMINS,
   GET_AKILLS,
-  GET_CHAN_ACCESS,
+  GET_CHAN_ACCESSES,
   GET_CHANID_FROM_CHAN,
   GET_FULL_CHAN,
   INSERT_CHAN,
   INSERT_CHANACCESS,
   SET_CHAN_LEVEL,
   DELETE_CHAN_ACCESS,
-  GET_CHAN_ACCESSES,
+  GET_CHAN_ACCESS,
   DELETE_CHAN,
   SET_CHAN_FOUNDER,
-  SET_CHAN_FOUNDER_AS_SUCCESSOR,
-  SET_CHAN_SUCCESSOR,
   GET_AKILL,
   INSERT_AKILL,
   SET_NICK_PASSWORD,
@@ -134,7 +132,6 @@ int db_set_number(unsigned int, unsigned int, unsigned long);
 int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
-struct Nick *db_find_nick(const char *);
 int db_register_nick(struct Nick *);
 int db_delete_nick(const char *);
 char *db_get_nickname_from_id(unsigned int);
@@ -149,15 +146,11 @@ unsigned int db_unlink_nick(unsigned int);
 
 int db_register_chan(struct RegChannel *);
 int db_delete_chan(const char *);
+
+struct Nick *db_find_nick(const char *);
 struct RegChannel *db_find_chan(const char *);
-
 struct ServiceBan *db_find_akill(const char *);
-
-int db_chan_access_add(struct ChannelAccessEntry*);
-int db_chan_access_del(struct RegChannel *, int);
-struct ChannelAccessEntry *db_chan_access_get(int, int);
-
-int db_chan_success_founder(const char *);
+struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
 
 int   db_list_add(unsigned int, const void *);
 void *db_list_first(unsigned int, unsigned int, void **);
@@ -165,6 +158,5 @@ void *db_list_next(void *, unsigned int, void **);
 void  db_list_done(void *);
 int   db_list_del(unsigned int, unsigned int, const char *);
 int   db_list_del_index(unsigned int, unsigned int, unsigned int);
-
 
 #endif

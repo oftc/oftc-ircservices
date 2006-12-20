@@ -115,6 +115,10 @@ CS_HELP_CLEAR_SHORT
 	%s: moo
 CS_HELP_CLEAR_LONG
 	moo
+CS_HELP_ACCESS_SHORT
+	moo
+CS_HELP_ACCESS_LONG
+	moo
 CS_HELP_CLEAR_MODES_SHORT
 	moo
 CS_HELP_CLEAR_MODES_LONG
@@ -134,6 +138,18 @@ CS_HELP_CLEAR_VOICES_LONG
 CS_HELP_CLEAR_UESRS_SHORT
 	moo
 CS_HELP_CLEAR_USERS_LONG
+	moo
+CS_HELP_ACCESS_ADD_SHORT
+	moo
+CS_HELP_ACCESS_ADD_LONG
+	moo
+CS_HELP_ACCESS_DEL_SHORT
+	moo
+CS_HELP_ACCESS_DEL_LONG
+	moo
+CS_HELP_ACCESS_LIST_SHORT
+	moo
+CS_HELP_ACCESS_LIST_LONG
 	moo
 CS_REGISTER_NICK
 	Nick %s is not registered.
@@ -245,3 +261,13 @@ CS_ALREADY_ON_CHAN
 	User %s is already on channel %s.
 CS_INVITED
 	User %s has been invited to %s.
+CS_ACCESS_BADLEVEL
+	Unknown access level %s.
+CS_ACCESS_ADDOK
+	%s added to %s access list as %s.
+CS_ACCESS_ADDFAIL
+	Failed to add %s to %s access list as %s.
+CS_ACCESS_LIST
+	%d: %s %s
+CS_ACCESS_LISTEND
+	End of ACCESS LIST for channel %s.

@@ -3,7 +3,6 @@ CREATE TABLE channel(
   id                    SERIAL PRIMARY KEY,
   channel               VARCHAR(255) NOT NULL,
   founder               INTEGER NOT NULL REFERENCES account(id),
-  successor             INTEGER REFERENCES account(id),
   flag_forbidden        BOOLEAN NOT NULL DEFAULT 'False', -- channel is forbidden.  it may not be used
   flag_private          BOOLEAN NOT NULL DEFAULT 'False', -- do not show up in list of channels
   flag_restricted_ops   BOOLEAN NOT NULL DEFAULT 'False', -- only people on the access list can hold channel operator status
@@ -22,9 +21,9 @@ DROP TABLE channel_access;
 CREATE TABLE channel_access(
   id                   SERIAL PRIMARY KEY,
   channel_id           INTEGER NOT NULL REFERENCES channel(id),
-  nick_id              INTEGER NOT NULL REFERENCES account(id),
+  account_id           INTEGER NOT NULL REFERENCES account(id),
   level                INTEGER NOT NULL,
-  UNIQUE (channel_id, nick_id)
+  UNIQUE (channel_id, account_id)
 );
 
 DROP TABLE channel_akick;

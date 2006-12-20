@@ -251,13 +251,6 @@ identify_user(struct Client *client)
 {
   struct Nick *nick = client->nickname;
 
-  if(IsOper(client) && nick->admin)
-    client->service_handler = ADMIN_HANDLER;
-  else if(IsOper(client))
-    client->service_handler = OPER_HANDLER;
-  else
-    client->service_handler = REG_HANDLER;
-
   SetIdentified(client);
 
   if(nick->cloak[0] != '\0' && nick->cloak_on)
@@ -296,8 +289,7 @@ void
 do_help(struct Service *service, struct Client *client, 
     const char *command, int parc, char *parv[])
 {
-  struct ServiceMessage *msg;
-  struct SubMessage *sub;
+  struct ServiceMessage *msg, *sub;
 
   /* Command specific help, show the long entry. */
   if(command != NULL)
@@ -533,11 +525,18 @@ free_nick(struct Nick *nick)
 void
 free_serviceban(struct ServiceBan *ban)
 {
-  ilog(L_DEBUG, "Freeing serviceban %p for %s\n", ban, ban->mask);
+  ilog(L_DEBUG, "Freeing serviceban %p for %s", ban, ban->mask);
   MyFree(ban->mask);
   MyFree(ban->reason);
   MyFree(ban->channel);
   MyFree(ban);
+}
+
+void
+free_chanaccess(struct ChanAccess *access)
+{
+	ilog(L_DEBUG, "Freeing chanaccess %p for channel %d", access, access->channel);
+	MyFree(access);
 }
 
 int 

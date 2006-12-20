@@ -10,5 +10,7 @@ void services_die(const char *, int);
 #define SERV_INSUFF_PARAM 5
 #define SERV_NOT_IDENTIFIED 6
 #define SERV_ACCESS_DENIED 7
+#define SERV_UNREG_CHAN 8
+#define SERV_NO_ACCESS 9
 
 #endif

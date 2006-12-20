@@ -353,7 +353,6 @@ ServiceModule_register(VALUE self, VALUE commands)
   struct ServiceMessage *generic_msgtab;
   VALUE command, service_name;
   long i;
-  int n;
 
   service_name = rb_iv_get(self, "@ServiceName");
 
@@ -373,8 +372,7 @@ ServiceModule_register(VALUE self, VALUE commands)
     generic_msgtab->cmd = StringValueCStr(command);
     rb_ary_push(commands, command);
 
-    for(n = 0; n < SERVICES_LAST_HANDLER_TYPE; n++)
-      generic_msgtab->handlers[n] = m_generic;
+    generic_msgtab->handler = m_generic;
 
     mod_add_servcmd(&ruby_service->msg_tree, generic_msgtab);
   }

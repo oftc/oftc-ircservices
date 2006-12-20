@@ -5,7 +5,6 @@ CREATE TABLE channel (
   id                      INTEGER PRIMARY KEY auto_increment,
   channel                 VARCHAR(255) NOT NULL,
   founder                 INTEGER NOT NULL,
-  successor               INTEGER,
   flag_forbidden          BOOLEAN NOT NULL DEFAULT FALSE, -- channel is forbidden.  it may not be used
   flag_private            BOOLEAN NOT NULL DEFAULT FALSE, -- do not show up in list of channels
   flag_restricted_ops     BOOLEAN NOT NULL DEFAULT FALSE, -- only people on the access list can hold channel operator status
@@ -18,18 +17,17 @@ CREATE TABLE channel (
   entrymsg                VARCHAR(255) NOT NULL,
   topic                   VARCHAR(255) NOT NULL,
   FOREIGN KEY (founder)   REFERENCES account(id),
-  FOREIGN KEY (successor) REFERENCES account(id),
   UNIQUE (channel)
 )ENGINE=InnoDB;
 
 CREATE TABLE channel_access (
   id                      INTEGER PRIMARY KEY auto_increment,
   channel_id              INTEGER NOT NULL,
-  nick_id                 INTEGER NOT NULL,
+  account_id              INTEGER NOT NULL,
   level                   INTEGER NOT NULL,
   FOREIGN KEY (channel_id)REFERENCES channel(id),
-  FOREIGN KEY (nick_id)   REFERENCES account(id),
-  UNIQUE (channel_id, nick_id)
+  FOREIGN KEY (account_id)REFERENCES account(id),
+  UNIQUE (channel_id, account_id)
 )ENGINE=InnoDB;
 
 CREATE TABLE channel_akick(

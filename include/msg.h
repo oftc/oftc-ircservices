@@ -34,13 +34,19 @@ typedef enum HandlerType {
   LAST_HANDLER_TYPE
 } HandlerType;
 
-typedef enum ServicesHandlerType {
-  UNREG_HANDLER,
-  REG_HANDLER,
-  OPER_HANDLER,
-  ADMIN_HANDLER,
-  SERVICES_LAST_HANDLER_TYPE
-} ServiceHandlerType;
+typedef enum ServicesPermission {
+  USER_FLAG = 0,
+  IDENTIFIED_FLAG,
+  OPER_FLAG,
+  ADMIN_FLAG
+} ServicePermissionType;
+
+typedef enum ChannelPermission {
+  CHUSER_FLAG = 0,
+  MEMBER_FLAG,
+  CHANOP_FLAG,
+  MASTER_FLAG
+} ChannelPermissionType;
 
 /*
  * MessageHandler function
@@ -51,7 +57,6 @@ typedef enum ServicesHandlerType {
  */
 typedef void (*MessageHandler)(struct Client*, struct Client*, int, char*[]);
 typedef void (*ServiceMessageHandler)(struct Service*, struct Client*, int, char*[]);
-
 
 /* 
  * Message table structure 
@@ -84,29 +89,16 @@ struct Message
   MessageHandler handlers[LAST_HANDLER_TYPE];
 };
 
-struct SubMessage
-{
-  const char *cmd;
-  unsigned int count;      /* number of times command used */
-  unsigned int parameters; /* at least this many args must be passed
-                              * or an error will be sent to the user
-                              * before the m_func is even called
-                            */
-  unsigned int help_short;  /* Help index to show in generic HELP */
-  unsigned int help_long;   /* Help index to show in HELP command */
-
-  ServiceMessageHandler handlers[SERVICES_LAST_HANDLER_TYPE];
-};
-
 struct ServiceMessage
 {
-  struct SubMessage *sub; 
+  struct ServiceMessage *sub; 
   const char *cmd;
-  unsigned int count;      /* number of times command used */
-  unsigned int parameters; /* at least this many args must be passed
+  unsigned int count;       /* number of times command used */
+  unsigned int parameters;  /* at least this many args must be passed
                              * or an error will be sent to the user
                              * before the m_func is even called
                              */
+  unsigned int access;      /* Access level required for using this command */
   unsigned int help_short;  /* Help index to show in generic HELP */
   unsigned int help_long;   /* Help index to show in HELP command */
   /*
@@ -115,10 +107,7 @@ struct ServiceMessage
    * parc = parameter count
    * parv = parameter variable array
    */
-  /* handlers:
-   * UNIDENTIFIED, IDENTIFIED, OPER, ADMIN
-   */
-  ServiceMessageHandler handlers[SERVICES_LAST_HANDLER_TYPE];
+  ServiceMessageHandler handler;
 };
 
 

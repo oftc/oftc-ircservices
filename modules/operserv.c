@@ -34,7 +34,6 @@ static dlink_node *os_newuser_hook;
 
 static void *os_on_newuser(va_list);
 
-static void m_noaccess(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_raw(struct Service *, struct Client *, int, char *[]);
 static void m_mod(struct Service *, struct Client *, int, char *[]);
@@ -53,90 +52,87 @@ static void m_akill_list(struct Service *, struct Client *, int, char *[]);
 static void m_akill_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage help_msgtab = {
-  NULL, "HELP", 0, 0, OS_HELP_SHORT, OS_HELP_LONG,
-  { m_noaccess, m_noaccess, m_help, m_help}
+  NULL, "HELP", 0, 0, ADMIN_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
 };
 
-static struct SubMessage mod_subs[] = {
-  { "LIST", 0, 0, OS_MOD_LIST_HELP_SHORT, OS_MOD_LIST_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_mod_list, m_mod_list } },
-  { "LOAD", 0, 1, OS_MOD_LOAD_HELP_SHORT, OS_MOD_LOAD_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_mod_load, m_mod_load } },
-  { "RELOAD", 0, 1, OS_MOD_RELOAD_HELP_SHORT, OS_MOD_RELOAD_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_mod_reload, m_mod_reload } },
-  { "UNLOAD", 0, 1, OS_MOD_UNLOAD_HELP_SHORT, OS_MOD_UNLOAD_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_mod_unload, m_mod_unload } },
-  { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
+static struct ServiceMessage mod_subs[] = {
+  { NULL, "LIST", 0, 0, ADMIN_FLAG, OS_MOD_LIST_HELP_SHORT, 
+    OS_MOD_LIST_HELP_LONG, m_mod_list },
+  { NULL, "LOAD", 0, 1, ADMIN_FLAG, OS_MOD_LOAD_HELP_SHORT, 
+    OS_MOD_LOAD_HELP_LONG, m_mod_load },
+  { NULL, "RELOAD", 0, 1, ADMIN_FLAG, OS_MOD_RELOAD_HELP_SHORT, 
+    OS_MOD_RELOAD_HELP_LONG, m_mod_reload },
+  { NULL, "UNLOAD", 0, 1, ADMIN_FLAG, OS_MOD_UNLOAD_HELP_SHORT, 
+    OS_MOD_UNLOAD_HELP_LONG, m_mod_unload },
+  { NULL, NULL, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage mod_msgtab = {
-  mod_subs, "MOD", 0, 1, OS_MOD_HELP_SHORT, OS_MOD_HELP_LONG,
-  { m_noaccess, m_noaccess, m_mod, m_mod}
+  mod_subs, "MOD", 0, 1, ADMIN_FLAG, OS_MOD_HELP_SHORT, OS_MOD_HELP_LONG, m_mod
 };
 
 static struct ServiceMessage raw_msgtab = {
-  NULL, "RAW", 1, 1, OS_RAW_HELP_SHORT, OS_RAW_HELP_LONG,
-  { m_noaccess, m_noaccess, m_raw, m_raw }
+  NULL, "RAW", 1, 1, ADMIN_FLAG, OS_RAW_HELP_SHORT, OS_RAW_HELP_LONG, m_raw
 };
 
-static struct SubMessage admin_subs[] = {
-  { "ADD", 0, 1, OS_ADMIN_ADD_HELP_SHORT, OS_ADMIN_ADD_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_admin_add, m_admin_add } },
-  { "LIST", 0, 0, OS_ADMIN_LIST_HELP_SHORT, OS_ADMIN_LIST_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_admin_list, m_admin_list } },
-  { "DEL", 0, 1, OS_ADMIN_DEL_HELP_SHORT, OS_ADMIN_DEL_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_admin_del, m_admin_del } },
-  { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
+static struct ServiceMessage admin_subs[] = {
+  { NULL, "ADD", 0, 1, ADMIN_FLAG, OS_ADMIN_ADD_HELP_SHORT, 
+    OS_ADMIN_ADD_HELP_LONG, m_admin_add },
+  { NULL, "LIST", 0, 0, ADMIN_FLAG, OS_ADMIN_LIST_HELP_SHORT, 
+    OS_ADMIN_LIST_HELP_LONG, m_admin_list },
+  { NULL, "DEL", 0, 1, ADMIN_FLAG, OS_ADMIN_DEL_HELP_SHORT, 
+    OS_ADMIN_DEL_HELP_LONG, m_admin_del },
+  { NULL, NULL, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage admin_msgtab = {
-  admin_subs, "ADMIN", 1, 1, OS_ADMIN_HELP_SHORT, OS_ADMIN_HELP_LONG,
-  { m_noaccess, m_noaccess, m_admin, m_admin}
+  admin_subs, "ADMIN", 1, 1, ADMIN_FLAG, OS_ADMIN_HELP_SHORT, 
+  OS_ADMIN_HELP_LONG, m_admin
 };
 
 static struct ServiceMessage session_msgtab = {
-  NULL, "SESSION", 1, 1, OS_SESSION_HELP_SHORT, OS_SESSION_HELP_LONG,
-  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
+  NULL, "SESSION", 1, 1, ADMIN_FLAG, OS_SESSION_HELP_SHORT, 
+  OS_SESSION_HELP_LONG, m_operserv_notimp
 };
 
-static struct SubMessage akill_subs[] = {
-  { "ADD", 0, 3, OS_AKILL_ADD_HELP_SHORT, OS_AKILL_ADD_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_akill_add, m_akill_add } },
-  { "LIST", 0, 0, OS_AKILL_LIST_HELP_SHORT, OS_AKILL_LIST_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_akill_list, m_akill_list } },
-  { "DEL", 0, 0, OS_AKILL_DEL_HELP_SHORT, OS_AKILL_DEL_HELP_LONG, 
-    { m_noaccess, m_noaccess, m_akill_del, m_akill_del } },
-  { NULL, 0, 0, 0, 0, { NULL, NULL, NULL, NULL } }
+static struct ServiceMessage akill_subs[] = {
+  { NULL, "ADD", 0, 3, ADMIN_FLAG, OS_AKILL_ADD_HELP_SHORT, 
+    OS_AKILL_ADD_HELP_LONG, m_akill_add },
+  { NULL, "LIST", 0, 0, ADMIN_FLAG, OS_AKILL_LIST_HELP_SHORT, 
+    OS_AKILL_LIST_HELP_LONG, m_akill_list },
+  { NULL, "DEL", 0, 0, ADMIN_FLAG, OS_AKILL_DEL_HELP_SHORT, 
+    OS_AKILL_DEL_HELP_LONG, m_akill_del },
+  { NULL, NULL, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage akill_msgtab = {
-  akill_subs, "AKILL", 1, 2, OS_AKILL_HELP_SHORT, OS_AKILL_HELP_LONG,
-  { m_noaccess, m_noaccess, m_akill, m_akill }
+  akill_subs, "AKILL", 1, 2, ADMIN_FLAG, OS_AKILL_HELP_SHORT, 
+  OS_AKILL_HELP_LONG, m_akill
 };
 
 static struct ServiceMessage exceptions_msgtab = {
-  NULL, "EXCEPTIONS", 1, 1, OS_EXCEPTIONS_HELP_SHORT, OS_EXCEPTIONS_HELP_LONG,
-  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
+  NULL, "EXCEPTIONS", 1, 1, ADMIN_FLAG, OS_EXCEPTIONS_HELP_SHORT, 
+  OS_EXCEPTIONS_HELP_LONG, m_operserv_notimp
 };
 
 static struct ServiceMessage jupe_msgtab = {
-  NULL, "JUPE", 1, 1, OS_JUPE_HELP_SHORT, OS_JUPE_HELP_LONG,
-  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
+  NULL, "JUPE", 1, 1, ADMIN_FLAG, OS_JUPE_HELP_SHORT, OS_JUPE_HELP_LONG,
+  m_operserv_notimp
 };
 
 static struct ServiceMessage set_msgtab = {
-  NULL, "SET", 1, 1, OS_SET_HELP_SHORT, OS_SET_HELP_LONG,
-  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
+  NULL, "SET", 1, 1, ADMIN_FLAG, OS_SET_HELP_SHORT, OS_SET_HELP_LONG,
+  m_operserv_notimp
 };
 
 static struct ServiceMessage shutdown_msgtab = {
-  NULL, "SHUTDOWN", 1, 1, OS_SHUTDOWN_HELP_SHORT, OS_SHUTDOWN_HELP_LONG,
-  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
+  NULL, "SHUTDOWN", 1, 1, ADMIN_FLAG, OS_SHUTDOWN_HELP_SHORT, 
+  OS_SHUTDOWN_HELP_LONG, m_operserv_notimp
 };
 
 static struct ServiceMessage quarentine_msgtab = {
-  NULL, "QUARENTINE", 1, 1, OS_QUARENTINE_HELP_SHORT, OS_QUARENTINE_HELP_LONG,
-  { m_noaccess, m_noaccess, m_operserv_notimp, m_operserv_notimp }
+  NULL, "QUARENTINE", 1, 1, ADMIN_FLAG, OS_QUARENTINE_HELP_SHORT, 
+  OS_QUARENTINE_HELP_LONG, m_operserv_notimp
 };
 
 INIT_MODULE(operserv, "$Revision$")
@@ -168,13 +164,6 @@ INIT_MODULE(operserv, "$Revision$")
 CLEANUP_MODULE
 {
   uninstall_hook(on_newuser_cb, os_on_newuser);
-}
-
-static void
-m_noaccess(struct Service *service, struct Client *client, 
-    int parc, char *parv[])
-{
-  reply_user(service, service, client, 0, "No access for you.");
 }
 
 static void

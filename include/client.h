@@ -122,8 +122,6 @@ struct Client
   unsigned int  umodes;
   unsigned short hopcount;
   unsigned char handler;        /* Handler index */
-  unsigned char service_handler;
-
   int flags;
 } Client;
 

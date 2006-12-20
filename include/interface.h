@@ -104,6 +104,7 @@ void unban_mask(struct Service *, struct Channel *, const char *);
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
 void free_serviceban(struct ServiceBan *);
+void free_chanaccess(struct ChanAccess *);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 

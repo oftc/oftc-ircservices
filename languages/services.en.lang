@@ -13,3 +13,7 @@ SERV_NOT_IDENTIFIED
 	Nickname %s is not identified to nickname services.
 SERV_ACCESS_DENIED
 	Access to that command is restricted to IRC Operators or services admins.
+SERV_UNREG_CHAN
+	Channel %s is not registered with channel services.
+SERV_NO_ACCESS
+	You do not have access to the %s command on %s.

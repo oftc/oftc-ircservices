@@ -29,7 +29,7 @@
 #include "stdinc.h"
 
 /*
- * (based on orabidoo's parser code)
+ * (based on orabidoo's parser code)nick_id
  *
  * This has always just been a trie. Look at volume III of Knuth ACP
  *
@@ -312,10 +312,26 @@ static void
 handle_services_command(struct ServiceMessage *mptr, struct Service *service,
      struct Client *from, unsigned int i, char *hpara[])
 {
-  ServiceMessageHandler handler = 0;
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
   
   mptr->count++;
-  handler = mptr->handlers[from->service_handler];
+
+  if(hpara[1] != NULL && *hpara[1] == '#')
+  {
+    chptr = hash_find_channel(hpara[1]);
+    if(chptr == NULL || chptr->regchan == NULL)
+    {
+      regchptr = db_find_chan(hpara[1]);
+      if(regchptr == NULL && mptr->access > CHUSER_FLAG)
+      {
+        reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);
+        return;
+      }
+      else
+        chptr->regchan = regchptr;
+    }
+  }
 
   if (i < mptr->parameters)
   {
@@ -326,7 +342,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   else
   {
     service->last_command = (char *)mptr->cmd;
-    (*handler)(service, from, i, hpara);
+    (*mptr->handler)(service, from, i, hpara);
   }
 }
 
@@ -773,10 +789,12 @@ process_privmsg(struct Client *client, struct Client *source,
 {
   struct Service *service;
   struct ServiceMessage *mptr;
-  char  *s, *ch, *ch2;
-  int i = 0, replaced = FALSE;
-  struct Nick *oldnick = NULL;
-  
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  struct ChanAccess *access = NULL;
+  char *s, *ch, *ch2;
+  unsigned int level;
+  int i = 0, channel = FALSE;
 
   if((s = strchr(parv[1], '@')) != NULL)
     *s++ = '\0';
@@ -809,7 +827,7 @@ process_privmsg(struct Client *client, struct Client *source,
   if(mptr->sub != NULL && parv[3] != NULL)
   {
     /* Process sub commands */
-    struct SubMessage *sub;
+    struct ServiceMessage *sub;
 
     sub = mptr->sub;
 
@@ -820,47 +838,26 @@ process_privmsg(struct Client *client, struct Client *source,
 
     if(*servpara[1] == '#' && i > 2)
     {
-      ilog(L_DEBUG, "Got %s which is possibly a channel", servpara[1]);
       servpara[0] = servpara[1];
       servpara[1] = servpara[2];
       servpara[2] = servpara[0];
-    }
 
-    if(source->nickname && source->nickname->admin)
-    {
-      /* It's an admin, if the command lookup fails, try switching
-       * the parameters because they could be using a SET <nick> FOO */
-      replaced = TRUE;
-      while(sub->cmd != NULL)
+      chptr = hash_find_channel(servpara[0]);
+      if(chptr == NULL || chptr->regchan == NULL)
       {
-        if(irccmp(sub->cmd, servpara[1]) == 0)
+        regchptr = db_find_chan(servpara[0]);
+        if(regchptr == NULL && sub->access > CHUSER_FLAG)
         {
-          replaced = FALSE;
-          break;
-        }
-        sub++;
-      }
-      if(replaced)
-      {
-        if(servpara[2] == NULL)
-        {
-          reply_user(service, NULL, source, SERV_UNKNOWN_CMD, servpara[1], 
-              service->name);
+          reply_user(service, NULL, source, SERV_UNREG_CHAN, servpara[0]);
           return;
         }
-        servpara[0] = servpara[1];
-        servpara[1] = servpara[2];
-        servpara[2] = servpara[1];
-        sub = mptr->sub;
-        oldnick = source->nickname;
-        source->nickname = db_find_nick(para[3]);
-        if(source->nickname == NULL)
-        {
-          m_notid(service, source, (i == 0) ? i : i-1, servpara);
-          source->nickname = oldnick;
-          return;
-        }
+        else
+          chptr->regchan = regchptr;
       }
+      else
+        regchptr = chptr->regchan;
+
+      channel = TRUE;
     }
 
     while(sub->cmd != NULL)
@@ -878,10 +875,7 @@ process_privmsg(struct Client *client, struct Client *source,
             servpara[j-1] = servpara[j];
           }
           servpara[j-1] = NULL;
-          if(replaced)
-            i -= 2;
-          else
-            i--;
+          i--;
         }
         else
         {
@@ -894,23 +888,40 @@ process_privmsg(struct Client *client, struct Client *source,
         {
           reply_user(service, NULL, source, SERV_INSUFF_PARAM, 
               sub->parameters, i);
-          ilog(L_DEBUG, "%s sent services a sub command %s with too few parameters",
+          ilog(L_DEBUG, 
+              "%s sent services a sub command %s with too few parameters",
               client->name, sub->cmd);
-          if(oldnick != NULL)
-          {
-            free_nick(source->nickname);
-            source->nickname = oldnick;
-          }
           return;
         }
         else
         {
-          (*sub->handlers[source->service_handler])(service, source, (i == 0) ? i : i-1, servpara);
-          if(oldnick != NULL)
+          if(channel)
           {
-            free_nick(source->nickname);
-            source->nickname = oldnick;
+            if(source->nickname == NULL)
+              level = CHUSER_FLAG;
+            else
+            {
+              access = db_find_chanaccess(regchptr->id, source->nickname->id);
+              if(access != NULL)
+              {
+                level = access->level;
+                free_chanaccess(access);
+              }
+              else if(regchptr->founder == source->nickname->id)
+                level = MASTER_FLAG;
+              else
+                level = CHUSER_FLAG;
+            }
+
+            if(level < sub->access)
+            {
+              reply_user(service, NULL, source, SERV_NO_ACCESS, sub->cmd, 
+                  servpara[1]);
+              return;
+            }
           }
+
+          (*sub->handler)(service, source, (i == 0) ? i : i-1, servpara);
           return;
         }
       }
@@ -942,11 +953,6 @@ process_privmsg(struct Client *client, struct Client *source,
   }
 
   handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
-  if(oldnick != NULL)
-  {
-    free_nick(source->nickname);
-    source->nickname = oldnick;
-  }
 }
 
 size_t

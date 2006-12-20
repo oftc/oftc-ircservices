@@ -49,26 +49,23 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT primary_nick FROM account WHERE flag_admin=true", NULL, QUERY },
   { "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
     NULL, QUERY },
-  { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
+  { "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
     "channel_id=?d", NULL, QUERY },
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
   { "SELECT id, channel, description, entrymsg, flag_forbidden, flag_private, "
     "flag_restricted_ops, flag_topic_lock, flag_secure, flag_verbose, url, "
-    "email, topic, founder, successor FROM channel WHERE "
+    "email, topic, founder FROM channel WHERE "
     "lower(channel)=lower(?v)", NULL, QUERY },
   { "INSERT INTO channel (channel, founder) VALUES(?v, ?d)", NULL, EXECUTE },
-  { "INSERT INTO channel_access (nick_id, channel_id, level) VALUES (?d, ?d, ?d)", 
-    NULL, EXECUTE } ,
-  { "UPDATE channel_access SET level=?d WHERE id=?d", NULL, EXECUTE },
-  { "DELETE FROM channel_access WHERE channel_id=?d AND nick_id=?d", 
+  { "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
+    "(?d, ?d, ?d)", NULL, EXECUTE } ,
+  { "UPDATE channel_access SET level=?d WHERE account_id=?d", NULL, EXECUTE },
+  { "DELETE FROM channel_access WHERE channel_id=?d AND account_id=?d", 
     NULL, EXECUTE },
-  { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
-    "channel_id=?d AND nick_id=?d", NULL, QUERY },
+  { "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
+    "channel_id=?d AND account_id=?d", NULL, QUERY },
   { "DELETE FROM channel WHERE lower(channel)=lower(?v)", NULL, EXECUTE },
   { "UPDATE channel SET founder=?d WHERE id=?d", NULL, EXECUTE },
-  { "UPDATE channel SET founder=successor, successor=0 WHERE successor=?d", 
-    NULL, EXECUTE },
-  { "UPDATE channel SET successor=?d WHERE id=?d", NULL, EXECUTE },
   { "SELECT id, mask, reason, setter, time, duration FROM akill WHERE mask=?v",
     NULL, QUERY },
   { "INSERT INTO akill (mask, reason, setter, time, duration) "
@@ -492,10 +489,11 @@ db_set_bool(unsigned int key, unsigned int id, unsigned char value)
 int
 db_list_add(unsigned int type, const void *value)
 {
-  int ret = 0;
   struct AccessEntry *aeval = (struct AccessEntry *)value;
+  struct ChanAccess *caval  = (struct ChanAccess *)value;
   struct ServiceBan *banval = (struct ServiceBan *)value;
   unsigned int id;
+  int ret = 0;
 
   switch(type)
   {
@@ -524,6 +522,8 @@ db_list_add(unsigned int type, const void *value)
         assert(0 == 1);
       break;
     case CHACCESS_LIST:
+      db_exec(ret, INSERT_CHANACCESS, caval->account, caval->channel,
+          caval->level);
       break;
     default:
       assert(1 == 0);
@@ -542,6 +542,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   yada_rc_t *rc, *brc;
   char *strval = (char*)*entry; 
   struct AccessEntry *aeval;
+  struct ChanAccess *caval;
   struct ServiceBan *banval;
   struct DBResult *result;
   unsigned int query;
@@ -577,7 +578,12 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
           &banval->reason, &banval->time_set, &banval->duration);
       break;
     case CHACCESS_LIST:
-      query = GET_CHAN_ACCESS;
+      query = GET_CHAN_ACCESSES;
+
+      caval = MyMalloc(sizeof(struct ChanAccess));
+      *entry = caval;
+      brc = Bind("?d?d?d?d", &caval->id, &caval->channel, &caval->account,
+          &caval->level);
       break;
   }
 
@@ -616,6 +622,7 @@ db_list_next(void *result, unsigned int type, void **entry)
 {
   struct DBResult *res = (struct DBResult *)result;
   struct AccessEntry *aeval;
+  struct ChanAccess *caval;
   struct ServiceBan *banval;
   char *strval = (char*)*entry; 
  
@@ -635,8 +642,10 @@ db_list_next(void *result, unsigned int type, void **entry)
     case AKICK_LIST:
       banval = MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
-     break;
+      break;
     case CHACCESS_LIST:
+      caval = MyMalloc(sizeof(struct ChanAccess));
+      *entry = caval;
       break;
     default:
       assert(0 == 1);
@@ -766,12 +775,12 @@ db_find_chan(const char *channel)
  
   channel_p = MyMalloc(sizeof(struct RegChannel));
  
-  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?ps?ps?ps?d?d",
+  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?ps?ps?ps?d",
       &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
       &channel_p->forbidden, &channel_p->priv, &channel_p->restricted_ops,
       &channel_p->topic_lock, &channel_p->secure, &channel_p->verbose, 
       &channel_p->url, &channel_p->email, &channel_p->topic, 
-      &channel_p->founder, &channel_p->successor);
+      &channel_p->founder);
 
   if(Fetch(rc, brc) == 0)
   {
@@ -829,51 +838,29 @@ db_delete_chan(const char *chan)
   return TRUE;
 }
 
-#if 0
-struct ChannelAccessEntry *
-db_chan_access_get(int channel_id, int nickid)
+struct ChanAccess *
+db_find_chanaccess(unsigned int channel, unsigned int account)
 {
-  yada_rc_t * result;
-  struct ChannelAccessEntry *cae;
+  yada_rc_t *rc, *brc;
+  struct ChanAccess *access = NULL;
   
-  result = db_query("",
-    "channel_access", channel_id, nickid);
+  db_query(rc, GET_CHAN_ACCESS, channel, account);
   
-  if(result == NULL)
+  if(rc == NULL)
     return NULL;
 
-  if(yada_rc_t *_get_numrows(result) == 0)
-  {
-    yada_rc_t *_free(result);
-    return NULL;
-  }
+  access = MyMalloc(sizeof(struct ChanAccess));
+  brc = Bind("?d?d?d?d", &access->id, &access->channel, &access->account, 
+      &access->level);
 
-  cae = MyMalloc(sizeof(struct ChannelAccessEntry));
-  yada_rc_t *_first_row(result);
-  yada_rc_t *_get_fields(result, "id.%i channel_id.%i nick_id.%i level.%i", 
-    &cae->id, &cae->channel_id, &cae->nick_id, &cae->level);
+  if(Fetch(rc, brc) == 0)
+    access = NULL;
 
-  yada_rc_t *_free(result);
-  return cae;
+  Free(rc);
+  Free(brc);
+
+  return access;
 }
-
-int
-db_chan_success_founder(const char *nickname)
-{
-  yada_rc_t * result;
-
-  int successor_id;
-
-  successor_id = db_get_id_from_name(nickname, GET_NICKID_FROM_NICK);
-
-  result = db_query("", "channel", successor_id);
-  if (result != NULL)
-    yada_rc_t *_free(result);
-
-  return 0;
-}
-
-#endif
 
 struct ServiceBan *
 db_find_akill(const char *mask)
