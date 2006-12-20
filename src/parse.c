@@ -957,7 +957,10 @@ process_privmsg(struct Client *client, struct Client *source,
     servpara[1] = NULL;
   }
 
-  handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
+  if(!channel && source->access < mptr->access)
+    reply_user(service, NULL, source, SERV_NO_ACCESS, mptr->cmd);
+  else
+    handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
 }
 
 size_t
