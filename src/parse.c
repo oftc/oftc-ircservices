@@ -890,7 +890,7 @@ process_privmsg(struct Client *client, struct Client *source,
               sub->parameters, i);
           ilog(L_DEBUG, 
               "%s sent services a sub command %s with too few parameters",
-              client->name, sub->cmd);
+              source->name, sub->cmd);
           return;
         }
         else
