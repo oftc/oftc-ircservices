@@ -253,6 +253,13 @@ identify_user(struct Client *client)
 
   SetIdentified(client);
 
+  if(nick->admin && IsOper(client))
+    client->access = ADMIN_FLAG;
+  else if(!nick->admin && IsOper(client))
+    client->access = OPER_FLAG;
+  else
+    client->access = IDENTIFIED_FLAG;
+
   if(nick->cloak[0] != '\0' && nick->cloak_on)
     cloak_user(client, nick->cloak);
 

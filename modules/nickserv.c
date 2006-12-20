@@ -307,6 +307,7 @@ m_drop(struct Service *service, struct Client *client,
   if(db_delete_nick(client->name)) 
   {
     ClearIdentified(client);
+    client->access = USER_FLAG;
     send_umode(nickserv, client, "-R");
 
     reply_user(service, service, client, NS_NICK_DROPPED, client->name);
@@ -884,6 +885,7 @@ ns_on_nick_change(va_list args)
   if(IsIdentified(user))
   {
     ClearIdentified(user);
+    user->access = USER_FLAG;
     /* XXX Use unidentify event */
     send_umode(nickserv, user, "-R");
 

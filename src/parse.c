@@ -915,10 +915,15 @@ process_privmsg(struct Client *client, struct Client *source,
 
             if(level < sub->access)
             {
-              reply_user(service, NULL, source, SERV_NO_ACCESS, sub->cmd, 
+              reply_user(service, NULL, source, SERV_NO_ACCESS_CHAN, sub->cmd, 
                   servpara[1]);
               return;
             }
+          }
+          else if(source->access < sub->access)
+          {
+            reply_user(service, NULL, source, SERV_NO_ACCESS, sub->cmd);
+            return;
           }
 
           (*sub->handler)(service, source, (i == 0) ? i : i-1, servpara);

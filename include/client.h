@@ -120,6 +120,7 @@ struct Client
   time_t        enforce_time;
   unsigned int  status;
   unsigned int  umodes;
+  unsigned int  access;
   unsigned short hopcount;
   unsigned char handler;        /* Handler index */
   int flags;

@@ -312,6 +312,7 @@ m_admin_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick = db_find_nick(parv[1]);
+  struct Client *target;
 
   if(nick == NULL)
   {
@@ -322,6 +323,19 @@ m_admin_add(struct Service *service, struct Client *client,
   db_set_bool(SET_NICK_ADMIN, nick->id, TRUE);
   reply_user(service, service, client, OS_ADMIN_ADDED, nick->nick);
   free_nick(nick);
+
+  /* Actively enforce the admin add in case the nick is online right now */
+  if((target = find_client(parv[1])) != NULL)
+  {
+    if(target->nickname != NULL)
+    {
+      target->nickname->admin = TRUE;
+      if(IsOper(target))
+        target->access = ADMIN_FLAG;
+      else
+        target->access = IDENTIFIED_FLAG;
+    }
+  }
 }
 
 static void
@@ -347,6 +361,7 @@ m_admin_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick;
+  struct Client *target;
     
   nick = db_find_nick(parv[1]);
     
@@ -360,6 +375,19 @@ m_admin_del(struct Service *service, struct Client *client,
   db_set_bool(SET_NICK_ADMIN, nick->id, FALSE);
 
   free_nick(nick);
+
+  /* Actively enforce the admin removal in case the nick is online right now */
+  if((target = find_client(parv[1])) != NULL)
+  {
+    if(target->nickname != NULL)
+    {
+      target->nickname->admin = FALSE;
+      if(IsOper(target))
+        target->access = OPER_FLAG;
+      else
+        target->access = IDENTIFIED_FLAG;
+    }
+  }
 }
 
 static void

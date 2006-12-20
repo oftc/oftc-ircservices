@@ -580,6 +580,10 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
               ilog(L_DEBUG, "Setting %s!%s@%s as oper", source_p->name,
                   source_p->username, source_p->host);
               SetOper(source_p);
+              if(source_p->nickname != NULL && source_p->nickname->admin)
+                source_p->access = ADMIN_FLAG;
+              else if(source_p->nickname != NULL)
+                source_p->access = OPER_FLAG;
               execute_callback(on_umode_change_cb, source_p, what, UMODE_OPER);
             }
           }
@@ -592,6 +596,12 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
               break;
 
             ClearOper(source_p);
+
+            if(source_p->nickname != NULL)
+              source_p->access = IDENTIFIED_FLAG;
+            else
+              source_p->access = USER_FLAG;
+
             execute_callback(on_umode_change_cb, source_p, what, UMODE_OPER);
           }
 
