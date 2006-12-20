@@ -328,9 +328,9 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
         reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);
         return;
       }
-      else
-        chptr->regchan = regchptr;
     }
+    else
+      chptr->regchan = regchptr;
   }
 
   if (i < mptr->parameters)
