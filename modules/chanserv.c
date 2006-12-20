@@ -244,6 +244,8 @@ INIT_MODULE(chanserv, "$Revision$")
   cs_channel_destroy_hook = 
        install_hook(on_channel_destroy_cb, cs_on_channel_destroy);
   cs_on_nick_drop_hook = install_hook(on_nick_drop_cb, cs_on_nick_drop);
+
+  SetChanParam(chanserv);
 }
 
 CLEANUP_MODULE

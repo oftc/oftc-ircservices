@@ -20,6 +20,7 @@ struct Service
   char *last_command;
   struct LanguageFile languages[LANG_LAST];
   void *data;
+  unsigned int flags;
 };
 
 struct ServiceBan
@@ -107,5 +108,11 @@ void free_serviceban(struct ServiceBan *);
 void free_chanaccess(struct ChanAccess *);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
+
+#define SFLAG_CHANPARAM   0x0001
+
+#define IsServiceChanParam(x)     ((x)->flags & SFLAG_CHANPARAM)
+
+#define SetChanParam(x)           ((x)->flags |= SFLAG_CHANPARAM)
 
 #endif

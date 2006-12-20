@@ -317,7 +317,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   
   mptr->count++;
 
-  if(hpara[1] != NULL && *hpara[1] == '#')
+  if(hpara[1] != NULL && (*hpara[1] == '#' || IsServiceChanParam(service)))
   {
     chptr = hash_find_channel(hpara[1]);
     if(chptr == NULL || chptr->regchan == NULL)
@@ -836,7 +836,7 @@ process_privmsg(struct Client *client, struct Client *source,
     
     i = string_to_array(ch2, servpara);
 
-    if(*servpara[1] == '#' && i > 2)
+    if(((*servpara[1] == '#') || IsServiceChanParam(service)) && i > 2)
     {
       servpara[0] = servpara[1];
       servpara[1] = servpara[2];
