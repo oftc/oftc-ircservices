@@ -153,5 +153,7 @@ struct RegChannel
 #define CS_ACCESS_ADDFAIL 130
 #define CS_ACCESS_LIST 131
 #define CS_ACCESS_LISTEND 132
+#define CS_ACCESS_DELOK 133
+#define CS_ACCESS_DELFAIL 134
 
 #endif

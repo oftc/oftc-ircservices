@@ -532,39 +532,34 @@ static void
 m_access_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  ilog(L_TRACE, "CS ACCESS DEL from %s for %s", client->name, parv[1]);
-
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  int nickid;
+  unsigned int nickid;
+
+  ilog(L_TRACE, "CS ACCESS DEL from %s for %s", client->name, parv[1]);
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-/*  nickid = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK);
-  if (nickid == 0)
+  if((nickid = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK)) <= 0)
   {
-    reply_user(service, service, client, CS_FIXME);
-    free_regchan(regchptr);
+    reply_user(service, service, client, CS_REGISTER_NICK, parv[2]);
+    if(chptr == NULL)
+      free_regchan(regchptr);
     return;
   }
 
-  if (db_chan_access_del(regchptr, nickid) == 0)
+  if(db_list_del_index(DELETE_CHAN_ACCESS, nickid, regchptr->id))
   {
-    reply_user(service, service, client, CS_ACCESS_DEL);
+    reply_user(service, service, client, CS_ACCESS_DELOK, parv[2], parv[1]);
     ilog(L_DEBUG, "%s (%s@%s) removed AE %s from %s", 
       client->name, client->username, client->host, parv[2], parv[1]);
-
   }
   else
-  {
-    reply_user(service, service, client, CS_ACCESS_DEL_FAILED, parv[1]);
-  }
+    reply_user(service, service, client, CS_ACCESS_DELFAIL, parv[2], parv[1]);
 
   if (chptr == NULL)
-  {
     free_regchan(regchptr);
-  }*/
   ilog(L_TRACE, "T: Leaving CS:m_access_del");
 }
 

@@ -271,3 +271,7 @@ CS_ACCESS_LIST
 	%d: %s %s
 CS_ACCESS_LISTEND
 	End of ACCESS LIST for channel %s.
+CS_ACCESS_DELOK
+	Removed %s from the access list of %s.
+CS_ACCESS_DELFAIL
+	Failed to remove %s from the access list of %s.
