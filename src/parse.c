@@ -851,7 +851,7 @@ process_privmsg(struct Client *client, struct Client *source,
           reply_user(service, NULL, source, SERV_UNREG_CHAN, servpara[0]);
           return;
         }
-        else
+        else if(chptr != NULL)
           chptr->regchan = regchptr;
       }
       else

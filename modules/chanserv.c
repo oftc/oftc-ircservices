@@ -104,7 +104,7 @@ static struct ServiceMessage set_sub[] = {
     CS_HELP_SET_EMAIL_LONG, m_set_email },
   { NULL, "ENTRYMSG", 0, 1, CHANOP_FLAG, CS_HELP_SET_ENTRYMSG_SHORT, 
     CS_HELP_SET_ENTRYMSG_LONG, m_set_entrymsg },
-  { NULL, "TOPIC", 0, 1, MASTER_FLAG, CS_HELP_SET_TOPIC_SHORT, 
+  { NULL, "TOPIC", 0, 1, CHANOP_FLAG, CS_HELP_SET_TOPIC_SHORT, 
     CS_HELP_SET_TOPIC_LONG, m_set_topic },
   { NULL, "TOPICLOCK", 0, 1, MASTER_FLAG, CS_HELP_SET_TOPICLOCK_SHORT, 
     CS_HELP_SET_TOPICLOCK_LONG, m_set_topiclock },
@@ -810,8 +810,8 @@ m_set_topic(struct Service *service, struct Client *client,
     replace_string(regchptr->topic, topic);
     if (chptr == NULL)
       free_regchan(regchptr);
-
-    // XXX: send topic
+    else
+      send_topic(service, chptr, client, topic);
   }
   else
   {

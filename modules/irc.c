@@ -46,6 +46,7 @@ static void *irc_sendmsg_cmode(va_list);
 static void *irc_sendmsg_invite(va_list);
 static void *irc_sendmsg_akill(va_list);
 static void *irc_sendmsg_unakill(va_list);
+static void *irc_sendmsg_topic(va_list);
 static void *irc_server_connected(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
@@ -168,6 +169,7 @@ static dlink_node *cmode_hook;
 static dlink_node *invite_hook;
 static dlink_node *akill_hook;
 static dlink_node *unakill_hook;
+static dlink_node *topic_hook;
 
 INIT_MODULE(irc, "$Revision$")
 {
@@ -180,6 +182,7 @@ INIT_MODULE(irc, "$Revision$")
   invite_hook     = install_hook(send_invite_cb, irc_sendmsg_invite);
   akill_hook      = install_hook(send_akill_cb, irc_sendmsg_akill);
   unakill_hook    = install_hook(send_unakill_cb, irc_sendmsg_unakill);
+  topic_hook      = install_hook(send_topic_cb, irc_sendmsg_topic);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -396,6 +399,21 @@ irc_sendmsg_unakill(va_list args)
 
   sendto_server(uplink, ":%s UNKLINE * %s %s", 
       (source != NULL) ? source->name : me.name, user, host);
+
+  return NULL;
+}
+
+static void *
+irc_sendmsg_topic(va_list args)
+{
+  struct Client   *uplink   = va_arg(args, struct Client *);
+  struct Service  *source   = va_arg(args, struct Service *);
+  struct Channel  *chptr    = va_arg(args, struct Channel *);
+  struct Client   *setter   = va_arg(args, struct Client *);
+  char            *topic    = va_arg(args, char *);
+
+  sendto_server(uplink, ":%s TBURST 1 %s %lu %s :%s", me.name, chptr->chname,
+      CurrentTime, setter->name, topic);
 
   return NULL;
 }

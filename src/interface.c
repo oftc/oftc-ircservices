@@ -37,6 +37,7 @@ struct Callback *send_unakill_cb;
 struct Callback *send_kick_cb;
 struct Callback *send_cmode_cb;
 struct Callback *send_invite_cb;
+struct Callback *send_topic_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -69,6 +70,7 @@ init_interface()
   send_kick_cb        = register_callback("Send KICK to network", NULL);
   send_cmode_cb       = register_callback("Send Channel MODE", NULL);
   send_invite_cb      = register_callback("Send INVITE", NULL);
+  send_topic_cb       = register_callback("Send TOPIC", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
@@ -195,6 +197,14 @@ send_cmode(struct Service *service, struct Channel *chptr, const char *mode,
 {
   execute_callback(send_cmode_cb, me.uplink, service->name, chptr->chname, 
       mode, param);
+}
+
+void
+send_topic(struct Service *service, struct Channel *chptr, 
+    struct Client *client, const char *topic)
+{
+  execute_callback(send_topic_cb, me.uplink, service, chptr, client,
+      topic);
 }
 
 void

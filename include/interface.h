@@ -49,6 +49,7 @@ extern struct Callback *send_unakill_cb;
 extern struct Callback *send_kick_cb;
 extern struct Callback *send_cmode_cb;
 extern struct Callback *send_invite_cb;
+extern struct Callback *send_topic_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -76,7 +77,8 @@ void send_umode(struct Service *, struct Client *, const char *);
 void send_akill(struct Service *, char *, struct ServiceBan *);
 void remove_akill(struct Service *, struct ServiceBan *);
 void send_cmode(struct Service *, struct Channel *, const char *, const char *);
-
+void send_topic(struct Service *, struct Channel *, struct Client *, 
+    const char *);
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
 void chain_squit(struct Client *, struct Client *, char *);
 void chain_quit(struct Client *, char *);
