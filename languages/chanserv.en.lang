@@ -72,10 +72,6 @@ CS_HELP_SET_RESTRICTED_SHORT
 	%s: Set channel restricted flag
 CS_HELP_SET_RESTRICTED_LONG
 	Usage: SET channel RESTRICTED (ON|OFF)
-CS_HELP_SET_SECURE_SHORT
-	%s: Dis/Enable Security Option
-CS_HELP_SET_SECURE_LONG
-	Usage: SET channel SECURE (ON|OFF)
 CS_HELP_SET_VERBOSE_SHORT
 	%s: Be more verbose when someone messes with Chanserv Features on a channel
 CS_HELP_SET_VERBOSE_LONG

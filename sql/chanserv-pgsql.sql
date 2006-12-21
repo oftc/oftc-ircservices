@@ -7,7 +7,6 @@ CREATE TABLE channel(
   flag_private          BOOLEAN NOT NULL DEFAULT 'False', -- do not show up in list of channels
   flag_restricted_ops   BOOLEAN NOT NULL DEFAULT 'False', -- only people on the access list can hold channel operator status
   flag_topic_lock       BOOLEAN NOT NULL DEFAULT 'False', -- topics can only be changed via chanserv
-  flag_secure           BOOLEAN NOT NULL DEFAULT 'False', -- only people who have identified with their password (not by access list) can use their privileged channel access
   flag_verbose          BOOLEAN NOT NULL DEFAULT 'False', -- notice all chanserv actions to the channel
   description           VARCHAR(255),
   url                   VARCHAR(255),

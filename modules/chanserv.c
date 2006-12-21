@@ -51,7 +51,6 @@ static void m_set_topic(struct Service *, struct Client *, int, char *[]);
 static void m_set_topiclock(struct Service *, struct Client *, int, char *[]);
 static void m_set_private(struct Service *, struct Client *, int, char *[]);
 static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
-static void m_set_secure(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick(struct Service *, struct Client *, int, char *[]);
@@ -114,8 +113,6 @@ static struct ServiceMessage set_sub[] = {
     CS_HELP_SET_PRIVATE_LONG, m_set_private },
   { NULL, "RESTRICTED", 0, 1, MASTER_FLAG, CS_HELP_SET_RESTRICTED_SHORT, 
     CS_HELP_SET_RESTRICTED_LONG, m_set_restricted },
-  { NULL, "SECURE", 0, 1, MASTER_FLAG, CS_HELP_SET_SECURE_SHORT, 
-    CS_HELP_SET_SECURE_LONG, m_set_secure },
   { NULL, "VERBOSE", 0, 1, MASTER_FLAG, CS_HELP_SET_VERBOSE_SHORT, 
     CS_HELP_SET_VERBOSE_LONG, m_set_verbose },
   { NULL, "AUTOLIMIT", 0, 1, MASTER_FLAG, CS_HELP_SET_AUTOLIMIT_SHORT, 
@@ -388,7 +385,6 @@ m_info(struct Service *service, struct Client *client,
   regchptr->topic_lock      ? "TOPICLOCK"  : "" ,
   regchptr->priv            ? "PRIVATE"    : "" ,
   regchptr->restricted_ops  ? "RESTRICTED" : "" ,
-  regchptr->secure          ? "SECURE"     : "" ,
   regchptr->verbose         ? "VERBOSE"    : "", " ");
 
   if (chptr == NULL)
@@ -843,13 +839,6 @@ m_set_restricted(struct Service *service, struct Client *client,
 {
   m_set_flag(service, client, parv[1], parv[2], SET_CHAN_RESTRICTED, 
       "RESTRICTED");
-}
-
-static void
-m_set_secure(struct Service *service, struct Client *client,
-    int parc, char *parv[])
-{
-  m_set_flag(service, client, parv[1], parv[2], SET_CHAN_SECURE, "SECURE");
 }
 
 static void
@@ -1344,9 +1333,6 @@ m_set_flag(struct Service *service, struct Client *client,
       case SET_CHAN_TOPICLOCK:
         on = regchptr->topic_lock;
         break;
-      case SET_CHAN_SECURE:
-        on = regchptr->secure;
-        break;
       case SET_CHAN_VERBOSE:
         on = regchptr->verbose;
         break;
@@ -1381,9 +1367,6 @@ m_set_flag(struct Service *service, struct Client *client,
         break;
       case SET_CHAN_TOPICLOCK:
         regchptr->topic_lock = on;
-        break;
-      case SET_CHAN_SECURE:
-        regchptr->secure = on;
         break;
       case SET_CHAN_VERBOSE:
         regchptr->verbose = on;

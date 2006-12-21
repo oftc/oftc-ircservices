@@ -53,7 +53,7 @@ query_t queries[QUERY_COUNT] = {
     "channel_id=?d", NULL, QUERY },
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
   { "SELECT id, channel, description, entrymsg, flag_forbidden, flag_private, "
-    "flag_restricted_ops, flag_topic_lock, flag_secure, flag_verbose, url, "
+    "flag_restricted_ops, flag_topic_lock, flag_verbose, url, "
     "email, topic, founder FROM channel WHERE "
     "lower(channel)=lower(?v)", NULL, QUERY },
   { "INSERT INTO channel (channel, founder) VALUES(?v, ?d)", NULL, EXECUTE },
@@ -109,7 +109,6 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE channel SET flag_private=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_restricted_ops=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_topic_lock=?B WHERE id=?d", NULL, EXECUTE },
-  { "UPDATE channel SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_verbose=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_admin=?B WHERE id=?d", NULL, EXECUTE },
   { "INSERT INTO forbidden_nickname (nick) VALUES (?v)", NULL, EXECUTE },
@@ -775,10 +774,10 @@ db_find_chan(const char *channel)
  
   channel_p = MyMalloc(sizeof(struct RegChannel));
  
-  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?ps?ps?ps?d",
+  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?ps?ps?ps?d",
       &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
       &channel_p->forbidden, &channel_p->priv, &channel_p->restricted_ops,
-      &channel_p->topic_lock, &channel_p->secure, &channel_p->verbose, 
+      &channel_p->topic_lock, &channel_p->verbose, 
       &channel_p->url, &channel_p->email, &channel_p->topic, 
       &channel_p->founder);
 
