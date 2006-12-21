@@ -534,6 +534,9 @@ free_regchan(struct RegChannel *regchptr)
 {
   MyFree(regchptr->description);
   MyFree(regchptr->entrymsg);
+  MyFree(regchptr->url);
+  MyFree(regchptr->email);
+  MyFree(regchptr->topic);
   MyFree(regchptr);
 }
 
@@ -547,6 +550,10 @@ free_nick(struct Nick *nick)
   nick->url = NULL;
   MyFree(nick->last_quit);
   nick->last_quit = NULL;
+  MyFree(nick->last_host);
+  nick->last_host = NULL;
+  MyFree(nick->last_realname);
+  nick->last_realname = NULL;
   MyFree(nick);
 }
 

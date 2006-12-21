@@ -251,16 +251,11 @@ db_find_nick(const char *nick)
   if(retcloak)
     strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
 
-  if(nick_p->url != NULL)
-    DupString(nick_p->url, nick_p->url);
-  if(nick_p->email != NULL)
-    DupString(nick_p->email, nick_p->email);
-  if(nick_p->last_host != NULL)
-    DupString(nick_p->last_host, nick_p->last_host);
-  if(nick_p->last_realname != NULL)
-    DupString(nick_p->last_realname, nick_p->last_realname);
-  if(nick_p->last_quit != NULL)
-    DupString(nick_p->last_quit, nick_p->last_quit);
+  DupString(nick_p->url, nick_p->url);
+  DupString(nick_p->email, nick_p->email);
+  DupString(nick_p->last_host, nick_p->last_host);
+  DupString(nick_p->last_realname, nick_p->last_realname);
+  DupString(nick_p->last_quit, nick_p->last_quit);
 
   printf("db_find_nick: Found nick %s(asked for %s)\n", nick_p->nick, nick);
 
@@ -637,32 +632,42 @@ db_list_next(void *result, unsigned int type, void **entry)
     case ACCESS_LIST:
       aeval = MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
+      Free(res->brc);
+      res->brc = Bind("?d?ps", &aeval->id, &aeval->value);
       break;
     case ADMIN_LIST:
       *entry = strval;
+      Free(res->brc);
+      res->brc = Bind("?ps", entry);
       break;
     case AKILL_LIST:
       banval = MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
-      break;
+      Free(res->brc);
+      res->brc = Bind("?d?d?ps?ps?d?d", &banval->id, &banval->setter, &banval->mask, 
+          &banval->reason, &banval->time_set, &banval->duration);
+     break;
     case AKICK_LIST:
       banval = MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
-      break;
+      Free(res->brc);
+      res->brc = Bind("?d?ps?d?d?ps?ps?d?d", &banval->id, &banval->channel,
+          &banval->target, &banval->setter, &banval->mask, 
+          &banval->reason, &banval->time_set, &banval->duration);
+   break;
     case CHACCESS_LIST:
       caval = MyMalloc(sizeof(struct ChanAccess));
       *entry = caval;
+      Free(res->brc);
+      res->brc = Bind("?d?d?d?d", &caval->id, &caval->channel, &caval->account,
+          &caval->level);
       break;
     default:
       assert(0 == 1);
   }
 
   if(Fetch(res->rc, res->brc) == 0)
-  {
-    MyFree(caval);
-    *entry = NULL;
     return NULL;
-  }
 
   if(type == AKILL_LIST)
   {
@@ -802,16 +807,11 @@ db_find_chan(const char *channel)
 
   strlcpy(channel_p->channel, retchan, sizeof(channel_p->channel));
 
-  if(channel_p->description != NULL)
-    DupString(channel_p->description, channel_p->description);
-  if(channel_p->entrymsg != NULL)
-    DupString(channel_p->entrymsg, channel_p->entrymsg);
-  if(channel_p->url != NULL)
-    DupString(channel_p->url, channel_p->url);
-  if(channel_p->email != NULL)
-    DupString(channel_p->email, channel_p->email);
-  if(channel_p->topic != NULL)
-    DupString(channel_p->topic, channel_p->topic);
+  DupString(channel_p->description, channel_p->description);
+  DupString(channel_p->entrymsg, channel_p->entrymsg);
+  DupString(channel_p->url, channel_p->url);
+  DupString(channel_p->email, channel_p->email);
+  DupString(channel_p->topic, channel_p->topic);
 
   printf("db_find_chan: Found nick %s\n", channel_p->channel);
 

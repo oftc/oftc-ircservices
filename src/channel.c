@@ -156,6 +156,12 @@ destroy_channel(struct Channel *chptr)
   dlinkDelete(&chptr->node, &global_channel_list);
   hash_del_channel(chptr);
 
+  if(chptr->regchan != NULL)
+  {
+    free_regchan(chptr->regchan);
+    chptr->regchan = NULL;
+  }
+
   BlockHeapFree(channel_heap, chptr);
 }
 

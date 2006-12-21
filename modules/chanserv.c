@@ -629,6 +629,8 @@ m_access_list(struct Service *service, struct Client *client,
     handle = db_list_next(handle, CHACCESS_LIST, (void **)&access);
   }
 
+  free_chanaccess(access);
+
   db_list_done(first);
   reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
 
@@ -968,15 +970,16 @@ m_akick_list(struct Service *service, struct Client *client,
 
     reply_user(service, service, client, CS_AKICK_LIST, i++, who, akick->reason,
         whoset, "sometime", "sometime");
-    free_serviceban(akick);
     if(akick->target != 0)
       MyFree(who);
+    free_serviceban(akick);
     MyFree(whoset);
     handle = db_list_next(handle, AKICK_LIST, (void**)&akick);
   }
   if(first)
     db_list_done(first);
 
+  free_serviceban(akick);
   reply_user(service, service, client, CS_AKICK_LISTEND, parv[1]);
 
   if(chptr == NULL)
