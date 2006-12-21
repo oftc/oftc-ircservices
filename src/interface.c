@@ -85,6 +85,12 @@ init_interface()
   load_language(ServicesLanguages, "services.en");
 }
 
+void
+cleanup_interface()
+{
+  BlockHeapDestroy(services_heap);
+}
+
 struct Service *
 make_service(char *name)
 {
@@ -415,7 +421,10 @@ int enforce_matching_serviceban(struct Service *service, struct Channel *chptr,
     first = ptr = db_list_first(AKILL_LIST, 0, (void**)&sban);
 
   if(ptr == NULL)
+  {
+    free_serviceban(sban);
     return FALSE;
+  }
 
   while(ptr != NULL)
   {
@@ -431,6 +440,8 @@ int enforce_matching_serviceban(struct Service *service, struct Channel *chptr,
     else
       ptr = db_list_next(ptr, AKILL_LIST, (void**)&sban);
   }
+
+  db_list_done(first);
 
   return FALSE;
 }

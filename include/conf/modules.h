@@ -45,6 +45,7 @@ struct Module
 
 #ifdef IN_CONF_C
 void init_modules(void);
+void cleanup_modules(void);
 #endif
 
 EXTERN dlink_list loaded_modules;

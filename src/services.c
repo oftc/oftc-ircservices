@@ -144,14 +144,16 @@ services_die(const char *msg, int rboot)
 {
   ilog(L_NOTICE, "Dying: %s", msg);
 
-/*  cleanup_interface();
-  cleanup_channel();
+  /*cleanup_channel();
   cleanup_conf();
   cleanup_client();
   cleanup_parser();
   cleanup_channel_modes();
   cleanup_log();*/
+  cleanup_ruby();
   cleanup_db();
+  cleanup_modules();
+  cleanup_interface();
 
   send_queued_all();
   exit(rboot);

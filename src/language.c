@@ -85,4 +85,25 @@ load_language(struct LanguageFile *language, const char *langfile)
     }
     language[lang].entries[i] = ptr;
   }
+  fbclose(file);
+}
+
+void
+unload_languages(struct LanguageFile *languages)
+{
+  int i, j = 1;
+
+  for(i = 0; i < LANG_LAST; i++)
+  {
+    ilog(L_DEBUG, "Unloading language %s", languages[i].name);
+    if(languages[i].name == NULL)
+      continue;
+  
+    MyFree(languages[i].name);
+    while(languages[i].entries[j] != NULL)
+    {
+      MyFree(languages[i].entries[j]);
+      j++;
+    }
+  }
 }

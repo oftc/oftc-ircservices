@@ -251,9 +251,26 @@ CLEANUP_MODULE
   uninstall_hook(on_join_cb, cs_on_client_join);
   uninstall_hook(on_channel_destroy_cb, cs_on_channel_destroy);
   uninstall_hook(on_nick_drop_cb, cs_on_nick_drop);
+  mod_del_servcmd(&chanserv->msg_tree, &register_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &help_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &set_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &drop_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &akick_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &access_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &info_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &op_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &deop_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &invite_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &clear_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &unban_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &invite_msgtab);
+
+  unload_languages(chanserv->languages);
+
   exit_client(find_client(chanserv->name), &me, "Service unloaded");
   hash_del_service(chanserv);
   dlinkDelete(&chanserv->node, &services_list);
+  ilog(L_DEBUG, "Unloaded chanserv");
 }
 
 static void 

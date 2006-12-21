@@ -461,3 +461,16 @@ init_modules(void)
   add_conf_field(s, "path", CT_STRING, mod_add_path, NULL);
   add_conf_field(s, "module", CT_STRING, mod_add_module, NULL);
 }
+
+void
+cleanup_modules(void)
+{
+  dlink_node *ptr, *nptr;
+
+  DLINK_FOREACH_SAFE(ptr, nptr, loaded_modules.head)
+  {
+    struct Module *mod = ptr->data;
+
+    unload_module(mod);
+  }
+}

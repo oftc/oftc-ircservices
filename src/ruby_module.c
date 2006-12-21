@@ -935,3 +935,9 @@ init_ruby(void)
   for(i=0; i < RB_HOOKS_COUNT; ++i)
     rb_ary_push(ruby_server_hooks, rb_ary_new());
 }
+
+void
+cleanup_ruby(void)
+{
+//  ruby_finalize();
+}

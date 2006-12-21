@@ -63,13 +63,15 @@ extern struct Callback *on_newuser_cb;
 extern struct Callback *on_channel_destroy_cb;
 extern struct Callback *on_nick_drop_cb;
 
+void init_interface();
+void cleanup_interface();
+
 struct Service *make_service(char *);
 void introduce_service(struct Service *);
 void reply_user(struct Service *,struct Service *, struct Client *, 
     unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
 void cloak_user(struct Client *, char *);
-void init_interface();
 void do_help(struct Service *, struct Client *, const char *, int, char **);
 void identify_user(struct Client *);
 void send_nick_change(struct Service *, struct Client *, const char *);
