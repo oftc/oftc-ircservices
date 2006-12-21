@@ -863,6 +863,8 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   VALUE params;
   struct Service *service;
 
+  memset(classname, 0, sizeof(classname));
+
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
 
   ilog(L_TRACE, "RUBY INFO: Loading ruby module: %s", path);

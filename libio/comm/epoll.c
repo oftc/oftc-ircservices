@@ -119,6 +119,8 @@ comm_setselect(fde_t *F, unsigned int type, PF *handler,
   int new_events, op;
   struct epoll_event ep_event;
 
+  memset(&ep_event, 0, sizeof(ep_event));
+
   if ((type & COMM_SELECT_READ))
   {
     F->read_handler = handler;
