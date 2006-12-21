@@ -8,53 +8,78 @@ CS_HELP_SHORT
 CS_HELP_LONG
 	Shows this help message.  Use HELP <command> for help with a commmand.
 CS_HELP_SET_FOUNDER_SHORT
-	%s: Sets the Channels Founder
+	%s: Sets the channel founder
 CS_HELP_SET_FOUNDER_LONG
-	Usage:  SET channel FOUNDER nick
-CS_HELP_SET_SUCC_SHORT
-	%s: Sets the Channels successor when the founder drops his nick
-CS_HELP_SET_SUCC_LONG
-	Usage:  SET channel SUCCESSOR nick
+	Usage: SET channel FOUNDER (nick)
+
+	This gives total control of the channel to the nickname specified. You
+	should give founder to someone only if you truely want to give up control of
+	the channel.  You should also set another founder on a channel if you intend
+	to DROP your nickname.
 CS_HELP_SET_DESC_SHORT
-	%s: Set the Channel Description
+	%s: Set the channel description (free form text)
 CS_HELP_SET_DESC_LONG
-	Usage:  SET channel DESCRIPTION nick
+	Usage: SET channel DESC (text)
+
+	Sets the text associated with the channel. This is usually used to define
+	the purpose of the channel and is displayed with the channel listing in the
+	INFO command.
 CS_HELP_SET_URL_SHORT
-	%s: Set the Channels Homepage
+	%s: Set the channels homepage
 CS_HELP_SET_URL_LONG
-	SET channel URL url
+	Usage: SET channel URL (url)
+
+	Sets a homepage for the channel. This web address is displayed in the
+	listing reported by the INFO command.
 CS_HELP_SET_EMAIL_SHORT
-	%s: Sets the Channels Contact- or Mailinglist email Address
+	%s: Sets the channels e-mail address
 CS_HELP_SET_EMAIL_LONG
-	SET channel EMAIL email
+	Usage: SET channel EMAIL (email)
+
+	Sets a contact e-mail address for the channel. This is displayed in the
+	listing reported by the INFO command.
 CS_HELP_SET_ENTRYMSG_SHORT
-	%s: Sets an automatic greeting when a Client joins a channel
+	%s: Sets the channel greeting
 CS_HELP_SET_ENTRYMSG_LONG
-	SET channel ENTRYMSG message
+	Usage: SET channel ENTRYMSG (message|unset)
+
+	Sets the greeting message for the channel. This greeting will be displayed
+	to all users joining the channel in the form of a notice.  Specifying
+	'unset' as the entry message will disable sending a greeting.
 CS_HELP_SET_TOPIC_SHORT
 	%s: Sets the Channels topic
 CS_HELP_SET_TOPIC_LONG
-	SET channel TOPIC topic
+	Usage: SET channel TOPIC (topic)
+
+	Sets the channel topic. The change in topic will be reflected on IRC right
+	away and the topic will be stored. The topic will be set when the channel is
+	created and this is the topic that will be used with the TOPICLOCK command.
 CS_HELP_SET_TOPICLOCK_SHORT
-	%s: Dis/Enable Topic Lock
+	%s: Lock the channel topic
 CS_HELP_SET_TOPICLOCK_LONG
-	SET channel TOPICLOCK on|off
+	Usage: SET channel TOPICLOCK (ON|OFF)
+
+	Enabling TOPICLOCK will attempt to keep the channel topic synced to the
+	TOPIC setting. If the channel topic is changed via IRC, channel services
+	will override it.
 CS_HELP_SET_PRIVATE_SHORT
-	%s: Dis/Enable Private Option
+	%s: Control channel privacy
 CS_HELP_SET_PRIVATE_LONG
-	Set channel PRIVATE on|off
+	Usage: SET channel PRIVATE (ON|OFF)
+
+	Channels which have PRIVATE set will not show in any channel listings.
 CS_HELP_SET_RESTRICTED_SHORT
-	%s: Dis/Enable Restricted Option
+	%s: Set channel restricted flag
 CS_HELP_SET_RESTRICTED_LONG
-	SET channel RESTRICTED on|off
+	Usage: SET channel RESTRICTED (ON|OFF)
 CS_HELP_SET_SECURE_SHORT
 	%s: Dis/Enable Security Option
 CS_HELP_SET_SECURE_LONG
-	SET channel SECURE on|off
+	Usage: SET channel SECURE (ON|OFF)
 CS_HELP_SET_VERBOSE_SHORT
 	%s: Be more verbose when someone messes with Chanserv Features on a channel
 CS_HELP_SET_VERBOSE_LONG
-	SET channel VERBOSE on|off
+	Usage: SET channel VERBOSE (ON|OFF)
 CS_HELP_SET_MLOCK_SHORT
 	%s: Set MLOCK
 CS_HELP_SET_MLOCK_LONG
@@ -154,25 +179,25 @@ CS_HELP_ACCESS_LIST_LONG
 CS_REGISTER_NICK
 	Nick %s is not registered.
 CS_ALREADY_REG
-	Channel %s is already registered.
+	channel %s is already registered.
 CS_REG_SUCCESS
-	Channel %s successfully registered.
+	channel %s successfully registered.
 CS_REG_FAIL
-	Failed to register Channel %s.
+	Failed to register channel %s.
 CS_NAMESTART_HASH
-	Channelname needs to start with a hash
+	channelname needs to start with a hash
 CS_NOT_ONCHAN
-	You are not on that Channel
+	You are not on that channel
 CS_NOT_OPPED
-	You are not opped on that Channel
+	You are not opped on that channel
 CS_NOT_REG
-	Channel %s is not registered
+	channel %s is not registered
 CS_OWN_CHANNEL_ONLY
-	Channel %s is not registered to you
+	channel %s is not registered to you
 CS_DROPPED
-	Channel %s has been dropped
+	channel %s has been dropped
 CS_DROP_FAILED
-	Dropping of Channel %s has failed.
+	Dropping of channel %s has failed.
 CS_SET_SUCCESSOR
 	Successor of %s is set to %s
 CS_SET_DESCRIPTION
@@ -214,11 +239,10 @@ CS_SET_SUCCESS
 CS_SET_FAILED
 	Changing %s on %s failed.	
 CS_NOT_EXIST
-	Channel does not exist. XXX
+	channel does not exist. XXX
 CS_INFO_CHAN
-	Channel Information about %s
+	channel Information about %s
 	Founder:     %s
-	Successor:   %s
 	Description: %s
 	URL:         %s
 	eMail:       %s
