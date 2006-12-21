@@ -66,20 +66,33 @@ CS_HELP_SET_PRIVATE_SHORT
 	%s: Control channel privacy
 CS_HELP_SET_PRIVATE_LONG
 	Usage: SET channel PRIVATE (ON|OFF)
-	
+		
 	Channels which have PRIVATE set will not show in any channel listings.
 CS_HELP_SET_RESTRICTED_SHORT
-	%s: Set channel restricted flag
+	%s: Restrict the channel to members only
 CS_HELP_SET_RESTRICTED_LONG
 	Usage: SET channel RESTRICTED (ON|OFF)
+	
+	This setting will only allow members of the channel to remain in the
+	channel. All other users will be kicked and banned from the channel upon
+	joining it.
 CS_HELP_SET_VERBOSE_SHORT
-	%s: Be more verbose when someone messes with Chanserv Features on a channel
+	%s: Control channel verbosity
 CS_HELP_SET_VERBOSE_LONG
 	Usage: SET channel VERBOSE (ON|OFF)
+	
+	When verbose is set, channel operators will have notices sent to them when
+	various actions are performed on the channel.	
 CS_HELP_SET_MLOCK_SHORT
-	%s: Set MLOCK
+	%s: Set channel mode lock
 CS_HELP_SET_MLOCK_LONG
-	SET mlock 
+	Usage: SET channel MLOCK modelock
+	
+	Sets the mode which should be enforced on the channel. If the channel's mode
+	is changed, services may override it depending on the MLOCK setting. '+'
+	modes will always be set on a channel and will be replaced if they are
+	removed. '-' modes will always be unset on a channel and will be removed if
+	they are set.
 CS_HELP_SET_AUTOLIMIT_SHORT
 	%s: Autolimit
 CS_HELP_SET_AUTOLIMIT_LONG
@@ -89,87 +102,91 @@ CS_HELP_SET_CLEARBANS_SHORT
 CS_HELP_SET_CLEARBANS_LONG
 	Clearbans
 CS_HELP_SET_SHORT
-	%s: Sets various stati on a channel
+	%s: Change channel settings
 CS_HELP_SET_LONG
-	Set stuff.  List of stuff to set follows:
+	Changes channel settings. The settings that can be changes are:
 CS_HELP_AKICK_ADD_SHORT
-	%s: moo
+	%s: Add a new AKICK on the channel
 CS_HELP_AKICK_ADD_LONG
 	moo
 CS_HELP_AKICK_DEL_SHORT
-	%s: moo
+	%s: Remove an AKICK from the channel
 CS_HELP_AKICK_DEL_LONG
 	moo
 CS_HELP_AKICK_LIST_SHORT
-	%s: moo
+	%s: List channel AKICKs
 CS_HELP_AKICK_LIST_LONG
 	moo
 CS_HELP_AKICK_ENFORCE_SHORT
-	%s: moo
+	%s: Enforce the current AKICK list
 CS_HELP_AKICK_ENFORCE_LONG
 	moo
 CS_HELP_AKICK_SHORT
-	%s: moo
+	%s: Channel Auto Kick list
 CS_HELP_AKICK_LONG
 	moo
 CS_HELP_DROP_SHORT
-	%s: moo
+	%s: Unregister the channel
 CS_HELP_DROP_LONG
 	moo
+CS_HELP_DEOP_SHORT
+	%s: Remove channel operator status
+CS_HELP_DEOP_LONG
+	moo
 CS_HELP_INFO_SHORT
-	%s: moo
+	%s: Get channel information
 CS_HELP_INFO_LONG
 	moo
 CS_HELP_OP_SHORT
-	%s: moo
+	%s: Grant channel operator status
 CS_HELP_OP_LONG
 	moo
 CS_HELP_UNBAN_SHORT
-	%s: moo
+	%s: Remove any bans on the channel which match you
 CS_HELP_UNBAN_LONG
 	moo
 CS_HELP_INVITE_SHORT
-	%s: moo
+	%s: Invite to a channel
 CS_HELP_INVITE_LONG
 	moo
 CS_HELP_CLEAR_SHORT
-	%s: moo
+	%s: Manage large groups on the channel
 CS_HELP_CLEAR_LONG
 	moo
 CS_HELP_ACCESS_SHORT
-	moo
+	%s: Maintains the channel access list
 CS_HELP_ACCESS_LONG
 	moo
 CS_HELP_CLEAR_MODES_SHORT
-	moo
+	%s: Remove all channel modes
 CS_HELP_CLEAR_MODES_LONG
 	moo
 CS_HELP_CLEAR_BANS_SHORT
-	moo
+	%s: Remove all bans on a channel
 CS_HELP_CLEAR_BANS_LONG
 	moo
 CS_HELP_CLEAR_OPS_SHORT
-	moo
+	%s: Deop all the channel operators on a channel
 CS_HELP_CLEAR_OPS_LONG
 	moo
 CS_HELP_CLEAR_VOICES_SHORT
-	moo
+	%s: Devoice all the voices on a channel
 CS_HELP_CLEAR_VOICES_LONG
 	moo
-CS_HELP_CLEAR_UESRS_SHORT
-	moo
+CS_HELP_CLEAR_USERS_SHORT
+	%s: Remove all users from the channel
 CS_HELP_CLEAR_USERS_LONG
 	moo
 CS_HELP_ACCESS_ADD_SHORT
-	moo
+	%s: Add a nickname to the channel access list
 CS_HELP_ACCESS_ADD_LONG
 	moo
 CS_HELP_ACCESS_DEL_SHORT
-	moo
+	%s: Remove a nickname from the channel access list
 CS_HELP_ACCESS_DEL_LONG
 	moo
 CS_HELP_ACCESS_LIST_SHORT
-	moo
+	%s: Show the channel access list
 CS_HELP_ACCESS_LIST_LONG
 	moo
 CS_REGISTER_NICK
@@ -296,4 +313,4 @@ CS_ACCESS_DELOK
 CS_ACCESS_DELFAIL
 	Failed to remove %s from the access list of %s.
 CS_ENTRYMSG
-	[%s]: %s
+	[%s] %s

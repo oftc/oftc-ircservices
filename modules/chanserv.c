@@ -173,8 +173,8 @@ static struct ServiceMessage op_msgtab = {
 };
 
 static struct ServiceMessage deop_msgtab = {
-  NULL, "DEOP", 0, 1, CHANOP_FLAG, CS_HELP_DROP_SHORT, 
-  CS_HELP_DROP_LONG, m_deop
+  NULL, "DEOP", 0, 1, CHANOP_FLAG, CS_HELP_DEOP_SHORT, 
+  CS_HELP_DEOP_LONG, m_deop
 };
 
 static struct ServiceMessage unban_msgtab = {
@@ -196,7 +196,7 @@ static struct ServiceMessage clear_sub[] = {
     CS_HELP_CLEAR_OPS_LONG, m_clear_ops },
   { NULL, "VOICES", 0, 0, CHANOP_FLAG, CS_HELP_CLEAR_VOICES_SHORT, 
     CS_HELP_CLEAR_VOICES_LONG, m_clear_voices },
-  { NULL, "USERS", 0, 0, MASTER_FLAG, CS_HELP_CLEAR_UESRS_SHORT, 
+  { NULL, "USERS", 0, 0, MASTER_FLAG, CS_HELP_CLEAR_USERS_SHORT, 
     CS_HELP_CLEAR_USERS_LONG, m_clear_users },
   { NULL, NULL, 0, 0, 0, 0, 0, NULL }
 };
