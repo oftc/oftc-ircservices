@@ -28,7 +28,14 @@
 #include "lua_module.h"
 #include "ruby_module.h"
 
+#include <signal.h>
+#include <sys/wait.h>
+
 struct Client me;
+
+static void setup_signals();
+static void signal_handler(int);
+static void sigchld_handler(int);
 
 int main(int argc, char *argv[])
 {
@@ -82,10 +89,10 @@ int main(int argc, char *argv[])
 #else
   load_all_modules(1);
 #endif
-
+  
+  setup_signals();
 
   connect_server();
-  ilog(L_DEBUG, "Test");
 
   for(;;)
   {
@@ -99,9 +106,75 @@ int main(int argc, char *argv[])
   return 0;
 }
 
+static void
+setup_signals()
+{
+ struct sigaction act;
+
+  act.sa_flags = 0;
+  act.sa_handler = SIG_IGN;
+
+  sigemptyset(&act.sa_mask);
+
+  sigaddset(&act.sa_mask, SIGPIPE);
+  sigaction(SIGPIPE, &act, 0);
+
+  sigaddset(&act.sa_mask, SIGALRM);
+  sigaction(SIGALRM, &act, 0);
+
+  act.sa_handler = signal_handler;
+  sigemptyset(&act.sa_mask);
+
+  sigaddset(&act.sa_mask, SIGHUP);
+  sigaction(SIGHUP, &act, 0);
+
+  sigaddset(&act.sa_mask, SIGINT);
+  sigaction(SIGINT, &act, 0);
+
+  sigaddset(&act.sa_mask, SIGTERM);
+  sigaction(SIGTERM, &act, 0);
+
+  act.sa_handler = sigchld_handler;
+  sigaddset(&act.sa_mask, SIGCHLD);
+  sigaction(SIGCHLD, &act, 0);
+}
+
 void
 services_die(const char *msg, int rboot)
 {
-  ilog(L_DEBUG, "Dying: %s", msg);
+  ilog(L_NOTICE, "Dying: %s", msg);
+
+/*  cleanup_interface();
+  cleanup_channel();
+  cleanup_conf();
+  cleanup_client();
+  cleanup_parser();
+  cleanup_channel_modes();
+  cleanup_log();*/
+  cleanup_db();
+
+  send_queued_all();
   exit(rboot);
+}
+
+static void
+sigchld_handler(int sig)
+{
+  int status;
+  waitpid(-1, &status, WNOHANG);
+}
+
+static void
+signal_handler(int signum)
+{
+  ilog(L_DEBUG, "Got signal %d!", signum);
+  switch(signum)
+  {
+    case SIGTERM:
+      services_die("got SIGTERM", NO);
+      break;
+    case SIGINT:
+      services_die("got SIGINT", NO);
+      break;
+  }
 }

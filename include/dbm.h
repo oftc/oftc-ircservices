@@ -125,6 +125,7 @@ typedef struct query {
 
 void init_db();
 void db_load_driver();
+void cleanup_db();
 
 int db_set_string(unsigned int, unsigned int, const char *);
 int db_set_number(unsigned int, unsigned int, unsigned long);
