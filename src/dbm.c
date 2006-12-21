@@ -658,7 +658,11 @@ db_list_next(void *result, unsigned int type, void **entry)
   }
 
   if(Fetch(res->rc, res->brc) == 0)
+  {
+    MyFree(caval);
+    *entry = NULL;
     return NULL;
+  }
 
   if(type == AKILL_LIST)
   {

@@ -1029,7 +1029,6 @@ ns_on_quit(va_list args)
     db_set_string(SET_NICK_LAST_REALNAME, nick->id, user->info);
     db_set_number(SET_NICK_LAST_QUITTIME, nick->id, CurrentTime);
     db_set_number(SET_NICK_LAST_SEEN, nick->id, CurrentTime);
-    free_nick(nick);
   }
 
   return pass_callback(ns_quit_hook, user, comment);
