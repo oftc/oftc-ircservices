@@ -11,7 +11,7 @@ CS_HELP_SET_FOUNDER_SHORT
 	%s: Sets the channel founder
 CS_HELP_SET_FOUNDER_LONG
 	Usage: SET channel FOUNDER (nick)
-
+	
 	This gives total control of the channel to the nickname specified. You
 	should give founder to someone only if you truely want to give up control of
 	the channel.  You should also set another founder on a channel if you intend
@@ -20,7 +20,7 @@ CS_HELP_SET_DESC_SHORT
 	%s: Set the channel description (free form text)
 CS_HELP_SET_DESC_LONG
 	Usage: SET channel DESC (text)
-
+	
 	Sets the text associated with the channel. This is usually used to define
 	the purpose of the channel and is displayed with the channel listing in the
 	INFO command.
@@ -28,21 +28,21 @@ CS_HELP_SET_URL_SHORT
 	%s: Set the channels homepage
 CS_HELP_SET_URL_LONG
 	Usage: SET channel URL (url)
-
+	
 	Sets a homepage for the channel. This web address is displayed in the
 	listing reported by the INFO command.
 CS_HELP_SET_EMAIL_SHORT
 	%s: Sets the channels e-mail address
 CS_HELP_SET_EMAIL_LONG
 	Usage: SET channel EMAIL (email)
-
+	
 	Sets a contact e-mail address for the channel. This is displayed in the
 	listing reported by the INFO command.
 CS_HELP_SET_ENTRYMSG_SHORT
 	%s: Sets the channel greeting
 CS_HELP_SET_ENTRYMSG_LONG
 	Usage: SET channel ENTRYMSG (message|unset)
-
+	
 	Sets the greeting message for the channel. This greeting will be displayed
 	to all users joining the channel in the form of a notice.  Specifying
 	'unset' as the entry message will disable sending a greeting.
@@ -50,7 +50,7 @@ CS_HELP_SET_TOPIC_SHORT
 	%s: Sets the Channels topic
 CS_HELP_SET_TOPIC_LONG
 	Usage: SET channel TOPIC (topic)
-
+	
 	Sets the channel topic. The change in topic will be reflected on IRC right
 	away and the topic will be stored. The topic will be set when the channel is
 	created and this is the topic that will be used with the TOPICLOCK command.
@@ -58,7 +58,7 @@ CS_HELP_SET_TOPICLOCK_SHORT
 	%s: Lock the channel topic
 CS_HELP_SET_TOPICLOCK_LONG
 	Usage: SET channel TOPICLOCK (ON|OFF)
-
+	
 	Enabling TOPICLOCK will attempt to keep the channel topic synced to the
 	TOPIC setting. If the channel topic is changed via IRC, channel services
 	will override it.
@@ -66,7 +66,7 @@ CS_HELP_SET_PRIVATE_SHORT
 	%s: Control channel privacy
 CS_HELP_SET_PRIVATE_LONG
 	Usage: SET channel PRIVATE (ON|OFF)
-
+	
 	Channels which have PRIVATE set will not show in any channel listings.
 CS_HELP_SET_RESTRICTED_SHORT
 	%s: Set channel restricted flag
