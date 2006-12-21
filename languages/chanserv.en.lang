@@ -295,3 +295,5 @@ CS_ACCESS_DELOK
 	Removed %s from the access list of %s.
 CS_ACCESS_DELFAIL
 	Failed to remove %s from the access list of %s.
+CS_ENTRYMSG
+	[%s]: %s

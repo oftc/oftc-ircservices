@@ -1433,14 +1433,16 @@ cs_on_client_join(va_list args)
     {
       /* fetch entrymsg from hash if it exists there */
       if (chptr->regchan->entrymsg != NULL)
-        reply_user(chanserv, chanserv, source_p, 0, chptr->regchan->entrymsg);
+        reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, 
+            chptr->regchan->channel, chptr->regchan->entrymsg);
     }
     /* regchan not attached, get it from DB */
     else if ((regchptr = db_find_chan(name)) != NULL)
     {
       /* it does exist there, so attach it now */
       if (regchptr->entrymsg != NULL)
-        reply_user(chanserv, chanserv, source_p, 0, regchptr->entrymsg);
+        reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, regchptr->channel,
+            regchptr->entrymsg);
       chptr->regchan = regchptr;
     }
   } 
