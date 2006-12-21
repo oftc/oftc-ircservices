@@ -261,7 +261,7 @@ CS_INFO_CHAN
 	eMail:       %s
 	Topic:       %s
 	EntryMsg:    %s
-	Flags:       %s %s %s %s %s %s %s
+	Flags:       %s %s %s %s %s
 CS_AKICK_NONICK
 	%s is not a registered nickname. Try a mask instead.
 CS_AKICK_ADDED

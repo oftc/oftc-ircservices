@@ -68,8 +68,6 @@ char *crypt_pass(char *password)
   int i, j, high, low;
   unsigned int md_len;
 
-  OpenSSL_add_all_digests();
-
   md = EVP_get_digestbyname("SHA1");
 
   EVP_MD_CTX_init(&mdctx);

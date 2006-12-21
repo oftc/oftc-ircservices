@@ -265,7 +265,14 @@ exit_one_client(struct Client *source_p)
   }
 
   if (source_p->name[0])
+  {
     hash_del_client(source_p);
+    if(source_p->nickname != NULL)
+    {
+      free_nick(source_p->nickname);
+      source_p->nickname = NULL;
+    }
+  }
 
   /* remove from global client list
    * NOTE: source_p->node.next cannot be NULL if the client is added

@@ -313,7 +313,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
      struct Client *from, unsigned int i, char *hpara[])
 {
   struct Channel *chptr;
-  struct RegChannel *regchptr;
+  struct RegChannel *regchptr = NULL;
   
   mptr->count++;
 
@@ -328,9 +328,8 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
         reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);
         return;
       }
-    }
-    else
       chptr->regchan = regchptr;
+    }
   }
 
   if (i < mptr->parameters)
@@ -790,7 +789,7 @@ process_privmsg(struct Client *client, struct Client *source,
   struct Service *service;
   struct ServiceMessage *mptr;
   struct Channel *chptr;
-  struct RegChannel *regchptr;
+  struct RegChannel *regchptr = NULL;
   struct ChanAccess *access = NULL;
   char *s, *ch, *ch2;
   unsigned int level;
@@ -851,7 +850,7 @@ process_privmsg(struct Client *client, struct Client *source,
           reply_user(service, NULL, source, SERV_UNREG_CHAN, servpara[0]);
           return;
         }
-        else if(chptr != NULL)
+        else if(regchptr != NULL)
           chptr->regchan = regchptr;
       }
       else

@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
   iorecv_cb = register_callback("iorecv", iorecv_default);
   connected_cb = register_callback("server connected", server_connected);
   iosend_cb = register_callback("iosend", iosend_default);
+
+  OpenSSL_add_all_digests();
       
   init_interface();
   strcpy(ServicesInfo.logfile, "services.log");
@@ -154,6 +156,10 @@ services_die(const char *msg, int rboot)
   cleanup_db();
   cleanup_modules();
   cleanup_interface();
+
+  EVP_cleanup();
+
+  exit_client(&me, &me, "Services shutting down");
 
   send_queued_all();
   exit(rboot);

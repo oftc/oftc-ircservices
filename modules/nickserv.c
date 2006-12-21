@@ -383,15 +383,11 @@ m_set_password(struct Service *service, struct Client *client,
 {
   struct Nick *nick;
   char *pass;
-  char password[PASSLEN*2+1];
-  char salt[SALTLEN+1];
+  char password[PASSLEN+SALTLEN+1];
   
   nick = client->nickname;
 
-  memset(salt, 0, sizeof(salt));
-  
-  make_random_string(salt, SALTLEN+1);
-  snprintf(password, sizeof(password), "%s%s", parv[1], salt);
+  snprintf(password, sizeof(password), "%s%s", parv[1], nick->salt);
   
   pass = crypt_pass(password);
   if(db_set_string(SET_NICK_PASSWORD, client->nickname->id, pass))
@@ -533,12 +529,6 @@ m_set_cloakstring(struct Service *service, struct Client *client,
     return;
   }
     
-  /* Need admin to change, but can view no problem */
-  if(!nick->admin)
-  {
-    m_notadmin(service, client, parc, parv);
-    return;
-  }
   if(db_set_string(SET_NICK_CLOAK, nick->id, parv[1]))
   {
     strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
@@ -690,7 +680,6 @@ m_access_list(struct Service *service, struct Client *client, int parc,
   while(listptr != NULL)
   {
     reply_user(service, service, client, NS_ACCESS_ENTRY, i++, entry->value);
-    MyFree(entry->value);
     MyFree(entry);
     listptr = db_list_next(listptr, ACCESS_LIST, (void**)&entry);
   }
