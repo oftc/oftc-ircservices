@@ -842,7 +842,8 @@ process_privmsg(struct Client *client, struct Client *source,
     
     i = string_to_array(ch2, servpara);
 
-    if(((*servpara[1] == '#') || IsServiceChanParam(service)) && i > 2)
+    if(servpara[1] && ((*servpara[1] == '#') || IsServiceChanParam(service)) && 
+        i > 1)
     {
       servpara[0] = servpara[1];
       servpara[1] = servpara[2];
@@ -865,7 +866,14 @@ process_privmsg(struct Client *client, struct Client *source,
 
       channel = TRUE;
     }
-
+    
+    if (i-1 < mptr->parameters)
+    {
+      reply_user(service, NULL, source, SERV_INSUFF_PARAM, 
+          mptr->parameters, i-1);
+      return;
+    }
+ 
     while(sub->cmd != NULL)
     {
       if(irccmp(sub->cmd, servpara[1]) == 0)
@@ -965,6 +973,9 @@ process_privmsg(struct Client *client, struct Client *source,
     i = 0;
     servpara[1] = NULL;
   }
+
+  if(IsServiceChanParam(service))
+    channel = TRUE;
 
   if(!channel && source->access < mptr->access)
     reply_user(service, NULL, source, SERV_NO_ACCESS, mptr->cmd);

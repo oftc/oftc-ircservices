@@ -111,13 +111,13 @@ static struct ServiceMessage set_sub[] = {
     NS_HELP_SET_CLOAK_LONG, m_set_cloak },
   { NULL, "CLOAKSTRING", 0, 0, 0, OPER_FLAG, NS_HELP_SET_CLOAKSTRING_SHORT, 
     NS_HELP_SET_CLOAKSTRING_LONG, m_set_cloakstring },
-  { NULL, "MASTER", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
+  { NULL, "MASTER", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
     NS_HELP_SET_MASTER_LONG, m_set_master },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage set_msgtab = {
-  set_sub, "SET", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_SHORT, NS_HELP_SET_LONG,
+  set_sub, "SET", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_SHORT, NS_HELP_SET_LONG,
   NULL 
 };
 
@@ -126,13 +126,13 @@ static struct ServiceMessage access_sub[] = {
     NS_HELP_ACCESS_ADD_LONG, m_access_add },
   { NULL, "LIST", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_LIST_SHORT, 
     NS_HELP_ACCESS_LIST_LONG, m_access_list },
-  { NULL, "DEL", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_DEL_SHORT, 
+  { NULL, "DEL", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_DEL_SHORT, 
     NS_HELP_ACCESS_DEL_LONG, m_access_del },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage access_msgtab = {
-  access_sub, "ACCESS", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_SHORT, NS_HELP_ACCESS_LONG,
+  access_sub, "ACCESS", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_SHORT, NS_HELP_ACCESS_LONG,
   NULL
 };
 

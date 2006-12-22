@@ -98,7 +98,7 @@ static struct ServiceMessage akill_subs[] = {
     OS_AKILL_ADD_HELP_LONG, m_akill_add },
   { NULL, "LIST", 0, 0, 0, ADMIN_FLAG, OS_AKILL_LIST_HELP_SHORT, 
     OS_AKILL_LIST_HELP_LONG, m_akill_list },
-  { NULL, "DEL", 0, 0, 0, ADMIN_FLAG, OS_AKILL_DEL_HELP_SHORT, 
+  { NULL, "DEL", 0, 1, 0, ADMIN_FLAG, OS_AKILL_DEL_HELP_SHORT, 
     OS_AKILL_DEL_HELP_LONG, m_akill_del },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };

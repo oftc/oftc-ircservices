@@ -119,7 +119,7 @@ static struct ServiceMessage set_sub[] = {
 };
 
 static struct ServiceMessage set_msgtab = {
-  set_sub, "SET", 0, 0, 0, MASTER_FLAG, CS_HELP_SET_SHORT, 
+  set_sub, "SET", 0, 2, 0, MASTER_FLAG, CS_HELP_SET_SHORT, 
   CS_HELP_SET_LONG, NULL
 };
 
@@ -134,7 +134,7 @@ static struct ServiceMessage access_sub[6] = {
 };
 
 static struct ServiceMessage access_msgtab = {
-  access_sub, "ACCESS", 0, 0, 0, MASTER_FLAG, CS_HELP_ACCESS_SHORT, 
+  access_sub, "ACCESS", 0, 2, 0, MASTER_FLAG, CS_HELP_ACCESS_SHORT, 
   CS_HELP_ACCESS_LONG, NULL 
 };
 
@@ -151,7 +151,7 @@ static struct ServiceMessage akick_sub[] = {
 };
 
 static struct ServiceMessage akick_msgtab = {
-  akick_sub, "AKICK", 0, 1, 0, MEMBER_FLAG, CS_HELP_AKICK_SHORT, 
+  akick_sub, "AKICK", 0, 2, 0, MEMBER_FLAG, CS_HELP_AKICK_SHORT, 
   CS_HELP_AKICK_LONG, NULL
 };
 
@@ -197,7 +197,7 @@ static struct ServiceMessage clear_sub[] = {
 };
 
 static struct ServiceMessage clear_msgtab = {
-  clear_sub, "CLEAR", 0, 1, 0, CHANOP_FLAG, CS_HELP_CLEAR_SHORT, 
+  clear_sub, "CLEAR", 0, 2, 0, CHANOP_FLAG, CS_HELP_CLEAR_SHORT, 
   CS_HELP_CLEAR_LONG, NULL
 };
 
