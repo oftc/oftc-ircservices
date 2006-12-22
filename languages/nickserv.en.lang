@@ -167,6 +167,8 @@ NS_AVAIL_LANGUAGE
 	Available languages are:
 NS_LANGUAGE_SET         
 	Language set to %s(%d).
+NS_LANGUAGE_UNAVAIL
+	That language is invalid or not available.
 NS_SET_SUCCESS          
 	SET %s to %s.
 NS_SET_FAILED           

@@ -421,13 +421,22 @@ m_set_language(struct Service *service, struct Client *client,
 
     for(i = 0; i < LANG_LAST; i++)
     {
-      reply_user(service, service, client, NS_LANG_LIST, i, 
-          service->languages[i].name);
+      if(service->languages[i].name != NULL)
+      {
+        reply_user(service, service, client, NS_LANG_LIST, i, 
+            service->languages[i].name);
+      }
     }
   }
   else
   {
     int lang = atoi(parv[1]);
+
+    if(lang > LANG_LAST || lang < 0 || service->languages[lang].name == NULL)
+    {
+      reply_user(service, service, client, NS_LANGUAGE_UNAVAIL);
+      return;
+    }
     
     if(db_set_number(SET_NICK_LANGUAGE, client->nickname->id, lang))
     {
@@ -436,7 +445,7 @@ m_set_language(struct Service *service, struct Client *client,
           service->languages[lang].name, lang); 
     }
     else
-      reply_user(service, service, client, 0, ":(");
+      reply_user(service, service, client, NS_SET_FAILED, "LANGUAGE", parv[1]);
   }
 }
 
@@ -825,7 +834,8 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       "Unknown" : nick->last_quit, quittime, nick->email, (nick->url == NULL) ?
       "Not set" : nick->url, (nick->cloak == NULL) ? "Not set" : nick->cloak);
 
-  if(IsIdentified(client) && client->nickname == nick)
+  if(IsIdentified(client) && client->nickname == nick || 
+      client->access == ADMIN_FLAG)
   {
     reply_user(service, service, client, NS_LANGUAGE_SET,
         service->languages[nick->language].name, nick->language); 
