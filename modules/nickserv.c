@@ -761,6 +761,12 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
+  if(master_nick->id == nick->id)
+  {
+    reply_user(service, service, client, NS_LINK_NOSELF);
+    return;
+  }
+
   if(!check_nick_pass(master_nick, parv[2]))
   {
     free_nick(master_nick);
@@ -834,8 +840,8 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       "Unknown" : nick->last_quit, quittime, nick->email, (nick->url == NULL) ?
       "Not set" : nick->url, (nick->cloak == NULL) ? "Not set" : nick->cloak);
 
-  if(IsIdentified(client) && client->nickname == nick || 
-      client->access == ADMIN_FLAG)
+  if(IsIdentified(client) && (client->nickname == nick || 
+      client->access == ADMIN_FLAG))
   {
     reply_user(service, service, client, NS_LANGUAGE_SET,
         service->languages[nick->language].name, nick->language); 
