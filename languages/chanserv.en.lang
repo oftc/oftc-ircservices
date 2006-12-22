@@ -229,7 +229,7 @@ CS_HELP_CLEAR_USERS_LONG
 CS_HELP_ACCESS_ADD_SHORT
 	%s: Add a nickname to the channel access list
 CS_HELP_ACCESS_ADD_LONG
-	Usage: ACCESS channel ADD nickname MEMBER|CHANOP|MASTER
+	Usage: ACCESS channel ADD nickname MEMBER|CHANOP|MASTER
 	
 	Add the specified nickname to the access list at the specified level.
 CS_HELP_ACCESS_DEL_SHORT
