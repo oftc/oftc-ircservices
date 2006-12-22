@@ -49,8 +49,6 @@ static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
 static void m_register(struct Service *, struct Client *, int, char *[]);
-static void m_set(struct Service *, struct Client *, int, char *[]);
-static void m_access(struct Service *, struct Client *, int, char *[]);
 static void m_ghost(struct Service *, struct Client *, int, char *[]);
 static void m_link(struct Service *, struct Client *, int, char *[]);
 static void m_unlink(struct Service *, struct Client *, int, char *[]);
@@ -115,12 +113,12 @@ static struct ServiceMessage set_sub[] = {
     NS_HELP_SET_CLOAKSTRING_LONG, m_set_cloakstring },
   { NULL, "MASTER", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
     NS_HELP_SET_MASTER_LONG, m_set_master },
-  { NULL, NULL, 0, 0, 0, 0, 0, NULL }
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage set_msgtab = {
   set_sub, "SET", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_SHORT, NS_HELP_SET_LONG,
-  m_set
+  NULL 
 };
 
 static struct ServiceMessage access_sub[] = {
@@ -130,12 +128,12 @@ static struct ServiceMessage access_sub[] = {
     NS_HELP_ACCESS_LIST_LONG, m_access_list },
   { NULL, "DEL", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_DEL_SHORT, 
     NS_HELP_ACCESS_DEL_LONG, m_access_del },
-  { NULL, NULL, 0, 0, 0, 0, 0, NULL }
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage access_msgtab = {
   access_sub, "ACCESS", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_SHORT, NS_HELP_ACCESS_LONG,
-  m_access
+  NULL
 };
 
 static struct ServiceMessage ghost_msgtab = {
@@ -369,12 +367,6 @@ m_help(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   do_help(service, client, parv[1], parc, parv);
-}
-
-static void
-m_set(struct Service *service, struct Client *client, int parc, char *parv[])
-{
-  reply_user(service, service, client, 0, "Unknown SET option");
 }
 
 static void
@@ -631,13 +623,6 @@ m_set_master(struct Service *service, struct Client *client,
     reply_user(service, service, client, NS_MASTER_SET_OK, parv[1]);
   else
     reply_user(service, service, client, NS_MASTER_SET_FAIL, parv[1]);
-}
-
-static void
-m_access(struct Service *service, struct Client *client, int parc, char *parv[])
-{
-  reply_user(service, service, client, 0, 
-      "Syntax: ACCESS {ADD | DEL | LIST} [mask | list]");
 }
 
 static void

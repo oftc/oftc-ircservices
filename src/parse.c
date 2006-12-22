@@ -936,6 +936,9 @@ process_privmsg(struct Client *client, struct Client *source,
       }
       sub++;
     }
+    reply_user(service, NULL, source, SERV_UNKNOWN_OPTION, servpara[1],
+        service->name, mptr->cmd);
+    return;
   }
 
   servpara[0] = source->name;

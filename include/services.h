@@ -13,5 +13,6 @@ void services_die(const char *, int);
 #define SERV_UNREG_CHAN 8
 #define SERV_NO_ACCESS_CHAN 9
 #define SERV_NO_ACCESS 10
+#define SERV_UNKNOWN_OPTION 11
 
 #endif

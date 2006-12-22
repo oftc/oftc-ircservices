@@ -42,7 +42,6 @@ static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *, struct Client *, int, char *[]);
-static void m_set(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
@@ -54,14 +53,10 @@ static void m_set_private(struct Service *, struct Client *, int, char *[]);
 static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
 
-static void m_akick(struct Service *, struct Client *, int, char *[]);
-
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
 static void m_akick_del(struct Service *, struct Client *, int, char *[]);
 static void m_akick_enforce(struct Service *, struct Client *, int, char *[]);
-
-static void m_clear(struct Service *, struct Client *, int, char *[]);
 
 static void m_clear_bans(struct Service *, struct Client *, int, char *[]);
 static void m_clear_ops(struct Service *, struct Client *, int, char *[]);
@@ -73,7 +68,6 @@ static void m_deop(struct Service *, struct Client *, int, char *[]);
 static void m_invite(struct Service *, struct Client *, int, char *[]);
 static void m_unban(struct Service *, struct Client *, int, char *[]);
 
-static void m_access(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
@@ -125,7 +119,8 @@ static struct ServiceMessage set_sub[] = {
 };
 
 static struct ServiceMessage set_msgtab = {
-  set_sub, "SET", 0, 0, 0, MASTER_FLAG, CS_HELP_SET_SHORT, CS_HELP_SET_LONG, m_set
+  set_sub, "SET", 0, 0, 0, MASTER_FLAG, CS_HELP_SET_SHORT, 
+  CS_HELP_SET_LONG, NULL
 };
 
 static struct ServiceMessage access_sub[6] = {
@@ -140,7 +135,7 @@ static struct ServiceMessage access_sub[6] = {
 
 static struct ServiceMessage access_msgtab = {
   access_sub, "ACCESS", 0, 0, 0, MASTER_FLAG, CS_HELP_ACCESS_SHORT, 
-  CS_HELP_ACCESS_LONG, m_access
+  CS_HELP_ACCESS_LONG, NULL 
 };
 
 static struct ServiceMessage akick_sub[] = {
@@ -157,7 +152,7 @@ static struct ServiceMessage akick_sub[] = {
 
 static struct ServiceMessage akick_msgtab = {
   akick_sub, "AKICK", 0, 1, 0, MEMBER_FLAG, CS_HELP_AKICK_SHORT, 
-  CS_HELP_AKICK_LONG, m_akick
+  CS_HELP_AKICK_LONG, NULL
 };
 
 static struct ServiceMessage drop_msgtab = {
@@ -203,7 +198,7 @@ static struct ServiceMessage clear_sub[] = {
 
 static struct ServiceMessage clear_msgtab = {
   clear_sub, "CLEAR", 0, 1, 0, CHANOP_FLAG, CS_HELP_CLEAR_SHORT, 
-  CS_HELP_CLEAR_LONG, m_clear
+  CS_HELP_CLEAR_LONG, NULL
 };
 
 /*
@@ -416,20 +411,6 @@ m_help(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   do_help(service, client, parv[1], parc, parv);
-}
-
-static void
-m_set(struct Service *service, struct Client *client,
-    int parc, char *parv[])
-{
-  do_help(service, client, "SET", parc, parv);
-}
-
-static void
-m_access(struct Service *service, struct Client *client,
-    int parc, char *parv[])
-{
-  do_help(service, client, "ACCESS", parc, parv);
 }
 
 /* ACCESS ADD nick type */
@@ -748,12 +729,6 @@ m_set_verbose(struct Service *service, struct Client *client,
   m_set_flag(service, client, parv[1], parv[2], SET_CHAN_VERBOSE, "VERBOSE");
 }
 
-static void
-m_akick(struct Service *service, struct Client *client, int parc, char *parv[])
-{
-  do_help(service, client, "AKICK", parc, parv);
-}
-
 /* AKICK ADD (nick|mask) reason */
 static void
 m_akick_add(struct Service *service, struct Client *client, int parc, 
@@ -914,12 +889,6 @@ m_akick_enforce(struct Service *service, struct Client *client,
 
   if(chptr == NULL)
     free_regchan(regchptr);
-}
-
-static void
-m_clear(struct Service *service, struct Client *client, int parc, char *parv[])
-{
-  do_help(service, client, "CLEAR", parc, parv);
 }
 
 static void

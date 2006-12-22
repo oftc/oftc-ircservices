@@ -36,17 +36,14 @@ static void *os_on_newuser(va_list);
 
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_raw(struct Service *, struct Client *, int, char *[]);
-static void m_mod(struct Service *, struct Client *, int, char *[]);
 static void m_mod_list(struct Service *, struct Client *, int, char *[]);
 static void m_mod_load(struct Service *, struct Client *, int, char *[]);
 static void m_mod_reload(struct Service *, struct Client *, int, char *[]);
 static void m_mod_unload(struct Service *, struct Client *, int, char *[]);
 static void m_operserv_notimp(struct Service *, struct Client *, int, char *[]);
-static void m_admin(struct Service *, struct Client *, int, char *[]);
 static void m_admin_add(struct Service *, struct Client *, int, char *[]);
 static void m_admin_list(struct Service *, struct Client *, int, char *[]);
 static void m_admin_del(struct Service *, struct Client *, int, char *[]);
-static void m_akill(struct Service *, struct Client *, int, char *[]);
 static void m_akill_add(struct Service *, struct Client *, int, char *[]);
 static void m_akill_list(struct Service *, struct Client *, int, char *[]);
 static void m_akill_del(struct Service *, struct Client *, int, char *[]);
@@ -68,7 +65,8 @@ static struct ServiceMessage mod_subs[] = {
 };
 
 static struct ServiceMessage mod_msgtab = {
-  mod_subs, "MOD", 0, 1, 0, ADMIN_FLAG, OS_MOD_HELP_SHORT, OS_MOD_HELP_LONG, m_mod
+  mod_subs, "MOD", 0, 1, 0, ADMIN_FLAG, OS_MOD_HELP_SHORT, OS_MOD_HELP_LONG,
+  NULL
 };
 
 static struct ServiceMessage raw_msgtab = {
@@ -87,7 +85,7 @@ static struct ServiceMessage admin_subs[] = {
 
 static struct ServiceMessage admin_msgtab = {
   admin_subs, "ADMIN", 1, 1, 0, ADMIN_FLAG, OS_ADMIN_HELP_SHORT, 
-  OS_ADMIN_HELP_LONG, m_admin
+  OS_ADMIN_HELP_LONG, NULL
 };
 
 static struct ServiceMessage session_msgtab = {
@@ -107,7 +105,7 @@ static struct ServiceMessage akill_subs[] = {
 
 static struct ServiceMessage akill_msgtab = {
   akill_subs, "AKILL", 1, 2, 0, ADMIN_FLAG, OS_AKILL_HELP_SHORT, 
-  OS_AKILL_HELP_LONG, m_akill
+  OS_AKILL_HELP_LONG, NULL
 };
 
 static struct ServiceMessage exceptions_msgtab = {
@@ -186,13 +184,6 @@ m_help(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
   do_help(service, client, parv[1], parc, parv);
-}
-
-static void 
-m_mod(struct Service *service, struct Client *client, 
-    int parc, char *parv[])
-{
-  reply_user(service, service, client, 0, "Unknown MOD command");  
 }
 
 static void
@@ -316,13 +307,6 @@ m_raw(struct Service *service, struct Client *client,
 }
 
 static void
-m_admin(struct Service *service, struct Client *client,
-    int parc, char *parv[])
-{
-  reply_user(service, service, client, 0, "ADMIN, what?");
-}
-
-static void
 m_admin_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
@@ -403,13 +387,6 @@ m_admin_del(struct Service *service, struct Client *client,
         target->access = IDENTIFIED_FLAG;
     }
   }
-}
-
-static void
-m_akill(struct Service *service, struct Client *client,
-    int parc, char *parv[])
-{
-  reply_user(service, service, client, 0, "AKILL, what?");
 }
 
 /* AKILL ADD user@host reason [duration] */
