@@ -325,6 +325,7 @@ m_register(struct Service *service, struct Client *client,
 
   regchptr = MyMalloc(sizeof(struct RegChannel));
   strlcpy(regchptr->channel, parv[1], sizeof(regchptr->channel));
+  DupString(regchptr->description, parv[2]);
 
   if (db_register_chan(regchptr, client->nickname->id))
   {

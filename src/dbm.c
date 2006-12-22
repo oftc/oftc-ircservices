@@ -55,7 +55,7 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id, channel, description, entrymsg, flag_forbidden, flag_private, "
     "flag_restricted_ops, flag_topic_lock, flag_verbose, url, "
     "email, topic FROM channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
-  { "INSERT INTO channel (channel) VALUES(?v)", NULL, EXECUTE },
+  { "INSERT INTO channel (channel, description) VALUES(?v, ?v)", NULL, EXECUTE },
   { "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
     "(?d, ?d, ?d)", NULL, EXECUTE } ,
   { "UPDATE channel_access SET level=?d WHERE account_id=?d", NULL, EXECUTE },
@@ -828,7 +828,7 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
 
   TransBegin();
 
-  db_exec(ret, INSERT_CHAN, chan->channel);
+  db_exec(ret, INSERT_CHAN, chan->channel, chan->description);
 
   if(ret == -1)
   {
