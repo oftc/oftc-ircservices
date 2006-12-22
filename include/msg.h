@@ -43,6 +43,7 @@ typedef enum ServicesPermission {
 
 typedef enum ChannelPermission {
   CHUSER_FLAG = 0,
+  CHIDENTIFIED_FLAG,
   MEMBER_FLAG,
   CHANOP_FLAG,
   MASTER_FLAG

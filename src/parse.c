@@ -323,12 +323,18 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
     if(chptr == NULL || chptr->regchan == NULL)
     {
       regchptr = db_find_chan(hpara[1]);
-      if(regchptr == NULL && mptr->access > CHUSER_FLAG)
+      if(regchptr == NULL && mptr->access > CHIDENTIFIED_FLAG)
       {
         reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);
         return;
       }
-      else if(chptr != NULL)
+      if(from->access <= IDENTIFIED_FLAG && mptr->access == CHIDENTIFIED_FLAG)
+      {
+        reply_user(service, NULL, from, SERV_NOT_IDENTIFIED, from->name);
+        return;
+      }
+
+      if(chptr != NULL)
         chptr->regchan = regchptr;
     }
   }
@@ -851,7 +857,7 @@ process_privmsg(struct Client *client, struct Client *source,
           reply_user(service, NULL, source, SERV_UNREG_CHAN, servpara[0]);
           return;
         }
-        else if(regchptr != NULL)
+        else if(regchptr != NULL && chptr != NULL)
           chptr->regchan = regchptr;
       }
       else
@@ -950,6 +956,8 @@ process_privmsg(struct Client *client, struct Client *source,
   else if(i == 0 && s != NULL)
   {
     i = string_to_array(s, servpara);
+    if(*servpara[1] == '#')
+      channel = TRUE;
   }
   else
   {

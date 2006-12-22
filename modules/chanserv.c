@@ -72,6 +72,7 @@ static void m_deop(struct Service *, struct Client *, int, char *[]);
 static void m_invite(struct Service *, struct Client *, int, char *[]);
 static void m_unban(struct Service *, struct Client *, int, char *[]);
 
+static void m_access(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
@@ -83,7 +84,7 @@ static void m_not_avail(struct Service *, struct Client *, int, char *[]);
 static int m_set_flag(struct Service *, struct Client *, char *, char *, int, char *);
 
 static struct ServiceMessage register_msgtab = {
-  NULL, "REGISTER", 0, 2, CHUSER_FLAG, CS_HELP_REG_SHORT, CS_HELP_REG_LONG,
+  NULL, "REGISTER", 0, 2, CHIDENTIFIED_FLAG, CS_HELP_REG_SHORT, CS_HELP_REG_LONG,
   m_register
 };
 
@@ -130,14 +131,14 @@ static struct ServiceMessage access_sub[6] = {
     CS_HELP_ACCESS_ADD_LONG, m_access_add },
   { NULL, "DEL", 0, 2, MASTER_FLAG, CS_HELP_ACCESS_DEL_SHORT, 
     CS_HELP_ACCESS_DEL_LONG, m_access_del },
-  { NULL, "LIST", 0, 2, MASTER_FLAG, CS_HELP_ACCESS_LIST_SHORT, 
+  { NULL, "LIST", 0, 2, CHUSER_FLAG, CS_HELP_ACCESS_LIST_SHORT, 
     CS_HELP_ACCESS_LIST_LONG, m_access_list },
   { NULL, NULL, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage access_msgtab = {
   access_sub, "ACCESS", 0, 0, MASTER_FLAG, CS_HELP_ACCESS_SHORT, 
-  CS_HELP_ACCESS_LONG, m_not_avail
+  CS_HELP_ACCESS_LONG, m_access
 };
 
 static struct ServiceMessage akick_sub[] = {
@@ -457,7 +458,7 @@ m_set_founder(struct Service *service, struct Client *client,
     return;
   }
 
-  if (db_set_number(SET_CHAN_FOUNDER, regchptr->id, nick_p->id) == 0)
+  if (db_set_number(SET_CHAN_FOUNDER, regchptr->id, nick_p->id))
   {
     reply_user(service, service, client, CS_SET_FOUNDER, regchptr->channel, nick_p->nick);
     ilog(L_NOTICE, "%s (%s@%s) set founder of %s to %s", 
@@ -470,11 +471,17 @@ m_set_founder(struct Service *service, struct Client *client,
         nick_p->nick);
 
   free_nick(nick_p);
-  MyFree(nick_p);
 
   if (chptr == NULL)
     free_regchan(regchptr);
   ilog(L_TRACE, "T: Leaving CS:m_set_foudner (%s:%s)", client->name, parv[1]);
+}
+
+static void
+m_access(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  do_help(service, client, "ACCESS", parc, parv);
 }
 
 /* ACCESS ADD nick type */
@@ -587,7 +594,7 @@ m_access_list(struct Service *service, struct Client *client,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  nick = db_get_nickname_from_id(regchptr->id);
+  nick = db_get_nickname_from_id(regchptr->founder);
   reply_user(service, service, client, CS_ACCESS_LIST, i++, nick, "FOUNDER");
 
   first = handle = db_list_first(CHACCESS_LIST, regchptr->id, (void**)&access);
