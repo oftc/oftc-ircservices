@@ -62,7 +62,6 @@ static void m_akick_enforce(struct Service *, struct Client *, int, char *[]);
 
 static void m_clear(struct Service *, struct Client *, int, char *[]);
 
-static void m_clear_modes(struct Service *, struct Client *, int, char *[]);
 static void m_clear_bans(struct Service *, struct Client *, int, char *[]);
 static void m_clear_ops(struct Service *, struct Client *, int, char *[]);
 static void m_clear_voices(struct Service *, struct Client *, int, char *[]);
@@ -117,8 +116,8 @@ static struct ServiceMessage set_sub[] = {
     CS_HELP_SET_VERBOSE_LONG, m_set_verbose },
   { NULL, "AUTOLIMIT", 0, 1, MASTER_FLAG, CS_HELP_SET_AUTOLIMIT_SHORT, 
     CS_HELP_SET_AUTOLIMIT_LONG, m_not_avail },
-  { NULL, "CLEARBANS", 0, 1, MASTER_FLAG, CS_HELP_SET_CLEARBANS_SHORT, 
-    CS_HELP_SET_CLEARBANS_LONG, m_not_avail },
+  { NULL, "EXPIREBANS", 0, 1, MASTER_FLAG, CS_HELP_SET_EXPIREBANS_SHORT, 
+    CS_HELP_SET_EXPIREBANS_LONG, m_not_avail },
   { NULL, NULL, 0, 0, 0, 0, 0, NULL } 
 };
 
@@ -188,8 +187,6 @@ static struct ServiceMessage invite_msgtab = {
 };
 
 static struct ServiceMessage clear_sub[] = {
-  { NULL, "MODES", 0, 1, CHANOP_FLAG, CS_HELP_CLEAR_MODES_SHORT, 
-    CS_HELP_CLEAR_MODES_LONG, m_clear_modes }, 
   { NULL, "BANS", 0, 1, CHANOP_FLAG, CS_HELP_CLEAR_BANS_SHORT, 
     CS_HELP_CLEAR_BANS_LONG, m_clear_bans },
   { NULL, "OPS", 0, 1, CHANOP_FLAG, CS_HELP_CLEAR_OPS_SHORT, 
@@ -1039,17 +1036,6 @@ static void
 m_clear(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   do_help(service, client, "CLEAR", parc, parv);
-}
-
-static void
-m_clear_modes(struct Service *service, struct Client *client, int parc, 
-    char *parv[])
-{
-  struct Channel *chptr;
-  struct RegChannel *regchptr;
- 
-  chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 }
 
 static void
