@@ -4,7 +4,6 @@ DROP TABLE IF EXISTS channel;
 CREATE TABLE channel (
   id                      INTEGER PRIMARY KEY auto_increment,
   channel                 VARCHAR(255) NOT NULL,
-  founder                 INTEGER NOT NULL,
   flag_forbidden          BOOLEAN NOT NULL DEFAULT FALSE, -- channel is forbidden.  it may not be used
   flag_private            BOOLEAN NOT NULL DEFAULT FALSE, -- do not show up in list of channels
   flag_restricted_ops     BOOLEAN NOT NULL DEFAULT FALSE, -- only people on the access list can hold channel operator status
@@ -15,7 +14,6 @@ CREATE TABLE channel (
   email                   VARCHAR(255) NOT NULL,
   entrymsg                VARCHAR(255) NOT NULL,
   topic                   VARCHAR(255) NOT NULL,
-  FOREIGN KEY (founder)   REFERENCES account(id),
   UNIQUE (channel)
 )ENGINE=InnoDB;
 

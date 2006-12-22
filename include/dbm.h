@@ -54,7 +54,6 @@ enum db_queries
   DELETE_CHAN_ACCESS,
   GET_CHAN_ACCESS,
   DELETE_CHAN,
-  SET_CHAN_FOUNDER,
   GET_AKILL,
   INSERT_AKILL,
   SET_NICK_PASSWORD,
@@ -144,7 +143,7 @@ int db_delete_forbid(const char *nick);
 int db_link_nicks(unsigned int, unsigned int);
 unsigned int db_unlink_nick(unsigned int);
 
-int db_register_chan(struct RegChannel *);
+int db_register_chan(struct RegChannel *, unsigned int);
 int db_delete_chan(const char *);
 
 struct Nick *db_find_nick(const char *);

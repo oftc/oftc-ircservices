@@ -7,15 +7,6 @@ CS_HELP_SHORT
 	%s: Shows this help.
 CS_HELP_LONG
 	Shows this help message.  Use HELP <command> for help with a commmand.
-CS_HELP_SET_FOUNDER_SHORT
-	%s: Sets the channel founder
-CS_HELP_SET_FOUNDER_LONG
-	Usage: SET channel FOUNDER [nick]
-	
-	This gives total control of the channel to the nickname specified. You
-	should give founder to someone only if you truely want to give up control of
-	the channel.  You should also set another founder on a channel if you intend
-	to DROP your nickname.
 CS_HELP_SET_DESC_SHORT
 	%s: Set the channel description (free form text)
 CS_HELP_SET_DESC_LONG
@@ -267,10 +258,6 @@ CS_SET_DESCRIPTION
 	Description of %s is set to %s
 CS_SET_ENTRYMSG
 	Entrymsg of %s is set to "%s"
-CS_SET_FOUNDER
-	Founder of channel %s has been set to %s
-CS_SET_FOUNDER_FAILED
-	Setting founder of channel %s to %s has failed
 CS_SET_SUCC
 	Successor of channel %s has been set to %s
 CS_SET_SUCC_FAILED
@@ -305,7 +292,6 @@ CS_NOT_EXIST
 	channel does not exist. XXX
 CS_INFO_CHAN
 	channel Information about %s
-	Founder:     %s
 	Description: %s
 	URL:         %s
 	eMail:       %s

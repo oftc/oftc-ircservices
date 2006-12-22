@@ -913,8 +913,6 @@ process_privmsg(struct Client *client, struct Client *source,
                 level = access->level;
                 free_chanaccess(access);
               }
-              else if(regchptr->founder == source->nickname->id)
-                level = MASTER_FLAG;
               else
                 level = CHUSER_FLAG;
             }

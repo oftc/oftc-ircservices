@@ -42,7 +42,6 @@ static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *, struct Client *, int, char *[]);
 static void m_set(struct Service *, struct Client *, int, char *[]);
 
-static void m_set_founder(struct Service *, struct Client *, int, char *[]);
 static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
@@ -93,8 +92,6 @@ static struct ServiceMessage help_msgtab = {
 };
 
 static struct ServiceMessage set_sub[] = {
-  { NULL, "FOUNDER", 0, 1, MASTER_FLAG, CS_HELP_SET_FOUNDER_SHORT, 
-    CS_HELP_SET_FOUNDER_LONG, m_set_founder },
   { NULL, "DESC", 0, 1, MASTER_FLAG, CS_HELP_SET_DESC_SHORT, 
     CS_HELP_SET_DESC_LONG, m_set_desc },
   { NULL, "URL", 0, 1, MASTER_FLAG, CS_HELP_SET_URL_SHORT, 
@@ -321,9 +318,8 @@ m_register(struct Service *service, struct Client *client,
 
   regchptr = MyMalloc(sizeof(struct RegChannel));
   strlcpy(regchptr->channel, parv[1], sizeof(regchptr->channel));
-  regchptr->founder = client->nickname->id;
 
-  if (db_register_chan(regchptr))
+  if (db_register_chan(regchptr, client->nickname->id))
   {
     chptr->regchan = regchptr;
     reply_user(service, service, client, CS_REG_SUCCESS, parv[1]);
@@ -394,7 +390,6 @@ m_info(struct Service *service, struct Client *client,
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
   
   reply_user(service, service, client, CS_INFO_CHAN, parv[1], 
-  db_get_nickname_from_id(regchptr->founder),
   regchptr->description, regchptr->url, regchptr->email,
   regchptr->topic, regchptr->entrymsg,
   regchptr->topic_lock      ? "TOPICLOCK"  : "" ,
@@ -420,61 +415,6 @@ m_set(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   do_help(service, client, "SET", parc, parv);
-}
-
-static void
-m_set_founder(struct Service *service, struct Client *client, 
-    int parc, char *parv[])
-{
-  struct Channel *chptr;
-  struct RegChannel *regchptr;
-  struct Nick *nick_p;
-  char *foundernick;
-  
-  ilog(L_TRACE, "Channel SET FOUNDER from %s for %s", client->name, parv[1]);
-
-  chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
-
-  if (parc < 2)
-  {
-    foundernick = db_get_nickname_from_id(regchptr->founder);
-    reply_user(service, service, client, CS_SET_FOUNDER, regchptr->channel, foundernick);
-    ilog(L_TRACE, "T: Leaving CS:m_set_founder (%s:%s) (INFO ONLY)", 
-        client->name, parv[1]);
-    MyFree(foundernick);
-    if (chptr == NULL)
-      free_regchan(regchptr);
-    return;
-  }
-
-  if ((nick_p = db_find_nick(parv[2])) == NULL)
-  {
-    reply_user(service, service, client, CS_REGISTER_NICK, parv[2]);
-    ilog(L_DEBUG, "Channel SET FOUNDER failed for %s on %s (newnotreg)", 
-        client->name, regchptr->channel);
-    if (chptr == NULL)
-      free_regchan(regchptr);
-    return;
-  }
-
-  if (db_set_number(SET_CHAN_FOUNDER, regchptr->id, nick_p->id))
-  {
-    reply_user(service, service, client, CS_SET_FOUNDER, regchptr->channel, nick_p->nick);
-    ilog(L_NOTICE, "%s (%s@%s) set founder of %s to %s", 
-      client->name, client->username, client->host, regchptr->channel, 
-      nick_p->nick);
-    regchptr->founder = nick_p->id; 
-  }
-  else
-    reply_user(service, service, client, CS_SET_FOUNDER_FAILED, regchptr->channel, 
-        nick_p->nick);
-
-  free_nick(nick_p);
-
-  if (chptr == NULL)
-    free_regchan(regchptr);
-  ilog(L_TRACE, "T: Leaving CS:m_set_foudner (%s:%s)", client->name, parv[1]);
 }
 
 static void
@@ -589,13 +529,10 @@ m_access_list(struct Service *service, struct Client *client,
   struct RegChannel *regchptr;
   void *handle, *first;
   char *nick;
-  int i = 0;
+  int i = 1;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
-
-  nick = db_get_nickname_from_id(regchptr->founder);
-  reply_user(service, service, client, CS_ACCESS_LIST, i++, nick, "FOUNDER");
 
   first = handle = db_list_first(CHACCESS_LIST, regchptr->id, (void**)&access);
   if (handle == NULL)
@@ -1495,7 +1432,7 @@ cs_on_channel_destroy(va_list args)
  * @param args 
  * @return pass_callback(self, char *)
  * When a Nick is dropped
- * - we need to make sure theres no Channel left with the nick as founder
+ * - we need to make sure theres no Channel left with the nick as eounder
  */
 static void*
 cs_on_nick_drop(va_list args)

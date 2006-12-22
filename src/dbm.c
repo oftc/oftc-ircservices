@@ -54,9 +54,8 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
   { "SELECT id, channel, description, entrymsg, flag_forbidden, flag_private, "
     "flag_restricted_ops, flag_topic_lock, flag_verbose, url, "
-    "email, topic, founder FROM channel WHERE "
-    "lower(channel)=lower(?v)", NULL, QUERY },
-  { "INSERT INTO channel (channel, founder) VALUES(?v, ?d)", NULL, EXECUTE },
+    "email, topic FROM channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
+  { "INSERT INTO channel (channel) VALUES(?v)", NULL, EXECUTE },
   { "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
     "(?d, ?d, ?d)", NULL, EXECUTE } ,
   { "UPDATE channel_access SET level=?d WHERE account_id=?d", NULL, EXECUTE },
@@ -65,7 +64,6 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
     "channel_id=?d AND account_id=?d", NULL, QUERY },
   { "DELETE FROM channel WHERE lower(channel)=lower(?v)", NULL, EXECUTE },
-  { "UPDATE channel SET founder=?d WHERE id=?d", NULL, EXECUTE },
   { "SELECT id, mask, reason, setter, time, duration FROM akill WHERE mask=?v",
     NULL, QUERY },
   { "INSERT INTO akill (mask, reason, setter, time, duration) "
@@ -790,12 +788,11 @@ db_find_chan(const char *channel)
  
   channel_p = MyMalloc(sizeof(struct RegChannel));
  
-  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?ps?ps?ps?d",
+  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?ps?ps?ps",
       &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
       &channel_p->forbidden, &channel_p->priv, &channel_p->restricted_ops,
       &channel_p->topic_lock, &channel_p->verbose, 
-      &channel_p->url, &channel_p->email, &channel_p->topic, 
-      &channel_p->founder);
+      &channel_p->url, &channel_p->email, &channel_p->topic); 
 
   if(Fetch(rc, brc) == 0)
   {
@@ -822,17 +819,40 @@ db_find_chan(const char *channel)
 }
 
 int
-db_register_chan(struct RegChannel *chan)
+db_register_chan(struct RegChannel *chan, unsigned int founder)
 {
+  struct ChanAccess *access;
   int ret;
 
-  db_exec(ret, INSERT_CHAN, chan->channel, chan->founder);
+  TransBegin();
+
+  db_exec(ret, INSERT_CHAN, chan->channel);
 
   if(ret == -1)
+  {
+    TransRollback();
     return FALSE;
+  }
 
   chan->id = InsertID("channel", "id");
+  if(chan->id <= 0)
+  {
+    TransRollback();
+    return FALSE;
+  }
 
+  access = MyMalloc(sizeof(struct ChanAccess));
+  access->channel = chan->id;
+  access->account = founder;
+  access->level   = MASTER_FLAG;
+ 
+  if(!db_list_add(CHACCESS_LIST, access))
+  {
+    TransRollback();
+    return FALSE;
+  }
+
+  TransCommit();
   return TRUE;
 }
 
