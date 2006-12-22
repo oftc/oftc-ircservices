@@ -689,7 +689,7 @@ recurse_help_messages(struct Service *service, struct Client *client,
 {
   int i;
 
-  if (mtree->msg != NULL)
+  if (mtree->msg != NULL && !(mtree->msg->flags & SFLG_ALIAS))
   {
     reply_user(service, service, client, mtree->msg->help_short, mtree->msg->cmd);
   }

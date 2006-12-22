@@ -125,5 +125,7 @@ struct ServiceMessage
 
 #define   SFLG_UNREGOK          0x001   /* This message can be called for an 
                                            unregisted nick/channel */
+#define   SFLG_ALIAS            0x002   /* This message is an alias of another
+                                           and should not show in help */
 extern void ms_error(struct Client *, struct Client *, int, char *[]);
 #endif /* INCLUDED_msg_h */

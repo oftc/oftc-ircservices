@@ -80,7 +80,7 @@ static struct ServiceMessage identify_msgtab = {
 };
 
 static struct ServiceMessage id_msgtab = {
-  NULL, "ID", 0, 1, 0, USER_FLAG, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
+  NULL, "ID", 0, 1, SFLG_ALIAS, USER_FLAG, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
   m_identify
 };
 
