@@ -52,86 +52,86 @@ static void m_akill_list(struct Service *, struct Client *, int, char *[]);
 static void m_akill_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage help_msgtab = {
-  NULL, "HELP", 0, 0, ADMIN_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
+  NULL, "HELP", 0, 0, 0, ADMIN_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
 };
 
 static struct ServiceMessage mod_subs[] = {
-  { NULL, "LIST", 0, 0, ADMIN_FLAG, OS_MOD_LIST_HELP_SHORT, 
+  { NULL, "LIST", 0, 0, 0, ADMIN_FLAG, OS_MOD_LIST_HELP_SHORT, 
     OS_MOD_LIST_HELP_LONG, m_mod_list },
-  { NULL, "LOAD", 0, 1, ADMIN_FLAG, OS_MOD_LOAD_HELP_SHORT, 
+  { NULL, "LOAD", 0, 1, 0, ADMIN_FLAG, OS_MOD_LOAD_HELP_SHORT, 
     OS_MOD_LOAD_HELP_LONG, m_mod_load },
-  { NULL, "RELOAD", 0, 1, ADMIN_FLAG, OS_MOD_RELOAD_HELP_SHORT, 
+  { NULL, "RELOAD", 0, 1, 0, ADMIN_FLAG, OS_MOD_RELOAD_HELP_SHORT, 
     OS_MOD_RELOAD_HELP_LONG, m_mod_reload },
-  { NULL, "UNLOAD", 0, 1, ADMIN_FLAG, OS_MOD_UNLOAD_HELP_SHORT, 
+  { NULL, "UNLOAD", 0, 1, 0, ADMIN_FLAG, OS_MOD_UNLOAD_HELP_SHORT, 
     OS_MOD_UNLOAD_HELP_LONG, m_mod_unload },
-  { NULL, NULL, 0, 0, 0, 0, 0, NULL }
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage mod_msgtab = {
-  mod_subs, "MOD", 0, 1, ADMIN_FLAG, OS_MOD_HELP_SHORT, OS_MOD_HELP_LONG, m_mod
+  mod_subs, "MOD", 0, 1, 0, ADMIN_FLAG, OS_MOD_HELP_SHORT, OS_MOD_HELP_LONG, m_mod
 };
 
 static struct ServiceMessage raw_msgtab = {
-  NULL, "RAW", 1, 1, ADMIN_FLAG, OS_RAW_HELP_SHORT, OS_RAW_HELP_LONG, m_raw
+  NULL, "RAW", 1, 1, 0, ADMIN_FLAG, OS_RAW_HELP_SHORT, OS_RAW_HELP_LONG, m_raw
 };
 
 static struct ServiceMessage admin_subs[] = {
-  { NULL, "ADD", 0, 1, ADMIN_FLAG, OS_ADMIN_ADD_HELP_SHORT, 
+  { NULL, "ADD", 0, 1, 0, ADMIN_FLAG, OS_ADMIN_ADD_HELP_SHORT, 
     OS_ADMIN_ADD_HELP_LONG, m_admin_add },
-  { NULL, "LIST", 0, 0, ADMIN_FLAG, OS_ADMIN_LIST_HELP_SHORT, 
+  { NULL, "LIST", 0, 0, 0, ADMIN_FLAG, OS_ADMIN_LIST_HELP_SHORT, 
     OS_ADMIN_LIST_HELP_LONG, m_admin_list },
-  { NULL, "DEL", 0, 1, ADMIN_FLAG, OS_ADMIN_DEL_HELP_SHORT, 
+  { NULL, "DEL", 0, 1, 0, ADMIN_FLAG, OS_ADMIN_DEL_HELP_SHORT, 
     OS_ADMIN_DEL_HELP_LONG, m_admin_del },
-  { NULL, NULL, 0, 0, 0, 0, 0, NULL }
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage admin_msgtab = {
-  admin_subs, "ADMIN", 1, 1, ADMIN_FLAG, OS_ADMIN_HELP_SHORT, 
+  admin_subs, "ADMIN", 1, 1, 0, ADMIN_FLAG, OS_ADMIN_HELP_SHORT, 
   OS_ADMIN_HELP_LONG, m_admin
 };
 
 static struct ServiceMessage session_msgtab = {
-  NULL, "SESSION", 1, 1, ADMIN_FLAG, OS_SESSION_HELP_SHORT, 
+  NULL, "SESSION", 1, 1, 0, ADMIN_FLAG, OS_SESSION_HELP_SHORT, 
   OS_SESSION_HELP_LONG, m_operserv_notimp
 };
 
 static struct ServiceMessage akill_subs[] = {
-  { NULL, "ADD", 0, 3, ADMIN_FLAG, OS_AKILL_ADD_HELP_SHORT, 
+  { NULL, "ADD", 0, 3, 0, ADMIN_FLAG, OS_AKILL_ADD_HELP_SHORT, 
     OS_AKILL_ADD_HELP_LONG, m_akill_add },
-  { NULL, "LIST", 0, 0, ADMIN_FLAG, OS_AKILL_LIST_HELP_SHORT, 
+  { NULL, "LIST", 0, 0, 0, ADMIN_FLAG, OS_AKILL_LIST_HELP_SHORT, 
     OS_AKILL_LIST_HELP_LONG, m_akill_list },
-  { NULL, "DEL", 0, 0, ADMIN_FLAG, OS_AKILL_DEL_HELP_SHORT, 
+  { NULL, "DEL", 0, 0, 0, ADMIN_FLAG, OS_AKILL_DEL_HELP_SHORT, 
     OS_AKILL_DEL_HELP_LONG, m_akill_del },
-  { NULL, NULL, 0, 0, 0, 0, 0, NULL }
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage akill_msgtab = {
-  akill_subs, "AKILL", 1, 2, ADMIN_FLAG, OS_AKILL_HELP_SHORT, 
+  akill_subs, "AKILL", 1, 2, 0, ADMIN_FLAG, OS_AKILL_HELP_SHORT, 
   OS_AKILL_HELP_LONG, m_akill
 };
 
 static struct ServiceMessage exceptions_msgtab = {
-  NULL, "EXCEPTIONS", 1, 1, ADMIN_FLAG, OS_EXCEPTIONS_HELP_SHORT, 
+  NULL, "EXCEPTIONS", 1, 1, 0, ADMIN_FLAG, OS_EXCEPTIONS_HELP_SHORT, 
   OS_EXCEPTIONS_HELP_LONG, m_operserv_notimp
 };
 
 static struct ServiceMessage jupe_msgtab = {
-  NULL, "JUPE", 1, 1, ADMIN_FLAG, OS_JUPE_HELP_SHORT, OS_JUPE_HELP_LONG,
+  NULL, "JUPE", 1, 1, 0, ADMIN_FLAG, OS_JUPE_HELP_SHORT, OS_JUPE_HELP_LONG,
   m_operserv_notimp
 };
 
 static struct ServiceMessage set_msgtab = {
-  NULL, "SET", 1, 1, ADMIN_FLAG, OS_SET_HELP_SHORT, OS_SET_HELP_LONG,
+  NULL, "SET", 1, 1, 0, ADMIN_FLAG, OS_SET_HELP_SHORT, OS_SET_HELP_LONG,
   m_operserv_notimp
 };
 
 static struct ServiceMessage shutdown_msgtab = {
-  NULL, "SHUTDOWN", 1, 1, ADMIN_FLAG, OS_SHUTDOWN_HELP_SHORT, 
+  NULL, "SHUTDOWN", 1, 1, 0, ADMIN_FLAG, OS_SHUTDOWN_HELP_SHORT, 
   OS_SHUTDOWN_HELP_LONG, m_operserv_notimp
 };
 
 static struct ServiceMessage quarentine_msgtab = {
-  NULL, "QUARENTINE", 1, 1, ADMIN_FLAG, OS_QUARENTINE_HELP_SHORT, 
+  NULL, "QUARENTINE", 1, 1, 0, ADMIN_FLAG, OS_QUARENTINE_HELP_SHORT, 
   OS_QUARENTINE_HELP_LONG, m_operserv_notimp
 };
 

@@ -72,94 +72,94 @@ static void m_access_list(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
-  NULL, "REGISTER", 0, 2, USER_FLAG, NS_HELP_REG_SHORT, NS_HELP_REG_LONG, 
+  NULL, "REGISTER", 0, 2, 0, USER_FLAG, NS_HELP_REG_SHORT, NS_HELP_REG_LONG, 
   m_register 
 };
 
 static struct ServiceMessage identify_msgtab = {
-  NULL, "IDENTIFY", 0, 1, USER_FLAG, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
+  NULL, "IDENTIFY", 0, 1, 0, USER_FLAG, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
   m_identify
 };
 
 static struct ServiceMessage id_msgtab = {
-  NULL, "ID", 0, 1, USER_FLAG, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
+  NULL, "ID", 0, 1, 0, USER_FLAG, NS_HELP_ID_SHORT, NS_HELP_ID_LONG,
   m_identify
 };
 
 static struct ServiceMessage help_msgtab = {
-  NULL, "HELP", 0, 0, USER_FLAG, NS_HELP_SHORT, NS_HELP_LONG,
+  NULL, "HELP", 0, 0, 0, USER_FLAG, NS_HELP_SHORT, NS_HELP_LONG,
   m_help
 };
 
 static struct ServiceMessage drop_msgtab = {
-  NULL, "DROP", 0, 1, IDENTIFIED_FLAG, NS_HELP_DROP_SHORT, NS_HELP_DROP_LONG,
+  NULL, "DROP", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_DROP_SHORT, NS_HELP_DROP_LONG,
   m_drop
 };
 
 static struct ServiceMessage set_sub[] = {
-  { NULL, "LANGUAGE", 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_LANG_SHORT, 
+  { NULL, "LANGUAGE", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_LANG_SHORT, 
     NS_HELP_SET_LANG_LONG, m_set_language },
-  { NULL, "PASSWORD", 0, 1, IDENTIFIED_FLAG, NS_HELP_SET_PASS_SHORT, 
+  { NULL, "PASSWORD", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_PASS_SHORT, 
     NS_HELP_SET_PASS_LONG, m_set_password },
-  { NULL, "URL", 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_URL_SHORT, 
+  { NULL, "URL", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_URL_SHORT, 
     NS_HELP_SET_URL_LONG, m_set_url },
-  { NULL, "EMAIL", 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_EMAIL_SHORT, 
+  { NULL, "EMAIL", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_EMAIL_SHORT, 
     NS_HELP_SET_EMAIL_LONG, m_set_email },
-  { NULL, "ENFORCE", 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_ENFORCE_SHORT, 
+  { NULL, "ENFORCE", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_ENFORCE_SHORT, 
     NS_HELP_SET_ENFORCE_LONG, m_set_enforce },
-  { NULL, "SECURE", 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_SECURE_SHORT, 
+  { NULL, "SECURE", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_SECURE_SHORT, 
     NS_HELP_SET_SECURE_LONG, m_set_secure },
-  { NULL, "CLOAK", 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_CLOAK_SHORT, 
+  { NULL, "CLOAK", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_CLOAK_SHORT, 
     NS_HELP_SET_CLOAK_LONG, m_set_cloak },
-  { NULL, "CLOAKSTRING", 0, 0, OPER_FLAG, NS_HELP_SET_CLOAKSTRING_SHORT, 
+  { NULL, "CLOAKSTRING", 0, 0, 0, OPER_FLAG, NS_HELP_SET_CLOAKSTRING_SHORT, 
     NS_HELP_SET_CLOAKSTRING_LONG, m_set_cloakstring },
-  { NULL, "MASTER", 0, 1, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
+  { NULL, "MASTER", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
     NS_HELP_SET_MASTER_LONG, m_set_master },
   { NULL, NULL, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage set_msgtab = {
-  set_sub, "SET", 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_SHORT, NS_HELP_SET_LONG,
+  set_sub, "SET", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_SHORT, NS_HELP_SET_LONG,
   m_set
 };
 
 static struct ServiceMessage access_sub[] = {
-  { NULL, "ADD", 0, 1, IDENTIFIED_FLAG, NS_HELP_ACCESS_ADD_SHORT, 
+  { NULL, "ADD", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_ADD_SHORT, 
     NS_HELP_ACCESS_ADD_LONG, m_access_add },
-  { NULL, "LIST", 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_LIST_SHORT, 
+  { NULL, "LIST", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_LIST_SHORT, 
     NS_HELP_ACCESS_LIST_LONG, m_access_list },
-  { NULL, "DEL", 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_DEL_SHORT, 
+  { NULL, "DEL", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_DEL_SHORT, 
     NS_HELP_ACCESS_DEL_LONG, m_access_del },
   { NULL, NULL, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage access_msgtab = {
-  access_sub, "ACCESS", 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_SHORT, NS_HELP_ACCESS_LONG,
+  access_sub, "ACCESS", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_SHORT, NS_HELP_ACCESS_LONG,
   m_access
 };
 
 static struct ServiceMessage ghost_msgtab = {
-  NULL, "GHOST", 0, 2, USER_FLAG, NS_HELP_GHOST_SHORT, NS_HELP_GHOST_LONG,
+  NULL, "GHOST", 0, 2, 0, USER_FLAG, NS_HELP_GHOST_SHORT, NS_HELP_GHOST_LONG,
   m_ghost
 };
 
 static struct ServiceMessage link_msgtab = {
-  NULL, "LINK", 0, 2, IDENTIFIED_FLAG, NS_HELP_LINK_SHORT, NS_HELP_LINK_LONG,
+  NULL, "LINK", 0, 2, 0, IDENTIFIED_FLAG, NS_HELP_LINK_SHORT, NS_HELP_LINK_LONG,
   m_link
 };
 
 static struct ServiceMessage unlink_msgtab = {
-  NULL, "UNLINK", 0, 0, IDENTIFIED_FLAG, NS_HELP_UNLINK_SHORT, NS_HELP_UNLINK_LONG,
+  NULL, "UNLINK", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_UNLINK_SHORT, NS_HELP_UNLINK_LONG,
   m_unlink
 };
 
 static struct ServiceMessage info_msgtab = {
-  NULL, "INFO", 0, 0, USER_FLAG, NS_HELP_INFO_SHORT, NS_HELP_INFO_LONG,
+  NULL, "INFO", 0, 0, 0, USER_FLAG, NS_HELP_INFO_SHORT, NS_HELP_INFO_LONG,
   m_info
 };
 
 static struct ServiceMessage forbid_msgtab = {
-  NULL, "FORBID", 0, 1, ADMIN_FLAG, NS_HELP_FORBID_SHORT, NS_HELP_FORBID_LONG,
+  NULL, "FORBID", 0, 1, 0, ADMIN_FLAG, NS_HELP_FORBID_SHORT, NS_HELP_FORBID_LONG,
   m_forbid
 };
 

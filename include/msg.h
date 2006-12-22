@@ -99,6 +99,7 @@ struct ServiceMessage
                              * or an error will be sent to the user
                              * before the m_func is even called
                              */
+  unsigned int flags;       
   unsigned int access;      /* Access level required for using this command */
   unsigned int help_short;  /* Help index to show in generic HELP */
   unsigned int help_long;   /* Help index to show in HELP command */
@@ -120,5 +121,9 @@ struct ServiceMessage
 					 */
 #define   MFLG_UNREG            0x002   /* Command available to unregistered
                                          * clients.                   */       
+
+
+#define   SFLG_UNREGOK          0x001   /* This message can be called for an 
+                                           unregisted nick/channel */
 extern void ms_error(struct Client *, struct Client *, int, char *[]);
 #endif /* INCLUDED_msg_h */
