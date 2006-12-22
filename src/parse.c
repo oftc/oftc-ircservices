@@ -323,7 +323,8 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
     if(chptr == NULL || chptr->regchan == NULL)
     {
       regchptr = db_find_chan(hpara[1]);
-      if(regchptr == NULL && mptr->access > CHIDENTIFIED_FLAG)
+      /* XXX This smells of hack, but until i do flags its the best we got */
+      if(regchptr == NULL && irccmp(mptr->cmd, "HELP") != 0)
       {
         reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);
         return;
