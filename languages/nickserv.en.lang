@@ -255,3 +255,9 @@ NS_MASTER_SET_OK
 	Master nickname set to %s.
 NS_MASTER_SET_FAIL
 	Failed to set master nickname to %s.
+NS_UNFORBID_NOT_FORBID
+	Nickname %s is not forbidden.
+NS_UNFORBID_OK
+	Nickname %s removed from forbidden list.
+NS_UNFORBID_FAIL
+	Nickname %s could not be removed from the forbidden list.

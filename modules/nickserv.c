@@ -54,6 +54,7 @@ static void m_link(struct Service *, struct Client *, int, char *[]);
 static void m_unlink(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *,struct Client *, int, char *[]);
 static void m_forbid(struct Service *,struct Client *, int, char *[]);
+static void m_unforbid(struct Service *,struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -157,8 +158,13 @@ static struct ServiceMessage info_msgtab = {
 };
 
 static struct ServiceMessage forbid_msgtab = {
-  NULL, "FORBID", 0, 1, 0, ADMIN_FLAG, NS_HELP_FORBID_SHORT, NS_HELP_FORBID_LONG,
-  m_forbid
+  NULL, "FORBID", 0, 1, 0, ADMIN_FLAG, NS_HELP_FORBID_SHORT, 
+  NS_HELP_FORBID_LONG, m_forbid
+};
+
+static struct ServiceMessage unforbid_msgtab = {
+  NULL, "UNFORBID", 0, 1, 0, ADMIN_FLAG, NS_HELP_FORBID_SHORT, 
+  NS_HELP_FORBID_LONG, m_unforbid
 };
 
 INIT_MODULE(nickserv, "$Revision$")
@@ -183,6 +189,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &info_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &forbid_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &unforbid_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &id_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
@@ -212,6 +219,7 @@ CLEANUP_MODULE
   mod_del_servcmd(&nickserv->msg_tree, &unlink_msgtab);
   mod_del_servcmd(&nickserv->msg_tree, &info_msgtab);
   mod_del_servcmd(&nickserv->msg_tree, &forbid_msgtab);
+  mod_del_servcmd(&nickserv->msg_tree, &unforbid_msgtab);
   mod_del_servcmd(&nickserv->msg_tree, &id_msgtab);
   dlinkDelete(&nickserv->node, &services_list);
   eventDelete(process_enforce_list, NULL);
@@ -864,6 +872,21 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
   reply_user(service, service, client, NS_FORBID_OK, parv[1]);
 }
 
+static void
+m_unforbid(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  if(!db_is_forbid(parv[1]))
+  {
+    reply_user(service, service, client, NS_UNFORBID_NOT_FORBID, parv[1]);
+    return;
+  }
+
+  if(db_delete_forbid(parv[1]))
+    reply_user(service, service, client, NS_UNFORBID_OK, parv[1]);
+  else
+    reply_user(service, service, client, NS_UNFORBID_FAIL, parv[1]);
+}
 static void*
 ns_on_umode_change(va_list args) 
 {
