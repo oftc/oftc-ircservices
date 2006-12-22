@@ -813,17 +813,18 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     }
   }
 
-  strftime(regtime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", 
+  strftime(regtime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
       gmtime(&nick->reg_time));
   if(nick->last_quit_time <= 0)
     snprintf(quittime, IRC_BUFSIZE/2, "Unknown");
   else
-    strftime(quittime, IRC_BUFSIZE/2, "%a,  %d  %b  %Y  %H:%M:%S  %z", 
+    strftime(quittime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
         gmtime(&nick->last_quit_time));
       
-  reply_user(service, service, client, NS_INFO, regtime, (nick->last_quit == NULL) ? 
-      "Unknown" : nick->last_quit, quittime, nick->email, (nick->url == NULL) ?
-      "Not set" : nick->url, (nick->cloak == NULL) ? "Not set" : nick->cloak);
+  reply_user(service, service, client, NS_INFO, regtime, 
+      (nick->last_quit == NULL) ? "Unknown" : nick->last_quit, quittime, 
+      nick->email, (nick->url == NULL) ? "Not set" : nick->url, 
+      (nick->cloak == NULL) ? "Not set" : nick->cloak);
 
   if(IsIdentified(client) && (client->nickname == nick || 
       client->access == ADMIN_FLAG))
