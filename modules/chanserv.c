@@ -81,6 +81,8 @@ static void m_not_avail(struct Service *, struct Client *, int, char *[]);
 
 /* private */
 static int m_set_flag(struct Service *, struct Client *, char *, char *, int, char *);
+static int m_set_string(struct Service *, struct Client *, const char *, 
+    const char *, unsigned int, const char *, char **, int);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, CHIDENTIFIED_FLAG, CS_HELP_REG_SHORT, CS_HELP_REG_LONG,
@@ -604,40 +606,18 @@ m_set_desc(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  char desc[IRC_BUFSIZE+1];
-
-  ilog(L_TRACE, "Channel SET DESCRIPTION from %s for %s", client->name, parv[1]);
-  memset(desc, 0, sizeof(desc));
+  char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if (parc < 2)
-  {
-    reply_user(service, service, client, CS_SET_DESCRIPTION, regchptr->channel, 
-        regchptr->description);
-    ilog(L_DEBUG, "Channel SET DESCRIPTION for %s on %s (INFOONLY)", client->name, parv[1]);
-    if (chptr == NULL)
-      free_regchan(regchptr);
-    return;
-  }
+  join_params(value, parc-1, &parv[2]);
 
-  join_params(desc, parc-1, &parv[2]);
+  m_set_string(service, client, parv[1], "DESC", SET_CHAN_DESC, value, 
+      &regchptr->description, parc);
 
-  if(db_set_string(SET_CHAN_DESC, regchptr->id, desc))
-  {
-    reply_user(service, service, client, CS_SET_DESC, regchptr->channel, desc);
-    ilog(L_NOTICE, "%s (%s@%s) changed description of %s to %s", 
-      client->name, client->username, client->host, parv[1], desc);
-
-    replace_string(regchptr->description, desc);
-  }
-  else
-    reply_user(service, service, client, CS_SET_DESC_FAILED, parv[1]);
-  
-  if (chptr == NULL)
+  if(chptr == NULL)
     free_regchan(regchptr);
-  ilog(L_TRACE, "T: Leaving CS:m_set_desc (%s:%s)", client->name, parv[1]);
 }
 
 static void
@@ -646,34 +626,18 @@ m_set_url(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-
-  ilog(L_TRACE, "Channel SET URL from %s for %s", client->name, parv[1]);
+  char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if (parc < 2)
-  {
-    reply_user(service, service, client, CS_SET_URL, regchptr->channel, regchptr->url);
-    if (chptr == NULL)
-      free_regchan(regchptr);
-    return;
-  }
+  join_params(value, parc-1, &parv[2]);
 
-  if (db_set_string(SET_CHAN_URL, regchptr->id, parv[2]))
-  {
-    reply_user(service, service, client, CS_SET_URL, regchptr->channel, parv[2]);
-    ilog(L_NOTICE, "%s (%s@%s) changed url of %s to %s", 
-      client->name, client->username, client->host, parv[1], parv[2]);
+  m_set_string(service, client, parv[1], "URL", SET_CHAN_URL, value, 
+      &regchptr->url, parc);
 
-    replace_string(regchptr->url, parv[2]);
-  }
-  else
-    reply_user(service, service, client, CS_SET_URL_FAILED, parv[1]);
-  
-  if (chptr == NULL)
+  if(chptr == NULL)
     free_regchan(regchptr);
-  ilog(L_TRACE, "T: Leaving CS:m_set_url(%s:%s)", client->name, parv[1]);
 }
 
 static void
@@ -682,35 +646,18 @@ m_set_email(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-
-  ilog(L_TRACE, "Channel SET EMAIL from %s for %s", client->name, parv[1]);
+  char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if (parc < 2)
-  {
-    reply_user(service, service, client, CS_SET_EMAIL, regchptr->channel, 
-        chptr->regchan->email);
-    if (chptr == NULL);
-      free_regchan(regchptr);
-    return;
-  }
+  join_params(value, parc-1, &parv[2]);
 
-  if (db_set_string(SET_CHAN_EMAIL, regchptr->id, parv[2]))
-  {
-    reply_user(service, service, client, CS_SET_EMAIL, regchptr->channel, parv[2]);
-    ilog(L_NOTICE, "%s (%s@%s) changed email of %s to %s", 
-      client->name, client->username, client->host, parv[1], parv[2]);
+  m_set_string(service, client, parv[1], "EMAIL", SET_CHAN_EMAIL, value, 
+      &regchptr->email, parc);
 
-    replace_string(regchptr->email, parv[2]);
-  }
-  else
-    reply_user(service, service, client, CS_SET_EMAIL_FAILED, regchptr->channel);
-
-  if (chptr == NULL);
+  if(chptr == NULL)
     free_regchan(regchptr);
-  ilog(L_TRACE, "T: Leaving CS:m_set_email(%s:%s)", client->name, parv[1]);
 }
 
 static void
@@ -719,37 +666,18 @@ m_set_entrymsg(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  char msg[IRC_BUFSIZE+1];
-
-  ilog(L_TRACE, "Channel SET ENTRYMSG from %s for %s", client->name, parv[1]);
+  char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if (parc < 2)
-  {
-    reply_user(service, service, client, CS_SET_ENTRYMSG, parv[1], regchptr->entrymsg);
-    if (chptr == NULL)
-       free_regchan(regchptr);
-    return;
-  }
+  join_params(value, parc-1, &parv[2]);
 
-  join_params(msg, parc-1, &parv[2]);
+  m_set_string(service, client, parv[1], "ENTRYMSG", SET_CHAN_ENTRYMSG, value, 
+      &regchptr->entrymsg, parc);
 
-  if (db_set_string(SET_CHAN_ENTRYMSG, regchptr->id, msg))
-  {
-    reply_user(service, service, client, CS_SET_MSG, regchptr->channel, msg);
-    ilog(L_NOTICE, "%s (%s@%s) changed entrymsg of %s to %s", 
-      client->name, client->username, client->host, parv[1], msg);
-    
-    replace_string(regchptr->entrymsg, msg);
-  }
-  else
-    reply_user(service, service, client, CS_SET_MSG_FAILED, regchptr->channel);
-
-  if (chptr == NULL)
+  if(chptr == NULL)
     free_regchan(regchptr);
-  ilog(L_TRACE, "T: Leaving CS:m_set_entrymsg(%s:%s)", client->name, parv[1]);
 }
 
 static void
@@ -758,43 +686,30 @@ m_set_topic(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  char buf[IRC_BUFSIZE+1];
-  char topic[TOPICLEN+1];
-
-  ilog(L_TRACE, "Channel SET TOPIC from %s for %s", client->name, parv[1]);
+  char value[IRC_BUFSIZE+1];
+  char *topic = NULL;
+  int changetopic = FALSE;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if (parc < 2)
-  {
-    reply_user(service, service, client, CS_SET_TOPIC, parv[1], regchptr->topic);
-    return;
-  }
+  DupString(topic, regchptr->topic);
 
-  join_params(buf, parc-1, &parv[2]);
-  /* truncate to topiclen */
-  strlcpy(topic, buf, sizeof(topic));
+  join_params(value, parc-1, &parv[2]);
+  strlcpy(value, value, TOPICLEN+1);
 
-  if (db_set_string(SET_CHAN_TOPIC, regchptr->id, topic))
-  {
-    reply_user(service, service, client, CS_SET_TOPIC, regchptr->channel, topic);
-    ilog(L_NOTICE, "%s (%s@%s) changed TOPIC of %s to %s", 
-      client->name, client->username, client->host, parv[1], topic);
+  m_set_string(service, client, parv[1], "TOPIC", SET_CHAN_TOPIC, value, 
+      &regchptr->topic, parc);
 
-    replace_string(regchptr->topic, topic);
-    if (chptr == NULL)
-      free_regchan(regchptr);
-    else
-      send_topic(service, chptr, client, topic);
-  }
-  else
-  {
-    reply_user(service, service, client, CS_SET_TOPIC_FAILED, regchptr->channel);
-    if (chptr == NULL)
-      free_regchan(regchptr);
-  }
-  ilog(L_TRACE, "T: Leaving CS:m_set_topic(%s:%s)", client->name, parv[1]);
+  if(topic != NULL && strncmp(topic, regchptr->topic, 
+        LIBIO_MAX(strlen(topic), strlen(regchptr->topic))) != 0)
+    changetopic = TRUE;
+
+  if(changetopic || (topic == NULL && regchptr->topic != NULL))
+    send_topic(service, chptr, client, regchptr->topic);
+
+  if(chptr == NULL)
+    free_regchan(regchptr);
 }
 
 static void
@@ -1276,7 +1191,66 @@ m_unban(struct Service *service, struct Client *client, int parc, char *parv[])
       regchptr->channel);
 }
 
-static int 
+static int
+m_set_string(struct Service *service, struct Client *client, 
+    const char *channel, const char *field, unsigned int query, 
+    const char *value, char **param, int parc)
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+
+  ilog(L_TRACE, "Channel SET %s from %s for %s", field, client->name, channel);
+
+  chptr = hash_find_channel(channel);
+  regchptr = chptr == NULL ? db_find_chan(channel) : chptr->regchan;
+
+  if(parc < 2)
+  {
+    char *response = *param;
+
+    if(response == NULL)
+      response = "unset";
+    reply_user(service, service, client, CS_SET_VALUE, field, response, 
+        regchptr->channel);
+    if(chptr == NULL)
+      free_regchan(regchptr);
+    return TRUE;
+  }
+
+  if(ircncmp(value, "unset", strlen(value)) == 0)
+    value = NULL;
+
+  if(db_set_string(query, regchptr->id, value))
+  {
+    reply_user(service, service, client, CS_SET_SUCCESS, field, 
+        value == NULL ? "unset" : value, regchptr->channel);
+    ilog(L_NOTICE, "%s (%s@%s) changed %s of %s to %s", 
+      client->name, client->username, client->host, field, regchptr->channel, 
+      value);
+
+    if(value != NULL)
+      *param = replace_string(*param, value);
+    else
+    {
+      MyFree(*param);
+      *param = NULL;
+    }
+    if(chptr == NULL)
+      free_regchan(regchptr);
+
+    return TRUE;
+  }
+  else
+    reply_user(service, service, client, CS_SET_FAILED, field,
+        value == NULL ? "unset" : value, regchptr->channel);
+  
+  if(chptr == NULL)
+    free_regchan(regchptr);
+
+  return FALSE;
+}
+
+static int
 m_set_flag(struct Service *service, struct Client *client,
            char *channel, char *toggle, int type, char *flagname)
 {
@@ -1309,8 +1283,8 @@ m_set_flag(struct Service *service, struct Client *client,
         on = FALSE;
         break;
     }
-    reply_user(service, service, client, CS_SET_FLAG, flagname, on ? "ON" : "OFF", 
-        channel);
+    reply_user(service, service, client, CS_SET_VALUE, flagname, 
+        on ? "ON" : "OFF", channel);
     
     if (chptr == NULL)
       free_regchan(regchptr);

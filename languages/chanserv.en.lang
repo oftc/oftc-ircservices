@@ -252,42 +252,12 @@ CS_DROPPED
 	Channel %s has been dropped.
 CS_DROP_FAILED
 	Dropping of channel %s has failed.
-CS_SET_SUCCESSOR
-	Successor of %s is set to %s
-CS_SET_DESCRIPTION
-	Description of %s is set to %s
-CS_SET_ENTRYMSG
-	Entrymsg of %s is set to "%s"
-CS_SET_SUCC
-	Successor of channel %s has been set to %s
-CS_SET_SUCC_FAILED
-	Setting successor of channel %s to %s has failed
-CS_SET_DESC
-	Description of channel %s has been set to %s
-CS_SET_DESC_FAILED
-	Setting Description of channel %s has failed
-CS_SET_URL
-	URL of channel %s has been set to %s
-CS_SET_URL_FAILED
-	Setting URL of channel %s has failed
-CS_SET_EMAIL
-	eMail Adress of channel %s has been changed to %s
-CS_SET_EMAIL_FAILED
-	Setting eMail Address of channel %s has failed
-CS_SET_MSG
-	Entry message of channel %s has been set to %s
-CS_SET_MSG_FAILED
-	Setting eMail Address of %s has failed
-CS_SET_TOPIC
-	Topic for %s has been set to %s
-CS_SET_TOPIC_FAILED
-	Failed to set Topic for %s
-CS_SET_FLAG
-	%s is set to %s on %s
+CS_SET_VALUE
+	%s is SET to %s for channel %s.
 CS_SET_SUCCESS
-	On %s, %s has been set to %s
+	%s has been set to %s on channel %s.
 CS_SET_FAILED
-	Changing %s on %s failed.	
+	Setting %s to %s failed on channel %s.
 CS_NOT_EXIST
 	channel does not exist. XXX
 CS_INFO_CHAN
