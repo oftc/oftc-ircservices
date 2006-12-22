@@ -97,6 +97,7 @@ enum db_queries
   DELETE_AKICK_ACCOUNT,
   SET_NICK_MASTER,
   DELETE_AKILL,
+  GET_CHAN_MASTER_COUNT,
   QUERY_COUNT
 };
 
@@ -157,5 +158,7 @@ void *db_list_next(void *, unsigned int, void **);
 void  db_list_done(void *);
 int   db_list_del(unsigned int, unsigned int, const char *);
 int   db_list_del_index(unsigned int, unsigned int, unsigned int);
+
+int db_get_num_masters(unsigned int);
 
 #endif

@@ -491,6 +491,7 @@ m_access_del(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
+  struct ChanAccess *access;
   unsigned int nickid;
 
   ilog(L_TRACE, "CS ACCESS DEL from %s for %s", client->name, parv[1]);
@@ -501,6 +502,24 @@ m_access_del(struct Service *service, struct Client *client,
   if((nickid = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK)) <= 0)
   {
     reply_user(service, service, client, CS_REGISTER_NICK, parv[2]);
+    if(chptr == NULL)
+      free_regchan(regchptr);
+    return;
+  }
+
+  access = db_find_chanaccess(regchptr->id, nickid);
+  if(access == NULL)
+  {
+    reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
+      if(chptr == NULL)
+        free_regchan(regchptr);
+    return;
+  }
+
+  if(access->level == MASTER_FLAG && db_get_num_masters(regchptr->id) <= 1)
+  {
+    reply_user(service, service, client, CS_ACCESS_NOMASTERS, parv[2],
+        regchptr->channel);
     if(chptr == NULL)
       free_regchan(regchptr);
     return;

@@ -131,6 +131,8 @@ query_t queries[QUERY_COUNT] = {
     "FROM nickname WHERE lower(nick)=lower(?v))", NULL, EXECUTE },
   { "UPDATE account SET primary_nick=?v WHERE id=?d", NULL, EXECUTE },
   { "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
+  { "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=?d",
+    NULL, QUERY },
 };
 
 void
@@ -927,4 +929,27 @@ db_find_akill(const char *mask)
   Free(rc);
 
   return akill;
+}
+
+
+int
+db_get_num_masters(unsigned int chanid)
+{
+  yada_rc_t *rc, *brc;
+  int count;
+
+  db_query(rc, GET_CHAN_MASTER_COUNT, chanid, MASTER_FLAG);
+
+  if(rc == NULL)
+    return 0;
+
+  brc = Bind("?d", &count);
+
+  if(Fetch(rc, brc) == 0)
+    count = 0;
+
+  Free(brc);
+  Free(rc);
+
+  return count;
 }

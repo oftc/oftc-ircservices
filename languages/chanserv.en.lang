@@ -348,5 +348,10 @@ CS_ACCESS_DELOK
 	Removed %s from the access list of %s.
 CS_ACCESS_DELFAIL
 	Failed to remove %s from the access list of %s.
+CS_ACCESS_NOMASTERS
+	You cannot remove %s from the access list of %s becuase it is the
+	last MASTER entry.
+CS_ACCESS_NOTLISTED
+	%s is not on the access list of %s.
 CS_ENTRYMSG
 	[%s] %s
