@@ -965,7 +965,7 @@ process_privmsg(struct Client *client, struct Client *source,
   else if(i == 0 && s != NULL)
   {
     i = string_to_array(s, servpara);
-    if(*servpara[1] == '#')
+    if(servpara[1] != NULL && *servpara[1] == '#')
       channel = TRUE;
   }
   else
