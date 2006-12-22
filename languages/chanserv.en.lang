@@ -10,7 +10,7 @@ CS_HELP_LONG
 CS_HELP_SET_FOUNDER_SHORT
 	%s: Sets the channel founder
 CS_HELP_SET_FOUNDER_LONG
-	Usage: SET channel FOUNDER (nick)
+	Usage: SET channel FOUNDER [nick]
 	
 	This gives total control of the channel to the nickname specified. You
 	should give founder to someone only if you truely want to give up control of
@@ -19,7 +19,7 @@ CS_HELP_SET_FOUNDER_LONG
 CS_HELP_SET_DESC_SHORT
 	%s: Set the channel description (free form text)
 CS_HELP_SET_DESC_LONG
-	Usage: SET channel DESC (text)
+	Usage: SET channel DESC [text]
 	
 	Sets the text associated with the channel. This is usually used to define
 	the purpose of the channel and is displayed with the channel listing in the
@@ -27,21 +27,21 @@ CS_HELP_SET_DESC_LONG
 CS_HELP_SET_URL_SHORT
 	%s: Set the channels homepage
 CS_HELP_SET_URL_LONG
-	Usage: SET channel URL (url)
+	Usage: SET channel URL [url]
 	
 	Sets a homepage for the channel. This web address is displayed in the
 	listing reported by the INFO command.
 CS_HELP_SET_EMAIL_SHORT
 	%s: Sets the channels e-mail address
 CS_HELP_SET_EMAIL_LONG
-	Usage: SET channel EMAIL (email)
+	Usage: SET channel EMAIL [email]
 	
 	Sets a contact e-mail address for the channel. This is displayed in the
 	listing reported by the INFO command.
 CS_HELP_SET_ENTRYMSG_SHORT
 	%s: Sets the channel greeting
 CS_HELP_SET_ENTRYMSG_LONG
-	Usage: SET channel ENTRYMSG (message|unset)
+	Usage: SET channel ENTRYMSG [message|unset]
 	
 	Sets the greeting message for the channel. This greeting will be displayed
 	to all users joining the channel in the form of a notice.  Specifying
@@ -49,7 +49,7 @@ CS_HELP_SET_ENTRYMSG_LONG
 CS_HELP_SET_TOPIC_SHORT
 	%s: Sets the Channels topic
 CS_HELP_SET_TOPIC_LONG
-	Usage: SET channel TOPIC (topic)
+	Usage: SET channel TOPIC [topic]
 	
 	Sets the channel topic. The change in topic will be reflected on IRC right
 	away and the topic will be stored. The topic will be set when the channel is
@@ -57,7 +57,7 @@ CS_HELP_SET_TOPIC_LONG
 CS_HELP_SET_TOPICLOCK_SHORT
 	%s: Lock the channel topic
 CS_HELP_SET_TOPICLOCK_LONG
-	Usage: SET channel TOPICLOCK (ON|OFF)
+	Usage: SET channel TOPICLOCK [ON|OFF]
 	
 	Enabling TOPICLOCK will attempt to keep the channel topic synced to the
 	TOPIC setting. If the channel topic is changed via IRC, channel services
@@ -65,13 +65,13 @@ CS_HELP_SET_TOPICLOCK_LONG
 CS_HELP_SET_PRIVATE_SHORT
 	%s: Control channel privacy
 CS_HELP_SET_PRIVATE_LONG
-	Usage: SET channel PRIVATE (ON|OFF)
+	Usage: SET channel PRIVATE [ON|OFF]
 		
 	Channels which have PRIVATE set will not show in any channel listings.
 CS_HELP_SET_RESTRICTED_SHORT
 	%s: Restrict the channel to members only
 CS_HELP_SET_RESTRICTED_LONG
-	Usage: SET channel RESTRICTED (ON|OFF)
+	Usage: SET channel RESTRICTED [ON|OFF]
 	
 	This setting will only allow members of the channel to remain in the
 	channel. All other users will be kicked and banned from the channel upon
@@ -79,14 +79,14 @@ CS_HELP_SET_RESTRICTED_LONG
 CS_HELP_SET_VERBOSE_SHORT
 	%s: Control channel verbosity
 CS_HELP_SET_VERBOSE_LONG
-	Usage: SET channel VERBOSE (ON|OFF)
+	Usage: SET channel VERBOSE [ON|OFF]
 	
 	When verbose is set, channel operators will have notices sent to them when
 	various actions are performed on the channel.	
 CS_HELP_SET_MLOCK_SHORT
 	%s: Set channel mode lock
 CS_HELP_SET_MLOCK_LONG
-	Usage: SET channel MLOCK modelock
+	Usage: SET channel MLOCK [modelock]
 	
 	Sets the mode which should be enforced on the channel. If the channel's mode
 	is changed, services may override it depending on the MLOCK setting. '+'
@@ -94,9 +94,14 @@ CS_HELP_SET_MLOCK_LONG
 	removed. '-' modes will always be unset on a channel and will be removed if
 	they are set.
 CS_HELP_SET_AUTOLIMIT_SHORT
-	%s: Autolimit
+	%s: Automatic channel limiting
 CS_HELP_SET_AUTOLIMIT_LONG
-	Autolimit
+	Usage: SET channel AUTOLIMIT [ON|OFF]
+	
+	If enabled, this setting will enforce the channel client limit(usually
+	channel mode +l) to just above the number of people on the channel. This
+	helps prevent against scores of people(or bots) from joining the channel at
+	once.
 CS_HELP_SET_CLEARBANS_SHORT
 	%s: Clearbans
 CS_HELP_SET_CLEARBANS_LONG
@@ -104,111 +109,159 @@ CS_HELP_SET_CLEARBANS_LONG
 CS_HELP_SET_SHORT
 	%s: Change channel settings
 CS_HELP_SET_LONG
-	Changes channel settings. The settings that can be changes are:
+	Changes channel settings. Most settings can be viewed if you do not specify
+	a paramter. The settings that can be changed are:
 CS_HELP_AKICK_ADD_SHORT
 	%s: Add a new AKICK on the channel
 CS_HELP_AKICK_ADD_LONG
-	moo
+	Usage: AKICK channel ADD mask|nickname [reason]
+	
+	Adds the specified mask or nickname to the channel autokick list. If a
+	nickname is specified that nickname will always be prevented from joining
+	the channel regardless of their host. If a reason is specified it will be
+	used when the user is kicked from the channel. If it is not specified, a
+	default kick message will be used.
 CS_HELP_AKICK_DEL_SHORT
 	%s: Remove an AKICK from the channel
 CS_HELP_AKICK_DEL_LONG
-	moo
+	Usage: AKICK channel DEL mask|nickname
+	
+	Removes the specified mask or nickname from the channel autokick list. This
+	will not remove any bans which are currently set in the channel.
 CS_HELP_AKICK_LIST_SHORT
 	%s: List channel AKICKs
 CS_HELP_AKICK_LIST_LONG
-	moo
+	Usage: AKICK channel LIST
+	
+	Lists the entries in the channel autokick list.
 CS_HELP_AKICK_ENFORCE_SHORT
 	%s: Enforce the current AKICK list
 CS_HELP_AKICK_ENFORCE_LONG
-	moo
+	Usage: AKICK channel ENFORCE
+	
+	Enforces the current channel autokick list. This will remove any users which
+	match entries in the list. This command is helpful if unwanted persons have
+	managed to gain access to the channel whilst services was down or during a
+	netsplit.
 CS_HELP_AKICK_SHORT
 	%s: Channel Auto Kick list
 CS_HELP_AKICK_LONG
-	moo
+	Commands for managing the channel autokick list. Persons on the list will be
+	kicked and banned from the channel should they join the channel. The
+	following commands can be used to manipulate the list:
 CS_HELP_DROP_SHORT
 	%s: Unregister the channel
 CS_HELP_DROP_LONG
-	moo
+	Usage: DROP channel
+	
+	Unregisteres the channel and releases it for use. This cannot be undone.
 CS_HELP_DEOP_SHORT
 	%s: Remove channel operator status
 CS_HELP_DEOP_LONG
-	moo
+	Usage: DEOP channel [nickname]
+	
+	Removes your channel operator status on the channel. If a nickname is
+	specified it removes their operator status instead.
 CS_HELP_INFO_SHORT
-	%s: Get channel information
+	%s: Show channel information
 CS_HELP_INFO_LONG
-	moo
+	Usage: INFO channel
+	
+	Shows the information relating to this channel
 CS_HELP_OP_SHORT
 	%s: Grant channel operator status
 CS_HELP_OP_LONG
-	moo
+	Usage: OP channel [nickname]
+	
+	Grants channel operator status to you or, if specified, another user.
 CS_HELP_UNBAN_SHORT
-	%s: Remove any bans on the channel which match you
+	%s: Unban yourself on a channel
 CS_HELP_UNBAN_LONG
-	moo
+	Usage: UNBAN channel
+	
+	Removes all bans on a channel which match your host and are preventing you
+	from joining a channel.
 CS_HELP_INVITE_SHORT
 	%s: Invite to a channel
 CS_HELP_INVITE_LONG
-	moo
+	Usage: INVITE channel [nickname]
+	
+	Invites you or, if specified, another user to the channel.
 CS_HELP_CLEAR_SHORT
-	%s: Manage large groups on the channel
-CS_HELP_CLEAR_LONG
-	moo
+	%s: Clear groups of settings on the channel
+CS_HELP_CLEAR_LONG 
+	Clear various settings. The settings that can be cleared are:
 CS_HELP_ACCESS_SHORT
 	%s: Maintains the channel access list
 CS_HELP_ACCESS_LONG
-	moo
+	This list specifies which nicknames are allowed access to the channel and at
+	what level their access is. The commands available are as follows:
 CS_HELP_CLEAR_MODES_SHORT
 	%s: Remove all channel modes
 CS_HELP_CLEAR_MODES_LONG
-	moo
+	Usage: CLEAR channel MODES
+	
+	Removes all the modes on the channel.
 CS_HELP_CLEAR_BANS_SHORT
 	%s: Remove all bans on a channel
 CS_HELP_CLEAR_BANS_LONG
-	moo
+	Usage: CLEAR channel BANS
+	
+	Remove all the bans set on the channel.
 CS_HELP_CLEAR_OPS_SHORT
 	%s: Deop all the channel operators on a channel
 CS_HELP_CLEAR_OPS_LONG
-	moo
+	Usage: CLEAR channel OPS
+	
+	Remove channel operator status from all the channel operators.
 CS_HELP_CLEAR_VOICES_SHORT
 	%s: Devoice all the voices on a channel
 CS_HELP_CLEAR_VOICES_LONG
-	moo
+	Usage CLEAR channel VOICES
+	
+	Remove channel voice status from all the channel members who have it.
 CS_HELP_CLEAR_USERS_SHORT
 	%s: Remove all users from the channel
 CS_HELP_CLEAR_USERS_LONG
-	moo
+	Usage CLEAR channel USERS
+	
+	Removes all the users from the channel(including you if you are on it!).
 CS_HELP_ACCESS_ADD_SHORT
 	%s: Add a nickname to the channel access list
 CS_HELP_ACCESS_ADD_LONG
-	moo
+	Usage: ACCESS channel ADD nickname MEMBER|CHANOP|MASTER
+	
+	Add the specified nickname to the access list at the specified level.
 CS_HELP_ACCESS_DEL_SHORT
 	%s: Remove a nickname from the channel access list
 CS_HELP_ACCESS_DEL_LONG
-	moo
+	Usage: ACCESS channel DEL nickname
+	
+	Removes a nickname from the channel access list.
 CS_HELP_ACCESS_LIST_SHORT
 	%s: Show the channel access list
 CS_HELP_ACCESS_LIST_LONG
-	moo
+	Usage: ACCESS channel LIST
+	
+	Show the current channel access list.
 CS_REGISTER_NICK
-	Nick %s is not registered.
+	Nick %s is not registered with nickname services.
 CS_ALREADY_REG
-	channel %s is already registered.
+	Channel %s is already registered.
 CS_REG_SUCCESS
-	channel %s successfully registered.
+	Channel %s successfully registered.
 CS_REG_FAIL
 	Failed to register channel %s.
 CS_NAMESTART_HASH
-	channelname needs to start with a hash
+	You cannot register this type of channel.
 CS_NOT_ONCHAN
-	You are not on that channel
+	You are not on that channel.
 CS_NOT_OPPED
-	You are not opped on that channel
+	You are not opped on that channel.
 CS_NOT_REG
-	channel %s is not registered
-CS_OWN_CHANNEL_ONLY
-	channel %s is not registered to you
+	Channel %s is not registered with channel services.
 CS_DROPPED
-	channel %s has been dropped
+	Channel %s has been dropped.
 CS_DROP_FAILED
 	Dropping of channel %s has failed.
 CS_SET_SUCCESSOR
@@ -269,7 +322,7 @@ CS_AKICK_ADDED
 CS_AKICK_ADDFAIL
 	AKICK %s failed to be added.
 CS_AKICK_LIST
-	%d: %s (%s) Set by %s Set at: %s Expires: %s
+	%d: %s (%s) Set by %s Set at: %s Expires: %s
 CS_AKICK_LISTEND
 	End of AKICK list for %s.
 CS_AKICK_DEL

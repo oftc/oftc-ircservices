@@ -328,7 +328,8 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
         reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);
         return;
       }
-      chptr->regchan = regchptr;
+      else if(chptr != NULL)
+        chptr->regchan = regchptr;
     }
   }
 
