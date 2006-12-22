@@ -32,6 +32,7 @@ static void m_part(struct Client *, struct Client *, int, char*[]);
 static void m_quit(struct Client *, struct Client *, int, char*[]);
 static void m_squit(struct Client *, struct Client *, int, char*[]);
 static void m_mode(struct Client *, struct Client *, int, char*[]);
+static void m_topic(struct Client *, struct Client *, int, char*[]);
 
 //static void do_user_modes(struct Client *client, const char *modes);
 static void set_final_mode(struct Mode *, struct Mode *);
@@ -155,6 +156,11 @@ struct Message mode_msgtab = {
   { m_mode, m_ignore }
 };
 
+struct Message topic_msgtab = {
+  "TOPIC", 0, 0, 2, 0, 0, 0, 
+  { m_topic, m_ignore }
+};
+
 struct Message privmsg_msgtab = {
   "PRIVMSG", 0, 0, 2, 0, 0, 0,
   { process_privmsg, m_ignore }
@@ -204,6 +210,7 @@ INIT_MODULE(irc, "$Revision$")
   mod_add_cmd(&version_msgtab);
   mod_add_cmd(&trace_msgtab);
   mod_add_cmd(&stats_msgtab);
+  mod_add_cmd(&topic_msgtab);
 }
 
 CLEANUP_MODULE
@@ -230,6 +237,7 @@ CLEANUP_MODULE
   mod_del_cmd(&version_msgtab);
   mod_del_cmd(&trace_msgtab);
   mod_del_cmd(&stats_msgtab);
+  mod_del_cmd(&topic_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
@@ -1393,4 +1401,24 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
       chain_cmode(client_p, source_p, chptr, parc - 2, parv + 2);
     }
   }
+}
+
+static void
+m_topic(struct Client *client_p, struct Client *source_p, 
+    int parc, char *parv[])
+{
+  struct Channel *chptr;
+  char topic_info[USERHOST_REPLYLEN];
+
+  if((chptr = hash_find_channel(parv[1])) == NULL)
+  {
+    ilog(L_ERROR, "Got Topic for channel %s which we know nothing about.",
+        parv[1]);
+    return;
+  }
+  
+  ircsprintf(topic_info, "%s!%s@%s", source_p->name, source_p->username,
+      source_p->host);
+
+  set_channel_topic(chptr, parv[2], topic_info, CurrentTime);
 }

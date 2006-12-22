@@ -62,6 +62,7 @@ extern struct Callback *on_identify_cb;
 extern struct Callback *on_newuser_cb;
 extern struct Callback *on_channel_destroy_cb;
 extern struct Callback *on_nick_drop_cb;
+extern struct Callback *on_topic_change_cb;
 
 void init_interface();
 void cleanup_interface();

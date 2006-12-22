@@ -9,6 +9,7 @@ void add_user_to_channel(struct Channel *, struct Client *, unsigned int, int);
 void destroy_channel(struct Channel *);
 void remove_user_from_channel(struct Membership *);
 struct Ban *find_bmask(const struct Client *, const dlink_list *const);
+void set_channel_topic(struct Channel *, const char *,const char *, time_t);
 
 struct Channel
 {

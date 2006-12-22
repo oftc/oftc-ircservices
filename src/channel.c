@@ -249,3 +249,51 @@ find_bmask(const struct Client *who, const dlink_list *const list)
   }
   return NULL;
 }
+
+/*! \brief Allocates a new topic
+ * \param chptr Channel to allocate a new topic for
+ */
+static void
+allocate_topic(struct Channel *chptr)
+{
+  void *ptr = NULL;
+
+  ptr = BlockHeapAlloc(topic_heap);
+
+  /*
+   * Basically we allocate one large block for the topic and
+   * the topic info.  We then split it up into two and shove it
+   * in the chptr
+   */
+  chptr->topic       = ptr;
+  chptr->topic_info  = ((char *)ptr) + TOPICLEN + 1;
+  *chptr->topic      = '\0';
+  *chptr->topic_info = '\0';
+}
+
+/*! \brief Sets the channel topic for chptr
+ * \param chptr      Pointer to struct Channel
+ * \param topic      The topic string
+ * \param topic_info n!u\@h formatted string of the topic setter
+ * \param topicts    timestamp on the topic
+ */
+void
+set_channel_topic(struct Channel *chptr, const char *topic,
+                  const char *topic_info, time_t topicts)
+{
+  if (!EmptyString(topic))
+  {
+    if (chptr->topic == NULL)
+      allocate_topic(chptr);
+
+    strlcpy(chptr->topic, topic, TOPICLEN+1);
+    strlcpy(chptr->topic_info, topic_info, USERHOST_REPLYLEN);
+  }
+  else
+  {
+    if (chptr->topic != NULL)
+      free_topic(chptr);
+  }
+
+  execute_callback(on_topic_change_cb, chptr, topic_info); 
+}

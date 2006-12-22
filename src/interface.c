@@ -50,6 +50,7 @@ struct Callback *on_squit_cb;
 struct Callback *on_newuser_cb;
 struct Callback *on_identify_cb;
 struct Callback *on_channel_destroy_cb;
+struct Callback *on_topic_change_cb;
 
 struct LanguageFile ServicesLanguages[LANG_LAST];
 
@@ -81,6 +82,7 @@ init_interface()
   on_identify_cb      = register_callback("Identify Callback", NULL);
   on_newuser_cb       = register_callback("New user coming to us", NULL);
   on_channel_destroy_cb = register_callback("Channel is being destroyed", NULL);
+  on_topic_change_cb  = register_callback("Topic changed", NULL);
 
   load_language(ServicesLanguages, "services.en");
 }
@@ -390,7 +392,6 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
     {
       ilog(L_DEBUG, "check_list_entry: Found match: %s %s", entry->value, 
           value);
-      MyFree(entry->value);
       MyFree(entry);
       db_list_done(first);
       return TRUE;
@@ -398,7 +399,6 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
     
     ilog(L_DEBUG, "check_list_entry: Not Found match: %s %s", entry->value, 
         value);
-    MyFree(entry->value);
     MyFree(entry);
     ptr = db_list_next(ptr, type, (void**)&entry);
   }

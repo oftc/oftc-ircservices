@@ -30,11 +30,13 @@ static dlink_node *cs_cmode_hook;
 static dlink_node *cs_join_hook;
 static dlink_node *cs_channel_destroy_hook;
 static dlink_node *cs_on_nick_drop_hook;
+static dlink_node *cs_on_topic_change_hook;
 
 static void *cs_on_cmode_change(va_list);
 static void *cs_on_client_join(va_list);
 static void *cs_on_channel_destroy(va_list);
 static void *cs_on_nick_drop(va_list);
+static void *cs_on_topic_change(va_list);
 
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
@@ -238,6 +240,7 @@ INIT_MODULE(chanserv, "$Revision$")
   cs_channel_destroy_hook = 
        install_hook(on_channel_destroy_cb, cs_on_channel_destroy);
   cs_on_nick_drop_hook = install_hook(on_nick_drop_cb, cs_on_nick_drop);
+  cs_on_topic_change_hook = install_hook(on_topic_change_cb, cs_on_topic_change);
 
   SetChanParam(chanserv);
 }
@@ -248,6 +251,7 @@ CLEANUP_MODULE
   uninstall_hook(on_join_cb, cs_on_client_join);
   uninstall_hook(on_channel_destroy_cb, cs_on_channel_destroy);
   uninstall_hook(on_nick_drop_cb, cs_on_nick_drop);
+  uninstall_hook(on_topic_change_cb, cs_on_topic_change);
   mod_del_servcmd(&chanserv->msg_tree, &register_msgtab);
   mod_del_servcmd(&chanserv->msg_tree, &help_msgtab);
   mod_del_servcmd(&chanserv->msg_tree, &set_msgtab);
@@ -1406,7 +1410,7 @@ cs_on_client_join(va_list args)
  * When a Channel is destroyed, 
  *  - we need to detach struct RegChannel from struct Channel->regchan 
  */
-static void*
+static void *
 cs_on_channel_destroy(va_list args)
 {
   struct Channel *chan = va_arg(args, struct Channel *);
@@ -1427,10 +1431,37 @@ cs_on_channel_destroy(va_list args)
  * When a Nick is dropped
  * - we need to make sure theres no Channel left with the nick as eounder
  */
-static void*
+static void *
 cs_on_nick_drop(va_list args)
 {
   char *nick = va_arg(args, char *);
 
   return pass_callback(cs_on_nick_drop_hook, nick);
+}
+
+static void *
+cs_on_topic_change(va_list args)
+{
+  struct Channel *chan = va_arg(args, struct Channel *);
+  char *setter = va_arg(args, char *);
+  struct RegChannel *regchptr;
+
+  if(chan->regchan == NULL)
+    return pass_callback(cs_on_topic_change_hook, chan, setter);
+
+  regchptr = chan->regchan;
+
+  if(regchptr->topic_lock)
+  {
+    if(regchptr->topic != NULL)
+    {
+      if(chan->topic == NULL || ircncmp(chan->topic, regchptr->topic,
+            LIBIO_MAX(strlen(chan->topic), strlen(regchptr->topic))) != 0)
+      {
+        send_topic(chanserv, chan, find_client(chanserv->name), regchptr->topic); 
+      }
+    }
+  }
+
+  return pass_callback(cs_on_topic_change_hook, chan, setter);
 }
