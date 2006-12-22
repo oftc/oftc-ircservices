@@ -22,7 +22,7 @@ CREATE TABLE channel_access (
   channel_id              INTEGER NOT NULL,
   account_id              INTEGER NOT NULL,
   level                   INTEGER NOT NULL,
-  FOREIGN KEY (channel_id)REFERENCES channel(id),
+  FOREIGN KEY (channel_id)REFERENCES channel(id) ON DELETE CASCADE,
   FOREIGN KEY (account_id)REFERENCES account(id),
   UNIQUE (channel_id, account_id)
 )ENGINE=InnoDB;
