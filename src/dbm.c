@@ -187,7 +187,7 @@ db_load_driver()
   query_t *__query;                                                   \
                                                                       \
   __query = &queries[__id];                                           \
-  printf("db_query: %d %s\n", __id, __query->name);                   \
+  /*printf("db_query: %d %s\n", __id, __query->name);                   */\
   assert(__query->type == QUERY);                                     \
   assert(__query->rc);                                                \
                                                                       \
@@ -205,7 +205,7 @@ db_load_driver()
   query_t *__query;                                                   \
                                                                       \
   __query = &queries[__id];                                           \
-  printf("db_exec: %d %s\n", __id, __query->name);                    \
+/*  printf("db_exec: %d %s\n", __id, __query->name);                  */  \
   assert(__query->type == EXECUTE);                                   \
   assert(__query->rc);                                                \
                                                                       \

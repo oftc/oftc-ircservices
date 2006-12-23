@@ -317,8 +317,14 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   struct ChanAccess *access;
   unsigned int level;
 
-  mptr->count++;
-
+  if (i < mptr->parameters)
+  {
+    reply_user(service, NULL, from, SERV_INSUFF_PARAM, mptr->parameters, i);
+    ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
+        from->name, mptr->cmd);
+    return;
+  }
+ 
   if(mptr->flags & SFLG_CHANARG)
   {
     chptr = hash_find_channel(hpara[1]);
@@ -371,17 +377,9 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
     }
   }
 
-  if (i < mptr->parameters)
-  {
-    reply_user(service, NULL, from, SERV_INSUFF_PARAM, mptr->parameters, i);
-    ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
-        from->name, mptr->cmd);
-  }
-  else
-  {
-    service->last_command = (char *)mptr->cmd;
-    (*mptr->handler)(service, from, i, hpara);
-  }
+  service->last_command = (char *)mptr->cmd;
+  mptr->count++;
+  (*mptr->handler)(service, from, i, hpara);
 }
 
 /* clear_tree_parse()
@@ -863,6 +861,7 @@ process_privmsg(struct Client *client, struct Client *source,
     for (ch2 = parv[3]; *ch2 == ' '; ch2++) /* skip spaces */
       ;
     i = string_to_array(s, servpara);
+    servpara[i] = NULL;
     
     if(mptr->flags & SFLG_KEEPARG)
     {
@@ -901,7 +900,8 @@ process_privmsg(struct Client *client, struct Client *source,
             /* Replace the sub command name with the command arguments */
             for(j = 2; j <= i; j++)
               servpara[j-1] = servpara[j];
-            i--;
+            if(!(sub->flags & SFLG_KEEPARG))
+              i--;
             break;
           }
           sub++;
@@ -914,7 +914,18 @@ process_privmsg(struct Client *client, struct Client *source,
         }
       }
     }
+    else
+    {
+      int j;
+
+      for(j = 1; j <= i; j++)
+        servpara[j-1] = servpara[j];
+
+      servpara[i] = NULL;
+    }
   }
+  else
+    servpara[1] = NULL;
 
   servpara[0] = source->name;
 
