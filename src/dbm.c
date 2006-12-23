@@ -29,16 +29,18 @@
 struct Callback *on_nick_drop_cb;
 
 query_t queries[QUERY_COUNT] = { 
-  { "SELECT id, primary_nick, password, salt, url, email, cloak, flag_enforce, "
+  { "SELECT account.id, (SELECT nick FROM nickname WHERE id=account.primary_nick), "
+    "password, salt, url, email, cloak, flag_enforce, "
     "flag_secure, flag_verified, flag_cloak_enabled, "
     "flag_admin, flag_email_verified, language, last_host, last_realname, "
     "last_quit_msg, last_quit_time, account.reg_time, nickname.reg_time, "
     "last_seen FROM account, nickname WHERE account.id = nickname.user_id AND "
     "lower(nick) = lower(?v)", NULL, QUERY },
-  { "SELECT primary_nick from account WHERE id=?d", NULL, QUERY },
+  { "SELECT nick from account, nickname WHERE account.id=?d AND "
+    "account.primary_nick=nickname.id", NULL, QUERY },
   { "SELECT user_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
-  { "INSERT INTO account (primary_nick, password, salt, email, reg_time) VALUES "
-    "(?v, ?v, ?v, ?v, ?d)", NULL, EXECUTE },
+  { "INSERT INTO account (password, salt, email, reg_time) VALUES "
+    "(?v, ?v, ?v, ?d)", NULL, EXECUTE },
   { "INSERT INTO nickname (nick, user_id, reg_time, last_seen) VALUES "
     "(?v, ?d, ?d, ?d)", NULL, EXECUTE },
   { "DELETE FROM nickname WHERE lower(nick)=lower(?v)", NULL, EXECUTE },
@@ -46,7 +48,8 @@ query_t queries[QUERY_COUNT] = {
   { "INSERT INTO account_access (parent_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
   { "SELECT id, entry FROM account_access WHERE parent_id=?d", NULL, QUERY },
-  { "SELECT primary_nick FROM account WHERE flag_admin=true", NULL, QUERY },
+  { "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
+    "account.primary_nick = nickname.id", NULL, QUERY },
   { "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
     NULL, QUERY },
   { "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
@@ -97,7 +100,7 @@ query_t queries[QUERY_COUNT] = {
     "flag_cloak_enabled, flag_admin, flag_email_verified, language, last_host, "
     "last_realname, last_quit_msg, last_quit_time, reg_time FROM account "
     "WHERE id=?d", NULL, EXECUTE },
-  { "SELECT count(*) FROM nickname WHERE user_id=?d", NULL, QUERY },
+  { "SELECT nick FROM nickname WHERE user_id=?d", NULL, QUERY },
   { "UPDATE channel SET description=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET url=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET email=?v WHERE id=?d", NULL, EXECUTE },
@@ -129,7 +132,8 @@ query_t queries[QUERY_COUNT] = {
     EXECUTE },
   { "DELETE FROM channel_akick WHERE channel_id=?d AND target IN (SELECT user_id "
     "FROM nickname WHERE lower(nick)=lower(?v))", NULL, EXECUTE },
-  { "UPDATE account SET primary_nick=?v WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE account SET primary_nick=(SELECT id FROM nickname WHERE "
+    "lower(nick)=lower(?v)) WHERE id=?d", NULL, EXECUTE },
   { "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
   { "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=?d",
     NULL, QUERY },
@@ -328,7 +332,7 @@ db_register_nick(struct Nick *nick)
 
   TransBegin();
 
-  db_exec(exec, INSERT_ACCOUNT, nick->nick, nick->pass, nick->salt, nick->email, 
+  db_exec(exec, INSERT_ACCOUNT, nick->pass, nick->salt, nick->email, 
       CurrentTime);
 
   if(exec != -1)
@@ -336,6 +340,9 @@ db_register_nick(struct Nick *nick)
     id = InsertID("account", "id");
     db_exec(exec, INSERT_NICK, nick->nick, id, CurrentTime, CurrentTime);
   }
+
+  if(exec != -1)
+    db_exec(exec, SET_NICK_MASTER, nick->nick, id);
 
   if(exec != -1)
   {
@@ -397,22 +404,29 @@ db_delete_forbid(const char *nick)
   return TRUE;
 }
 
-static int
-db_get_num_nicks(unsigned int id)
+static char *
+db_fix_link(unsigned int id)
 {
-  int count;
+  char *nick;
   yada_rc_t *rc, *brc;
 
-  brc = Bind("?d", &count);
-  db_query(rc, GET_NICK_COUNT, id);
+  brc = Bind("?ps", &nick);
+  db_query(rc, GET_NEW_LINK, id);
 
   if(rc == NULL)
-    return 0;
+    return NULL;
 
   if(Fetch(rc, brc) == 0)
-    return 0;
+  {
+    Free(rc);
+    Free(brc);
+    return NULL;
+  }
 
-  return count;
+  Free(rc);
+  Free(brc);
+
+  return nick;
 }
 
 int
@@ -433,8 +447,19 @@ db_delete_nick(const char *nick)
 
   db_exec(ret, DELETE_NICK, nick);
 
-  if(ret != -1 && db_get_num_nicks(id) == 0)
-    db_exec(ret, DELETE_ACCOUNT, id);
+  if(ret != -1)
+  {
+    char *newnick = db_fix_link(id);
+
+    if(newnick == NULL)
+    {
+      db_exec(ret, DELETE_ACCOUNT, id);
+    }
+    else
+    {
+      db_exec(ret, SET_NICK_MASTER, newnick, id);
+    }
+  }
 
   if(ret == -1)
   {

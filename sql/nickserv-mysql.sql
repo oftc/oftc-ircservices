@@ -4,8 +4,8 @@ DROP TABLE IF EXISTS account CASCADE;
 DROP TABLE IF EXISTS forbidden_nickname;
 
 CREATE TABLE account (
-  id              INTEGER PRIMARY KEY auto_increment,
-  primary_nick        VARCHAR(255),
+  id                  INTEGER PRIMARY KEY auto_increment,
+  primary_nick        INTEGER
   password            CHAR(40),      -- base16 encoded sha1(salt+<userpassword>).  lower case
   salt                CHAR(16),
   url                 VARCHAR(255),
@@ -23,10 +23,11 @@ CREATE TABLE account (
   last_quit_msg       VARCHAR(512),
   last_quit_time      INTEGER,
   reg_time            INTEGER NOT NULL, -- The account itself
-  FOREIGN KEY (primary_nick) REFERENCES nickname(nick)
+  FOREIGN KEY (primary_nick) REFERENCES nickname(id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE nickname (
+  id                  INTEGER PRIMARY KEY auto_increment,
   nick                VARCHAR(255) NOT NULL,
   user_id             INTEGER NOT NULL,
   reg_time            INTEGER NOT NULL, -- This nickname
