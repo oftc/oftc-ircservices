@@ -112,7 +112,7 @@ static struct ServiceMessage set_sub[] = {
     NS_HELP_SET_CLOAK_LONG, m_set_cloak },
   { NULL, "CLOAKSTRING", 0, 0, 0, OPER_FLAG, NS_HELP_SET_CLOAKSTRING_SHORT, 
     NS_HELP_SET_CLOAKSTRING_LONG, m_set_cloakstring },
-  { NULL, "MASTER", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
+  { NULL, "MASTER", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
     NS_HELP_SET_MASTER_LONG, m_set_master },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
