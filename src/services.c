@@ -49,31 +49,32 @@ int main(int argc, char *argv[])
 
   OpenSSL_add_all_digests();
  
-  me.from = me.servptr = &me;
-  SetServer(&me);
-  dlinkAdd(&me, &me.node, &global_client_list);
-  hash_add_client(&me);
-
-  SetMe(&me);
-      
   init_interface();
   strcpy(ServicesInfo.logfile, "services.log");
   libio_init(FALSE);
+  init_log(ServicesInfo.logfile);
   init_channel();
   init_conf();
   init_client();
   init_parser();
   init_channel_modes();
 
+  me.from = me.servptr = &me;
+  SetServer(&me);
+  SetMe(&me);
+  dlinkAdd(&me, &me.node, &global_client_list);
+  
   read_services_conf(TRUE);
-  init_db();
+  hash_add_client(&me);
+  if(me.id[0] != '\0')
+    hash_add_id(&me);
 
-  init_log(ServicesInfo.logfile);
+  init_db();
 
   ilog(L_DEBUG, "Services starting with name %s description %s sid %s",
       me.name, me.info, me.id);
 
- db_load_driver();
+  db_load_driver();
 #ifndef STATIC_MODULES
   if(chdir(MODPATH))
   {
