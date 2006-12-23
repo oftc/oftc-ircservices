@@ -8,10 +8,3 @@ CREATE TABLE akill (
   duration        INTEGER NOT NULL,
   UNIQUE (mask)
 );
-
-DROP TABLE account_access CASCADE;
-CREATE TABLE account_access(
-  id              SERIAL PRIMARY KEY,
-  account_id      INTEGER NOT NULL REFERENCES account(id),
-  level           INTEGER NOT NULL
-);

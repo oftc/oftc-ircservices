@@ -9,11 +9,3 @@ CREATE TABLE akill (
   FOREIGN KEY setter REFERENCES account(id),
   UNIQUE (mask)
 ) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS account_access;
-CREATE TABLE account_access(
-  id                   PRIMARY KEY auto_increment,
-  account_id           INTEGER NOT NULL,
-  level                INTEGER NOT NULL,
-  FOREIGN KEY (account_id) REFERENCES account(id)
-) ENGINE=InnoDB;
