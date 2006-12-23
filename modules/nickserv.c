@@ -835,7 +835,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   reply_user(service, service, client, NS_INFO, regtime, 
       (nick->last_quit == NULL) ? "Unknown" : nick->last_quit, quittime, 
       nick->email, (nick->url == NULL) ? "Not set" : nick->url, 
-      (nick->cloak == NULL) ? "Not set" : nick->cloak);
+      (nick->cloak[0] == '\0') ? "Not set" : nick->cloak);
 
   if(IsIdentified(client) && (client->nickname == nick || 
       client->access == ADMIN_FLAG))
