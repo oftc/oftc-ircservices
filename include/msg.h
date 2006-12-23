@@ -127,5 +127,12 @@ struct ServiceMessage
                                            unregisted nick/channel */
 #define   SFLG_ALIAS            0x002   /* This message is an alias of another
                                            and should not show in help */
+#define   SFLG_KEEPARG          0x004   /* Keep the target argument as parv[1],
+                                           eg set #foo bar baz becomes '#foo', 
+                                           'baz' on command bar */
+#define   SFLG_CHANARG          0x008   /* First argument should be a registered 
+                                           channel */
+#define   SFLG_NICKARG          0x010   /* First argument should be a registered 
+                                           nickname */
 extern void ms_error(struct Client *, struct Client *, int, char *[]);
 #endif /* INCLUDED_msg_h */

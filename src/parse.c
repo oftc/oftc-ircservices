@@ -314,10 +314,12 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr = NULL;
-  
+  struct ChanAccess *access;
+  unsigned int level;
+
   mptr->count++;
 
-  if(hpara[1] != NULL && (*hpara[1] == '#' || IsServiceChanParam(service)))
+  if(mptr->flags & SFLG_CHANARG)
   {
     chptr = hash_find_channel(hpara[1]);
     if(chptr == NULL || chptr->regchan == NULL)
@@ -328,14 +330,44 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
         reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);
         return;
       }
+
       if(from->access < IDENTIFIED_FLAG && mptr->access == CHIDENTIFIED_FLAG)
       {
         reply_user(service, NULL, from, SERV_NOT_IDENTIFIED, from->name);
         return;
       }
 
+      if(from->nickname == NULL)
+        level = CHUSER_FLAG;
+      else
+      {
+        access = db_find_chanaccess(regchptr->id, from->nickname->id);
+        if(access == NULL)
+          level = CHUSER_FLAG;
+        else
+        {
+          level = access->level;
+          free_chanaccess(access);
+        }
+      }
+
+      if(level < mptr->access)
+      {
+        reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN, mptr->cmd,
+            regchptr->channel);
+        return;
+      }
+
       if(chptr != NULL)
         chptr->regchan = regchptr;
+    }
+  }
+  else
+  {
+    if(from->access < mptr->access)
+    {
+      reply_user(service, NULL, from, SERV_NO_ACCESS, mptr->cmd);
+      return;
     }
   }
 
@@ -795,12 +827,8 @@ process_privmsg(struct Client *client, struct Client *source,
 {
   struct Service *service;
   struct ServiceMessage *mptr;
-  struct Channel *chptr;
-  struct RegChannel *regchptr = NULL;
-  struct ChanAccess *access = NULL;
   char *s, *ch, *ch2;
-  unsigned int level;
-  int i = 0, channel = FALSE;
+  int i = 0;
 
   if((s = strchr(parv[1], '@')) != NULL)
     *s++ = '\0';
@@ -830,157 +858,67 @@ process_privmsg(struct Client *client, struct Client *source,
   assert(mptr->cmd != NULL);
   parv[3] = s;
 
-  if(mptr->sub != NULL && parv[3] != NULL)
+  if(parv[3] != NULL)
   {
-    /* Process sub commands */
-    struct ServiceMessage *sub;
-
-    sub = mptr->sub;
-
     for (ch2 = parv[3]; *ch2 == ' '; ch2++) /* skip spaces */
       ;
+    i = string_to_array(s, servpara);
     
-    i = string_to_array(ch2, servpara);
-
-    if(servpara[1] && ((*servpara[1] == '#') || IsServiceChanParam(service)) && 
-        i > 1)
+    if(mptr->flags & SFLG_KEEPARG)
     {
-      servpara[0] = servpara[1];
+      char *tmp;
+      int j;
+
+      /* SET #foo bar baz -> SET bar #foo baz */
+      tmp = servpara[1];
       servpara[1] = servpara[2];
-      servpara[2] = servpara[0];
-
-      chptr = hash_find_channel(servpara[0]);
-      if(chptr == NULL || chptr->regchan == NULL)
+      servpara[2] = tmp;
+      /* Replace the command name with the command arguments if this is not a
+       * sub command. (sub commands are dealt with below) */
+      if(mptr->sub == NULL)
       {
-        regchptr = db_find_chan(servpara[0]);
-        if(regchptr == NULL && sub->access > CHUSER_FLAG)
-        {
-          reply_user(service, NULL, source, SERV_UNREG_CHAN, servpara[0]);
-          return;
-        }
-        else if(regchptr != NULL && chptr != NULL)
-          chptr->regchan = regchptr;
+        for(j = 2; j <= i; j++)
+          servpara[j-1] = servpara[j];
       }
-      else
-        regchptr = chptr->regchan;
+    }
 
-      channel = TRUE;
-    }
-    
-    if (i-1 < mptr->parameters)
+    if(servpara[1] != NULL)
     {
-      reply_user(service, NULL, source, SERV_INSUFF_PARAM, 
-          mptr->parameters, i-1);
-      return;
-    }
- 
-    while(sub->cmd != NULL)
-    {
-      if(irccmp(sub->cmd, servpara[1]) == 0)
+      if(mptr->sub != NULL)
       {
-        servpara[0] = source->name;
+        /* Process sub commands */
+        struct ServiceMessage *sub;
 
-        if(i > 2)
+        sub = mptr->sub;
+
+        while(sub->cmd != NULL)
         {
-          int j;
-          
-          for(j = 2; j < i; j++)
+          if(irccmp(sub->cmd, servpara[1]) == 0)
           {
-            servpara[j-1] = servpara[j];
-          }
-          servpara[j-1] = NULL;
-          i--;
-        }
-        else
-        {
-          i = 0;
-          servpara[1] = NULL;
-        }
+            int j;
 
-        sub->count++;
-        if (i < sub->parameters)
-        {
-          reply_user(service, NULL, source, SERV_INSUFF_PARAM, 
-              sub->parameters, i);
-          ilog(L_DEBUG, 
-              "%s sent services a sub command %s with too few parameters",
-              source->name, sub->cmd);
-          return;
+            mptr = sub;
+            /* Replace the sub command name with the command arguments */
+            for(j = 2; j <= i; j++)
+              servpara[j-1] = servpara[j];
+            i--;
+            break;
+          }
+          sub++;
         }
-        else
+        if(sub->cmd == NULL)
         {
-          if(channel)
-          {
-            if(source->nickname == NULL)
-              level = CHUSER_FLAG;
-            else
-            {
-              access = db_find_chanaccess(regchptr->id, source->nickname->id);
-              if(access != NULL)
-              {
-                level = access->level;
-                free_chanaccess(access);
-              }
-              else
-                level = CHUSER_FLAG;
-            }
-
-            if(level < sub->access)
-            {
-              reply_user(service, NULL, source, SERV_NO_ACCESS_CHAN, sub->cmd, 
-                  servpara[1]);
-              return;
-            }
-          }
-          else if(source->access < sub->access)
-          {
-            reply_user(service, NULL, source, SERV_NO_ACCESS, sub->cmd);
-            return;
-          }
-
-          (*sub->handler)(service, source, (i == 0) ? i : i-1, servpara);
-          return;
+          reply_user(service, NULL, source, SERV_UNKNOWN_OPTION, servpara[1],
+              service->name, mptr->cmd);
+          return; 
         }
       }
-      sub++;
     }
-    reply_user(service, NULL, source, SERV_UNKNOWN_OPTION, servpara[1],
-        service->name, mptr->cmd);
-    return;
   }
 
   servpara[0] = source->name;
 
-  if(i > 2)
-  {
-    int j;
-
-    for(j = 2; j < i; j++)
-    {
-      servpara[j-1] = servpara[j];
-    }
-    servpara[j-1] = NULL;
-    i--;
-  }
-  else if(i == 0 && s != NULL)
-  {
-    i = string_to_array(s, servpara);
-    if(servpara[1] != NULL && *servpara[1] == '#')
-      channel = TRUE;
-  }
-  else
-  {
-    i = 0;
-    servpara[1] = NULL;
-  }
-
-  if(IsServiceChanParam(service))
-    channel = TRUE;
-
-  if(!channel && source->access < mptr->access)
-    reply_user(service, NULL, source, SERV_NO_ACCESS, mptr->cmd);
-  else
-    handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
+  handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
 }
 
 size_t
