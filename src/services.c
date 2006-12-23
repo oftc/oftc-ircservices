@@ -48,6 +48,13 @@ int main(int argc, char *argv[])
   iosend_cb = register_callback("iosend", iosend_default);
 
   OpenSSL_add_all_digests();
+ 
+  me.from = me.servptr = &me;
+  SetServer(&me);
+  dlinkAdd(&me, &me.node, &global_client_list);
+  hash_add_client(&me);
+
+  SetMe(&me);
       
   init_interface();
   strcpy(ServicesInfo.logfile, "services.log");
@@ -66,14 +73,7 @@ int main(int argc, char *argv[])
   ilog(L_DEBUG, "Services starting with name %s description %s sid %s",
       me.name, me.info, me.id);
 
-  me.from = me.servptr = &me;
-  SetServer(&me);
-  dlinkAdd(&me, &me.node, &global_client_list);
-  hash_add_client(&me);
-
-  SetMe(&me);
-
-  db_load_driver();
+ db_load_driver();
 #ifndef STATIC_MODULES
   if(chdir(MODPATH))
   {
