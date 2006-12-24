@@ -105,6 +105,7 @@ void op_user(struct Service *, struct Channel *, struct Client *);
 void deop_user(struct Service *, struct Channel *, struct Client *);
 void devoice_user(struct Service *, struct Channel *, struct Client *);
 void invite_user(struct Service *, struct Channel *, struct Client *);
+void kill_user(struct Service *, struct Client *, const char *);
 void ban_mask(struct Service *, struct Channel *, const char *);
 void unban_mask(struct Service *, struct Channel *, const char *);
 

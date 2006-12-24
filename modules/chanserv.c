@@ -1272,7 +1272,8 @@ m_set_flag(struct Service *service, struct Client *client,
 
   if (db_set_bool(type, regchptr->id, on))
   {
-    reply_user(service, service, client, CS_SET_SUCCESS, channel, flagname, toggle);
+    reply_user(service, service, client, CS_SET_SUCCESS, 
+        flagname, on ? "ON" : "OFF", channel);
 
     switch(type)
     {
