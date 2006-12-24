@@ -33,8 +33,10 @@ static dlink_node *cs_on_nick_drop_hook;
 static dlink_node *cs_on_topic_change_hook;
 
 static dlink_list channel_limit_list = { NULL, NULL, 0 };
+static dlink_list channel_expireban_list = { NULL, NULL, 0 };
 
 static void process_limit_list(void *);
+static void process_expireban_list(void *);
 
 static void *cs_on_cmode_change(va_list);
 static void *cs_on_client_join(va_list);
@@ -57,6 +59,7 @@ static void m_set_private(struct Service *, struct Client *, int, char *[]);
 static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
 static void m_set_autolimit(struct Service *, struct Client *, int, char *[]);
+static void m_set_expirebans(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
@@ -119,7 +122,7 @@ static struct ServiceMessage set_sub[] = {
   { NULL, "AUTOLIMIT", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_SET_AUTOLIMIT_SHORT, CS_HELP_SET_AUTOLIMIT_LONG, m_set_autolimit },
   { NULL, "EXPIREBANS", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
-    CS_HELP_SET_EXPIREBANS_SHORT, CS_HELP_SET_EXPIREBANS_LONG, m_not_avail },
+    CS_HELP_SET_EXPIREBANS_SHORT, CS_HELP_SET_EXPIREBANS_LONG, m_set_expirebans },
   { NULL, NULL, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, NULL } 
 };
 
@@ -245,6 +248,7 @@ INIT_MODULE(chanserv, "$Revision$")
   cs_on_topic_change_hook = install_hook(on_topic_change_cb, cs_on_topic_change);
 
   eventAdd("process channel autolimits", process_limit_list, NULL, 10);
+  eventAdd("process channel expirebans", process_expireban_list, NULL, 10);
 }
 
 CLEANUP_MODULE
@@ -274,15 +278,16 @@ CLEANUP_MODULE
   hash_del_service(chanserv);
   dlinkDelete(&chanserv->node, &services_list);
   eventDelete(process_limit_list, NULL);
+  eventDelete(process_expireban_list, NULL);
   ilog(L_DEBUG, "Unloaded chanserv");
 }
 
 static void
 process_limit_list(void *param)
 {
-  dlink_node *ptr, *nptr;
+  dlink_node *ptr;
 
-  DLINK_FOREACH_SAFE(ptr, nptr, channel_limit_list.head)
+  DLINK_FOREACH(ptr, channel_limit_list.head)
   {
     struct Channel *chptr = ptr->data;
 
@@ -295,6 +300,31 @@ process_limit_list(void *param)
         set_limit(chanserv, chptr, limit);
 
       chptr->limit_time = CurrentTime + 90;
+    }
+  }
+}
+
+static void
+process_expireban_list(void *param)
+{
+  dlink_node *ptr;
+  dlink_node *bptr, *bnptr;
+
+  DLINK_FOREACH(ptr, channel_expireban_list.head)
+  {
+    struct Channel *chptr = ptr->data;
+
+    DLINK_FOREACH_SAFE(bptr, bnptr, chptr->banlist.head)
+    {
+      struct Ban *banptr = bptr->data;
+      char ban[IRC_BUFSIZE+1];
+
+      if((CurrentTime - banptr->when) > (1*60*60))
+      {
+        snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
+            banptr->host);
+        unban_mask(chanserv, chptr, ban);
+      }
     }
   }
 }
@@ -779,6 +809,25 @@ m_set_autolimit(struct Service *service, struct Client *client,
   }
 }
   
+static void
+m_set_expirebans(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Channel *chptr = hash_find_channel(parv[1]);
+
+  m_set_flag(service, client, parv[1], parv[2], SET_CHAN_EXPIREBANS, 
+      "EXPIREBANS");
+  if(chptr != NULL && chptr->regchan != NULL && chptr->regchan->expirebans)
+    dlinkAdd(chptr, make_dlink_node(), &channel_expireban_list);
+  else if(chptr != NULL && chptr->regchan != NULL)
+  {
+    dlink_node *ptr;
+
+    if((ptr = dlinkFindDelete(&channel_expireban_list, chptr)) != NULL)
+      free_dlink_node(ptr);
+  }
+}
+
 /* AKICK ADD (nick|mask) reason */
 static void
 m_akick_add(struct Service *service, struct Client *client, int parc, 
@@ -1448,11 +1497,21 @@ cs_on_client_join(va_list args)
         regchptr->entrymsg);
 
   if(regchptr->autolimit)
+  {
     if(dlinkFind(&channel_limit_list, chptr) == NULL)
     {
       chptr->limit_time = CurrentTime + 90;
       dlinkAdd(chptr, make_dlink_node(), &channel_limit_list);
     }
+  }
+
+  if(regchptr->expirebans)
+  {
+    if(dlinkFind(&channel_expireban_list, chptr) == NULL)
+    {
+      dlinkAdd(chptr, make_dlink_node(), &channel_expireban_list);
+    }
+  }
 
   return pass_callback(cs_join_hook, source_p, name);
 }

@@ -56,8 +56,9 @@ query_t queries[QUERY_COUNT] = {
     "channel_id=?d", NULL, QUERY },
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
   { "SELECT id, channel, description, entrymsg, flag_forbidden, flag_private, "
-    "flag_restricted, flag_topic_lock, flag_verbose, flag_autolimit, url, "
-    "email, topic FROM channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
+    "flag_restricted, flag_topic_lock, flag_verbose, flag_autolimit, "
+      "flag_expirebans, url, email, topic FROM channel WHERE "
+      "lower(channel)=lower(?v)", NULL, QUERY },
   { "INSERT INTO channel (channel, description) VALUES(?v, ?v)", NULL, EXECUTE },
   { "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
     "(?d, ?d, ?d)", NULL, EXECUTE } ,
@@ -113,6 +114,7 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE channel SET flag_topic_lock=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_verbose=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_autolimit=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_expirebans=?B WHERE id=?d", NULL, EXECUTE },
   { "INSERT INTO forbidden_nickname (nick) VALUES (?v)", NULL, EXECUTE },
   { "SELECT nick FROM forbidden_nickname WHERE lower(nick)=lower(?v)",
     NULL, QUERY },
@@ -816,11 +818,12 @@ db_find_chan(const char *channel)
  
   channel_p = MyMalloc(sizeof(struct RegChannel));
  
-  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?ps?ps?ps",
+  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?B?ps?ps?ps",
       &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
       &channel_p->forbidden, &channel_p->priv, &channel_p->restricted,
       &channel_p->topic_lock, &channel_p->verbose, &channel_p->autolimit,
-      &channel_p->url, &channel_p->email, &channel_p->topic); 
+      &channel_p->expirebans, &channel_p->url, &channel_p->email, 
+      &channel_p->topic); 
 
   if(Fetch(rc, brc) == 0)
   {

@@ -10,6 +10,7 @@ CREATE TABLE channel (
   flag_topic_lock         BOOLEAN NOT NULL DEFAULT FALSE, -- topics can only be changed via chanserv
   flag_verbose            BOOLEAN NOT NULL DEFAULT FALSE, -- notice all chanserv actions to the channel
   flag_autolimit          BOOLEAN NOT NULL DEFAULT FALSE, -- sets limit just above the current usercount
+  flag_expirebans         BOOLEAN NOT NULL DEFAULT FALSE, -- expire bans that are old
   description             VARCHAR(255) NOT NULL,
   url                     VARCHAR(255) NOT NULL,
   email                   VARCHAR(255) NOT NULL,
