@@ -1362,7 +1362,10 @@ cs_on_client_join(va_list args)
   else
   {
     access = db_find_chanaccess(regchptr->id, source_p->nickname->id);
-    level = access->level;
+    if(access == NULL)
+      level = CHIDENTIFIED_FLAG;
+    else
+      level = access->level;
   }
 
   if(regchptr->restricted && level < MEMBER_FLAG)
@@ -1376,8 +1379,16 @@ cs_on_client_join(va_list args)
     return pass_callback(cs_join_hook, source_p, name);
   }
 
-  reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, regchptr->channel,
-      regchptr->entrymsg);
+  if(IsChanop(source_p, chptr) && level < CHANOP_FLAG)
+  {
+    deop_user(chanserv, chptr, source_p);
+    reply_user(chanserv, chanserv, source_p, CS_DEOP_REGISTERED, 
+        regchptr->channel);
+  }
+
+  if(regchptr->entrymsg != NULL && regchptr->entrymsg[0] != '\0')
+    reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, regchptr->channel,
+        regchptr->entrymsg);
   return pass_callback(cs_join_hook, source_p, name);
 }
 

@@ -325,3 +325,6 @@ CS_ACCESS_NOTLISTED
 	%s is not on the access list of %s.
 CS_ENTRYMSG
 	[%s] %s
+CS_DEOP_REGISTERED
+	Deopped you on channel %s because it is registered with channel services and
+	you are not a CHANOP on its access list.
