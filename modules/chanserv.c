@@ -32,6 +32,10 @@ static dlink_node *cs_channel_destroy_hook;
 static dlink_node *cs_on_nick_drop_hook;
 static dlink_node *cs_on_topic_change_hook;
 
+static dlink_list channel_limit_list = { NULL, NULL, 0 };
+
+static void process_limit_list(void *);
+
 static void *cs_on_cmode_change(va_list);
 static void *cs_on_client_join(va_list);
 static void *cs_on_channel_destroy(va_list);
@@ -52,6 +56,7 @@ static void m_set_topiclock(struct Service *, struct Client *, int, char *[]);
 static void m_set_private(struct Service *, struct Client *, int, char *[]);
 static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
+static void m_set_autolimit(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
@@ -112,7 +117,7 @@ static struct ServiceMessage set_sub[] = {
   { NULL, "VERBOSE", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_SET_VERBOSE_SHORT, CS_HELP_SET_VERBOSE_LONG, m_set_verbose },
   { NULL, "AUTOLIMIT", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
-    CS_HELP_SET_AUTOLIMIT_SHORT, CS_HELP_SET_AUTOLIMIT_LONG, m_not_avail },
+    CS_HELP_SET_AUTOLIMIT_SHORT, CS_HELP_SET_AUTOLIMIT_LONG, m_set_autolimit },
   { NULL, "EXPIREBANS", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_SET_EXPIREBANS_SHORT, CS_HELP_SET_EXPIREBANS_LONG, m_not_avail },
   { NULL, NULL, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, NULL } 
@@ -238,6 +243,8 @@ INIT_MODULE(chanserv, "$Revision$")
        install_hook(on_channel_destroy_cb, cs_on_channel_destroy);
   cs_on_nick_drop_hook = install_hook(on_nick_drop_cb, cs_on_nick_drop);
   cs_on_topic_change_hook = install_hook(on_topic_change_cb, cs_on_topic_change);
+
+  eventAdd("process channel autolimits", process_limit_list, NULL, 10);
 }
 
 CLEANUP_MODULE
@@ -266,7 +273,30 @@ CLEANUP_MODULE
   exit_client(find_client(chanserv->name), &me, "Service unloaded");
   hash_del_service(chanserv);
   dlinkDelete(&chanserv->node, &services_list);
+  eventDelete(process_limit_list, NULL);
   ilog(L_DEBUG, "Unloaded chanserv");
+}
+
+static void
+process_limit_list(void *param)
+{
+  dlink_node *ptr, *nptr;
+
+  DLINK_FOREACH_SAFE(ptr, nptr, channel_limit_list.head)
+  {
+    struct Channel *chptr = ptr->data;
+
+    if(chptr->limit_time > CurrentTime)
+    {
+      int limit;
+
+      limit = dlink_list_length(&chptr->members) + 3;
+      if(chptr->mode.limit != limit)
+        set_limit(chanserv, chptr, limit);
+
+      chptr->limit_time = CurrentTime + 90;
+    }
+  }
 }
 
 static void 
@@ -728,6 +758,27 @@ m_set_verbose(struct Service *service, struct Client *client,
   m_set_flag(service, client, parv[1], parv[2], SET_CHAN_VERBOSE, "VERBOSE");
 }
 
+static void
+m_set_autolimit(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Channel *chptr = hash_find_channel(parv[1]);
+
+  m_set_flag(service, client, parv[1], parv[2], SET_CHAN_AUTOLIMIT, "AUTOLIMIT");
+  if(chptr != NULL && chptr->regchan != NULL && chptr->regchan->autolimit)
+  {
+    chptr->limit_time = CurrentTime + 90;
+    dlinkAdd(chptr, make_dlink_node(), &channel_limit_list);
+  }
+  else if(chptr != NULL && chptr->regchan != NULL)
+  {
+    dlink_node *ptr;
+
+    if((ptr = dlinkFindDelete(&channel_limit_list, chptr)) != NULL)
+      free_dlink_node(ptr);
+  }
+}
+  
 /* AKICK ADD (nick|mask) reason */
 static void
 m_akick_add(struct Service *service, struct Client *client, int parc, 
@@ -1253,6 +1304,9 @@ m_set_flag(struct Service *service, struct Client *client,
       case SET_CHAN_VERBOSE:
         on = regchptr->verbose;
         break;
+      case SET_CHAN_AUTOLIMIT:
+        on = regchptr->autolimit;
+        break;
       default:
         on = FALSE;
         break;
@@ -1288,6 +1342,9 @@ m_set_flag(struct Service *service, struct Client *client,
         break;
       case SET_CHAN_VERBOSE:
         regchptr->verbose = on;
+        break;
+      case SET_CHAN_AUTOLIMIT:
+        regchptr->autolimit = on;
         break;
     }
     if (chptr == NULL)
@@ -1389,6 +1446,14 @@ cs_on_client_join(va_list args)
   if(regchptr->entrymsg != NULL && regchptr->entrymsg[0] != '\0')
     reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, regchptr->channel,
         regchptr->entrymsg);
+
+  if(regchptr->autolimit)
+    if(dlinkFind(&channel_limit_list, chptr) == NULL)
+    {
+      chptr->limit_time = CurrentTime + 90;
+      dlinkAdd(chptr, make_dlink_node(), &channel_limit_list);
+    }
+
   return pass_callback(cs_join_hook, source_p, name);
 }
 

@@ -212,6 +212,17 @@ remove_akill(struct Service *service, struct ServiceBan *akill)
 }
 
 void
+set_limit(struct Service *service, struct Channel *chptr, int limit)
+{
+  char limitstr[16];
+
+  snprintf(limitstr, 16, "%d", limit);
+  execute_callback(send_cmode_cb, me.uplink, service->name, chptr->chname,
+      "+l", limitstr);
+  chptr->mode.limit = limit;
+}
+
+void
 send_cmode(struct Service *service, struct Channel *chptr, const char *mode,
     const char *param)
 {

@@ -17,6 +17,7 @@ struct RegChannel
   char restricted;
   char topic_lock;
   char verbose;
+  char autolimit;
 };
 
 #define CS_HELP_REG_SHORT 1

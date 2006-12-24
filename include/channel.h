@@ -29,7 +29,10 @@ struct Channel
   dlink_list invexlist;
   
   time_t channelts;
+  time_t limit_time;
+
   char chname[CHANNELLEN + 1];
+
   struct RegChannel *regchan;
 };
 

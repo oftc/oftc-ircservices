@@ -9,6 +9,7 @@ CREATE TABLE channel (
   flag_restricted         BOOLEAN NOT NULL DEFAULT FALSE, -- only people on the access list can hold channel operator status
   flag_topic_lock         BOOLEAN NOT NULL DEFAULT FALSE, -- topics can only be changed via chanserv
   flag_verbose            BOOLEAN NOT NULL DEFAULT FALSE, -- notice all chanserv actions to the channel
+  flag_autolimit          BOOLEAN NOT NULL DEFAULT FALSE, -- sets limit just above the current usercount
   description             VARCHAR(255) NOT NULL,
   url                     VARCHAR(255) NOT NULL,
   email                   VARCHAR(255) NOT NULL,

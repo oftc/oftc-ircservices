@@ -83,6 +83,7 @@ void send_cmode(struct Service *, struct Channel *, const char *, const char *);
 void send_topic(struct Service *, struct Channel *, struct Client *, 
     const char *);
 void send_kill(struct Service *, struct Client *, const char *);
+void set_limit(struct Service *, struct Channel *, int);
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
 void chain_squit(struct Client *, struct Client *, char *);
 void chain_quit(struct Client *, char *);
