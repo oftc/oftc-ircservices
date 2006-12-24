@@ -36,10 +36,12 @@ static dlink_node *ns_newuser_hook;
 static dlink_node *ns_quit_hook;
 
 static dlink_list nick_enforce_list = { NULL, NULL, 0 };
+static dlink_list nick_release_list = { NULL, NULL, 0 };
 
 static int guest_number;
 
 static void process_enforce_list(void *);
+static void process_release_list(void *);
 
 static void *ns_on_umode_change(va_list);
 static void *ns_on_newuser(va_list);
@@ -55,6 +57,7 @@ static void m_unlink(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *,struct Client *, int, char *[]);
 static void m_forbid(struct Service *,struct Client *, int, char *[]);
 static void m_unforbid(struct Service *,struct Client *, int, char *[]);
+static void m_regain(struct Service *,struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -167,13 +170,18 @@ static struct ServiceMessage unforbid_msgtab = {
   NS_HELP_FORBID_LONG, m_unforbid
 };
 
+static struct ServiceMessage regain_msgtab = {
+  NULL, "REGAIN", 0, 2, 0, USER_FLAG, NS_HELP_REGAIN_SHORT, 
+  NS_HELP_REGAIN_LONG, m_regain
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
   clear_serv_tree_parse(&nickserv->msg_tree);
   dlinkAdd(nickserv, &nickserv->node, &services_list);
   hash_add_service(nickserv);
-  introduce_service(nickserv);
+  introduce_client(nickserv->name);
   load_language(nickserv->languages, "nickserv.en");
 //  load_language(nickserv, "nickserv.rude");
 //  load_language(nickserv, "nickserv.de");
@@ -190,6 +198,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &info_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &forbid_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &unforbid_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &regain_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &id_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
@@ -200,6 +209,7 @@ INIT_MODULE(nickserv, "$Revision$")
   guest_number = 0;
 
   eventAdd("process nickserv enforce list", process_enforce_list, NULL, 10);
+  eventAdd("process nickserv release list", process_release_list, NULL, 60);
 }
 
 CLEANUP_MODULE
@@ -220,9 +230,11 @@ CLEANUP_MODULE
   mod_del_servcmd(&nickserv->msg_tree, &info_msgtab);
   mod_del_servcmd(&nickserv->msg_tree, &forbid_msgtab);
   mod_del_servcmd(&nickserv->msg_tree, &unforbid_msgtab);
+  mod_del_servcmd(&nickserv->msg_tree, &regain_msgtab);
   mod_del_servcmd(&nickserv->msg_tree, &id_msgtab);
   dlinkDelete(&nickserv->node, &services_list);
   eventDelete(process_enforce_list, NULL);
+  eventDelete(process_release_list, NULL);
   exit_client(find_client(nickserv->name), &me, "Service unloaded");
   unload_languages(nickserv->languages);
   hash_del_service(nickserv);
@@ -230,9 +242,25 @@ CLEANUP_MODULE
 }
 
 static void
+guest_user(struct Client *user)
+{
+  char newname[NICKLEN+1];
+
+  snprintf(newname, NICKLEN, "%s%d", "Guest", guest_number++);
+  while((find_client(newname)) != NULL)
+  {
+    snprintf(newname, NICKLEN, "%s%d", "Guest", guest_number++);
+  }
+  send_nick_change(nickserv, user, newname);
+}
+
+
+static void
 process_enforce_list(void *param)
 {
   dlink_node *ptr, *ptr_next;
+  struct Client *enforcer;
+  char oldnick[NICKLEN+1];
   
   DLINK_FOREACH_SAFE(ptr, ptr_next, nick_enforce_list.head)
   {
@@ -240,18 +268,35 @@ process_enforce_list(void *param)
 
     if(CurrentTime > user->enforce_time)
     {
-      char newname[NICKLEN+1];
-      
       dlinkDelete(ptr, &nick_enforce_list);
       free_dlink_node(ptr);
       user->enforce_time = 0;
 
-      snprintf(newname, NICKLEN, "%s%d", "Guest", guest_number++);
-      while((find_client(newname)) != NULL)
-      {
-        snprintf(newname, NICKLEN, "%s%d", "Guest", guest_number++);
-      }
-      send_nick_change(nickserv, user, newname);
+      strlcpy(oldnick, user->name, sizeof(oldnick));
+      guest_user(user);
+      introduce_client(oldnick);
+      enforcer = find_client(oldnick);
+      enforcer->release_time = CurrentTime + (1*60*60);
+      dlinkAdd(enforcer, make_dlink_node(), &nick_release_list);
+    }
+  }
+}
+
+static void
+process_release_list(void *param)
+{
+  dlink_node *ptr, *ptr_next;
+  
+  DLINK_FOREACH_SAFE(ptr, ptr_next, nick_release_list.head)
+  {
+    struct Client *user = (struct Client *)ptr->data;  
+
+    if(CurrentTime > user->release_time)
+    {
+      exit_client(user, &me, "Held nickname released");
+      dlinkDelete(ptr, &nick_release_list);
+      free_dlink_node(ptr);
+      user->enforce_time = 0;
     }
   }
 }
@@ -353,22 +398,42 @@ m_identify(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick;
+  const char *name;
 
-  if((nick = db_find_nick(client->name)) == NULL)
+  if(parc > 1)
+    name = parv[2];
+  else
+    name = client->name;
+
+  if((nick = db_find_nick(name)) == NULL)
   {
-    reply_user(service, service, client, NS_REG_FIRST, client->name);
+    reply_user(service, service, client, NS_REG_FIRST, name);
     return;
   }
 
   if(!check_nick_pass(nick, parv[1]))
   {
     free_nick(nick);
-    reply_user(service, service, client, NS_IDENT_FAIL, client->name);
+    if(++client->num_badpass > 5)
+    {
+      kill_user(service, client, "Too many failed password attempts.");
+      return;
+    }
+    reply_user(service, service, client, NS_IDENT_FAIL, name);
     return;
   }
+
   client->nickname = nick;
   dlinkFindDelete(&nick_enforce_list, client);
 
+  if(parc > 1)
+  {
+    struct Client *target;
+    /* User specified nick to change them to, so do so */
+    if((target = find_client(name)) != NULL)
+      guest_user(target);
+    send_nick_change(service, client, nick->nick);
+  }
   identify_user(client);
   reply_user(service, service, client, NS_IDENTIFIED, client->name);
 }
@@ -740,9 +805,7 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
   }
 
   reply_user(service, service, client, NS_GHOST_SUCCESS, parv[1]);
-  /* XXX Turn this into send_kill */
-  sendto_server(me.uplink, ":%s KILL %s :%s (GHOST Command recieved from %s)", 
-      service->name, parv[1], "services.oftc.net", client->name);
+  sendto_server(me.uplink, "GHOST Command recieved from %s", client->name);
 }
 
 static void
@@ -890,6 +953,46 @@ m_unforbid(struct Service *service, struct Client *client, int parc,
   else
     reply_user(service, service, client, NS_UNFORBID_FAIL, parv[1]);
 }
+
+static void
+m_regain(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Nick *nick;
+  struct Client *enforcer;
+
+  enforcer = find_client(parv[1]);
+  
+  if((nick = db_find_nick(parv[1])) == NULL)
+  {
+    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
+    return;
+  }
+
+  if(!check_nick_pass(nick, parv[2]))
+  {
+    free_nick(nick);
+    reply_user(service, service, client, NS_REGAIN_FAIL, client->name);
+    return;
+  }
+
+  if(client->nickname)
+    free_nick(client->nickname);
+  client->nickname = nick;
+ 
+  if(enforcer != NULL && dlinkFind(&nick_release_list, enforcer) == NULL)
+  {
+    dlinkFindDelete(&nick_enforce_list, client);
+    exit_client(enforcer, &me, "RELEASE command issued");
+  }
+  else if(enforcer != NULL)
+    guest_user(enforcer);
+  
+  send_nick_change(service, client, nick->nick);
+  identify_user(client);
+  reply_user(service, service, client, NS_REGAINED, client->name);
+}
+
 static void*
 ns_on_umode_change(va_list args) 
 {
@@ -966,7 +1069,7 @@ ns_on_nick_change(va_list args)
     if(nick_p->enforce)
     {
       reply_user(nickserv, nickserv, user, NS_NICK_IN_USE_IWILLCHANGE, user->name);
-      user->enforce_time = CurrentTime + 60; /* XXX configurable? */
+      user->enforce_time = CurrentTime + 30; /* XXX configurable? */
       dlinkAdd(user, make_dlink_node(), &nick_enforce_list);
     }
     else
@@ -1030,7 +1133,7 @@ ns_on_newuser(va_list args)
     if(nick_p->enforce)
     {
       reply_user(nickserv, nickserv, newuser, NS_NICK_IN_USE_IWILLCHANGE, newuser->name);
-      newuser->enforce_time = CurrentTime + 60; /* XXX configurable? */
+      newuser->enforce_time = CurrentTime + 30; /* XXX configurable? */
       dlinkAdd(newuser, make_dlink_node(), &nick_enforce_list);
     }
     else

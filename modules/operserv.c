@@ -139,7 +139,7 @@ INIT_MODULE(operserv, "$Revision$")
   clear_serv_tree_parse(&operserv->msg_tree);
   dlinkAdd(operserv, &operserv->node, &services_list);
   hash_add_service(operserv);
-  introduce_service(operserv);
+  introduce_client(operserv->name);
 
   load_language(operserv->languages, "operserv.en");
 

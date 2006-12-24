@@ -361,7 +361,7 @@ ServiceModule_register(VALUE self, VALUE commands)
   clear_serv_tree_parse(&ruby_service->msg_tree);
   dlinkAdd(ruby_service, &ruby_service->node, &services_list);
   hash_add_service(ruby_service);
-  introduce_service(ruby_service);
+  introduce_client(ruby_service->name);
 
   Check_Type(commands, T_ARRAY);
 

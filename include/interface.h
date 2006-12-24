@@ -49,6 +49,7 @@ extern struct Callback *send_kick_cb;
 extern struct Callback *send_cmode_cb;
 extern struct Callback *send_invite_cb;
 extern struct Callback *send_topic_cb;
+extern struct Callback *send_kill_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -67,7 +68,7 @@ void init_interface();
 void cleanup_interface();
 
 struct Service *make_service(char *);
-void introduce_service(struct Service *);
+void introduce_client(const char *);
 void reply_user(struct Service *,struct Service *, struct Client *, 
     unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
@@ -81,6 +82,7 @@ void remove_akill(struct Service *, struct ServiceBan *);
 void send_cmode(struct Service *, struct Channel *, const char *, const char *);
 void send_topic(struct Service *, struct Channel *, struct Client *, 
     const char *);
+void send_kill(struct Service *, struct Client *, const char *);
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
 void chain_squit(struct Client *, struct Client *, char *);
 void chain_quit(struct Client *, char *);

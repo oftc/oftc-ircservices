@@ -129,9 +129,9 @@ NS_HELP_RECOVER_SHORT
 	%s: Recover your nickname in a more forceful way.
 NS_HELP_RECOVER_LONG    
 	Recover your nickname in a more forceful way.
-NS_HELP_RELEASE_SHORT   
+NS_HELP_REGAIN_SHORT   
 	%s: Release NickServ's hold on your nickname.
-NS_HELP_RELEASE_LONG    
+NS_HELP_REGAIN_LONG    
 	Release NickServ's hold on your nickname.
 NS_HELP_SUSPEND_SHORT   
 	%s: Suspend a nickname from use.
@@ -261,3 +261,7 @@ NS_UNFORBID_OK
 	Nickname %s removed from forbidden list.
 NS_UNFORBID_FAIL
 	Nickname %s could not be removed from the forbidden list.
+NS_REGAINED
+	Nickname %s has been released and your nick has been changed.
+NS_REGAIN_FAIL
+	Failed to regain nickname %s.

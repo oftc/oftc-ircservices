@@ -411,7 +411,7 @@ service_new(lua_State *L)
   dlinkAdd(service, &service->node, &services_list);
   hash_add_service(service);
 
-  introduce_service(service);
+  introduce_client(service->name);
 
   return 1;
 }

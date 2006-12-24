@@ -38,6 +38,7 @@ struct Callback *send_kick_cb;
 struct Callback *send_cmode_cb;
 struct Callback *send_invite_cb;
 struct Callback *send_topic_cb;
+struct Callback *send_kill_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -72,6 +73,7 @@ init_interface()
   send_cmode_cb       = register_callback("Send Channel MODE", NULL);
   send_invite_cb      = register_callback("Send INVITE", NULL);
   send_topic_cb       = register_callback("Send TOPIC", NULL);
+  send_kill_cb        = register_callback("Send KILL", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
@@ -104,7 +106,7 @@ make_service(char *name)
 }
 
 void
-introduce_service(struct Service *service)
+introduce_client(const char *name)
 {
   struct Client *client = make_client(&me);
 
@@ -112,16 +114,16 @@ introduce_service(struct Service *service)
   dlinkAdd(client, &client->node, &global_client_list);
 
   /* copy the nick in place */
-  strlcpy(client->name, service->name, sizeof(client->name));
+  strlcpy(client->name, name, sizeof(client->name));
   hash_add_client(client);
 
-  register_remote_user(&me, client, "services", me.name, me.name, service->name);
+  register_remote_user(&me, client, "services", me.name, me.name, name);
 
   /* If we are not connected yet, the service will be sent as part of burst */
   if(me.uplink != NULL)
   {
-    execute_callback(send_newuser_cb, me.uplink, service->name, "services", me.name,
-      service->name, "o");
+    execute_callback(send_newuser_cb, me.uplink, name, "services", me.name,
+      name, "o");
   }
 }
 
@@ -174,6 +176,12 @@ reply_user(struct Service *source, struct Service *service,
 }
 
 void
+kill_user(struct Service *service, struct Client *client, const char *reason)
+{
+  execute_callback(send_kill_cb, me.uplink, service, client, reason);
+}
+
+void
 send_umode(struct Service *service, struct Client *client, const char *mode)
 {
   execute_callback(send_umode_cb, me.uplink, client->name, mode);
@@ -184,6 +192,9 @@ send_nick_change(struct Service *service, struct Client *client,
     const char *newnick)
 {
   execute_callback(send_nick_cb, me.uplink, client, newnick);
+  hash_del_client(client);
+  strlcpy(client->name, newnick, sizeof(client->name));
+  hash_add_client(client);
 }
 
 void
@@ -280,6 +291,8 @@ identify_user(struct Client *client)
 
   if(nick->cloak[0] != '\0' && nick->cloak_on)
     cloak_user(client, nick->cloak);
+
+  client->num_badpass = 0;
 
   execute_callback(on_identify_cb, me.uplink, client);
 }

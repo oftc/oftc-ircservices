@@ -48,6 +48,7 @@ static void *irc_sendmsg_invite(va_list);
 static void *irc_sendmsg_akill(va_list);
 static void *irc_sendmsg_unakill(va_list);
 static void *irc_sendmsg_topic(va_list);
+static void *irc_sendmsg_kill(va_list);
 static void *irc_server_connected(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
@@ -176,6 +177,7 @@ static dlink_node *invite_hook;
 static dlink_node *akill_hook;
 static dlink_node *unakill_hook;
 static dlink_node *topic_hook;
+static dlink_node *kill_hook;
 
 INIT_MODULE(irc, "$Revision$")
 {
@@ -189,6 +191,7 @@ INIT_MODULE(irc, "$Revision$")
   akill_hook      = install_hook(send_akill_cb, irc_sendmsg_akill);
   unakill_hook    = install_hook(send_unakill_cb, irc_sendmsg_unakill);
   topic_hook      = install_hook(send_topic_cb, irc_sendmsg_topic);
+  kill_hook       = install_hook(send_kill_cb, irc_sendmsg_kill);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -426,6 +429,20 @@ irc_sendmsg_topic(va_list args)
   return NULL;
 }
 
+static void *
+irc_sendmsg_kill(va_list args)
+{
+  struct Client   *uplink   = va_arg(args, struct Client *);
+  struct Service  *source   = va_arg(args, struct Service *);
+  struct Client   *target   = va_arg(args, struct Client *);
+  char            *reason   = va_arg(args, char *);
+
+  sendto_server(uplink, ":%s KILL %s :%s (%s)", 
+      (source != NULL) ? source->name : me.name, target->name, me.name, reason);
+
+  return NULL;
+}
+
 #if 0
 
 XXX Unused as yet
@@ -532,8 +549,7 @@ irc_server_connected(va_list args)
   {
     struct Service *service = ptr->data;
 
-    introduce_service(service);
-
+    introduce_client(service->name);
   }
 
   return NULL;

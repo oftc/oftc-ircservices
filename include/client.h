@@ -118,10 +118,12 @@ struct Client
 
   time_t        tsinfo;
   time_t        enforce_time;
+  time_t        release_time;
   unsigned int  status;
   unsigned int  umodes;
   unsigned int  access;
-  unsigned short hopcount;
+  unsigned int  num_badpass;    /* Number of incorrect passwords */
+  unsigned int  hopcount;
   unsigned char handler;        /* Handler index */
   int flags;
 } Client;
