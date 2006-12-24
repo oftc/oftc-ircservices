@@ -14,6 +14,7 @@ CREATE TABLE channel(
   email                 VARCHAR(255),
   entrymsg              VARCHAR(255),
   topic                 VARCHAR(512),
+  mlock                 VARCHAR(255),
   UNIQUE (channel)
 );
 

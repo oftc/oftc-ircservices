@@ -60,6 +60,7 @@ static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
 static void m_set_autolimit(struct Service *, struct Client *, int, char *[]);
 static void m_set_expirebans(struct Service *, struct Client *, int, char *[]);
+static void m_set_mlock(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
@@ -79,9 +80,6 @@ static void m_unban(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
-
-/* temp */
-static void m_not_avail(struct Service *, struct Client *, int, char *[]);
 
 /* private */
 static int m_set_flag(struct Service *, struct Client *, char *, char *, int, char *);
@@ -112,7 +110,7 @@ static struct ServiceMessage set_sub[] = {
   { NULL, "TOPICLOCK", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_SET_TOPICLOCK_SHORT, CS_HELP_SET_TOPICLOCK_LONG, m_set_topiclock },
   { NULL, "MLOCK", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
-    CS_HELP_SET_MLOCK_SHORT, CS_HELP_SET_MLOCK_LONG, m_not_avail }, 
+    CS_HELP_SET_MLOCK_SHORT, CS_HELP_SET_MLOCK_LONG, m_set_mlock }, 
   { NULL, "PRIVATE", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_SET_PRIVATE_SHORT, CS_HELP_SET_PRIVATE_LONG, m_set_private },
   { NULL, "RESTRICTED", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
@@ -136,13 +134,13 @@ static struct ServiceMessage access_sub[6] = {
     CS_HELP_ACCESS_ADD_SHORT, CS_HELP_ACCESS_ADD_LONG, m_access_add },
   { NULL, "DEL", 0, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_ACCESS_DEL_SHORT, CS_HELP_ACCESS_DEL_LONG, m_access_del },
-  { NULL, "LIST", 0, 2, SFLG_KEEPARG|SFLG_CHANARG, CHUSER_FLAG, 
+  { NULL, "LIST", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, CHUSER_FLAG, 
     CS_HELP_ACCESS_LIST_SHORT, CS_HELP_ACCESS_LIST_LONG, m_access_list },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage access_msgtab = {
-  access_sub, "ACCESS", 0, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
+  access_sub, "ACCESS", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
   CS_HELP_ACCESS_SHORT, CS_HELP_ACCESS_LONG, NULL 
 };
 
@@ -428,15 +426,6 @@ m_drop(struct Service *service, struct Client *client,
 
   ilog(L_TRACE, "T: Leaving CS:m_drop (%s:%s)", client->name, parv[1]);
   return;
-}
-
-/* XXX temp XXX */
-static void
-m_not_avail(struct Service *service, struct Client *client,
-    int parc, char *parv[])
-{
-  reply_user(service, service, client, 0, "This function is currently not implemented."
-    "   Bug the Devs! ;-)");
 }
 
 static void
@@ -826,6 +815,26 @@ m_set_expirebans(struct Service *service, struct Client *client,
     if((ptr = dlinkFindDelete(&channel_expireban_list, chptr)) != NULL)
       free_dlink_node(ptr);
   }
+}
+
+static void
+m_set_mlock(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  char value[IRC_BUFSIZE+1];
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  join_params(value, parc-1, &parv[2]);
+
+  m_set_string(service, client, parv[1], "MLOCK", SET_CHAN_MLOCK, value, 
+      &regchptr->mlock, parc);
+
+  if(chptr == NULL)
+    free_regchan(regchptr);
 }
 
 /* AKICK ADD (nick|mask) reason */

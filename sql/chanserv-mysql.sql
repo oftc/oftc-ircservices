@@ -16,6 +16,7 @@ CREATE TABLE channel (
   email                   VARCHAR(255) NOT NULL,
   entrymsg                VARCHAR(255) NOT NULL,
   topic                   VARCHAR(255) NOT NULL,
+  mlock                   VARCHAR(255) NOT NULL,
   UNIQUE (channel)
 )ENGINE=InnoDB;
 

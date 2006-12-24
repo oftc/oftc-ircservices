@@ -108,6 +108,7 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE channel SET email=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET entrymsg=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET topic=?v WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET mlock=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_forbidden=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_private=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_restricted=?B WHERE id=?d", NULL, EXECUTE },

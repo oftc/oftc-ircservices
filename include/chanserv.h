@@ -12,6 +12,7 @@ struct RegChannel
   char *url;
   char *email;
   char *topic;
+  char *mlock;
   char forbidden;
   char priv;
   char restricted;
