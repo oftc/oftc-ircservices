@@ -396,7 +396,7 @@ m_info(struct Service *service, struct Client *client,
   regchptr->topic, regchptr->entrymsg,
   regchptr->topic_lock      ? "TOPICLOCK"  : "" ,
   regchptr->priv            ? "PRIVATE"    : "" ,
-  regchptr->restricted_ops  ? "RESTRICTED" : "" ,
+  regchptr->restricted      ? "RESTRICTED" : "" ,
   regchptr->verbose         ? "VERBOSE"    : "", " ");
 
   if (chptr == NULL)
@@ -1245,7 +1245,7 @@ m_set_flag(struct Service *service, struct Client *client,
         on = regchptr->priv;
         break;
       case SET_CHAN_RESTRICTED:
-        on = regchptr->restricted_ops;
+        on = regchptr->restricted;
         break;
       case SET_CHAN_TOPICLOCK:
         on = regchptr->topic_lock;
@@ -1280,7 +1280,7 @@ m_set_flag(struct Service *service, struct Client *client,
         regchptr->priv= on;
         break;
       case SET_CHAN_RESTRICTED:
-        regchptr->restricted_ops = on;
+        regchptr->restricted = on;
         break;
       case SET_CHAN_TOPICLOCK:
         regchptr->topic_lock = on;
@@ -1339,36 +1339,44 @@ cs_on_client_join(va_list args)
   
   struct RegChannel *regchptr;
   struct Channel *chptr;
+  struct ChanAccess *access;
+  unsigned int level;
 
   /* Find Channel in hash */
-  if ((chptr = hash_find_channel(name)) != NULL)
-  {
-    if(enforce_matching_serviceban(chanserv, chptr, source_p))
-        return pass_callback(cs_join_hook, source_p, name);
-    /* regchan attached, good */
-    if ( chptr->regchan != NULL)
-    {
-      /* fetch entrymsg from hash if it exists there */
-      if (chptr->regchan->entrymsg != NULL)
-        reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, 
-            chptr->regchan->channel, chptr->regchan->entrymsg);
-    }
-    /* regchan not attached, get it from DB */
-    else if ((regchptr = db_find_chan(name)) != NULL)
-    {
-      /* it does exist there, so attach it now */
-      if (regchptr->entrymsg != NULL)
-        reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, regchptr->channel,
-            regchptr->entrymsg);
-      chptr->regchan = regchptr;
-    }
-  } 
-  else
+  if((chptr = hash_find_channel(name)) == NULL)
   {
     ilog(L_ERROR, "badbad. Client %s joined non-existing Channel %s\n", 
         source_p->name, chptr->chname);
+    return pass_callback(cs_join_hook, source_p, name);
   }
 
+  if(enforce_matching_serviceban(chanserv, chptr, source_p))
+    return pass_callback(cs_join_hook, source_p, name);
+
+  if((regchptr = chptr->regchan) == NULL)
+    return pass_callback(cs_join_hook, source_p, name);
+
+  if(source_p->nickname == NULL)
+    level = CHUSER_FLAG;
+  else
+  {
+    access = db_find_chanaccess(regchptr->id, source_p->nickname->id);
+    level = access->level;
+  }
+
+  if(regchptr->restricted && level < MEMBER_FLAG)
+  {
+    char ban[IRC_BUFSIZE+1];
+
+    snprintf(ban, IRC_BUFSIZE, "*!%s@%s", source_p->username, source_p->host);
+    ban_mask(chanserv, chptr, ban);
+    kick_user(chanserv, chptr, source_p->name, 
+        "Access to this channel is restricted");
+    return pass_callback(cs_join_hook, source_p, name);
+  }
+
+  reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, regchptr->channel,
+      regchptr->entrymsg);
   return pass_callback(cs_join_hook, source_p, name);
 }
 

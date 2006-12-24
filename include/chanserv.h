@@ -14,7 +14,7 @@ struct RegChannel
   char *topic;
   char forbidden;
   char priv;
-  char restricted_ops;
+  char restricted;
   char topic_lock;
   char verbose;
 };

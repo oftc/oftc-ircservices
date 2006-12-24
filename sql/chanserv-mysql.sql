@@ -6,7 +6,7 @@ CREATE TABLE channel (
   channel                 VARCHAR(255) NOT NULL,
   flag_forbidden          BOOLEAN NOT NULL DEFAULT FALSE, -- channel is forbidden.  it may not be used
   flag_private            BOOLEAN NOT NULL DEFAULT FALSE, -- do not show up in list of channels
-  flag_restricted_ops     BOOLEAN NOT NULL DEFAULT FALSE, -- only people on the access list can hold channel operator status
+  flag_restricted         BOOLEAN NOT NULL DEFAULT FALSE, -- only people on the access list can hold channel operator status
   flag_topic_lock         BOOLEAN NOT NULL DEFAULT FALSE, -- topics can only be changed via chanserv
   flag_verbose            BOOLEAN NOT NULL DEFAULT FALSE, -- notice all chanserv actions to the channel
   description             VARCHAR(255) NOT NULL,
