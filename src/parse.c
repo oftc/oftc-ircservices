@@ -319,8 +319,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
 
   if (i < mptr->parameters)
   {
-    reply_user(service, from, 0, "Insufficient params.  Got %d need %d",
-        /*SERV_INSUFF_PARAM*/ i, mptr->parameters);
+    reply_user(service, NULL, from, SERV_INSUFF_PARAM, mptr->parameters, i);
     ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
         from->name, mptr->cmd);
     return;
@@ -810,8 +809,7 @@ void
 m_notid(struct Service *service, struct Client *source,
     int parc, char *parv[])
 {
-  reply_user(service, source, 0,/*SERV_NOT_IDENTIFIED*/"Identify first, %s", 
-      source->name);
+  reply_user(service, NULL, source, SERV_NOT_IDENTIFIED, source->name);
 }
 
 void
@@ -851,8 +849,7 @@ process_privmsg(struct Client *client, struct Client *source,
   {
     ilog(L_DEBUG, "Unknown Message: %s %s for service %s from %s", ch, s, 
         parv[1], source->name);
-    reply_user(service, source, 0, "Unknown command: %s %s" /*SERV_UNKNOWN_CMD*/, 
-        ch, service->name);
+    reply_user(service, NULL, source, SERV_UNKNOWN_CMD, ch, service->name);
     return;
   }
 
@@ -882,27 +879,6 @@ process_privmsg(struct Client *client, struct Client *source,
         for(j = 2; j <= i; j++)
           servpara[j-1] = servpara[j];
       }
-      if(replaced)
-      {
-        if(servpara[2] == NULL)
-        {
-          reply_user(service, source, 0, "Unknown command: %s %s", 
-              /*SERV_UNKNOWN_CMD*/ servpara[1], service->name);
-          return;
-        }
-        servpara[0] = servpara[1];
-        servpara[1] = servpara[2];
-        servpara[2] = servpara[1];
-        sub = mptr->sub;
-        oldnick = source->nickname;
-        source->nickname = db_find_nick(para[3]);
-        if(source->nickname == NULL)
-        {
-          m_notid(service, source, (i == 0) ? i : i-1, servpara);
-          source->nickname = oldnick;
-          return;
-        }
-      }
     }
 
     if(servpara[1] != NULL)
@@ -916,11 +892,7 @@ process_privmsg(struct Client *client, struct Client *source,
 
         while(sub->cmd != NULL)
         {
-          reply_user(service, source, 0, "Insufficient params got %d need %d",
-              /*SERV_INSUFF_PARAM*/ i, sub->parameters);
-          ilog(L_DEBUG, "%s sent services a sub command %s with too few parameters",
-              client->name, sub->cmd);
-          if(oldnick != NULL)
+          if(irccmp(sub->cmd, servpara[1]) == 0)
           {
             int j;
 

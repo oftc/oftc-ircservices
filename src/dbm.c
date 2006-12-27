@@ -48,11 +48,11 @@ query_t queries[QUERY_COUNT] = {
   { "INSERT INTO account_access (parent_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
   { "SELECT id, entry FROM account_access WHERE parent_id=?d", NULL, QUERY },
-  { "SELECT nick FROM account, nickname WHERE account.id = nickname.user_id AND "
-    "flag_admin=true", NULL, QUERY },
-  { "SELECT akill.id, nick, mask, reason, time, duration FROM nickname, akill "
-    "WHERE setter = nickname.user_id", NULL, QUERY },
-  { "SELECT id, channel_id, nick_id, level FROM channel_access WHERE "
+  { "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
+    "account.primary_nick = nickname.id", NULL, QUERY },
+  { "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
+    NULL, QUERY },
+  { "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
     "channel_id=?d", NULL, QUERY },
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
   { "SELECT id, channel, description, entrymsg, flag_forbidden, flag_private, "
@@ -236,7 +236,7 @@ db_find_nick(const char *nick)
  
   nick_p = MyMalloc(sizeof(struct Nick));
  
-  brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
+  brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
     &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->url, &nick_p->email,
     &retcloak, &nick_p->enforce, &nick_p->secure, &nick_p->verified, 
     &nick_p->cloak_on, &nick_p->admin, 
