@@ -45,7 +45,6 @@ struct Module
 
 #ifdef IN_CONF_C
 void init_modules(void);
-void cleanup_modules(void);
 #endif
 
 EXTERN dlink_list loaded_modules;
@@ -55,3 +54,4 @@ EXTERN struct Module *find_module(const char *, int);
 EXTERN int load_module(const char *);
 EXTERN void unload_module(struct Module *);
 EXTERN void boot_modules(char);
+EXTERN void cleanup_modules(void);

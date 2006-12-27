@@ -35,6 +35,12 @@ struct ServiceBan
   time_t duration;
 };
 
+struct ModeList
+{
+  unsigned int mode;
+  unsigned char letter;
+};
+
 extern dlink_list services_list;
 extern struct Callback *send_newuser_cb;
 extern struct Callback *send_privmsg_cb;
@@ -63,6 +69,8 @@ extern struct Callback *on_newuser_cb;
 extern struct Callback *on_channel_destroy_cb;
 extern struct Callback *on_nick_drop_cb;
 extern struct Callback *on_topic_change_cb;
+
+extern struct ModeList *ServerModeList;
 
 void init_interface();
 void cleanup_interface();
@@ -114,6 +122,9 @@ void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
 void free_serviceban(struct ServiceBan *);
 void free_chanaccess(struct ChanAccess *);
+
+unsigned int get_mode_from_letter(char);
+void get_modestring(unsigned int, char *, int);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 

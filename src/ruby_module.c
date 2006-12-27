@@ -771,12 +771,14 @@ Init_NickStruct(void)
 static void *
 rb_cmode_hdlr(va_list args)
 {
-  struct Client  *client_p = va_arg(args, struct Client*);
   struct Client  *source_p = va_arg(args, struct Client*);
   struct Channel *chptr    = va_arg(args, struct Channel*);
-  int             parc     = va_arg(args, int);
-  char           **parv    = va_arg(args, char **);
+  int dir = va_arg(args, int);
+  char letter = (char)va_arg(args, int);
+  char *param = va_arg(args, char *);
 
+#if 0 
+  XXX fix this 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CMODE);
   VALUE params = rb_ary_new();
 
@@ -786,8 +788,9 @@ rb_cmode_hdlr(va_list args)
   rb_ary_push(params, rb_carray2rbarray(parc, parv));
 
   rb_do_hook_cb(hooks, params);
+#endif
 
-  return pass_callback(ruby_cmode_hook, client_p, source_p, chptr, parc, parv);
+  return pass_callback(ruby_cmode_hook, source_p, chptr, dir, letter, param);
 }
 
 static void*

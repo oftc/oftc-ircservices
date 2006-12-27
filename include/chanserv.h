@@ -136,5 +136,8 @@ struct RegChannel
 #define CS_ACCESS_NOTLISTED 112
 #define CS_ENTRYMSG 113
 #define CS_DEOP_REGISTERED 114
+#define CS_BAD_MLOCK 115
+#define CS_NEED_LIMIT 116
+#define CS_NEED_KEY 117
 
 #endif

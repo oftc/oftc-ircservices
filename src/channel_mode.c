@@ -1066,12 +1066,14 @@ set_channel_mode(struct Client *client_p, struct Client *source_p, struct Channe
           table_position = 0;
         else
           table_position = c - 'A' + 1;
-        ModeTable[table_position].func(client_p, source_p, chptr,
+       ModeTable[table_position].func(client_p, source_p, chptr,
                                        parc, &parn,
                                        parv, &errors, alevel, dir, c,
                                        ModeTable[table_position].d,
                                        chname);
-        break;
+       if(dir == MODE_ADD || dir == MODE_DEL)
+         execute_callback(on_cmode_change_cb, source_p, chptr, dir, c, parv[parn]);
+       break;
     }
   }
 }

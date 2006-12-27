@@ -57,7 +57,7 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
   { "SELECT id, channel, description, entrymsg, flag_forbidden, flag_private, "
     "flag_restricted, flag_topic_lock, flag_verbose, flag_autolimit, "
-      "flag_expirebans, url, email, topic FROM channel WHERE "
+      "flag_expirebans, url, email, topic, mlock FROM channel WHERE "
       "lower(channel)=lower(?v)", NULL, QUERY },
   { "INSERT INTO channel (channel, description) VALUES(?v, ?v)", NULL, EXECUTE },
   { "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
@@ -819,12 +819,12 @@ db_find_chan(const char *channel)
  
   channel_p = MyMalloc(sizeof(struct RegChannel));
  
-  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?B?ps?ps?ps",
+  brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?B?ps?ps?ps?ps",
       &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
       &channel_p->forbidden, &channel_p->priv, &channel_p->restricted,
       &channel_p->topic_lock, &channel_p->verbose, &channel_p->autolimit,
       &channel_p->expirebans, &channel_p->url, &channel_p->email, 
-      &channel_p->topic); 
+      &channel_p->topic, &channel_p->mlock); 
 
   if(Fetch(rc, brc) == 0)
   {
@@ -841,6 +841,7 @@ db_find_chan(const char *channel)
   DupString(channel_p->url, channel_p->url);
   DupString(channel_p->email, channel_p->email);
   DupString(channel_p->topic, channel_p->topic);
+  DupString(channel_p->mlock, channel_p->mlock);
 
   printf("db_find_chan: Found nick %s\n", channel_p->channel);
 

@@ -54,6 +54,7 @@ struct Callback *on_channel_destroy_cb;
 struct Callback *on_topic_change_cb;
 
 struct LanguageFile ServicesLanguages[LANG_LAST];
+struct ModeList *ServerModeList;
 
 void
 init_interface()
@@ -554,6 +555,278 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
   return found;
 }
 
+unsigned int
+get_mode_from_letter(char letter)
+{
+  int i;
+
+  for(i = 0; ServerModeList[i].letter != '\0'; i++)
+  {
+    if(ServerModeList[i].letter == letter)
+      return ServerModeList[i].mode;
+  }
+  return 0;
+}
+
+void
+get_modestring(unsigned int modes, char *modbuf, int len)
+{
+  int i, j;
+
+  for(i = 0, j = 0; ServerModeList[i].letter != '\0'; i++)
+  {
+    if(ServerModeList[i].mode & modes)
+      modbuf[j++] = ServerModeList[i].letter;
+    if(j >= len)
+      break;
+  }
+  modbuf[j] = '\0';
+}
+
+/* 
+ * The reason this function looks a bit overkill is it doubles as a valdation
+ * and setting function which can be called both by the chanserv module when
+ * someone does set #foo mlock, but can also be called to enforce the mlock
+ * without changing it in the db. It's because of this oddness it's full of
+ * comments to clarify it somewhat.
+ */
+int
+set_mode_lock(struct Service *service, struct Channel *chptr, 
+    struct Client *client, const char *lock, char **value)
+{
+  const char *parv[3] = { NULL, NULL, NULL };
+  char *p;
+  unsigned int setmodes, delmodes, currmode;
+  int i, dir, para = 1, limit;
+  char mode, *c;
+  char key[KEYLEN+1];
+  char modebuf[MODEBUFLEN+1], parabuf[MODEBUFLEN+1];
+  char setstr[MODEBUFLEN/2+1], delstr[MODEBUFLEN/2+1]; 
+  char mlockbuf[MODEBUFLEN+1];
+
+  setmodes = delmodes = dir = limit = 0;
+  memset(key, 0, sizeof(key));
+
+  parv[0] = lock;
+
+  /* Split the mlock up into its component parts, modes, key, limit */
+  if((p = strchr(lock, ' ')) != NULL)
+  {
+    *p++ = '\0';
+    lock = p;
+
+    parv[1] = lock;
+    if((p = strchr(lock, ' ')) != NULL)
+    {
+      *p++ = '\0';
+      lock = p;
+
+      parv[2] = lock;
+      if((p = strchr(lock, ' ')) != NULL)
+        *p++ = '\0';
+    }
+  }
+
+  /* 
+   * Now check the mlock is valid for this server/protocol configuration and
+   * build up 2 integers which represent the set and cleared modes.
+   */
+  for(i = 0, mode = parv[0][i]; mode != '\0'; i++, mode = parv[0][i])
+  {
+    /*
+     * l and k are both special cases because they arent listed in the
+     * protocol's mode list because they take paramters, but we can MLOCK
+     * them.
+     */
+    if(mode != '+' && mode != '-' && mode != 'l' && mode != 'k')
+    {
+      if((currmode = get_mode_from_letter(mode)) <= 0)
+      {
+        if(client != NULL)
+          reply_user(service, service, client, CS_BAD_MLOCK, mode);
+        return FALSE;
+      }
+      if(dir)
+      {
+        setmodes |= currmode;
+        delmodes &= ~currmode;
+      }
+      else
+      {
+        delmodes |= currmode;
+        setmodes &= ~currmode;
+      }
+    }
+
+    switch(mode)
+    {
+      case '+':
+        dir = 1;
+        break;
+      case '-':
+        dir = 0;
+        break;
+      case 'l':
+        if(dir)
+        {
+          if(parv[para] == NULL)
+          {
+            if(client != NULL)
+              reply_user(service, service, client, CS_NEED_LIMIT);
+            return FALSE;
+          }
+          limit = atoi(parv[para++]);
+          if(limit <= 0)
+          {
+            if(client != NULL)
+              reply_user(service, service, client, CS_NEED_LIMIT);
+            return FALSE;
+          }
+        }
+        break;
+      case 'k':
+        if(dir)
+          {
+            if(parv[para] == NULL)
+            {
+              if(client != NULL)
+                reply_user(service, service, client, CS_NEED_KEY);
+              return FALSE;
+            }
+            strlcpy(key, parv[para++], sizeof(key));
+          }
+        break;
+    }
+  }
+
+  /* 
+   * Now send out the mlock, by converting that integer back to a mode string
+   * again. The reason we put it into an integer and then straight back to a
+   * string is to cheaply prevent duplicate modes, and also it allows us to
+   * split it into two, one for setting, one for unsetting.
+   */
+  
+  /* First just set the mlock */
+  get_modestring(setmodes, setstr, MODEBUFLEN/2);
+  get_modestring(delmodes, delstr, MODEBUFLEN/2);
+
+  /* If we've been asked to update the db, then we should do so. */
+  if(value != NULL)
+  {
+    int k, l, s, d;
+    char *lk = "";
+
+    k = l = s = d = FALSE;
+
+    if(setstr[0] != '\0')
+      s = TRUE;
+    if(delstr[0] != '\0');
+      s = TRUE;
+    if(limit > 0)
+    {
+      l = TRUE;
+      if(key[0] != '\0')
+      {
+        k = TRUE;
+        lk = "lk";
+        snprintf(parabuf, MODEBUFLEN, " %d %s", limit, key);
+      }
+      else
+      {
+        lk = "l";
+        snprintf(parabuf, MODEBUFLEN, " %d", limit);
+      }
+    }
+    else if(key[0] != '\0')
+    {
+      k = TRUE;
+      lk = "k";
+      snprintf(parabuf, MODEBUFLEN, " %s", key);
+    }
+
+    snprintf(mlockbuf, MODEBUFLEN, "%s%s%s%s%s%s",
+        s || l || k ? "+": "", 
+        s ? setstr : "", 
+        lk,
+        d ? "-" : "",
+        d ? delstr : "",
+        l || k ? parabuf : "");
+
+    if(!db_set_string(SET_CHAN_MLOCK, chptr->regchan->id, mlockbuf))
+    {
+      return FALSE;
+    }
+    replace_string(*value, mlockbuf);
+  }
+
+  /* Now only set the mode that needs to be set */
+  c = setstr;
+  while(*c != '\0')
+  {
+    mode = get_mode_from_letter(*c);
+    if(mode <= 0)
+      continue;
+    if(chptr->mode.mode & mode)
+      setmodes &= ~mode;
+    c++;
+  }
+
+  c = delstr;
+  while(*c != '\0')
+  {
+    mode = get_mode_from_letter(*c);
+    if(mode <= 0)
+      continue;
+    if(!(chptr->mode.mode & mode))
+      delmodes &= ~mode;
+    c++;
+  }
+
+  get_modestring(setmodes, setstr, MODEBUFLEN/2);
+  get_modestring(delmodes, delstr, MODEBUFLEN/2);
+  chptr->mode.mode |= setmodes;
+  chptr->mode.mode &= ~delmodes;
+  chptr->mode.limit = limit;
+  strcpy(chptr->mode.key, key);
+ 
+  /* 
+   * Set up the modestring and paramter(s) and set them. This could probably
+   * be written a little better.
+   */
+  if(limit > 0 && key[0] != '\0')
+  {
+    snprintf(parabuf, MODEBUFLEN, "%d %s", limit, key);
+    snprintf(modebuf, MODEBUFLEN, "%s%slk%s%s", 
+        (setstr[0] == '\0' && (limit > 0 || key != NULL)) ?
+         "+" : "", setstr, delstr[0] ? "-" : "", delstr);
+    send_cmode(service, chptr, modebuf, parabuf);
+ }
+  else if(limit > 0)
+  {
+    snprintf(parabuf, MODEBUFLEN, "%d", limit);
+    snprintf(modebuf, MODEBUFLEN, "%s%sl%s%s", setstr[0] ? "+" : "", 
+        setstr, delstr[0] ? "-" : "", delstr);
+    send_cmode(service, chptr, modebuf, parabuf);
+  }
+  else if(key[0] != '\0')
+  {
+    snprintf(parabuf, MODEBUFLEN, "%s", key);
+    snprintf(modebuf, MODEBUFLEN, "%s%sk%s%s", setstr[0] ? "+" : "", 
+        setstr, delstr[0] ? "-" : "", delstr);
+    send_cmode(service, chptr, modebuf, key);
+  }
+  else
+  {
+    memset(parabuf, 0, sizeof(parabuf));
+    snprintf(modebuf, MODEBUFLEN, "%s%s%s%s", setstr[0] ? "+" : "", 
+        setstr, delstr[0] ? "-" : "", delstr);
+    send_cmode(service, chptr, modebuf, "");
+  }
+
+
+  return TRUE;
+}
+
 void
 free_regchan(struct RegChannel *regchptr)
 {
@@ -647,12 +920,6 @@ make_random_string(char *buffer, size_t length)
     buffer[i] = randchartab[j];
   }
   buffer[length - 1] = 0;
-}
-
-void
-chain_cmode(struct Client *client_p, struct Client *source_p, struct Channel *chptr, int parc, char *parv[])
-{
-  execute_callback(on_cmode_change_cb, client_p, source_p, chptr, parc, parv);
 }
 
 void 

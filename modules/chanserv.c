@@ -130,7 +130,7 @@ static struct ServiceMessage set_msgtab = {
 };
 
 static struct ServiceMessage access_sub[6] = {
-  { NULL, "ADD", 0, 4, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
+  { NULL, "ADD", 0, 3, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_ACCESS_ADD_SHORT, CS_HELP_ACCESS_ADD_LONG, m_access_add },
   { NULL, "DEL", 0, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_ACCESS_DEL_SHORT, CS_HELP_ACCESS_DEL_LONG, m_access_del },
@@ -743,10 +743,45 @@ m_set_topic(struct Service *service, struct Client *client,
   if(changetopic || (topic == NULL && regchptr->topic != NULL))
     send_topic(service, chptr, client, regchptr->topic);
 
+  MyFree(topic);
+
   if(chptr == NULL)
     free_regchan(regchptr);
 }
 
+static void
+m_set_mlock(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  char value[IRC_BUFSIZE+1];
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+
+  join_params(value, parc-1, &parv[2]);
+
+  if(parc == 1)
+  {
+    m_set_string(service, client, parv[1], "MLOCK", SET_CHAN_MLOCK, value, 
+        &regchptr->mlock, parc);
+    if(chptr != NULL)
+      free_regchan(regchptr);
+    return;
+  }
+
+  if(set_mode_lock(service, chptr, client, value, &regchptr->mlock))
+  {
+    reply_user(service, service, client, CS_SET_SUCCESS, parv[1], 
+        regchptr->mlock);
+  }
+  else
+    reply_user(service, service, client, CS_SET_FAILED, parv[1], value);
+
+  if(chptr == NULL)
+    free_regchan(regchptr);
+}
 static void
 m_set_topiclock(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -815,26 +850,6 @@ m_set_expirebans(struct Service *service, struct Client *client,
     if((ptr = dlinkFindDelete(&channel_expireban_list, chptr)) != NULL)
       free_dlink_node(ptr);
   }
-}
-
-static void
-m_set_mlock(struct Service *service, struct Client *client, int parc, 
-    char *parv[])
-{
-  struct Channel *chptr;
-  struct RegChannel *regchptr;
-  char value[IRC_BUFSIZE+1];
-
-  chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
-
-  join_params(value, parc-1, &parv[2]);
-
-  m_set_string(service, client, parv[1], "MLOCK", SET_CHAN_MLOCK, value, 
-      &regchptr->mlock, parc);
-
-  if(chptr == NULL)
-    free_regchan(regchptr);
 }
 
 /* AKICK ADD (nick|mask) reason */
@@ -1428,16 +1443,19 @@ m_set_flag(struct Service *service, struct Client *client,
 static void *
 cs_on_cmode_change(va_list args) 
 {
-  struct Client  *client_p = va_arg(args, struct Client*);
-  struct Client  *source_p = va_arg(args, struct Client*);
-  struct Channel *chptr    = va_arg(args, struct Channel*);
-  int             parc     = va_arg(args, int);
-  char           **parv    = va_arg(args, char **);
+  struct Client  *source  = va_arg(args, struct Client*);
+  struct Channel *chptr   = va_arg(args, struct Channel*);
+  int  dir  = va_arg(args, int);
+  char mode = (char)va_arg(args, int);
+  char *param = va_arg(args, char *);
 
-  // ... actually do stuff    
-
-  // last function to call in this func
-  return pass_callback(cs_cmode_hook, client_p, source_p, chptr, parc, parv);
+  if(chptr->regchan != NULL && chptr->regchan->mlock != NULL)
+  {
+    set_mode_lock(chanserv, chptr, NULL, chptr->regchan->mlock, NULL);
+  }
+  
+  /* last function to call in this func */
+  return pass_callback(cs_cmode_hook, source, chptr, dir, mode, param);
 }
 
 /**

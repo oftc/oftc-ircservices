@@ -179,6 +179,16 @@ static dlink_node *unakill_hook;
 static dlink_node *topic_hook;
 static dlink_node *kill_hook;
 
+struct ModeList ModeList[] = {
+  { MODE_NOPRIVMSGS,  'n' },
+  { MODE_TOPICLIMIT,  't' },
+  { MODE_SECRET,      's' },
+  { MODE_MODERATED,   'm' },
+  { MODE_INVITEONLY,  'i' },
+  { MODE_PARANOID,    'p' },
+  { 0, '\0' }
+};
+
 INIT_MODULE(irc, "$Revision$")
 {
   connected_hook  = install_hook(connected_cb, irc_server_connected);
@@ -338,6 +348,7 @@ irc_sendmsg_cmode(va_list args)
   char          *mode     = va_arg(args, char *);
   char          *param    = va_arg(args, char *);
   
+  ilog(L_DEBUG, "MODE %s %s %s going out.", channel, mode, param);
   sendto_server(client, ":%s MODE %s %s %s", 
       (source != NULL) ? source : me.name, channel, mode, param);
   return NULL;
@@ -600,20 +611,6 @@ do_user_modes(struct Client *client, const char *modes)
  *      but were not set in oldmode.
  */
 
-static const struct mode_letter
-{
-  unsigned int mode;
-  unsigned char letter;
-} flags[] = {
-  { MODE_NOPRIVMSGS, 'n' },
-  { MODE_TOPICLIMIT, 't' },
-  { MODE_SECRET,     's' },
-  { MODE_MODERATED,  'm' },
-  { MODE_INVITEONLY, 'i' },
-  { MODE_PARANOID,    'p' },
-  { 0, '\0' }
-};
-
 static void
 set_final_mode(struct Mode *mode, struct Mode *oldmode)
 {
@@ -623,11 +620,11 @@ set_final_mode(struct Mode *mode, struct Mode *oldmode)
 
   *mbuf++ = '-';
 
-  for (i = 0; flags[i].letter; i++)
+  for (i = 0; ModeList[i].letter; i++)
   {
-    if ((flags[i].mode & oldmode->mode) &&
-        !(flags[i].mode & mode->mode))
-      *mbuf++ = flags[i].letter;
+    if ((ModeList[i].mode & oldmode->mode) &&
+        !(ModeList[i].mode & mode->mode))
+      *mbuf++ = ModeList[i].letter;
   }
 
   if (oldmode->limit != 0 && mode->limit == 0)
@@ -638,9 +635,9 @@ set_final_mode(struct Mode *mode, struct Mode *oldmode)
     *mbuf++ = 'k';
     len = ircsprintf(pbuf, "%s ", oldmode->key);
     pbuf += len;
-    if ((flags[i].mode & mode->mode) &&
-        !(flags[i].mode & oldmode->mode))
-      *mbuf++ = flags[i].letter;
+    if ((ModeList[i].mode & mode->mode) &&
+        !(ModeList[i].mode & oldmode->mode))
+      *mbuf++ = ModeList[i].letter;
   }
 
   if (mode->limit != 0 && oldmode->limit != mode->limit)
@@ -1403,7 +1400,6 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
   {
     set_channel_mode(client_p, source_p, chptr, NULL, parc - 2, parv + 2,
                      chptr->chname);
-    chain_cmode(client_p, source_p, chptr, parc - 2, parv + 2);
   }
   else
   {
@@ -1414,7 +1410,6 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
       /* Finish the flood grace period... */
       set_channel_mode(client_p, source_p, chptr, member, parc - 2, parv + 2,
                        chptr->chname);
-      chain_cmode(client_p, source_p, chptr, parc - 2, parv + 2);
     }
   }
 }

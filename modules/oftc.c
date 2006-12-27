@@ -88,6 +88,19 @@ struct Message bmask_msgtab = {
   { m_bmask, m_bmask}
 };
 
+struct ModeList ModeList[] = {
+  { MODE_NOPRIVMSGS,  'n' },
+  { MODE_TOPICLIMIT,  't' },
+  { MODE_SECRET,      's' },
+  { MODE_MODERATED,   'm' },
+  { MODE_INVITEONLY,  'i' },
+  { MODE_PARANOID,    'p' },
+  { MODE_REGONLYTALK, 'M' },
+  { MODE_REGONLY,     'R' },
+  { MODE_SSLONLY,     'S' },
+  { 0, '\0' }
+};
+
 INIT_MODULE(oftc, "$Revision$")
 {
   oftc_connected_hook  = install_hook(connected_cb, oftc_server_connected);

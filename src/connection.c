@@ -63,6 +63,19 @@ connect_server()
 {
   struct Client *client = make_client(NULL);
   struct Server *server = make_server(client);
+  struct Module *protomod;
+
+  protomod = find_module(Connect.protocol, NO);
+  if(protomod == NULL)
+  {
+    ilog(L_CRIT, "Unable to connect to uplink, protocol module %s not found.",
+        Connect.protocol);
+    services_die("Connect error", NO);
+  }
+
+  ServerModeList = (struct ModeList *)modsym(protomod->handle, "ModeList");
+  ilog(L_DEBUG, "Loaded server mode list %p %c %d", ServerModeList, 
+      ServerModeList[0].letter, ServerModeList[0].mode);
 
   strlcpy(server->pass, Connect.password, sizeof(server->pass));
   strlcpy(client->name, Connect.name, sizeof(client->name));
