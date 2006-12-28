@@ -14,27 +14,27 @@ INCLUDES	= -I.. -I../../include
 CPPFLAGS	= ${INCLUDES} -DIN_LIBIO @CPPFLAGS@
 
 SRCS = \
-  match.c \
-  pcre_chartables.c \
-  pcre_compile.c \
-  pcre_exec.c \
-  pcre_fullinfo.c \
-  pcre_globals.c \
-  pcre_study.c \
-  pcre_tables.c \
-  pcre_try_flipped.c \
+  match.cc \
+  pcre_chartables.cc \
+  pcre_compile.cc \
+  pcre_exec.cc \
+  pcre_fullinfo.cc \
+  pcre_globals.cc \
+  pcre_study.cc \
+  pcre_tables.cc \
+  pcre_try_flipped.cc \
   @SNPRINTF_C@ \
-  sprintf_irc.c \
-  string.c
+  sprintf_irc.cc \
+  string.cc
 
-OBJS = ${SRCS:.c=.o}
+OBJS = ${SRCS:.cc=.o}
 
 default: build
 build: all
 all: depend $(OBJS)
 
-.c.o:
-	${CC} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
+.cc.o:
+	${CXX} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
 depend: .depend
 .depend:

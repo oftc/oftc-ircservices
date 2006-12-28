@@ -98,7 +98,7 @@ parseargs(int *argc, char ***argv, struct lgetopt *opts)
 		      libio_getopt_usage(progname, opts);
 		    }
 		  
-		  *((char**)opts[i].argloc) = malloc(strlen((*argv)[1]) + 1);
+		  *((char**)opts[i].argloc) = (char *)malloc(strlen((*argv)[1]) + 1);
 		  strcpy(*((char**)opts[i].argloc), (*argv)[1]);
 		  break;
 

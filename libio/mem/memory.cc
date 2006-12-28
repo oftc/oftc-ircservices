@@ -65,7 +65,7 @@ _DupString(char **x, const char *y)
   if(y == NULL)
     return;
 
-  (*x) = malloc(strlen(y) + 1);
+  (*x) = (char *)malloc(strlen(y) + 1);
   strcpy((*x), y);
 }
 
@@ -79,7 +79,7 @@ mem_frob(void *data, int len)
   /* correct for Intel only! little endian */
   unsigned char b[4] = { 0xef, 0xbe, 0xad, 0xde };
   int i;
-  char *cdata = data;
+  char *cdata = (char *)data;
 
   for (i = 0; i < len; i++)
   {

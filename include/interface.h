@@ -1,6 +1,11 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+#ifdef _CPLUSPLUS
+extern "C" 
+{
+#endif
+
 struct Service;
 struct Client;
 
@@ -128,4 +133,7 @@ void get_modestring(unsigned int, char *, int);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
+#ifdef _CPLUSPLUS
+}
+#endif
 #endif

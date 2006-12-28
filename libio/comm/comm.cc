@@ -302,7 +302,7 @@ comm_connect_tcp(fde_t *fd, const char *host, unsigned short port,
   if (irc_getaddrinfo(host, portname, &hints, &res))
   {
     /* Send the DNS request, for the next level */
-    fd->dns_query = MyMalloc(sizeof(struct DNSQuery));
+    fd->dns_query = (struct DNSQuery *)MyMalloc(sizeof(struct DNSQuery));
     fd->dns_query->ptr = fd;
     fd->dns_query->callback = comm_connect_dns_callback;
     gethost_byname(host, fd->dns_query);
@@ -368,7 +368,7 @@ comm_connect_timeout(fde_t *fd, void *notused)
 static void
 comm_connect_dns_callback(void *vptr, struct DNSReply *reply)
 {
-  fde_t *F = vptr;
+  fde_t *F = (fde_t *)vptr;
 
   if (reply == NULL)
   {

@@ -55,13 +55,13 @@ register_callback(const char *name, CBFUNC *func)
     if ((cb = find_callback(name)) != NULL)
     {
       if (func != NULL)
-        dlinkAddTail(func, MyMalloc(sizeof(dlink_node)), &cb->chain);
+        dlinkAddTail((void*)func, (dlink_node*)MyMalloc(sizeof(dlink_node)), &cb->chain);
       return (cb);
     }
 
-  cb = MyMalloc(sizeof(struct Callback));
+  cb = (struct Callback *)MyMalloc(sizeof(struct Callback));
   if (func != NULL)
-    dlinkAdd(func, MyMalloc(sizeof(dlink_node)), &cb->chain);
+    dlinkAdd((void*)func, (dlink_node *)MyMalloc(sizeof(dlink_node)), &cb->chain);
   if (name != NULL)
   {
     DupString(cb->name, name);
@@ -141,7 +141,7 @@ find_callback(const char *name)
 
   DLINK_FOREACH(ptr, callback_list.head)
   {
-    cb = ptr->data;
+    cb = (struct Callback *)ptr->data;
     if (!irccmp(cb->name, name))
       return (cb);
   }
@@ -167,9 +167,9 @@ find_callback(const char *name)
 dlink_node *
 install_hook(struct Callback *cb, CBFUNC *hook)
 {
-  dlink_node *node = MyMalloc(sizeof(dlink_node));
+  dlink_node *node = (dlink_node *)MyMalloc(sizeof(dlink_node));
 
-  dlinkAdd(hook, node, &cb->chain);
+  dlinkAdd((void*)hook, node, &cb->chain);
   return (node);
 }
 
@@ -187,7 +187,7 @@ void
 uninstall_hook(struct Callback *cb, CBFUNC *hook)
 {
   /* let it core if not found */
-  dlink_node *ptr = dlinkFind(&cb->chain, hook);
+  dlink_node *ptr = dlinkFind(&cb->chain, (void*)hook);
 
   dlinkDelete(ptr, &cb->chain);
   MyFree(ptr);

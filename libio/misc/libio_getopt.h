@@ -24,11 +24,11 @@
 
 #ifndef __GETOPT_H_INCLUDED__
 #define __GETOPT_H_INCLUDED__
-
+enum argtypes { INTEGER, YESNO, STRING, USAGE, ENDEBUG };
 struct lgetopt {
   const char *opt; /* name of the argument */
   void *argloc; /* where we store the argument to it (-option argument) */
-  enum { INTEGER, YESNO, STRING, USAGE, ENDEBUG } argtype;
+  argtypes argtype;
   const char *desc; /* description of the argument, usage for printing help */
 };
 

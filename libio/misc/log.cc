@@ -210,7 +210,7 @@ user_log_resync(void *notused)
 {
   if (user_log_fb != NULL)
   {
-    fbclose(user_log_fb);
+    fbclose((FBFILE *)user_log_fb);
     user_log_fb = NULL;
   }
 }

@@ -16,17 +16,17 @@ CPPFLAGS	= ${INCLUDES} -DIN_LIBIO @CPPFLAGS@
 SRCS = \
   @BALLOC_C@ \
   @DYNLINK_C@ \
-  dbuf.c \
-  memory.c
+  dbuf.cc \
+  memory.cc
 
-OBJS = ${SRCS:.c=.o}
+OBJS = ${SRCS:.cc=.o}
 
 default: build
 build: all
 all: depend $(OBJS)
 
-.c.o:
-	${CC} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
+.cc.o:
+	${CXX} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
 depend: .depend
 .depend:

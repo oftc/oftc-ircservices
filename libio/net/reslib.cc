@@ -1132,7 +1132,7 @@ mklower(int ch)
 int
 irc_res_mkquery(
 	     const char *dname,		/* domain name */
-	     int class, int type,	/* class and type of query */
+	     int clss, int type,	/* class and type of query */
 	     unsigned char *buf,		/* buffer to put query */
 	     int buflen)		/* size of buffer */
 {
@@ -1168,7 +1168,7 @@ irc_res_mkquery(
 	cp += n;
 	buflen -= n;
 	IRC_NS_PUT16(type, cp);
-	IRC_NS_PUT16(class, cp);
+	IRC_NS_PUT16(clss, cp);
 	hp->qdcount = htons(1);
 
 	return (cp - buf);

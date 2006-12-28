@@ -15,19 +15,19 @@ CPPFLAGS	= ${INCLUDES} -DIN_LIBIO @CPPFLAGS@
 
 SRCS = \
   @INET_MISC@ \
-  irc_getaddrinfo.c \
-  irc_getnameinfo.c \
-  res.c \
-  reslib.c
+  irc_getaddrinfo.cc \
+  irc_getnameinfo.cc \
+  res.cc \
+  reslib.cc
 
-OBJS = ${SRCS:.c=.o}
+OBJS = ${SRCS:.cc=.o}
 
 default: build
 build: all
 all: depend $(OBJS)
 
-.c.o:
-	${CC} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
+.cc.o:
+	${CXX} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
 depend: .depend
 .depend:

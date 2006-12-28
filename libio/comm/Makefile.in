@@ -14,19 +14,19 @@ INCLUDES	= -I.. -I../../include
 CPPFLAGS	= ${INCLUDES} -DIN_LIBIO @CPPFLAGS@
 
 SRCS = \
-  comm.c \
-  fdlist.c \
-  fileio.c \
-  @SELECT_TYPE@.c
+  comm.cc \
+  fdlist.cc \
+  fileio.cc \
+  @SELECT_TYPE@.cc
 
-OBJS = ${SRCS:.c=.o}
+OBJS = ${SRCS:.cc=.o}
 
 default: build
 build: all
 all: depend $(OBJS)
 
-.c.o:
-	${CC} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
+.cc.o:
+	${CXX} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
 depend: .depend
 .depend:

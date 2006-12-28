@@ -127,7 +127,7 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
 
   DLINK_FOREACH(ban, list->head)
   {
-    ban_p = ban->data;
+    ban_p = (struct Ban *)ban->data;
     if (!irccmp(ban_p->name, name) &&
 	!irccmp(ban_p->username, user) &&
 	!irccmp(ban_p->host, host))
@@ -136,7 +136,7 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
     }
   }
 
-  ban_p = BlockHeapAlloc(ban_heap);
+  ban_p = (struct Ban *)BlockHeapAlloc(ban_heap);
 
   DupString(ban_p->name, name);
   DupString(ban_p->username, user);
@@ -148,7 +148,7 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
 
   if (IsClient(client_p))
   {
-    ban_p->who = MyMalloc(strlen(client_p->name) +
+    ban_p->who = (char *)MyMalloc(strlen(client_p->name) +
                           strlen(client_p->username) +
                           strlen(client_p->host) + 3);
     ircsprintf(ban_p->who, "%s!%s@%s", client_p->name,
@@ -218,7 +218,7 @@ del_id(struct Channel *chptr, char *banid, int type)
 
   DLINK_FOREACH(ban, list->head)
   {
-    struct Ban *banptr = ban->data;
+    struct Ban *banptr = (struct Ban *)ban->data;
 
     if (!irccmp(name, banptr->name) &&
 	!irccmp(user, banptr->username) &&
@@ -575,7 +575,7 @@ clear_ban_cache(struct Channel *chptr)
 
   DLINK_FOREACH(ptr, chptr->members.head)
   {
-    struct Membership *ms = ptr->data;
+    struct Membership *ms = (struct Membership *)ptr->data;
     ms->flags &= ~(CHFL_BAN_SILENCED|CHFL_BAN_CHECKED);
   }
 }

@@ -52,7 +52,7 @@ make_channel(const char *chname)
 
   assert(!EmptyString(chname));
 
-  chptr = BlockHeapAlloc(channel_heap);
+  chptr = (struct Channel *)BlockHeapAlloc(channel_heap);
 
   /* doesn't hurt to set it here */
   chptr->channelts = CurrentTime;
@@ -117,7 +117,7 @@ free_channel_list(dlink_list *list)
   dlink_node *ptr = NULL, *next_ptr = NULL;
 
   DLINK_FOREACH_SAFE(ptr, next_ptr, list->head)
-    remove_ban(ptr->data, list);
+    remove_ban((struct Ban*)ptr->data, list);
 
   assert(list->tail == NULL && list->head == NULL);
 }
@@ -202,7 +202,7 @@ add_user_to_channel(struct Channel *chptr, struct Client *who,
 {
   struct Membership *ms = NULL;
 
-  ms = BlockHeapAlloc(member_heap);
+  ms = (struct Membership *)BlockHeapAlloc(member_heap);
   ms->client_p = who;
   ms->chptr = chptr;
   ms->flags = flags;
@@ -220,7 +220,7 @@ find_bmask(const struct Client *who, const dlink_list *const list)
 
   DLINK_FOREACH(ptr, list->head)
   {
-    struct Ban *bp = ptr->data;
+    struct Ban *bp = (struct Ban *)ptr->data;
 
     if (match(bp->name, who->name) && match(bp->username, who->username))
     {
@@ -265,7 +265,7 @@ allocate_topic(struct Channel *chptr)
    * the topic info.  We then split it up into two and shove it
    * in the chptr
    */
-  chptr->topic       = ptr;
+  chptr->topic       = (char*)ptr;
   chptr->topic_info  = ((char *)ptr) + TOPICLEN + 1;
   *chptr->topic      = '\0';
   *chptr->topic_info = '\0';

@@ -94,7 +94,7 @@ file_close(fde_t *F)
 FBFILE *
 fbopen(const char *filename, const char *mode)
 {
-  FBFILE *fb = MyMalloc(sizeof(FBFILE));
+  FBFILE *fb = (FBFILE *)MyMalloc(sizeof(FBFILE));
   int openmode = 0;
   int pmode = 0;
 

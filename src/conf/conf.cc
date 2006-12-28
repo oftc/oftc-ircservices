@@ -163,7 +163,7 @@ find_conf_section(const char *name)
 
   DLINK_FOREACH(ptr, conf_section_list.head)
   {
-    section = ptr->data;
+    section = (struct ConfSection *)ptr->data;
     if (!strcasecmp(section->name, name))
       return section;
   }
@@ -189,7 +189,7 @@ add_conf_section(const char *name, int pass)
   if (find_conf_section(name) != NULL)
     return NULL;
 
-  section = MyMalloc(sizeof(struct ConfSection));
+  section = (struct ConfSection *)MyMalloc(sizeof(struct ConfSection));
   section->name = name;
   section->pass = pass;
   dlinkAdd(section, &section->node, &conf_section_list);
@@ -232,7 +232,7 @@ find_conf_field(struct ConfSection *section, char *name)
 
   DLINK_FOREACH(ptr, section->fields.head)
   {
-    field = ptr->data;
+    field = (struct ConfField *)ptr->data;
     if (!strcasecmp(field->name, name))
       return field;
   }
@@ -327,7 +327,7 @@ struct ConfField *
 add_conf_field(struct ConfSection *section, const char *name, int type,
                CONFF_HANDLER *handler, void *param)
 {
-  struct ConfField *field = MyMalloc(sizeof(struct ConfField));
+  struct ConfField *field = (struct ConfField *)MyMalloc(sizeof(struct ConfField));
 
   if (handler == NULL)
     switch (type)

@@ -35,7 +35,7 @@ dbuf_init(void)
 static struct dbuf_block *
 dbuf_alloc(struct dbuf_queue *qptr)
 {
-  struct dbuf_block *block = BlockHeapAlloc(dbuf_heap);
+  struct dbuf_block *block = (struct dbuf_block *)BlockHeapAlloc(dbuf_heap);
 
   dlinkAddTail(block, make_dlink_node(), &qptr->blocks);
   return block;
@@ -52,7 +52,7 @@ dbuf_put(struct dbuf_queue *qptr, char *data, size_t count)
     dbuf_alloc(qptr);
 
   do {
-    last = qptr->blocks.tail->data;
+    last = (struct dbuf_block *)qptr->blocks.tail->data;
 
     amount = DBUF_BLOCK_SIZE - last->size;
     if (!amount)
@@ -89,7 +89,7 @@ dbuf_delete(struct dbuf_queue *qptr, size_t count)
     if (!count)
       return;
     ptr = qptr->blocks.head;
-    first = ptr->data;
+    first = (struct dbuf_block *)ptr->data;
     if (count < first->size)
       break;
 

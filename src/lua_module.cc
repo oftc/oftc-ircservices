@@ -125,7 +125,7 @@ lua_register_command(lua_State *L)
   struct Service *lua_service = check_service(L, 1);;
   const char *command = luaL_checkstring(L, 2); 
 
-  handler_msgtab = MyMalloc(sizeof(struct ServiceMessage));
+  handler_msgtab = (struct ServiceMessage *)MyMalloc(sizeof(struct ServiceMessage));
   
   handler_msgtab->cmd = command;
   handler_msgtab->handler = m_lua;

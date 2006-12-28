@@ -119,7 +119,7 @@ init_client()
 struct Client *
 make_client(struct Client *from)
 {
-  struct Client *client = BlockHeapAlloc(client_heap);
+  struct Client *client = (struct Client *)BlockHeapAlloc(client_heap);
 
   if(from == NULL)
     client->from = client;
@@ -136,7 +136,7 @@ struct Server *
 make_server(struct Client *client)
 {
   if(client->server == NULL)
-    client->server = MyMalloc(sizeof(struct Server));
+    client->server = (struct Server *)MyMalloc(sizeof(struct Server));
 
   return client->server;
 }
@@ -255,7 +255,7 @@ exit_one_client(struct Client *source_p)
      * to the local clients *only*)
      */
     DLINK_FOREACH_SAFE(lp, next_lp, source_p->channel.head)
-      remove_user_from_channel(lp->data);
+      remove_user_from_channel((struct Membership *)lp->data);
   }
 
   if (IsServer(source_p))
@@ -298,13 +298,13 @@ recurse_remove_clients(struct Client *source_p)
   dlink_node *ptr = NULL, *next = NULL;
 
   DLINK_FOREACH_SAFE(ptr, next, source_p->client_list.head)
-    exit_one_client(ptr->data);
+    exit_one_client((struct Client *)ptr->data);
 
   DLINK_FOREACH_SAFE(ptr, next, source_p->server_list.head)
   {
-    recurse_remove_clients(ptr->data);
+    recurse_remove_clients((struct Client *)ptr->data);
     execute_callback(on_quit_cb, ptr->data, "Server Split");
-    exit_one_client(ptr->data);
+    exit_one_client((struct Client *)ptr->data);
   }
 }
 

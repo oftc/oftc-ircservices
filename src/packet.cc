@@ -92,7 +92,7 @@ extract_one_line(struct dbuf_queue *qptr, char *buffer)
    */
   DLINK_FOREACH(ptr, qptr->blocks.head)
   {
-    block = ptr->data;
+    block = (dbuf_block *)ptr->data;
 
     for (idx = 0; idx < block->size; idx++)
     {

@@ -99,7 +99,7 @@ cleanup_interface()
 struct Service *
 make_service(char *name)
 {
-  struct Service *service = BlockHeapAlloc(services_heap);  
+  struct Service *service = (struct Service *)BlockHeapAlloc(services_heap);  
 
   strlcpy(service->name, name, sizeof(service->name));
 
@@ -395,7 +395,7 @@ replace_string(char *str, const char *value)
   size_t size = strlen(value);
 
   MyFree(str);
-  ptr = MyMalloc(size+1);
+  ptr = (char *)MyMalloc(size+1);
   strlcpy(ptr, value, size+1);
 
   return ptr;
@@ -481,7 +481,7 @@ enforce_akick(struct Service *service, struct Channel *chptr,
 
   DLINK_FOREACH(ptr, chptr->members.head)
   {
-    struct Membership *ms = ptr->data;
+    struct Membership *ms = (struct Membership *)ptr->data;
     struct Client *client = ms->client_p;
 
     numkicks += enforce_client_serviceban(service, chptr, client, akick);

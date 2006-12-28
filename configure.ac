@@ -240,7 +240,7 @@ AC_SEARCH_LIBS(inet_pton, resolv nsl, , [inet_misc=1; AC_DEFINE(NO_INET_PTON, 1,
 AC_SEARCH_LIBS(inet_ntop, resolv nsl, , [inet_misc=1; AC_DEFINE(NO_INET_NTOP, 1, [Define if you have no native inet_ntop() function.])])
 
 if test "$inet_misc" = 1; then
-	AC_SUBST(INET_MISC, inet_misc.c)
+	AC_SUBST(INET_MISC, inet_misc.cc)
 fi
 
 AC_CHECK_TYPES([struct sockaddr_storage], , ,
@@ -315,7 +315,7 @@ AC_COMPILE_IFELSE(
 [AC_MSG_RESULT(no)
 have_v6="no"])
 
-CRYPT_C=crypt.c
+CRYPT_C=crypt.cc
 unset CRYPT_LIB
 
 AC_SUBST(CRYPT_C)
@@ -437,7 +437,7 @@ dnl check for various functions...
 AC_CHECK_FUNCS([socketpair basename mmap snprintf vsnprintf lrand48 srand48 strtok_r usleep])
 
 if test "$ac_cv_func_snprintf" = no -o "$ac_cv_func_vsnprintf" = no; then
-	SNPRINTF_C="snprintf.c"
+	SNPRINTF_C="snprintf.cc"
 fi
 
 AC_SUBST(SNPRINTF_C)
@@ -782,7 +782,7 @@ if test "$balloc" = no; then
 	AC_SUBST(BALLOC_C, [])
 	AC_DEFINE(NOBALLOC, 1, [Disable the block allocator.])
 else
-	AC_SUBST(BALLOC_C, balloc.c)
+	AC_SUBST(BALLOC_C, balloc.cc)
 fi
 
 AC_MSG_RESULT($balloc)
@@ -903,7 +903,7 @@ fi
 
 dnl Second stage: check for functions and headers.
 if test "$shared_modules" = yes; then
-	DYNLINK_C=dynlink.c
+	DYNLINK_C=dynlink.cc
 	AC_CHECK_HEADERS(dlfcn.h)
 	AC_SEARCH_LIBS(shl_load, dld, 
 	[

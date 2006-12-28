@@ -76,7 +76,7 @@ find_module(const char *filename, int exact)
 
   DLINK_FOREACH(ptr, loaded_modules.head)
   {
-    struct Module *mod = ptr->data;
+    struct Module *mod = (struct Module *)ptr->data;
 
     if (!_NCOMPARE(mod->name, name, cnt) && !mod->name[cnt])
     {
@@ -180,7 +180,7 @@ load_shared_module(const char *name, const char *dir, const char *fname)
   }
 
   snprintf(sym, sizeof(sym), "%s_module", name);
-  if (!(mod = modsym(handle, sym)))
+  if (!(mod = (struct Module *)modsym(handle, sym)))
   {
     char error[IRC_BUFSIZE];
 
@@ -230,7 +230,7 @@ load_module(const char *filename)
       dlink_node *ptr;
 
       DLINK_FOREACH(ptr, mod_paths.head)
-        if (load_shared_module(name, ptr->data, filename))
+        if (load_shared_module(name, (const char *)ptr->data, filename))
           return 1;
     }
 #endif
@@ -340,8 +340,8 @@ boot_modules(char cold)
   }
 
   DLINK_FOREACH(ptr, mod_extra.head)
-    if (!find_module(ptr->data, NO))
-      load_module(ptr->data);
+    if (!find_module((const char *)ptr->data, NO))
+      load_module((const char *)ptr->data);
 
   for (p = core_modules; *p; p++)
   {
@@ -469,7 +469,7 @@ cleanup_modules(void)
 
   DLINK_FOREACH_SAFE(ptr, nptr, loaded_modules.head)
   {
-    struct Module *mod = ptr->data;
+    struct Module *mod = (struct Module *)ptr->data;
 
     unload_module(mod);
   }

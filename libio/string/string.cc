@@ -360,7 +360,7 @@ inetntop(int af, const void *src, char *dst, unsigned int size)
   switch (af)
   {
     case AF_INET:
-      return inet_ntop4(src, dst, size);
+      return inet_ntop4((const unsigned char *)src, dst, size);
 #ifdef IPV6
     case AF_INET6:
       if (IN6_IS_ADDR_V4MAPPED((const struct in6_addr *)src) ||

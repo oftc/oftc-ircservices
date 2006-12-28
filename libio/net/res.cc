@@ -173,7 +173,7 @@ timeout_query_list(time_t now)
 
   DLINK_FOREACH_SAFE(ptr, next_ptr, request_list.head)
   {
-    request = ptr->data;
+    request = (struct reslist *)ptr->data;
     timeout = request->sentat + request->timeout;
 
     if (now >= timeout)
@@ -299,7 +299,7 @@ rem_request(struct reslist *request)
 static struct reslist *
 make_request(struct DNSQuery *query)
 {
-  struct reslist *request = MyMalloc(sizeof(struct reslist));
+  struct reslist *request = (struct reslist *)MyMalloc(sizeof(struct reslist));
 
   request->sentat  = CurrentTime;
   request->retries = 3;
@@ -326,7 +326,7 @@ delete_resolver_queries(const struct DNSQuery *query)
 
   DLINK_FOREACH_SAFE(ptr, next_ptr, request_list.head)
   {
-    if ((request = ptr->data) != NULL)
+    if ((request = (struct reslist *)ptr->data) != NULL)
     {
       if (query == request->query)
         rem_request(request);
@@ -376,7 +376,7 @@ find_id(int id)
 
   DLINK_FOREACH(ptr, request_list.head)
   {
-    struct reslist *request = ptr->data;
+    struct reslist *request = (struct reslist *)ptr->data;
 
     if (request->id == id)
       return request;

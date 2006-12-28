@@ -164,7 +164,7 @@ send_queued_write(struct Client *to)
   if (dbuf_length(&to->server->buf_sendq))
   {
     do {
-      first = to->server->buf_sendq.blocks.head->data;
+      first = (dbuf_block *)to->server->buf_sendq.blocks.head->data;
 
       retlen = send(to->server->fd.fd, first->data, first->size, 0);
 

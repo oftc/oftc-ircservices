@@ -148,7 +148,7 @@ init_db()
 {
   char *dbstr;
 
-  dbstr = MyMalloc(strlen(Database.driver) + strlen(Database.hostname) + strlen(Database.dbname) +
+  dbstr = (char *)MyMalloc(strlen(Database.driver) + strlen(Database.hostname) + strlen(Database.dbname) +
       3 /* ::: */ + 1);
   sprintf(dbstr, "%s:::%s", Database.driver, Database.dbname);
 
@@ -234,7 +234,7 @@ db_find_nick(const char *nick)
   if(rc == NULL)
     return NULL;
  
-  nick_p = MyMalloc(sizeof(struct Nick));
+  nick_p = (struct Nick *)MyMalloc(sizeof(struct Nick));
  
   brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
     &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->url, &nick_p->email,
@@ -581,7 +581,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   {
     case ACCESS_LIST:
       query = GET_NICKACCESS;
-      aeval = MyMalloc(sizeof(struct AccessEntry));
+      aeval = (struct AccessEntry *)MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
       brc = Bind("?d?ps", &aeval->id, &aeval->value);
       break;
@@ -593,7 +593,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     case AKILL_LIST:
       query = GET_AKILLS;
 
-      banval = MyMalloc(sizeof(struct ServiceBan));
+      banval = (struct ServiceBan *)MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
       brc = Bind("?d?d?ps?ps?d?d", &banval->id, &banval->setter, &banval->mask, 
           &banval->reason, &banval->time_set, &banval->duration);
@@ -601,7 +601,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     case AKICK_LIST:
       query = GET_AKICKS;
 
-      banval = MyMalloc(sizeof(struct ServiceBan));
+      banval = (struct ServiceBan *)MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
       brc = Bind("?d?ps?d?d?ps?ps?d?d", &banval->id, &banval->channel,
           &banval->target, &banval->setter, &banval->mask, 
@@ -610,7 +610,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     case CHACCESS_LIST:
       query = GET_CHAN_ACCESSES;
 
-      caval = MyMalloc(sizeof(struct ChanAccess));
+      caval = (struct ChanAccess *)MyMalloc(sizeof(struct ChanAccess));
       *entry = caval;
       brc = Bind("?d?d?d?d", &caval->id, &caval->channel, &caval->account,
           &caval->level);
@@ -625,7 +625,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   if(Fetch(rc, brc) == 0)
     return NULL;
 
-  result = MyMalloc(sizeof(struct DBResult));
+  result = (struct DBResult *)MyMalloc(sizeof(struct DBResult));
 
   result->rc = rc;
   result->brc = brc;
@@ -659,7 +659,7 @@ db_list_next(void *result, unsigned int type, void **entry)
   switch(type)
   {
     case ACCESS_LIST:
-      aeval = MyMalloc(sizeof(struct AccessEntry));
+      aeval = (struct AccessEntry *)MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
       Free(res->brc);
       res->brc = Bind("?d?ps", &aeval->id, &aeval->value);
@@ -670,14 +670,14 @@ db_list_next(void *result, unsigned int type, void **entry)
       res->brc = Bind("?ps", entry);
       break;
     case AKILL_LIST:
-      banval = MyMalloc(sizeof(struct ServiceBan));
+      banval = (struct ServiceBan *)MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
       Free(res->brc);
       res->brc = Bind("?d?d?ps?ps?d?d", &banval->id, &banval->setter, &banval->mask, 
           &banval->reason, &banval->time_set, &banval->duration);
      break;
     case AKICK_LIST:
-      banval = MyMalloc(sizeof(struct ServiceBan));
+      banval = (struct ServiceBan *)MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
       Free(res->brc);
       res->brc = Bind("?d?ps?d?d?ps?ps?d?d", &banval->id, &banval->channel,
@@ -685,7 +685,7 @@ db_list_next(void *result, unsigned int type, void **entry)
           &banval->reason, &banval->time_set, &banval->duration);
    break;
     case CHACCESS_LIST:
-      caval = MyMalloc(sizeof(struct ChanAccess));
+      caval = (struct ChanAccess *)MyMalloc(sizeof(struct ChanAccess));
       *entry = caval;
       Free(res->brc);
       res->brc = Bind("?d?d?d?d", &caval->id, &caval->channel, &caval->account,
@@ -817,7 +817,7 @@ db_find_chan(const char *channel)
   if(rc == NULL)
     return NULL;
  
-  channel_p = MyMalloc(sizeof(struct RegChannel));
+  channel_p = (struct RegChannel *)MyMalloc(sizeof(struct RegChannel));
  
   brc = Bind("?d?ps?ps?ps?B?B?B?B?B?B?B?ps?ps?ps?ps",
       &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
@@ -874,7 +874,7 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
     return FALSE;
   }
 
-  access = MyMalloc(sizeof(struct ChanAccess));
+  access = (struct ChanAccess *)MyMalloc(sizeof(struct ChanAccess));
   access->channel = chan->id;
   access->account = founder;
   access->level   = MASTER_FLAG;
@@ -912,7 +912,7 @@ db_find_chanaccess(unsigned int channel, unsigned int account)
   if(rc == NULL)
     return NULL;
 
-  access = MyMalloc(sizeof(struct ChanAccess));
+  access = (struct ChanAccess *)MyMalloc(sizeof(struct ChanAccess));
   brc = Bind("?d?d?d?d", &access->id, &access->channel, &access->account, 
       &access->level);
 
@@ -938,7 +938,7 @@ db_find_akill(const char *mask)
   if(rc == NULL)
     return NULL;
  
-  akill = MyMalloc(sizeof(struct ServiceBan));
+  akill = (struct ServiceBan *)MyMalloc(sizeof(struct ServiceBan));
  
   brc = Bind("?d?ps?ps?d?d?d", &akill->id, &akill->mask, &akill->reason,
       &akill->setter, &akill->time_set, &akill->duration);

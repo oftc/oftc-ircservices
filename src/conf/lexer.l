@@ -67,14 +67,14 @@ identifier	[a-zA-Z_][a-zA-Z0-9_:]*
 
               while (1)
               {
-                while ((c = input()) != '*' && c != EOF)
+                while ((c = yyinput()) != '*' && c != EOF)
                   if (c == '\n')
                   {
                     conf_curctx.lineno++;
                     conf_linebuf[0] = '\0';
                   }
                 while (c == '*')
-                  c = input();
+                  c = yyinput();
                 if (c == '/')
                   break;
                 if (c == EOF)
@@ -106,7 +106,7 @@ bytes       { return BYTES; }
 d           { return DAYS; }
 day	        { return DAYS; }
 days        { return DAYS; }
-false		{ yylval.number = 0; return BOOL; }
+false		{ yylval.number = 0; return NUMBER; }
 h           { return HOURS; }
 hour		{ return HOURS; }
 hours		{ return HOURS; }
@@ -125,19 +125,19 @@ min         { return MINUTES; }
 mins		{ return MINUTES; }
 minute		{ return MINUTES; }
 minutes		{ return MINUTES; }
-no          { yylval.number = 0; return BOOL; }
-off         { yylval.number = 0; return BOOL; }
-on          { yylval.number = 1; return BOOL; }
+no          { yylval.number = 0; return NUMBER; }
+off         { yylval.number = 0; return NUMBER; }
+on          { yylval.number = 1; return NUMBER; }
 s           { return SECONDS; }
 sec         { return SECONDS; }
 secs		{ return SECONDS; }
 second		{ return SECONDS; }
 seconds		{ return SECONDS; }
-true		{ yylval.number = 1; return BOOL; }
+true		{ yylval.number = 1; return NUMBER; }
 w           { return WEEKS; }
 week		{ return WEEKS; }
 weeks		{ return WEEKS; }
-yes         { yylval.number = 1; return BOOL; }
+yes         { yylval.number = 1; return NUMBER; }
 {identifier}	{ yylval.string = yytext; return IDENTIFIER; }
 .           { return yytext[0]; }
 <<EOF>>		{ if (conf_eof()) yyterminate(); }
@@ -173,7 +173,7 @@ conf_include(void)
     f = fbopen(fname, "r");
   else
   {
-    buf = MyMalloc(strlen(ETCPATH) + 1 + strlen(fname) + 1);
+    buf = (char *)MyMalloc(strlen(ETCPATH) + 1 + strlen(fname) + 1);
     sprintf(buf, "%s/%s", ETCPATH, fname);
     f = fbopen(buf, "r");
     MyFree(buf);

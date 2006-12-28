@@ -134,7 +134,7 @@ heap_garbage_collection(void *arg)
   dlink_node *ptr = NULL;
 
   DLINK_FOREACH(ptr, heap_list.head)
-    BlockHeapGarbageCollect(ptr->data);
+    BlockHeapGarbageCollect((BlockHeap *)ptr->data);
 }
 
 /*! \brief Allocates a new block for addition to a blockheap
@@ -150,7 +150,7 @@ newblock(BlockHeap *bh)
   void *offset = NULL;
 
   /* Setup the initial data structure. */
-  if ((b = calloc(1, sizeof(Block))) == NULL)
+  if ((b = (Block *)calloc(1, sizeof(Block))) == NULL)
     return 1;
 
   b->freeElems = bh->elemsPerBlock;
@@ -168,7 +168,7 @@ newblock(BlockHeap *bh)
   {
     void *data;
 
-    newblk = offset;
+    newblk = (MemBlock *)offset;
     newblk->block = b;
     data = (void *)((size_t)offset + sizeof(MemBlock));
 
@@ -207,7 +207,7 @@ BlockHeapCreate(const char *const name, size_t elemsize, int elemsperblock)
     outofmemory();    /* die.. out of memory */
 
   /* Allocate our new BlockHeap */
-  if ((bh = calloc(1, sizeof(BlockHeap))) == NULL)
+  if ((bh = (BlockHeap *)calloc(1, sizeof(BlockHeap))) == NULL)
     outofmemory();    /* die.. out of memory */
 
   if ((elemsize % sizeof(void *)) != 0)
@@ -297,7 +297,7 @@ BlockHeapFree(BlockHeap *bh, void *ptr)
   assert(bh != NULL);
   assert(ptr != NULL);
 
-  memblock = (void *)((size_t)ptr - sizeof(MemBlock));
+  memblock = (MemBlock *)(void *)((size_t)ptr - sizeof(MemBlock));
   assert(memblock->block != NULL);
 
   if (memblock->block == NULL)
