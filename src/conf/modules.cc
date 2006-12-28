@@ -160,7 +160,7 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     *ext = tmp;
     if(strcmp(tmpext, "rb") == 0)
     {
-      return load_ruby_module(name, dir, fname);
+//      return load_ruby_module(name, dir, fname);
     }
 /*    else if(strcmp(tmpext, "pl") == 0)
     {
@@ -168,7 +168,7 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     }*/
     else if(strcmp(tmpext, "lua") == 0)
     {
-      return load_lua_module(name, dir, fname);
+  //    return load_lua_module(name, dir, fname);
     }
   }
 

@@ -55,7 +55,7 @@ crypt_pass_old(char *password)
 {
   char salt[16];
 
-  return servcrypt(password, generate_md5_salt(salt, 16));
+//  return servcrypt(password, generate_md5_salt(salt, 16));
 }
 
 char *crypt_pass(char *password)

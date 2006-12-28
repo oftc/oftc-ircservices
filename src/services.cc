@@ -82,9 +82,9 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  init_lua();
+  //init_lua();
 //  init_perl();
-  init_ruby();
+  //init_ruby();
 
   boot_modules(1);
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */
@@ -153,7 +153,7 @@ services_die(const char *msg, int rboot)
   cleanup_parser();
   cleanup_channel_modes();
   cleanup_log();*/
-  cleanup_ruby();
+  //cleanup_ruby();
   cleanup_db();
   cleanup_modules();
   cleanup_interface();

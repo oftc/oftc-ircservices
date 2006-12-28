@@ -49,7 +49,7 @@ y.tab.cc:  conf/parser.yxx
 	${YACC} -d conf/parser.yxx
 	mv y.tab.c y.tab.cc
 
-lex.yy.o: lex.yy.cc conf/lexer.l
+lex.yy.o: y.tab.cc lex.yy.cc conf/lexer.l
 	${CXX} ${CPPFLAGS} ${CFLAGS} -I. -c lex.yy.cc
 
 lex.yy.cc: conf/lexer.l

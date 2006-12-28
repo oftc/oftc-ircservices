@@ -752,7 +752,7 @@ of the exported public functions. They have to be "external" in the C sense,
 but are not part of the PCRE public API. The data for these tables is in the
 pcre_tables.c module. */
 
-extern const uschar _pcre_default_tables[];
+extern unsigned char _pcre_default_tables[];
 
 
 /* Internal shared functions. These are functions that are used by more than

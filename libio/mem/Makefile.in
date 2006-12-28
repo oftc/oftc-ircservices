@@ -4,6 +4,7 @@ CC		= @CC@
 SED		= @SED@
 STDOUT		= @STDOUT@
 CFLAGS		= @IRCSERVICES_CFLAGS@
+PICFLAGS  = @PICFLAGS@
 MKDEP		= @MKDEP@
 MV		= @MV@
 RM              = @RM@
@@ -26,7 +27,7 @@ build: all
 all: depend $(OBJS)
 
 .cc.o:
-	${CXX} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
+	${CXX} ${PICFLAGS} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
 depend: .depend
 .depend:

@@ -126,7 +126,7 @@ struct Client
   unsigned int  hopcount;
   unsigned char handler;        /* Handler index */
   int flags;
-} Client;
+};
 
 void init_client();
 struct Client *make_client(struct Client*);

@@ -7,7 +7,7 @@ extern "C"
 #endif
 
 struct Service;
-struct Client;
+//struct Client;
 
 enum ServiceBanType
 {
