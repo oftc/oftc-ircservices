@@ -558,7 +558,7 @@ irc_server_connected(va_list args)
   /* Send out our list of services loaded */
   DLINK_FOREACH(ptr, services_list.head)
   {
-    struct Service *service = ptr->data;
+    struct Service *service = (struct Service *)ptr->data;
 
     introduce_client(service->name);
   }
@@ -706,7 +706,7 @@ remove_a_mode(struct Channel *chptr, struct Client *source,
 
   DLINK_FOREACH(ptr, chptr->members.head)
   {
-    ms = ptr->data;
+    ms = (struct Membership *)ptr->data;
 
     if ((ms->flags & mask) == 0)
       continue;

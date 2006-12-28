@@ -426,7 +426,7 @@ oftc_server_connected(va_list args)
   /* Send out our list of services loaded */
   DLINK_FOREACH(ptr, services_list.head)
   {
-    struct Service *service = ptr->data;
+    struct Service *service = (struct Service *)ptr->data;
 
     introduce_client(service->name);
   }

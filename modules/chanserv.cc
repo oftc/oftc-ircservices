@@ -287,11 +287,11 @@ process_limit_list(void *param)
 
   DLINK_FOREACH(ptr, channel_limit_list.head)
   {
-    struct Channel *chptr = ptr->data;
+    struct Channel *chptr = (struct Channel *)ptr->data;
 
     if(chptr->limit_time > CurrentTime)
     {
-      int limit;
+      unsigned int limit;
 
       limit = dlink_list_length(&chptr->members) + 3;
       if(chptr->mode.limit != limit)
@@ -310,11 +310,11 @@ process_expireban_list(void *param)
 
   DLINK_FOREACH(ptr, channel_expireban_list.head)
   {
-    struct Channel *chptr = ptr->data;
+    struct Channel *chptr = (struct Channel *)ptr->data;
 
     DLINK_FOREACH_SAFE(bptr, bnptr, chptr->banlist.head)
     {
-      struct Ban *banptr = bptr->data;
+      struct Ban *banptr = (struct Ban *)bptr->data;
       char ban[IRC_BUFSIZE+1];
 
       if((CurrentTime - banptr->when) > (1*60*60))
@@ -375,7 +375,7 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  regchptr = MyMalloc(sizeof(struct RegChannel));
+  regchptr = (struct RegChannel *)MyMalloc(sizeof(struct RegChannel));
   strlcpy(regchptr->channel, parv[1], sizeof(regchptr->channel));
   DupString(regchptr->description, parv[2]);
 
@@ -498,7 +498,7 @@ m_access_add(struct Service *service, struct Client *client,
     return;
   }
 
-  access = MyMalloc(sizeof(struct ChanAccess));
+  access = (struct ChanAccess *)MyMalloc(sizeof(struct ChanAccess));
   access->channel = regchptr->id;
   access->account = account;
   access->level   = level;
@@ -866,7 +866,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  akick = MyMalloc(sizeof(struct ServiceBan));
+  akick = (struct ServiceBan *)MyMalloc(sizeof(struct ServiceBan));
   akick->type = AKICK_BAN;
   if(strchr(parv[2], '@') == NULL)
   {
@@ -1001,7 +1001,7 @@ m_akick_enforce(struct Service *service, struct Client *client,
 
   DLINK_FOREACH(ptr, chptr->members.head)
   {
-    struct Membership *ms = ptr->data;
+    struct Membership *ms = (struct Membership *)ptr->data;
     struct Client *client = ms->client_p;
 
     numkicks += enforce_matching_serviceban(service, chptr, client);
@@ -1034,7 +1034,7 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
 
   DLINK_FOREACH_SAFE(ptr, nptr, chptr->banlist.head)
   {
-    const struct Ban *banptr = ptr->data;
+    const struct Ban *banptr = (struct Ban *)ptr->data;
     char ban[IRC_BUFSIZE+1];
 
     snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
@@ -1067,7 +1067,7 @@ m_clear_ops(struct Service *service, struct Client *client, int parc,
 
   DLINK_FOREACH(ptr, chptr->members.head)
   {
-    struct Membership *ms = ptr->data;
+    struct Membership *ms = (struct Membership *)ptr->data;
     struct Client *target = ms->client_p;
 
     if(has_member_flags(ms, CHFL_CHANOP))
@@ -1100,7 +1100,7 @@ m_clear_voices(struct Service *service, struct Client *client, int parc,
 
   DLINK_FOREACH(ptr, chptr->members.head)
   {
-    struct Membership *ms = ptr->data;
+    struct Membership *ms = (struct Membership *)ptr->data;
     struct Client *target = ms->client_p;
 
     if(has_member_flags(ms, CHFL_VOICE))
@@ -1136,7 +1136,7 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
 
   DLINK_FOREACH_SAFE(ptr, nptr, chptr->members.head)
   {
-    struct Membership *ms = ptr->data;
+    struct Membership *ms = (struct Membership *)ptr->data;
     struct Client *target = ms->client_p;
 
     kick_user(service, chptr, target->name, buf);

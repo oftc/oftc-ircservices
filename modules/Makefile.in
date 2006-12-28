@@ -30,17 +30,17 @@ INCLUDES	= -I../include -I../libio $(SSL_INCLUDES)
 CPPFLAGS	= ${INCLUDES} @CPPFLAGS@
 
 SRCS =       \
-  irc.c \
-	hybridts6.c \
-  oftc.c \
-  nickserv.c \
-  operserv.c \
-  chanserv.c
+  irc.cc \
+	hybridts6.cc \
+  oftc.cc \
+  nickserv.cc \
+  operserv.cc \
+  chanserv.cc
 
 ALL_SRCS = $(CORE_SRCS) $(SRCS) @SSL_SRCS_ENABLE@
 
-SH_OBJS = ${SRCS:.c=.so} luaserv.lua RubyServ.rb
-SH_CORE_OBJS = ${CORE_SRCS:.c=.so}
+SH_OBJS = ${SRCS:.cc=.so} luaserv.lua RubyServ.rb
+SH_CORE_OBJS = ${CORE_SRCS:.cc=.so}
 
 HPUX_OBJS = ${SH_OBJS:.so=.sl}
 HPUX_CORE_OBJS = ${SH_CORE_OBJS:.so=.sl}
@@ -100,11 +100,11 @@ install_hpux_shared: install-mkdirs
 
 .SUFFIXES: .sl .so .o
 
-.c.o:
-	${CC} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
+.cc.o:
+	${CXX} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
-.c.so:
-	${CC} ${PICFLAGS} ${CPPFLAGS} ${CFLAGS} $< -o $@
+.cc.so:
+	${CXX} ${PICFLAGS} ${CPPFLAGS} ${CFLAGS} $< -o $@
 
 .so.sl:
 	$(LD) -b $< -o $@

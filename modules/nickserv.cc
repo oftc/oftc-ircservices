@@ -331,7 +331,7 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  nick = MyMalloc(sizeof(struct Nick));
+  nick = (struct Nick *)MyMalloc(sizeof(struct Nick));
 
   make_random_string(nick->salt, SALTLEN+1);
   snprintf(password, sizeof(password), "%s%s", parv[1], nick->salt);

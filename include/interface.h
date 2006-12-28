@@ -122,6 +122,8 @@ void invite_user(struct Service *, struct Channel *, struct Client *);
 void kill_user(struct Service *, struct Client *, const char *);
 void ban_mask(struct Service *, struct Channel *, const char *);
 void unban_mask(struct Service *, struct Channel *, const char *);
+int set_mode_lock(struct Service *, struct Channel *, struct Client *, 
+    const char *, char **);
 
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
