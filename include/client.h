@@ -2,109 +2,31 @@
 #define CLIENT_H
 
 #include <string>
+#include <vector>
+#include <tr1/unordered_map>
 
-extern dlink_list global_client_list;
-extern dlink_list global_server_list;
-EXTERN unsigned int user_modes[];
+using std::string;
+using std::vector;
+using std::tr1::unordered_map;
 
-#define FLAGS_PINGSENT      0x00000001UL /* Unreplied ping sent*/
-#define FLAGS_DEADSOCKET    0x00000002UL /* Local socket is dead--Exiting soon*/
-#define FLAGS_KILLED        0x00000004UL /* Prevents "QUIT" from being sent to this */
-#define FLAGS_CLOSING       0x00000008UL /* set when closing */
-#define FLAGS_CONNECTING    0x00000010UL /* Currently connecting not bursted */
-#define FLAGS_ONACCESS      0x00000020UL /* Client isnt authed with nickserv but does match the access list*/
+class Client;
 
-#define STAT_SERVER         0x01
-#define STAT_CLIENT         0x02
-#define STAT_ME             0x04
-
-/* umodes, settable flags */
-#define UMODE_SERVNOTICE   0x00001 /* server notices such as kill */
-#define UMODE_CCONN        0x00002 /* Client Connections */
-#define UMODE_REJ          0x00004 /* Bot Rejections */
-#define UMODE_SKILL        0x00008 /* Server Killed */
-#define UMODE_FULL         0x00010 /* Full messages */
-#define UMODE_SPY          0x00020 /* see STATS / LINKS */
-#define UMODE_DEBUG        0x00040 /* 'debugging' info */
-#define UMODE_NCHANGE      0x00080 /* Nick change notice */
-#define UMODE_WALLOP       0x00100 /* send wallops to them */
-#define UMODE_OPERWALL     0x00200 /* Operwalls */
-#define UMODE_INVISIBLE    0x00400 /* makes user invisible */
-#define UMODE_BOTS         0x00800 /* shows bots */
-#define UMODE_EXTERNAL     0x01000 /* show servers introduced and splitting */
-#define UMODE_CALLERID     0x02000 /* block unless caller id's */
-#define UMODE_SOFTCALLERID 0x04000 /* block unless on common channel */
-#define UMODE_UNAUTH       0x08000 /* show unauth connects here */
-#define UMODE_LOCOPS       0x10000 /* show locops */
-#define UMODE_DEAF         0x20000 /* don't receive channel messages */
-
-/* user information flags, only settable by remote mode or local oper */
-#define UMODE_OPER         0x40000 /* Operator */
-#define UMODE_ADMIN        0x80000 /* Admin on server */
-#define UMODE_IDENTIFIED  0x100000 /* Registered with nickserv */
-#define UMODE_ALL    UMODE_SERVNOTICE
-
-#define IsConnecting(x)         ((x)->flags & FLAGS_CONNECTING)
-#define IsDefunct(x)            ((x)->flags & (FLAGS_DEADSOCKET|FLAGS_CLOSING))
-#define IsDead(x)               ((x)->flags & FLAGS_DEADSOCKET)
-#define IsClosing(x)            ((x)->flags & FLAGS_CLOSING)
-#define IsOnAccess(x)           ((x)->flags & FLAGS_ONACCESS)
-
-#define SetConnecting(x)        ((x)->flags |= FLAGS_CONNECTING)
-#define SetClosing(x)           ((x)->flags |= FLAGS_CLOSING)
-#define SetOnAccess(x)          ((x)->flags |= FLAGS_ONACCESS)
-
-#define ClearConnecting(x)      ((x)->flags &= ~FLAGS_CONNECTING)
-#define ClearOnAccess(x)        ((x)->flags &= ~FLAGS_ONACCESS)
-
-#define IsServer(x)             ((x)->status & STAT_SERVER)
-#define IsClient(x)             ((x)->status & STAT_CLIENT)
-#define IsMe(x)                 ((x)->status & STAT_ME)
-
-#define SetServer(x)            ((x)->status |= STAT_SERVER)
-#define SetClient(x)            ((x)->status |= STAT_CLIENT)
-#define SetMe(x)                ((x)->status |= STAT_ME)
-
-#define IsOper(x)               ((x)->umodes & UMODE_OPER)
-#define IsIdentified(x)         ((x)->umodes & UMODE_IDENTIFIED)
-
-#define SetOper(x)              ((x)->umodes |= UMODE_OPER)
-#define SetIdentified(x)        ((x)->umodes |= UMODE_IDENTIFIED)
-
-#define ClearOper(x)            ((x)->umodes &= ~UMODE_OPER)
-#define ClearIdentified(x)      ((x)->umodes &= ~UMODE_IDENTIFIED)
-
-#define IDLEN           12 /* this is the maximum length, not the actual
-                              generated length; DO NOT CHANGE! */
-
-#define MODE_QUERY  0
-#define MODE_ADD    1
-#define MODE_DEL   -1
-
-struct Server
-{
-  dlink_node node;
-  fde_t fd;
-  int flags;
-  struct dbuf_queue buf_recvq;
-  struct dbuf_queue buf_sendq;
-  char pass[PASSLEN+1];
-};
+extern vector<Client *> GlobalClientList;
+extern unordered_map<string, Client *> GlobalClientHash;
 
 class Client
 {
 public:
   Client();
-  Client(std::string const&);
-  Client(std::string const&, std::string const&, std::string const&,
-      std::string const &);
+  Client(string const&);
+  Client(string const&, string const&, string const&, string const&);
   void introduce();
   void kill();
   bool is_banned(struct Ban *);
-  void change_nick(std::string const&);
-  void change_umode(std::string const&);
+  void change_nick(string const&);
+  void change_umode(string const&);
 
-  std::string nuh();
+  string nuh();
   inline const char *c_nuh() { return nuh().c_str(); };
   inline const char *c_name() { return name.c_str(); };
   inline const char *c_id()   { return id.c_str();   };
@@ -112,15 +34,20 @@ public:
   inline const char *c_host() { return host.c_str(); };
 
   inline void set_ts(time_t ts) { tsinfo = ts; };
-  inline void set_name(std::string const& n) { name = n; };
+  inline void set_name(string const& n) { name = n; };
 
-private:
-  std::string name;
-  std::string host;
-  std::string sockhost;
-  std::string id;
-  std::string info;
-  std::string user;
+  inline static Client *find(string const& name) 
+  {
+    return GlobalClientHash[name];
+  }
+
+protected:
+  string name;
+  string host;
+  string sockhost;
+  string id;
+  string info;
+  string user;
 
   time_t tsinfo;
   time_t enforce_time;

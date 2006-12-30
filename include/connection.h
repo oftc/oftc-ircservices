@@ -20,6 +20,7 @@ public:
   { 
     comm_setselect(&fd, COMM_SELECT_READ, read_callback, this, 0); 
   };
+  inline void set_client(Client *c) { client = c; };
   
   // Static members (callbacks)
   inline static void read_callback(fde_t *fd, void *data) 
@@ -34,6 +35,7 @@ private:
   fde_t fd;
   std::deque<std::string> read_queue;
   Parser *parser;
+  Client *client;
 };
 
 #endif

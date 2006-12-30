@@ -71,7 +71,7 @@ extern int unload_one_module(char *, int);
 extern int load_one_module(char *, int);
 extern int load_a_module(char *, int, int);
 extern dlink_node *findmodule_byname(const char *);
-extern void modules_init(void);
+extern void modules_init(Parser *);
 
 #else /* STATIC_MODULES */
 

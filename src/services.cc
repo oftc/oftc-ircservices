@@ -27,6 +27,7 @@
 #include "conf/conf.h"
 #include "lua_module.h"
 #include "ruby_module.h"
+#include "modules.h"
 
 #include <signal.h>
 #include <sys/wait.h>
@@ -39,7 +40,8 @@ static void sigchld_handler(int);
 
 int main(int argc, char *argv[])
 {
-  Connection *connection = new Connection();
+  Parser *parser = new Parser();
+  Connection *connection = new Connection(parser);
 
   me = new Client();
 
@@ -60,6 +62,7 @@ int main(int argc, char *argv[])
   //init_client();
   //init_parser();
   //init_channel_modes();
+  modules_init(parser);
 
   read_services_conf(TRUE);
 

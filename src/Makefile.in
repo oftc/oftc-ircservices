@@ -75,7 +75,6 @@ SRCS = 								\
  hostmask.cc					\
  interface.cc					\
  language.cc					\
- m_error.cc						\
  packet.cc						\
  parse.cc							\
  services.cc					\
