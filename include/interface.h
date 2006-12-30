@@ -1,8 +1,23 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+#include <string>
+
 struct Service;
 //struct Client;
+//
+
+class service
+{
+public:
+  service();
+  service(std::string const &);
+  void introduce();
+  void notice_client(Client *, unsigned int, std::string);
+private:
+  std::string name;
+  Client *client;
+};
 
 enum ServiceBanType
 {
@@ -16,7 +31,6 @@ struct Service
   struct Service *hnext;
 
   char name[NICKLEN+1];
-  struct ServiceMessageTree msg_tree;
   char *last_command;
   struct LanguageFile languages[LANG_LAST];
   void *data;

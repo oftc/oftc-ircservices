@@ -27,45 +27,28 @@
  */
 
 #include "stdinc.h"
+#include <string>
+#include <sstream>
+#include <queue>
+#include <iostream>
 
-static CNCB serv_connect_callback;
-struct Callback *connected_cb;
-
-static void
-serv_connect_callback(fde_t *fd, int status, void *data)
+//static CNCB serv_connect_callback;
+Connection::Connection()
 {
-  struct Client *client = (struct Client*)data;
-  struct Server *server = NULL;
-
-  assert(client != NULL);
-
-  server = client->server;
-
-  assert(server != NULL);
-  assert(&server->fd == fd);
-
-  if(status != COMM_OK)
-  {
-    ilog(L_DEBUG, "serv_connect_callback: Connect failed :(");
-    exit(1);
-  }
-
-  ilog(L_DEBUG, "serv_connect_callback: Connect succeeded!");
-  comm_setselect(fd, COMM_SELECT_READ, read_packet, client, 0);
-
-  dlinkAdd(client, &client->node, &global_server_list);
-  
-  execute_callback(connected_cb, client);
+  parser = NULL;
 }
 
-void 
-connect_server()
+Connection::Connection(Parser *p)
 {
-  struct Client *client = make_client(NULL);
-  struct Server *server = make_server(client);
-  struct Module *protomod;
+  parser = p;
+}
 
-  protomod = find_module(Connect.protocol, NO);
+void
+Connection::connect()
+{
+//  struct Module *protomod;
+
+/*  protomod = find_module(Connect.protocol, NO);
   if(protomod == NULL)
   {
     ilog(L_CRIT, "Unable to connect to uplink, protocol module %s not found.",
@@ -75,29 +58,121 @@ connect_server()
 
   ServerModeList = (struct ModeList *)modsym(protomod->handle, "ModeList");
   ilog(L_DEBUG, "Loaded server mode list %p %c %d", ServerModeList, 
-      ServerModeList[0].letter, ServerModeList[0].mode);
+      ServerModeList[0].letter, ServerModeList[0].mode);*/
 
-  strlcpy(server->pass, Connect.password, sizeof(server->pass));
-  strlcpy(client->name, Connect.name, sizeof(client->name));
-  strlcpy(client->host, Connect.host, sizeof(client->host));
-
-  SetConnecting(client);
-    
-  dlinkAdd(client, &client->node, &global_client_list);
-
-  if(comm_open(&server->fd, AF_INET, SOCK_STREAM, 0, NULL) < 0)
+  if(comm_open(&fd, AF_INET, SOCK_STREAM, 0, NULL) < 0)
   {
     ilog(L_DEBUG, "connect_server: Could not open socket");
     exit(1);
   }
 
-  comm_connect_tcp(&server->fd, Connect.host, Connect.port,
-      NULL, 0, serv_connect_callback, client, AF_INET, CONNECTTIMEOUT);
-  
+  comm_connect_tcp(&fd, Connect.host, Connect.port,
+      NULL, 0, connect_callback, this, AF_INET, CONNECTTIMEOUT);
 }
 
-void *
-server_connected(va_list args)
+void
+Connection::connect_callback(fde_t *fd, int status, void *data)
 {
-  return NULL;
+  Connection *connection = static_cast<Connection*>(data);
+
+  if(status != COMM_OK)
+  {
+    ilog(L_DEBUG, "serv_connect_callback: Connect failed :(");
+    exit(1);
+  }
+
+  ilog(L_DEBUG, "serv_connect_callback: Connect succeeded!");
+  connection->setup_read();
+  
+//  execute_callback(connected_cb, client);
+}
+
+void
+Connection::read()
+{
+  int length = 0;
+  char readBuf[READBUF_SIZE];
+
+  memset(readBuf, 0, READBUF_SIZE);
+
+  do
+  {
+    length = recv(fd.fd, readBuf, READBUF_SIZE, 0);
+    if(length <= 0)
+    {
+      if(length < 0 && ignoreErrno(errno))
+        break;
+
+      services_die("connection went dead on read", NO);
+    }
+    read_queue.push_back(readBuf);
+    process_queue();
+  } while(length == sizeof(readBuf));
+  this->setup_read();
+}
+
+void
+Connection::process_queue()
+{
+  char c;
+  int line_bytes, empty_bytes, phase;
+  std::stringstream ss;
+  std::string line;
+
+  line_bytes = empty_bytes = phase = 0; 
+
+  while(!read_queue.empty())
+  {
+    std::string s = read_queue.front();
+    std::string::iterator i;
+
+    for(i = s.begin(); i != s.end(); i++)
+    {
+      c = *i;
+      if(IsEol(c) || (c == ' ' && phase != 1))
+      {
+        empty_bytes++;
+        if(phase == 1)
+          phase = 2;
+      }
+      else switch(phase)
+      {
+        case 0: 
+          phase = 1;
+        case 1: 
+          if(line_bytes++ < IRC_BUFSIZE - 2)
+            ss << c;
+          break;
+        case 2: 
+          line = ss.str();
+          
+          parser->parse_line(line);
+          
+          line_bytes = empty_bytes = phase = 0;
+          ss.clear();
+          ss.flush();
+          ss.str("");
+          i--;
+          break;
+      }
+    }
+    if(phase != 2)
+    {
+      if(read_queue.size() == 1)
+        return; // This is the only element in the queue, so we need more.
+      read_queue.pop_front();
+    }
+    else
+    {
+      line = ss.str();
+
+      parser->parse_line(line);
+
+      line_bytes = empty_bytes = phase = 0;
+      ss.clear();
+      ss.flush();
+      ss.str("");
+      read_queue.pop_front();
+    }
+  }
 }

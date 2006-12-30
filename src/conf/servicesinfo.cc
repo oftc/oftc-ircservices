@@ -59,17 +59,17 @@ reset_servicesinfo(va_list args)
 static void *
 verify_servicesinfo(va_list args)
 {
-  if (!me.name[0])
+  if (!me->c_name()[0])
     parse_fatal("name= field missing in servicesinfo{} section");
 
-  if (!me.info[0])
+/*  if (!me.info[0])
     parse_fatal("description= field missing in servicesinfo{} section");
-
-  if (conf_cold && me.id[0])
-  {
-    hash_add_id(&me);
-    memcpy(new_uid, me.id, IRC_MAXSID);
-  }
+*/
+//  if (conf_cold && me->c_id()[0])
+//  {
+  //  hash_add_id(&me);
+  //  memcpy(new_uid, me->c_id(), IRC_MAXSID);
+ // }
 
   recalc_fdlimit(NULL);
 
@@ -89,8 +89,8 @@ si_set_name(void *value, void *unused)
       parse_error("server name too long (max %d)", HOSTLEN);
   }
   else if (conf_cold)
-    strcpy(me.name, name);
-  else if (strcmp(me.name, name) != 0)
+    me->set_name(name);
+  else if (strcmp(me->c_name(), name) != 0)
     parse_error("cannot change server name on rehash");
 }
 
@@ -102,16 +102,16 @@ si_set_sid(void *value, void *unused)
   /* XXX */
   if (!IsDigit(sid[0]) || !IsAlNum(sid[1]) || !IsAlNum(sid[2]) || sid[3] != 0)
     parse_error("invalid SID, must match [0-9][0-9A-Z][0-9A-Z]");
-  else if (conf_cold)
-    strcpy(me.id, sid);
-  else if (strcmp(me.id, sid) != 0)
+//  else if (conf_cold)
+ //   strcpy(me->c_id(), sid);
+  else if (strcmp(me->c_id(), sid) != 0)
     parse_error("cannot change SID on rehash");
 }
 
 static void
 si_set_description(void *value, void *unused)
 {
-  strlcpy(me.info, (char *) value, sizeof(me.info));
+//  strlcpy(me.info, (char *) value, sizeof(me.info));
 }
 
 static void

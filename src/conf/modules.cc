@@ -347,7 +347,7 @@ boot_modules(char cold)
   {
     if (!find_module(*p, NO))
     {
-      services_die("No core modules", 0);
+//      services_die("No core modules", 0);
     }
   }
 }

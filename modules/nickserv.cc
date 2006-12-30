@@ -1010,7 +1010,7 @@ ns_on_nick_change(va_list args)
   char *oldnick       = va_arg(args, char *);
   struct Nick *nick_p;
   char userhost[USERHOSTLEN+1]; 
-  int oldid = 0;
+  unsigned int oldid = 0;
 
   ilog(L_DEBUG, "%s changing nick to %s", oldnick, user->name);
  

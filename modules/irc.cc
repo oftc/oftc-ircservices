@@ -434,6 +434,9 @@ irc_sendmsg_topic(va_list args)
   struct Client   *setter   = va_arg(args, struct Client *);
   char            *topic    = va_arg(args, char *);
 
+  // Use the variable
+  source = source;
+
   sendto_server(uplink, ":%s TBURST 1 %s %lu %s :%s", me.name, chptr->chname,
       CurrentTime, setter->name, topic);
 
@@ -1284,6 +1287,8 @@ m_nick(struct Client *client_p, struct Client *source_p,
   /* if the nick doesnt exist, allow it and process like normal */
   if (!(target_p = find_client(nick)))
   {
+    CClient *cclient = new CClient(nick, nusername, ngecos, nhost);
+    cclient->introduce();
     nick_from_server(client_p, source_p, parc, parv, newts, nick, ngecos);
     return;
   }

@@ -53,7 +53,8 @@ generate_md5_salt(char *salt, int length)
 char *
 crypt_pass_old(char *password)
 {
-  char salt[16];
+  //char salt[16];
+  return NULL;
 
 //  return servcrypt(password, generate_md5_salt(salt, 16));
 }

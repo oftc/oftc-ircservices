@@ -72,7 +72,6 @@ SRCS = 								\
  crypt.cc							\
  connection.cc 				\
  dbm.cc 		  				\
- hash.cc							\
  hostmask.cc					\
  interface.cc					\
  language.cc					\

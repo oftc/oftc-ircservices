@@ -137,8 +137,8 @@ ilog(const int priority, const char *fmt, ...)
   if(priority <= file_logLevel)
     write_log(buf);
 
-  if(priority <= gnotice_logLevel)
-    global_notice(NULL, buf);
+//  if(priority <= gnotice_logLevel)
+//    global_notice(NULL, buf);
 }
   
 void

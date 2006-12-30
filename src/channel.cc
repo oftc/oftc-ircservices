@@ -87,14 +87,14 @@ remove_ban(struct Ban *bptr, dlink_list *list)
 void
 remove_user_from_channel(struct Membership *member)
 {
-  struct Client *client_p = member->client_p;
+  Client *client_p = member->client_p;
   struct Channel *chptr = member->chptr;
 
   dlinkDelete(&member->channode, &chptr->members);
-  dlinkDelete(&member->usernode, &client_p->channel);
+//  dlinkDelete(&member->usernode, &client_p->channel);
 
   BlockHeapFree(member_heap, member);
-  ilog(L_DEBUG, "Removing %s from channel %s", client_p->name, chptr->chname);
+  ilog(L_DEBUG, "Removing %s from channel %s", client_p->c_name(), chptr->chname);
 
   if (chptr->members.head == NULL)
   {
@@ -175,17 +175,14 @@ has_member_flags(struct Membership *ms, unsigned int flags)
 
 
 struct Membership *
-find_channel_link(struct Client *client, struct Channel *chptr)
+find_channel_link(Client *client, struct Channel *chptr)
 {
-  dlink_node *ptr = NULL;
+  //dlink_node *ptr = NULL;
 
-  if (!IsClient(client))
-    return NULL;
-
-  DLINK_FOREACH(ptr, client->channel.head)
+/*  DLINK_FOREACH(ptr, client->channel.head)
     if (((struct Membership *)ptr->data)->chptr == chptr)
       return (struct Membership *)ptr->data;
-
+*/
   return NULL;
 }
 
@@ -197,7 +194,7 @@ find_channel_link(struct Client *client, struct Channel *chptr)
  * \param flood_ctrl whether to count this join in flood calculations
  */
 void
-add_user_to_channel(struct Channel *chptr, struct Client *who,
+add_user_to_channel(struct Channel *chptr, Client *who,
                     unsigned int flags, int flood_ctrl)
 {
   struct Membership *ms = NULL;
@@ -207,14 +204,14 @@ add_user_to_channel(struct Channel *chptr, struct Client *who,
   ms->chptr = chptr;
   ms->flags = flags;
 
-  ilog(L_DEBUG, "Adding %s to %s", who->name, chptr->chname);
+  ilog(L_DEBUG, "Adding %s to %s", who->c_name(), chptr->chname);
 
   dlinkAdd(ms, &ms->channode, &chptr->members);
-  dlinkAdd(ms, &ms->usernode, &who->channel);
+  //dlinkAdd(ms, &ms->usernode, &who->channel);
 }
 
 struct Ban *
-find_bmask(const struct Client *who, const dlink_list *const list)
+find_bmask(Client *who, const dlink_list *const list)
 {
   const dlink_node *ptr = NULL;
 
@@ -222,30 +219,8 @@ find_bmask(const struct Client *who, const dlink_list *const list)
   {
     struct Ban *bp = (struct Ban *)ptr->data;
 
-    if (match(bp->name, who->name) && match(bp->username, who->username))
-    {
-      switch (bp->type)
-      {
-        case HM_HOST:
-          if (match(bp->host, who->host) || match(bp->host, who->sockhost))
-            return bp;
-          break;
-#if 0
-        case HM_IPV4:
-          if (who->localClient->aftype == AF_INET)
-            if (match_ipv4(&who->localClient->ip, &bp->addr, bp->bits))
-              return bp;
-          break;
-        case HM_IPV6:
-          if (who->localClient->aftype == AF_INET6)
-            if (match_ipv6(&who->localClient->ip, &bp->addr, bp->bits))
-              return bp;
-          break;
-#endif
-        default:
-          assert(0);
-      }
-    }
+    if(who->is_banned(bp))
+      return bp;
   }
   return NULL;
 }

@@ -57,7 +57,7 @@ client_dopacket(struct Client *client, char *buffer, size_t length)
   me.localClient->recv.bytes += length;
 */
 
-  parse(client, buffer, buffer + length);
+//  parse(client, buffer, buffer + length);
 }
 
 
@@ -68,6 +68,8 @@ client_dopacket(struct Client *client, char *buffer, size_t length)
  * output       - length of <buffer>
  * side effects - one line is copied and removed from the dbuf
  */
+
+#if 0
 static int
 extract_one_line(struct dbuf_queue *qptr, char *buffer)
 {
@@ -129,6 +131,7 @@ extract_one_line(struct dbuf_queue *qptr, char *buffer)
   dbuf_delete(qptr, line_bytes + empty_bytes);
   return IRC_MIN(line_bytes, IRC_BUFSIZE - 2);
 }
+#endif
 
 /*
  * parse_client_queued - parse client queued messages
@@ -140,10 +143,10 @@ parse_client_queued(struct Client *client)
 
   while (1)
   {
-    if (IsDefunct(client->server))
-      return;
-    if ((dolen = extract_one_line(&client->server->buf_recvq, readBuf)) == 0)
-      break;
+    //if (IsDefunct(client->server))
+    //  return;
+    //if ((dolen = extract_one_line(&client->server->buf_recvq, readBuf)) == 0)
+    //  break;
     client_dopacket(client, readBuf, dolen);
   }
 }
@@ -187,11 +190,11 @@ read_packet(fde_t *fd, void *data)
 void *
 iorecv_default(va_list args)
 {
-  struct Client *client = va_arg(args, struct Client*);
-  int length = va_arg(args, int);
-  char *buf = va_arg(args, char *);
+  //struct Client *client = va_arg(args, struct Client*);
+  //int length = va_arg(args, int);
+  //char *buf = va_arg(args, char *);
 
-  dbuf_put(&client->server->buf_recvq, buf, length);
+ // dbuf_put(&client->server->buf_recvq, buf, length);
 
   return NULL;
 }

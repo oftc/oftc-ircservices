@@ -28,14 +28,20 @@
 
 
 #include "stdinc.h"
+#include <vector>
+#include <stdexcept>
+#include <tr1/unordered_map>
+
+std::vector<Client *> GlobalClientList;
+std::tr1::unordered_map<const char *, Client *> GlobalClientHash;
 
 dlink_list global_client_list;
 dlink_list global_server_list;
-static int clean_nick_name(char *, int);
+/*static int clean_nick_name(char *, int);
 static int clean_user_name(char *);
-static int clean_host_name(char *);
+static int clean_host_name(char *);*/
 
-static BlockHeap *client_heap  = NULL;
+//static BlockHeap *client_heap  = NULL;
 
 unsigned int user_modes[256] =
 {
@@ -110,6 +116,7 @@ unsigned int user_modes[256] =
   /* 0xF0 */ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  /* 0xFF */
 };
 
+#if 0
 void
 init_client()
 {
@@ -773,4 +780,53 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
   hash_add_client(source_p);
   if(!samenick)
     execute_callback(on_nick_change_cb, source_p, oldnick);
+}
+
+#endif
+Client::Client()
+{
+}
+
+Client::Client(std::string const& n)
+{
+  name = n;
+}
+
+Client::Client(std::string const& nickname, std::string const& username, 
+  std::string const& infostr, std::string const &hostname)
+{
+  name = nickname.substr(0, NICKLEN);
+  user = username.substr(0, USERLEN);
+  info = infostr.substr(0, REALLEN);
+  host = hostname.substr(0, HOSTLEN);
+}
+
+std::string
+Client::nuh()
+{
+  std::string str;
+
+  str = name;
+  str.append("!");
+  str.append(user);
+  str.append("@");
+  str.append(host);
+  return str;
+}
+
+void
+Client::introduce()
+{
+  if(name.length() == 0)
+    throw std::runtime_error("No name specified");
+  if(user.length() == 0)
+    throw std::runtime_error("No username specified");
+  if(host.length() == 0)
+    throw std::runtime_error("No hostname specified");
+
+  tsinfo = CurrentTime;
+  GlobalClientList.push_back(this);
+  GlobalClientHash[name.c_str()] = this;
+  ilog(L_DEBUG, "Adding C++ client %s", this->nuh().c_str());
+  //execute_callback(on_newuser_cb, source_p);
 }

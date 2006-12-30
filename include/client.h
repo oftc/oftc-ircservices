@@ -1,6 +1,8 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <string>
+
 extern dlink_list global_client_list;
 extern dlink_list global_server_list;
 EXTERN unsigned int user_modes[];
@@ -89,43 +91,40 @@ struct Server
   char pass[PASSLEN+1];
 };
 
-struct Client
+class Client
 {
-  dlink_node node;
-  dlink_node lnode;
-  dlink_list channel;
+public:
+  Client();
+  Client(std::string const&);
+  Client(std::string const&, std::string const&, std::string const&,
+      std::string const &);
+  void introduce();
+  void kill();
+  bool is_banned(struct Ban *);
+  void change_nick(std::string const&);
+  void change_umode(std::string const&);
 
-  dlink_list server_list;   /**< Servers on this server      */
-  dlink_list client_list;   /**< Clients on this server      */
+  std::string nuh();
+  inline const char *c_nuh() { return nuh().c_str(); };
+  inline const char *c_name() { return name.c_str(); };
+  inline const char *c_id()   { return id.c_str();   };
+  inline const char *c_user() { return user.c_str(); };
+  inline const char *c_host() { return host.c_str(); };
 
+  inline void set_ts(time_t ts) { tsinfo = ts; };
+  inline void set_name(std::string const& n) { name = n; };
 
-  struct Client *hnext;         /* For client hash table lookups by name */
-  struct Client *idhnext;       /* For SID hash table lookups by sid */
-  struct Client *from;
-  struct Client *servptr;
-  struct Client *uplink;        /* services uplink server */
+private:
+  std::string name;
+  std::string host;
+  std::string sockhost;
+  std::string id;
+  std::string info;
+  std::string user;
 
-  struct Nick   *nickname;
-
-  char          name[HOSTLEN+1];
-  char          host[HOSTLEN+1];
-  char          sockhost[HOSTLEN+1];
-  char          id[IDLEN + 1];      /* client ID, unique ID per client */
-  char          info[REALLEN + 1];  /* Free form additional client info */
-  char          username[USERLEN + 1];
-    
-  struct Server      *server;
-
-  time_t        tsinfo;
-  time_t        enforce_time;
-  time_t        release_time;
-  unsigned int  status;
-  unsigned int  umodes;
-  unsigned int  access;
-  unsigned int  num_badpass;    /* Number of incorrect passwords */
-  unsigned int  hopcount;
-  unsigned char handler;        /* Handler index */
-  int flags;
+  time_t tsinfo;
+  time_t enforce_time;
+  time_t release_time;
 };
 
 void init_client();

@@ -23,6 +23,8 @@
  */
 
 #include "stdinc.h"
+#include <string>
+#include <stdexcept>
 
 dlink_list services_list = { 0 };
 struct Callback *send_newuser_cb;
@@ -106,99 +108,7 @@ make_service(char *name)
   return service;
 }
 
-void
-introduce_client(const char *name)
-{
-  struct Client *client = make_client(&me);
-
-  client->tsinfo = CurrentTime;
-  dlinkAdd(client, &client->node, &global_client_list);
-
-  /* copy the nick in place */
-  strlcpy(client->name, name, sizeof(client->name));
-  hash_add_client(client);
-
-  register_remote_user(&me, client, "services", me.name, me.name, name);
-
-  /* If we are not connected yet, the service will be sent as part of burst */
-  if(me.uplink != NULL)
-  {
-    execute_callback(send_newuser_cb, me.uplink, name, "services", me.name,
-      name, "o");
-  }
-}
-
-void
-tell_user(struct Service *service, struct Client *client, char *text)
-{
-  execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, text);
-}
-
-void
-reply_user(struct Service *source, struct Service *service, 
-    struct Client *client, unsigned int langid,
-    ...)
-{
-  char buf[IRC_BUFSIZE+1];
-  va_list ap;
-  char *s, *t;
-  char *langstr = NULL;
-  struct LanguageFile *languages;
-
-  if(service == NULL)
-    languages = ServicesLanguages;
-  else
-    languages = service->languages;
-  
-  if(langid != 0)
-  {
-    if(client->nickname == NULL)
-      langstr = languages[0].entries[langid];
-    else
-      langstr = languages[client->nickname->language].entries[langid];
-  }
-   
-  if(langstr == NULL)
-    langstr = "%s";
-  
-  va_start(ap, langid);
-  vsnprintf(buf, IRC_BUFSIZE, langstr, ap);
-  va_end(ap);
-  s = buf;
-  while (*s) 
-  {
-    t = s;
-    s += strcspn(s, "\n");
-    if (*s)
-      *s++ = 0;
-    execute_callback(send_notice_cb, me.uplink, source->name, client->name, 
-        *t != '\0' ? t : " ");
-  }
-}
-
-void
-kill_user(struct Service *service, struct Client *client, const char *reason)
-{
-  execute_callback(send_kill_cb, me.uplink, service, client, reason);
-}
-
-void
-send_umode(struct Service *service, struct Client *client, const char *mode)
-{
-  execute_callback(send_umode_cb, me.uplink, client->name, mode);
-}
-
-void
-send_nick_change(struct Service *service, struct Client *client, 
-    const char *newnick)
-{
-  if(!IsMe(client->from))
-    execute_callback(send_nick_cb, me.uplink, client, newnick);
-  hash_del_client(client);
-  strlcpy(client->name, newnick, sizeof(client->name));
-  hash_add_client(client);
-}
-
+#if 0
 void
 send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
 {
@@ -233,7 +143,7 @@ send_cmode(struct Service *service, struct Channel *chptr, const char *mode,
 
 void
 send_topic(struct Service *service, struct Channel *chptr, 
-    struct Client *client, const char *topic)
+    Client *client, const char *topic)
 {
   execute_callback(send_topic_cb, me.uplink, service, chptr, client,
       topic);
@@ -248,26 +158,26 @@ kick_user(struct Service *service, struct Channel *chptr, const char *client,
 }
 
 void
-op_user(struct Service *service, struct Channel *chptr, struct Client *client)
+op_user(struct Service *service, struct Channel *chptr, Client *client)
 {
   send_cmode(service, chptr, "+o", client->name);
 }
 
 void
-deop_user(struct Service *service, struct Channel *chptr, struct Client *client)
+deop_user(struct Service *service, struct Channel *chptr, Client *client)
 {
   send_cmode(service, chptr, "-o", client->name);
 }
 
 void
 devoice_user(struct Service *service, struct Channel *chptr, 
-    struct Client *client)
+    Client *client)
 {
   send_cmode(service, chptr, "-v", client->name);
 }
 
 void
-invite_user(struct Service *service, struct Channel *chptr, struct Client *client)
+invite_user(struct Service *service, struct Channel *chptr, Client *client)
 {
   execute_callback(send_invite_cb, me.uplink, service, chptr, client);
 }
@@ -275,7 +185,7 @@ invite_user(struct Service *service, struct Channel *chptr, struct Client *clien
 void
 ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
-  struct Client *client = find_client(service->name);
+  Client *client = find_client(service->name);
 
   send_cmode(service, chptr, "+b", mask);
   add_id(client, chptr, (char*)mask, CHFL_BAN);
@@ -289,7 +199,7 @@ unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 }
   
 void
-identify_user(struct Client *client)
+identify_user(Client *client)
 {
   struct Nick *nick = client->nickname;
 
@@ -311,7 +221,7 @@ identify_user(struct Client *client)
 }
 
 void
-cloak_user(struct Client *client, char *cloak)
+cloak_user(Client *client, char *cloak)
 {
   execute_callback(send_cloak_cb, client, cloak);
 }
@@ -337,7 +247,7 @@ global_notice(struct Service *service, char *text, ...)
 }
 
 void
-do_help(struct Service *service, struct Client *client, 
+do_help(struct Service *service, Client *client, 
     const char *command, int parc, char *parv[])
 {
   struct ServiceMessage *msg, *sub;
@@ -433,7 +343,7 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
 }
 
 int enforce_matching_serviceban(struct Service *service, struct Channel *chptr, 
-    struct Client *client)
+    Client *client)
 {
   struct ServiceBan *sban;
   void *ptr, *first;
@@ -482,7 +392,7 @@ enforce_akick(struct Service *service, struct Channel *chptr,
   DLINK_FOREACH(ptr, chptr->members.head)
   {
     struct Membership *ms = (struct Membership *)ptr->data;
-    struct Client *client = ms->client_p;
+    Client *client = ms->client_p;
 
     numkicks += enforce_client_serviceban(service, chptr, client, akick);
   }
@@ -491,7 +401,7 @@ enforce_akick(struct Service *service, struct Channel *chptr,
 
 int
 enforce_client_serviceban(struct Service *service, struct Channel *chptr, 
-    struct Client *client, struct ServiceBan *sban)
+    Client *client, struct ServiceBan *sban)
 {
   struct irc_ssaddr addr;
   struct split_nuh_item nuh;
@@ -592,7 +502,7 @@ get_modestring(unsigned int modes, char *modbuf, int len)
  */
 int
 set_mode_lock(struct Service *service, struct Channel *chptr, 
-    struct Client *client, const char *lock, char **value)
+    Client *client, const char *lock, char **value)
 {
   const char *parv[3] = { NULL, NULL, NULL };
   char *p;
@@ -922,20 +832,30 @@ make_random_string(char *buffer, size_t length)
   buffer[length - 1] = 0;
 }
 
-void 
-chain_squit(struct Client *client, struct Client *source, char *comment)
+#endif
+service::service()
 {
-  execute_callback(on_quit_cb, client, source, comment);
+}
+
+service::service(std::string const &n) 
+{
+  name = n;
 }
 
 void
-chain_part(struct Client *client, struct Client *source, char *name)
+service::introduce()
 {
-  execute_callback(on_part_cb, client, source, name);
+  if(name.length() == 0)
+    throw std::runtime_error("Need a service name");
+
+  client = new Client(name, "services", name, me->c_name());
+
+  client->set_ts(CurrentTime);
+  client->introduce();
 }
 
 void
-chain_join(struct Client *source, char *channel)
+service::notice_client(Client *client, unsigned int, std::string notice)
 {
-  execute_callback(on_join_cb, source, channel);
+  
 }

@@ -273,7 +273,13 @@ m_uid(struct Client *client_p, struct Client *source_p,
   newts = atol(uts);
 
   if ((target_p = find_client(unick)) == NULL)
+  {
+    CClient *cclient = new CClient(nick, uname, ugecos, uhost);
+    cclient->introduce();
+
     client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos);
+  }
+  
 }
 
 static void

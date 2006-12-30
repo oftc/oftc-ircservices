@@ -30,21 +30,22 @@
 
 struct Message error_msgtab = {
  "ERROR", 0, 0, 1, 0, 0, 0,
-  { ms_error, m_ignore }
+  { ms_error, ms_error }
 };
 
 void
-ms_error(struct Client *client, struct Client *source, int parc, char *parv[])
+ms_error(Client *client, Client *source, int parc, char *parv[])
 {
   const char *para;
 
   para = (parc > 1 && *parv[1] != '\0') ? parv[1] : "<>";
 
-  ilog(L_DEBUG, "Received ERROR message from %s: %s", source->name, para);
+  ilog(L_DEBUG, "Received ERROR message from %s: %s", source->c_name(), para);
 
   if (client == source)
-    ilog(L_DEBUG, "ERROR :from %s -- %s", client->name, para);
+    ilog(L_DEBUG, "ERROR :from %s -- %s", client->c_name(), para);
   else
-    ilog(L_DEBUG, "ERROR :from %s via %s -- %s", source->name, client->name, para);
+    ilog(L_DEBUG, "ERROR :from %s via %s -- %s", source->c_name(), 
+    client->c_name(), para);
 }
 

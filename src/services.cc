@@ -31,7 +31,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-struct Client me;
+Client *me;
 
 static void setup_signals();
 static void signal_handler(int);
@@ -39,13 +39,15 @@ static void sigchld_handler(int);
 
 int main(int argc, char *argv[])
 {
+  Connection *connection = new Connection();
+
+  me = new Client();
+
   memset(&ServicesInfo, 0, sizeof(ServicesInfo));
 
-  memset(&me, 0, sizeof(me));
-
   iorecv_cb = register_callback("iorecv", iorecv_default);
-  connected_cb = register_callback("server connected", server_connected);
-  iosend_cb = register_callback("iosend", iosend_default);
+  //connected_cb = register_callback("server connected", server_connected);
+  //iosend_cb = register_callback("iosend", iosend_default);
 
   OpenSSL_add_all_digests();
  
@@ -53,26 +55,15 @@ int main(int argc, char *argv[])
   strcpy(ServicesInfo.logfile, "services.log");
   libio_init(FALSE);
   init_log(ServicesInfo.logfile);
-  init_channel();
+  //init_channel();
   init_conf();
-  init_client();
-  init_parser();
-  init_channel_modes();
+  //init_client();
+  //init_parser();
+  //init_channel_modes();
 
-  me.from = me.servptr = &me;
-  SetServer(&me);
-  SetMe(&me);
-  dlinkAdd(&me, &me.node, &global_client_list);
-  
   read_services_conf(TRUE);
-  hash_add_client(&me);
-  if(me.id[0] != '\0')
-    hash_add_id(&me);
 
   init_db();
-
-  ilog(L_DEBUG, "Services starting with name %s description %s sid %s",
-      me.name, me.info, me.id);
 
   db_load_driver();
 #ifndef STATIC_MODULES
@@ -95,7 +86,7 @@ int main(int argc, char *argv[])
   
   setup_signals();
 
-  connect_server();
+  connection->connect();
 
   for(;;)
   {
@@ -103,7 +94,7 @@ int main(int argc, char *argv[])
       eventRun();
 
     comm_select();
-    send_queued_all();
+    //send_queued_all();
   }
 
   return 0;
@@ -160,9 +151,9 @@ services_die(const char *msg, int rboot)
 
   EVP_cleanup();
 
-  exit_client(&me, &me, "Services shutting down");
+//  exit_client(me, me, "Services shutting down");
 
-  send_queued_all();
+  //send_queued_all();
   exit(rboot);
 }
 

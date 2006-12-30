@@ -146,16 +146,7 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
   ban_p->len = len - 2; /* -2 for @ and ! */
   ban_p->type = parse_netmask(host, &ban_p->addr, &ban_p->bits);
 
-  if (IsClient(client_p))
-  {
-    ban_p->who = (char *)MyMalloc(strlen(client_p->name) +
-                          strlen(client_p->username) +
-                          strlen(client_p->host) + 3);
-    ircsprintf(ban_p->who, "%s!%s@%s", client_p->name,
-               client_p->username, client_p->host);
-  }
-  else
-    DupString(ban_p->who, client_p->name);
+  DupString(ban_p->who, client_p->c_nuh());
 
   dlinkAdd(ban_p, &ban_p->node, list);
 
@@ -273,7 +264,7 @@ channel_modes(struct Channel *chptr, struct Client *client_p,
   {
     *mbuf++ = 'l';
 
-    if (IsMember(client_p, chptr) || IsServer(client_p))
+    if (IsMember(client_p, chptr) /*|| IsServer(client_p)*/)
       pbuf += ircsprintf(pbuf, "%d ", chptr->mode.limit);
   }
 
@@ -281,7 +272,7 @@ channel_modes(struct Channel *chptr, struct Client *client_p,
   {
     *mbuf++ = 'k';
 
-    if (*pbuf || IsMember(client_p, chptr) || IsServer(client_p))
+    if (*pbuf || IsMember(client_p, chptr) /*|| IsServer(client_p)*/)
       ircsprintf(pbuf, "%s ", chptr->mode.key);
   }
 
@@ -375,7 +366,7 @@ chm_nosuch(struct Client *client_p, struct Client *source_p,
     return;
 
   *errors |= SM_ERR_UNKNOWN;
-  ilog(L_DEBUG, "Unknown mode %s %s %c", me.name, source_p->name, c);
+  ilog(L_DEBUG, "Unknown mode %s %s %c", me->c_nuh(), source_p->c_nuh(), c);
 }
 
 static void
@@ -441,9 +432,8 @@ chm_ban(struct Client *client_p, struct Client *source_p,
   memcpy(mask, parv[*parn], sizeof(nuh_mask[*parn]));
   ++*parn;
 
-  if (IsServer(client_p))
-    if (strchr(mask, ' '))
-      return;
+  if (strchr(mask, ' '))
+    return;
 
   switch (dir)
   {
@@ -488,9 +478,8 @@ chm_except(struct Client *client_p, struct Client *source_p,
   memcpy(mask, parv[*parn], sizeof(nuh_mask[*parn]));
   ++*parn;
 
-  if (IsServer(client_p))
-    if (strchr(mask, ' '))
-      return;
+  if (strchr(mask, ' '))
+    return;
 
   switch (dir)
   {
@@ -536,9 +525,8 @@ chm_invex(struct Client *client_p, struct Client *source_p,
   memcpy(mask, parv[*parn], sizeof(nuh_mask[*parn]));
   ++*parn;
 
-  if (IsServer(client_p))
-    if (strchr(mask, ' '))
-      return;
+  if (strchr(mask, ' '))
+    return;
 
   switch (dir)
   {
@@ -598,7 +586,6 @@ chm_op(struct Client *client_p, struct Client *source_p,
 
   if ((targ_p = find_chasing(source_p, opnick, NULL)) == NULL)
     return;
-  assert(IsClient(targ_p));
 
   if ((member = find_channel_link(targ_p, chptr)) == NULL)
   {
@@ -639,8 +626,8 @@ chm_op(struct Client *client_p, struct Client *source_p,
   mode_changes[mode_count].caps = caps;
   mode_changes[mode_count].nocaps = 0;
   mode_changes[mode_count].mems = ALL_MEMBERS;
-  mode_changes[mode_count].id = targ_p->id;
-  mode_changes[mode_count].arg = targ_p->name;
+  mode_changes[mode_count].id = targ_p->c_id();
+  mode_changes[mode_count].arg = targ_p->c_name();
   mode_changes[mode_count++].client = targ_p;
 
   if (dir == MODE_ADD)
@@ -756,7 +743,6 @@ chm_voice(struct Client *client_p, struct Client *source_p,
 
   if ((targ_p = find_chasing(source_p, opnick, NULL)) == NULL)
     return;
-  assert(IsClient(targ_p));
 
   if ((member = find_channel_link(targ_p, chptr)) == NULL)
   {
@@ -775,8 +761,8 @@ chm_voice(struct Client *client_p, struct Client *source_p,
   mode_changes[mode_count].caps = 0;
   mode_changes[mode_count].nocaps = 0;
   mode_changes[mode_count].mems = ALL_MEMBERS;
-  mode_changes[mode_count].id = targ_p->id;
-  mode_changes[mode_count].arg = targ_p->name;
+  mode_changes[mode_count].id = targ_p->c_id();
+  mode_changes[mode_count].arg = targ_p->c_name();
   mode_changes[mode_count++].client = targ_p;
 
   if (dir == MODE_ADD)
