@@ -14,7 +14,6 @@ using std::string;
 using std::vector;
 using std::tr1::unordered_map;
 
-
 extern vector<Client *> GlobalClientList;
 extern unordered_map<string, Client *> GlobalClientHash;
 
