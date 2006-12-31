@@ -61,6 +61,7 @@ init_conf(void)
   init_modules();
 #endif
   init_logging();
+  init_service();
 }
 
 /*

@@ -23,19 +23,15 @@ protected:
   Connection *connection;
 };
 
-struct Service;
-//struct Client;
-//
-
-class service
+class Service
 {
 public:
-  service();
-  service(std::string const &);
+  Service();
+  Service(string const &);
   void introduce();
-  void notice_client(Client *, unsigned int, std::string);
+  void notice_client(Client *, unsigned int, string);
 private:
-  std::string name;
+  string name;
   Client *client;
 };
 
@@ -43,17 +39,6 @@ enum ServiceBanType
 {
   AKICK_BAN = 0,
   AKILL_BAN
-};
-
-struct Service
-{
-  dlink_node node;
-  struct Service *hnext;
-
-  char name[NICKLEN+1];
-  char *last_command;
-  struct LanguageFile languages[LANG_LAST];
-  void *data;
 };
 
 struct ServiceBan

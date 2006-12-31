@@ -61,52 +61,9 @@ struct ModeList *ServerModeList;
 void
 init_interface()
 {
-  services_heap       = BlockHeapCreate("services", sizeof(struct Service), SERVICES_HEAP_SIZE);
-  /* XXX some of these should probably have default callbacks */
-  send_newuser_cb     = register_callback("us introducing user", NULL);
-  send_privmsg_cb     = register_callback("message user", NULL);
-  send_notice_cb      = register_callback("NOTICE user", NULL);
-  send_gnotice_cb     = register_callback("Global Notice", NULL);
-  send_umode_cb       = register_callback("Set UMODE", NULL);
-  send_cloak_cb       = register_callback("Cloak an user", NULL);
-  send_nick_cb        = register_callback("Send a new nickname", NULL);
-  send_akill_cb       = register_callback("Send AKILL to network", NULL);
-  send_unakill_cb     = register_callback("Send UNAKILL", NULL);
-  send_kick_cb        = register_callback("Send KICK to network", NULL);
-  send_cmode_cb       = register_callback("Send Channel MODE", NULL);
-  send_invite_cb      = register_callback("Send INVITE", NULL);
-  send_topic_cb       = register_callback("Send TOPIC", NULL);
-  send_kill_cb        = register_callback("Send KILL", NULL);
-  on_nick_change_cb   = register_callback("Propagate NICK", NULL);
-  on_join_cb          = register_callback("Propagate JOIN", NULL);
-  on_part_cb          = register_callback("Propagate PART", NULL);
-  on_quit_cb          = register_callback("Propagate QUIT", NULL);
-  on_umode_change_cb  = register_callback("Propagate UMODE", NULL);
-  on_cmode_change_cb  = register_callback("Propagate CMODE", NULL);
-  on_quit_cb          = register_callback("Propagate SQUIT", NULL);
-  on_identify_cb      = register_callback("Identify Callback", NULL);
-  on_newuser_cb       = register_callback("New user coming to us", NULL);
-  on_channel_destroy_cb = register_callback("Channel is being destroyed", NULL);
-  on_topic_change_cb  = register_callback("Topic changed", NULL);
-
   load_language(ServicesLanguages, "services.en");
 }
 
-void
-cleanup_interface()
-{
-  BlockHeapDestroy(services_heap);
-}
-
-struct Service *
-make_service(char *name)
-{
-  struct Service *service = (struct Service *)BlockHeapAlloc(services_heap);  
-
-  strlcpy(service->name, name, sizeof(service->name));
-
-  return service;
-}
 
 #if 0
 void
@@ -833,17 +790,17 @@ make_random_string(char *buffer, size_t length)
 }
 
 #endif
-service::service()
+Service::Service()
 {
 }
 
-service::service(std::string const &n) 
+Service::Service(std::string const &n) 
 {
   name = n;
 }
 
 void
-service::introduce()
+Service::introduce()
 {
   if(name.length() == 0)
     throw std::runtime_error("Need a service name");
@@ -855,7 +812,7 @@ service::introduce()
 }
 
 void
-service::notice_client(Client *client, unsigned int, std::string notice)
+Service::notice_client(Client *client, unsigned int, string notice)
 {
   
 }

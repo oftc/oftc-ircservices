@@ -149,7 +149,7 @@ services_die(const char *msg, int rboot)
   //cleanup_ruby();
   cleanup_db();
   cleanup_modules();
-  cleanup_interface();
+  //cleanup_interface();
 
   EVP_cleanup();
 

@@ -66,6 +66,7 @@ SRCS = 								\
  conf/database.cc			\
  conf/logging.cc			\
  conf/modules.cc			\
+ conf/service.cc			\
  conf/servicesinfo.cc	\
  conf.cc							\
  client.cc						\
