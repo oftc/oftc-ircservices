@@ -9,6 +9,8 @@ using std::string;
 using std::vector;
 using std::tr1::unordered_map;
 
+class Server;
+
 class Message
 {
 public:
@@ -18,7 +20,7 @@ public:
   const char *c_name() { return name.c_str(); };
 
   virtual ~Message() = 0;
-  virtual void handler(Client *, Client *, vector<string>) = 0;
+  virtual void handler(Server *, Client *, vector<string>) = 0;
 protected:
   string name;
   unsigned int count;
@@ -29,7 +31,7 @@ class Parser
 public:
   Parser() {};
   void add_message(Message *);
-  void parse_line(Client *, string const&);
+  void parse_line(Connection *, string const&);
 private:
   unordered_map<string, Message *> message_map;
 };

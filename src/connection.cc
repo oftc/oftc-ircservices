@@ -71,7 +71,7 @@ void
 Connection::connect_callback(fde_t *fd, int status, void *data)
 {
   Connection *connection = static_cast<Connection*>(data);
-  Client *client;
+  Server *server;
 
   if(status != COMM_OK)
   {
@@ -81,11 +81,12 @@ Connection::connect_callback(fde_t *fd, int status, void *data)
 
   ilog(L_DEBUG, "serv_connect_callback: Connect succeeded!");
 
-  client = new Client(Connect.name, "server", Connect.host, "server");
-  client->set_password(Connect.password);
-  client->introduce();
+  server = new Server(Connect.name, "server", "server", Connect.host);
+  server->introduce();
+  server->set_connection(connection);
 
-  connection->set_client(client);
+  connection->set_server(server);
+  connection->set_password(Connect.password);
   connection->connected();
   connection->setup_read();
   
@@ -151,7 +152,7 @@ Connection::process_read_queue()
         case 2: 
           line = ss.str();
           
-          parser->parse_line(client, line);
+          parser->parse_line(this, line);
           
           line_bytes = empty_bytes = phase = 0;
           ss.clear();
@@ -171,7 +172,7 @@ Connection::process_read_queue()
     {
       line = ss.str();
 
-      parser->parse_line(client, line);
+      parser->parse_line(this, line);
 
       line_bytes = empty_bytes = phase = 0;
       ss.clear();

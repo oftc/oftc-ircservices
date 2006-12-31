@@ -28,14 +28,11 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
 #include "stdinc.h"
 #include "parse.h"
 
 using std::string;
 using std::vector;
-using std::cout;
-using std::endl;
 
 vector<string> 
 irc_string::split(const string& delim, size_type count)
@@ -68,7 +65,7 @@ Message::~Message()
 }
 
 void
-Parser::parse_line(Client *uplink, string const& line)
+Parser::parse_line(Connection *uplink, string const& line)
 {
   string sender, command;
   irc_string s = line;
@@ -84,14 +81,12 @@ Parser::parse_line(Client *uplink, string const& line)
     s = strings[1];
     strings = s.split(" ", 1);
 
-    cout << "Message from: '" << sender << "'" << endl;
-
     source = Client::find(sender);
   }
   else
   {
     strings = s.split(" ", 1);
-    source = uplink;
+    source = uplink->serv();
   }
 
   command = strings[0];
@@ -121,20 +116,9 @@ Parser::parse_line(Client *uplink, string const& line)
   }
 
   if((m = message_map[command]) != NULL)
-  {
-    cout << "Handled command: '" << command << "'" << endl; 
-    m->handler(uplink, source, args);
-  }
+    m->handler(uplink->serv(), source, args);
   else
-    cout << "Unhandled Command: '" << command << "'" << endl; 
-
-  vector<string>::const_iterator i;
-
-  cout << "Args: ";
-  for(i = args.begin(); i != args.end(); i++)
-    cout << "'" << *i << "' ";
-
-  cout << endl;
+    ilog(L_DEBUG, "Unhandled Command: '%s'", line.c_str());    
 }
 
 void

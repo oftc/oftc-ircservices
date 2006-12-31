@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
       eventRun();
 
     comm_select();
-    //send_queued_all();
+    connection->process_send_queue();
   }
 
   return 0;

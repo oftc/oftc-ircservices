@@ -8,17 +8,16 @@ using std::string;
 using std::stringstream;
 using std::runtime_error;
 
-class PingMessage : public Message
+class IgnoreMessage : public Message
 {
 public:
-  PingMessage() : Message("PING") {};
-  ~PingMessage()
+  IgnoreMessage(string const& n) : Message(n) {};
+  IgnoreMessage()
   {
   };
-  void handler(Client *uplink, Client *source, vector<string> args)
+  void handler(Server *uplink, Client *source, vector<string> args)
   {
-
-  };
+  }
 };
 
 class ErrorMessage : public Message
@@ -28,7 +27,7 @@ public:
   ~ErrorMessage()
   {
   };
-  void handler(Client *uplink, Client *source, vector<string> args)
+  void handler(Server *uplink, Client *source, vector<string> args)
   {
     string arg;
 
@@ -45,6 +44,35 @@ public:
   };
 };
 
+class PingMessage : public Message
+{
+public:
+  PingMessage() : Message("PING") {};
+  ~PingMessage()
+  {
+  };
+  void handler(Server *uplink, Client *source, vector<string> args)
+  {
+    stringstream ss;
+
+    ss << ":" << me->s_name() << " PONG " << me->s_name() << " :" << 
+      source->s_name();
+    uplink->send(ss.str());
+  };
+};
+
+class ServerMessage : public Message
+{
+public:
+  ServerMessage() : Message("SERVER") {};
+  ~ServerMessage()
+  {
+  };
+  void handler(Server *uplink, Client *source, vector<string> args)
+  {
+    stringstream ss;
+  };
+};
 
 Protocol::Protocol() : name("IRC"), parser(0), connection(0)
 {
@@ -54,11 +82,16 @@ void
 Protocol::init(Parser *p, Connection *c)
 {
   PingMessage *ping = new PingMessage();
+  ErrorMessage *error = new ErrorMessage();
+  ServerMessage *server = new ServerMessage();
+  IgnoreMessage *ignore; 
 
   parser = p;
   connection = c;
 
   parser->add_message(ping);
+  parser->add_message(error);
+  parser->add_message(server);
 }
 
 void Protocol::connected()

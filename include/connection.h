@@ -11,6 +11,8 @@ using std::string;
 
 extern Client *me;
 
+class Server;
+
 class Connection
 {
 public:
@@ -25,10 +27,12 @@ public:
   { 
     comm_setselect(&fd, COMM_SELECT_READ, read_callback, this, 0); 
   };
-  void set_client(Client *c) { client = c; };
+  void set_server(Server *s) { server = s; };
+  void set_password(string const& p) { pass = p; };
   void connected() { protocol->connected(); };
   void send(string const&);
-  const string& password() { return client->password(); };
+  const string& password() const { return pass; };
+  Server *serv() const { return server; };
   
   // Static members (callbacks)
   static void read_callback(fde_t *fd, void *data) 
@@ -43,9 +47,10 @@ private:
   fde_t fd;
   deque<string> read_queue;
   deque<string> send_queue;
+  string pass;
   Parser *parser;
   Protocol *protocol;
-  Client *client;
+  Server *server;
 };
 
 #endif
