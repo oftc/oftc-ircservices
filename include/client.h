@@ -18,25 +18,25 @@ class Client
 {
 public:
   Client();
-  Client(string const&);
+  Client(string const& n) : name(n.substr(0, NICKLEN)) {};
   Client(string const&, string const&, string const&, string const&);
   void introduce();
   void kill();
-  bool is_banned(struct Ban *);
+  bool is_banned(struct Ban *) const;
   void change_nick(string const&);
   void change_umode(string const&);
 
-  string nuh();
-  inline const char *c_nuh() { return nuh().c_str(); };
-  inline const char *c_name() { return name.c_str(); };
-  inline const char *c_id()   { return id.c_str();   };
-  inline const char *c_user() { return user.c_str(); };
-  inline const char *c_host() { return host.c_str(); };
+  string nuh() const;
+  const char *c_nuh()   const { return nuh().c_str(); };
+  const char *c_name()  const { return name.c_str(); };
+  const char *c_id()    const { return id.c_str();   };
+  const char *c_user()  const { return user.c_str(); };
+  const char *c_host()  const { return host.c_str(); };
 
-  inline void set_ts(time_t ts) { tsinfo = ts; };
-  inline void set_name(string const& n) { name = n; };
+  void set_ts(time_t ts) { tsinfo = ts; };
+  void set_name(string const& n) { name = n; };
 
-  inline static Client *find(string const& name) 
+  static Client *find(string const& name) 
   {
     return GlobalClientHash[name];
   }
@@ -53,22 +53,5 @@ protected:
   time_t enforce_time;
   time_t release_time;
 };
-
-void init_client();
-struct Client *make_client(struct Client*);
-struct Server *make_server(struct Client*);
-struct Client *find_person(const struct Client *, const char *);
-struct Client *find_chasing(struct Client *, const char *, int *);
-void dead_link_on_write(struct Client *, int);
-void set_user_mode(struct Client *, struct Client *, int, char *[]);
-void exit_client(struct Client *, struct Client *, const char *);
-int check_clean_nick(struct Client *, struct Client *, char *, char *, 
-    struct Client *);
-int check_clean_user(struct Client *, char *, char *, struct Client *);
-int check_clean_host(struct Client *, char *, char *, struct Client *);
-void nick_from_server(struct Client *, struct Client *, int,
-                     char *[], time_t, char *, char *);
-void register_remote_user(struct Client *, struct Client *,
-                         const char *, const char *, const char *, const char *);
 
 #endif

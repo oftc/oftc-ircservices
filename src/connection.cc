@@ -32,16 +32,8 @@
 #include <queue>
 #include <iostream>
 
-//static CNCB serv_connect_callback;
-Connection::Connection()
-{
-  parser = NULL;
-}
-
-Connection::Connection(Parser *p)
-{
-  parser = p;
-}
+using std::string;
+using std::stringstream;
 
 void
 Connection::connect()
@@ -122,15 +114,15 @@ Connection::process_queue()
 {
   char c;
   int line_bytes, empty_bytes, phase;
-  std::stringstream ss;
-  std::string line;
+  stringstream ss;
+  string line;
 
   line_bytes = empty_bytes = phase = 0; 
 
   while(!read_queue.empty())
   {
-    std::string s = read_queue.front();
-    std::string::iterator i;
+    string s = read_queue.front();
+    string::const_iterator i;
 
     for(i = s.begin(); i != s.end(); i++)
     {

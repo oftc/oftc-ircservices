@@ -1,9 +1,12 @@
 #ifndef CONNECTIONH
 #define CONNECTIONH
 
-#include <tr1/functional>
 #include <deque>
+#include <string>
 #include "parse.h"
+
+using std::deque;
+using std::string;
 
 extern Client *me;
 
@@ -11,19 +14,19 @@ class Connection
 {
 public:
   // Members
-  Connection();
-  Connection(Parser *);
+  Connection() : parser(0) {};
+  Connection(Parser *p) : parser(p) {};
   void connect();
   void read();
   void process_queue();
-  inline void setup_read() 
+  void setup_read() 
   { 
     comm_setselect(&fd, COMM_SELECT_READ, read_callback, this, 0); 
   };
-  inline void set_client(Client *c) { client = c; };
+  void set_client(Client *c) { client = c; };
   
   // Static members (callbacks)
-  inline static void read_callback(fde_t *fd, void *data) 
+  static void read_callback(fde_t *fd, void *data) 
   {
     Connection *connection = static_cast<Connection*>(data);
 
@@ -33,7 +36,7 @@ public:
   
 private:
   fde_t fd;
-  std::deque<std::string> read_queue;
+  deque<string> read_queue;
   Parser *parser;
   Client *client;
 };

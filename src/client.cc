@@ -36,6 +36,7 @@
 using std::string;
 using std::vector;
 using std::tr1::unordered_map;
+using std::runtime_error;
 
 vector<Client *> GlobalClientList;
 unordered_map<string, Client *> GlobalClientHash;
@@ -44,13 +45,8 @@ Client::Client()
 {
 }
 
-Client::Client(std::string const& n)
-{
-  name = n;
-}
-
-Client::Client(std::string const& nickname, std::string const& username, 
-  std::string const& infostr, std::string const &hostname)
+Client::Client(string const& nickname, string const& username, string const& infostr,
+    string const &hostname)
 {
   name = nickname.substr(0, NICKLEN);
   user = username.substr(0, USERLEN);
@@ -58,10 +54,10 @@ Client::Client(std::string const& nickname, std::string const& username,
   host = hostname.substr(0, HOSTLEN);
 }
 
-std::string
-Client::nuh()
+string
+Client::nuh() const
 {
-  std::string str;
+  string str;
 
   str = name;
   str.append("!");
@@ -75,11 +71,11 @@ void
 Client::introduce()
 {
   if(name.length() == 0)
-    throw std::runtime_error("No name specified");
+    throw runtime_error("No name specified");
   if(user.length() == 0)
-    throw std::runtime_error("No username specified");
+    throw runtime_error("No username specified");
   if(host.length() == 0)
-    throw std::runtime_error("No hostname specified");
+    throw runtime_error("No hostname specified");
 
   tsinfo = CurrentTime;
   GlobalClientList.push_back(this);

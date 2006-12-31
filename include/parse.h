@@ -12,22 +12,22 @@ using std::tr1::unordered_map;
 class Message
 {
 public:
-  Message();
-  Message(string const&);
+  Message() : count(0) {};
+  Message(string const& n) : name(n), count(0) {};
 
-  inline const char *c_name() { return name.c_str(); };
+  const char *c_name() { return name.c_str(); };
+
   virtual ~Message() = 0;
   virtual void handler(Client *, Client *, vector<string>) = 0;
-private:
-  unsigned int count;
 protected:
   string name;
+  unsigned int count;
 };
 
 class Parser
 {
 public:
-  Parser();
+  Parser() {};
   void add_message(Message *);
   void parse_line(Client *, string const&);
 private:
@@ -39,11 +39,11 @@ class irc_string : private string
 public:
   irc_string(const string& s) : string(s) {};
   vector<string> split(const string&, size_type=0);
-  inline char& operator[]( size_type index )
+  char& operator[]( size_type index )
   {
     return string::operator[](index);
   };
-  inline string substr(size_type index, size_type num = npos)
+  string substr(size_type index, size_type num = npos)
   {
     return string::substr(index, num);
   }

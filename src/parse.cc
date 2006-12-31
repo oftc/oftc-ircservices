@@ -19,7 +19,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this->program; if not, write to the Free Software
+ *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
@@ -41,7 +41,7 @@ vector<string>
 irc_string::split(const string& delim, size_type count)
 {
   size_type pos, off, c;
-  std::vector<std::string> strings;
+  vector<string> strings;
 
   off = c = 0;
 
@@ -63,22 +63,7 @@ irc_string::split(const string& delim, size_type count)
   return strings;
 }
 
-Message::Message()
-{
-  count = 0;
-}
-
-Message::Message(string const& n)
-{
-  name = n;
-  count = 0;
-}
-
 Message::~Message()
-{
-}
-
-Parser::Parser()
 {
 }
 
