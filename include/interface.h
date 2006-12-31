@@ -26,13 +26,16 @@ protected:
 class Service
 {
 public:
-  Service();
-  Service(string const &);
+  // Constructors
+  Service() : _name(""), _client(0) {};
+  Service(string const & name) : _name(name), _client(0) {};
+
+  virtual ~Service() = 0;
+
   void introduce();
-  void notice_client(Client *, unsigned int, string);
-private:
-  string name;
-  Client *client;
+protected:
+  string _name;
+  Client *_client;
 };
 
 enum ServiceBanType
@@ -94,59 +97,8 @@ extern struct ModeList *ServerModeList;
 void init_interface();
 void cleanup_interface();
 
-struct Service *make_service(char *);
-void introduce_client(const char *);
-void reply_user(struct Service *,struct Service *, struct Client *, 
-    unsigned int, ...);
-void global_notice(struct Service *, char *, ...);
-void cloak_user(struct Client *, char *);
-void do_help(struct Service *, struct Client *, const char *, int, char **);
-void identify_user(struct Client *);
-void send_nick_change(struct Service *, struct Client *, const char *);
-void send_umode(struct Service *, struct Client *, const char *);
-void send_akill(struct Service *, char *, struct ServiceBan *);
-void remove_akill(struct Service *, struct ServiceBan *);
-void send_cmode(struct Service *, struct Channel *, const char *, const char *);
-void send_topic(struct Service *, struct Channel *, struct Client *, 
-    const char *);
-void send_kill(struct Service *, struct Client *, const char *);
-void set_limit(struct Service *, struct Channel *, int);
-void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
-void chain_squit(struct Client *, struct Client *, char *);
-void chain_quit(struct Client *, char *);
-void chain_part(struct Client *, struct Client *, char *);
-void chain_nick(struct Client *, struct Client *, int, char **, int, char *, char *);
-void chain_join(struct Client *, char *);
-
-char *replace_string(char *, const char *);
-int check_list_entry(unsigned int, unsigned int, const char *);
-int check_nick_pass(struct Nick *, const char *);
-void make_random_string(char *, size_t);
-int enforce_matching_serviceban(struct Service *, struct Channel *, 
-    struct Client *);
-int enforce_akick(struct Service *, struct Channel *, struct ServiceBan *);
-int enforce_client_serviceban(struct Service *, struct Channel *, struct Client *,
-    struct ServiceBan *);
-
-void kick_user(struct Service *, struct Channel *, const char *, const char *);
-void op_user(struct Service *, struct Channel *, struct Client *);
-void deop_user(struct Service *, struct Channel *, struct Client *);
-void devoice_user(struct Service *, struct Channel *, struct Client *);
-void invite_user(struct Service *, struct Channel *, struct Client *);
-void kill_user(struct Service *, struct Client *, const char *);
-void ban_mask(struct Service *, struct Channel *, const char *);
-void unban_mask(struct Service *, struct Channel *, const char *);
-int set_mode_lock(struct Service *, struct Channel *, struct Client *, 
-    const char *, char **);
-
-void free_nick(struct Nick *);
-void free_regchan(struct RegChannel *);
-void free_serviceban(struct ServiceBan *);
-void free_chanaccess(struct ChanAccess *);
-
-unsigned int get_mode_from_letter(char);
-void get_modestring(unsigned int, char *, int);
-
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
+
+extern vector<Service *> service_list;
 
 #endif

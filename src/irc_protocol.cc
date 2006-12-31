@@ -141,7 +141,7 @@ Protocol::init(Parser *p, Connection *c)
   ErrorMessage  *error  = new ErrorMessage();
   ServerMessage *server = new ServerMessage();
   NickMessage   *nick   = new NickMessage();
-  IgnoreMessage *ignore; 
+  IgnoreMessage *ignore = new IgnoreMessage("EOB"); 
 
   parser = p;
   connection = c;
@@ -150,6 +150,7 @@ Protocol::init(Parser *p, Connection *c)
   parser->add_message(error);
   parser->add_message(server);
   parser->add_message(nick);
+  parser->add_message(ignore);
 }
 
 void Protocol::connected()
