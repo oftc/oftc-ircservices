@@ -30,7 +30,7 @@ public:
   Service() : _name(""), _client(0) {};
   Service(string const & name) : _name(name), _client(0) {};
 
-  virtual ~Service() = 0;
+  virtual ~Service() {};
 
   void introduce();
 protected:

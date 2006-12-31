@@ -33,20 +33,32 @@ class Module;
 extern vector<Module *>loaded_modules;
 extern vector<string> mod_paths;
 
+typedef Service* create_t();
+typedef void destroy_t(Service *);
+
 class Module
 {
 public:
+  // Constants
+  static const int SERVICE_MODULE = 0;
+
+  // Constructors
   Module() : handle(0), address(0) {};
   Module(string const& n) : name(n) { Module(); };
 
-  bool load(string const&, string const&);
+  // Members
+  bool load(string const&, string const&, int=SERVICE_MODULE);
 
+  // Property Accessors
   const string& get_name() const { return name; };
 
+  // Static Members
   static Module *find(string const&);
 protected:
   string name;
   string version;
+  create_t *create_service;
+  destroy_t *destroy_service;
   void *handle;
   void *address;
 };

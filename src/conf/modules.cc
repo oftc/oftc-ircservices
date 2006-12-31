@@ -59,30 +59,12 @@ Module::find(string const& filename)
   return NULL;
 }
 
-#if 0
-/*
- * init_module()
- *
- * Deals with initializing an already loaded module.
- *
- * inputs:
- *   - pointer to struct Module
- *   - name that will be passed to load_module on reloading
- *     (contains suffix for shared modules)
- * output: none, except success report
- */
-static void
-init_module(struct Module *mod, const char *fullname)
-{
-  mod->modinit();
-}
-#endif
-
 bool
-Module::load(string const& dir, string const& fname)
+Module::load(string const& dir, string const& fname, int type)
 {
   string path = dir + "/" + fname;
   stringstream message;
+  Service *service;
 
   if(!(handle = modload(path.c_str(), &address)))
   {
@@ -90,99 +72,21 @@ Module::load(string const& dir, string const& fname)
     return false;
   }
 
+  create_service = (create_t *)modsym(handle, "create");
+  destroy_service = (destroy_t *)modsym(handle, "destroy");
+
+  service = create_service();
+  service_list.push_back(service);
+
   message << "Shared module " << name << " loaded at " << address;
 
   ilog(L_NOTICE, "%s", message.str().c_str());
   ilog(L_DEBUG, "%s", message.str().c_str());
 
   loaded_modules.push_back(this);
- // init_module(mod, fname);
   return true;
 }
 
-#if 0
-/*
- * load_module()
- *
- * [API] A module is loaded from a file or taken from the static pool.
- *
- * inputs: module name (without path, with suffix if needed)
- * output:
- *   -1 if the module was already loaded (no error message),
- *    0 if loading failed (errors reported),
- *    1 if ok (success reported)
- */
-int
-load_module(const char *filename)
-{
-  char name[PATH_MAX], *p = NULL;
-
-  if (find_module(filename, NO) != NULL)
-    return -1;
-
-  if (strpbrk(filename, "\\/") == NULL)
-  {
-    strlcpy(name, libio_basename(filename), sizeof(name));
-
-    if ((p = strchr(name, '.')) != NULL)
-      *p = '\0';
-
-#ifdef SHARED_MODULES
-    {
-      dlink_node *ptr;
-
-      DLINK_FOREACH(ptr, mod_paths.head)
-        if (load_shared_module(name, (const char *)ptr->data, filename))
-          return 1;
-    }
-#endif
-
-#ifdef BUILTIN_MODULES
-    if (mod == NULL)
-    {
-      struct Module **mptr;
-
-      for (mptr = builtin_mods; *mptr; mptr++)
-      {
-        if (!_COMPARE((*mptr)->name, filename))
-        {
-          init_module(*mptr, mod->name);
-          return 1;
-        }
-      }
-    }
-#endif
-  }
-
-  ilog(L_CRIT, "Cannot locate module %s", filename);
-  ilog(L_DEBUG, "Cannot locate module %s", filename);
-  return 0;
-}
-
-/*
- * unload_module()
- *
- * [API] A module is unloaded. This is actually MUCH simplier.
- *
- * inputs: pointer to struct Module
- * output: none
- */
-void
-unload_module(struct Module *mod)
-{
-  mod->modremove();
-
-  MyFree(mod->fullname);
-  mod->fullname = NULL;
-
-  dlinkDelete(&mod->node, &loaded_modules);
-
-#ifdef SHARED_MODULES
-  if (mod->handle != NULL)
-    modunload(mod->handle);
-#endif
-}
-#endif
 /*
  * boot_modules()
  *
@@ -195,11 +99,12 @@ void
 boot_modules(char cold)
 {
   vector<string>::const_iterator i;
+  vector<ServiceConf *>::const_iterator si;
 
   if(cold)
   {
     {
-      char buf[PATH_MAX], *pp;
+    /*  char buf[PATH_MAX], *pp;
       struct dirent *ldirent;
       DIR *moddir;
 
@@ -221,7 +126,7 @@ boot_modules(char cold)
           }
         }
         closedir(moddir);
-      }
+      }*/
     }
   }
 
@@ -233,6 +138,14 @@ boot_modules(char cold)
       if(!m->load(AUTOMODPATH, *i))
         delete m;
     }
+  }
+
+  for(si = ServiceConfs.begin(); si != ServiceConfs.end(); si++)
+  {
+    ServiceConf *sc = *si;
+    Module *m = new Module(sc->module);
+    if(!m->load(AUTOMODPATH, sc->module))
+      delete m;
   }
 }
 
