@@ -34,6 +34,8 @@
 
 using std::string;
 using std::stringstream;
+using std::cout;
+using std::endl;
 
 void
 Connection::connect()
@@ -51,6 +53,9 @@ Connection::connect()
   ServerModeList = (struct ModeList *)modsym(protomod->handle, "ModeList");
   ilog(L_DEBUG, "Loaded server mode list %p %c %d", ServerModeList, 
       ServerModeList[0].letter, ServerModeList[0].mode);*/
+
+  protocol = new Protocol();
+  protocol->init(parser, this);
 
   if(comm_open(&fd, AF_INET, SOCK_STREAM, 0, NULL) < 0)
   {
@@ -77,9 +82,11 @@ Connection::connect_callback(fde_t *fd, int status, void *data)
   ilog(L_DEBUG, "serv_connect_callback: Connect succeeded!");
 
   client = new Client(Connect.name, "server", Connect.host, "server");
+  client->set_password(Connect.password);
   client->introduce();
 
   connection->set_client(client);
+  connection->connected();
   connection->setup_read();
   
 //  execute_callback(connected_cb, client);
@@ -104,13 +111,13 @@ Connection::read()
       services_die("connection went dead on read", NO);
     }
     read_queue.push_back(readBuf);
-    process_queue();
+    process_read_queue();
   } while(length == sizeof(readBuf));
   this->setup_read();
 }
 
 void
-Connection::process_queue()
+Connection::process_read_queue()
 {
   char c;
   int line_bytes, empty_bytes, phase;
@@ -172,5 +179,32 @@ Connection::process_queue()
       ss.str("");
       read_queue.pop_front();
     }
+  }
+}
+
+void
+Connection::send(string const &message)
+{
+  string msg;
+  cout << "Queued: " << message << endl;
+  
+  msg = message.substr(0, 509);
+  msg.append("\r\n");
+  send_queue.push_back(msg);
+}
+
+void
+Connection::process_send_queue()
+{
+  while(!send_queue.empty())
+  {
+    string message = send_queue.front();
+    int len;
+
+    len = ::send(fd.fd, message.c_str(), message.length(), 0);
+    if(len <= 0)
+      services_die("Connection went dead on write", 0);
+
+    send_queue.pop_front();
   }
 }

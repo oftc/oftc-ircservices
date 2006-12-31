@@ -110,6 +110,8 @@ Parser::parse_line(Client *uplink, string const& line)
 
       strings = s.split(" ", 1);
       args.push_back(strings[0]);
+      if(strings.size() == 1)
+        break;
       if(strings[1][0] == ':')
       {
         args.push_back(strings[1].substr(1));

@@ -29,66 +29,37 @@
 #include <dirent.h>
 #include <dlfcn.h>
 
-dlink_list loaded_modules = {NULL, NULL, 0};
+#include <vector>
+#include <string>
+#include <sstream>
 
-const char *core_modules[] =
-{
-  "irc",
-  NULL
-};
+using std::string;
+using std::stringstream;
+using std::vector;
 
-#ifdef BUILTIN_MODULES
-static struct Module builtin_mods[] = {BUILTIN_MODULES, NULL};
-#endif
-static dlink_list mod_paths = {NULL, NULL, 0};
-static dlink_list mod_extra = {NULL, NULL, 0};
+vector<Module *> loaded_modules;
+vector<string> mod_paths;
+vector<string> mod_extra;
+
 static dlink_node *hreset, *hpass;
 
-//
-// Windows ignores case in file names, so using M_PART for m_part
-// is perfectly legal.
-//
-
-#ifdef _WIN32
-# define _COMPARE   strcasecmp
-# define _NCOMPARE  strncasecmp
-#else
-# define _COMPARE   strcmp
-# define _NCOMPARE  strncmp
-#endif
-
-/*
- * find_module()
- *
- * [API] Checks whether a module is loaded.
- *
- * inputs:
- *   - module name (with or without path/suffix)
- *   - 1 if we should match exact fullname, 0 if only the canonical name
- * output: pointer to struct Module or NULL
- */
-struct Module *
-find_module(const char *filename, int exact)
+Module *
+Module::find(string const& filename)
 {
-  dlink_node *ptr;
-  const char *name = libio_basename(filename), *p;
-  int cnt = ((p = strchr(name, '.')) != NULL ? p - name : strlen(name));
+  const string name = libio_basename(filename.c_str());
+  vector<Module *>::const_iterator i;
 
-  DLINK_FOREACH(ptr, loaded_modules.head)
+  for(i = loaded_modules.begin(); i != loaded_modules.end(); i++)
   {
-    struct Module *mod = (struct Module *)ptr->data;
+    Module *m = *i;
 
-    if (!_NCOMPARE(mod->name, name, cnt) && !mod->name[cnt])
-    {
-      if (exact && _COMPARE(mod->fullname, filename) != 0)
-        continue;
-      return mod;
-    }
+    if(m->get_name() == name)
+      return m;
   }
-
   return NULL;
 }
 
+#if 0
 /*
  * init_module()
  *
@@ -103,102 +74,33 @@ find_module(const char *filename, int exact)
 static void
 init_module(struct Module *mod, const char *fullname)
 {
-  char message[IRC_BUFSIZE];
-
-  if (mod->address != NULL)
-    snprintf(message, sizeof(message), "Shared module %s loaded at %p",
-      fullname, mod->address);
-  else
-    snprintf(message, sizeof(message), "Loaded %s module %s",
-      mod->handle ? "shared" : "built-in", fullname);
-
-  ilog(L_NOTICE, "%s", message);
-  ilog(L_DEBUG, "%s", message);
-
-  DupString(mod->fullname, fullname);
-  dlinkAdd(mod, &mod->node, &loaded_modules);
   mod->modinit();
-}
-
-/*
- * load_shared_module()
- *
- * Loads a shared module from given directory.
- * WARNING: We don't check for already loaded modules!
- *
- * inputs:
- *   - canonical module name (without suffix)
- *   - directory to load from
- *   - file name
- * output: 1 if ok, 0 otherwise
- */
-#ifdef SHARED_MODULES
-static int
-load_shared_module(const char *name, const char *dir, const char *fname)
-{
-  char path[PATH_MAX];
-  char sym[PATH_MAX];
-  char tmpext[PATH_MAX];
-  char tmp;
-  char *ext;
-  void *handle, *base;
-  struct Module *mod;
-
-  snprintf(path, sizeof(path), "%s/%s", dir, fname);
-
-  /* Check what type of module this is and pass it off to the appropriate
-   * loader.
-   */
-  ext = strchr(fname, '.');
-  if(ext != NULL)
-  {
-    tmp = *ext;
-    *ext = '\0';
-    ext++;
-    strlcpy(tmpext, ext, sizeof(tmpext));
-    ext--;
-    *ext = tmp;
-    if(strcmp(tmpext, "rb") == 0)
-    {
-//      return load_ruby_module(name, dir, fname);
-    }
-/*    else if(strcmp(tmpext, "pl") == 0)
-    {
-      return load_perl_module(name, dir, fname);
-    }*/
-    else if(strcmp(tmpext, "lua") == 0)
-    {
-  //    return load_lua_module(name, dir, fname);
-    }
-  }
-
-  
-  if (!(handle = modload(path, &base)))
-  {
-    ilog(L_DEBUG, "Failed to load %s: %s", path, dlerror());
-    return 0;
-  }
-
-  snprintf(sym, sizeof(sym), "%s_module", name);
-  if (!(mod = (struct Module *)modsym(handle, sym)))
-  {
-    char error[IRC_BUFSIZE];
-
-    modunload(handle);
-    snprintf(error, sizeof(error), "%s contains no %s export!", fname, sym);
-
-    ilog(L_WARN, "%s", error);
-    ilog(L_DEBUG, "%s", error);
-    return 0;
-  }
-
-  mod->handle = handle;
-  mod->address = base;
-  init_module(mod, fname);
-  return 1;
 }
 #endif
 
+bool
+Module::load(string const& dir, string const& fname)
+{
+  string path = dir + "/" + fname;
+  stringstream message;
+
+  if(!(handle = modload(path.c_str(), &address)))
+  {
+    ilog(L_DEBUG, "Failed to load %s: %s", path.c_str(), dlerror());
+    return false;
+  }
+
+  message << "Shared module " << name << " loaded at " << address;
+
+  ilog(L_NOTICE, "%s", message.str().c_str());
+  ilog(L_DEBUG, "%s", message.str().c_str());
+
+  loaded_modules.push_back(this);
+ // init_module(mod, fname);
+  return true;
+}
+
+#if 0
 /*
  * load_module()
  *
@@ -280,7 +182,7 @@ unload_module(struct Module *mod)
     modunload(mod->handle);
 #endif
 }
-
+#endif
 /*
  * boot_modules()
  *
@@ -292,62 +194,44 @@ unload_module(struct Module *mod)
 void
 boot_modules(char cold)
 {
-  dlink_node *ptr;
-  const char **p;
+  vector<string>::const_iterator i;
 
-  if (cold)
+  if(cold)
   {
-#ifdef SHARED_MODULES
     {
       char buf[PATH_MAX], *pp;
-      const char **cp;
       struct dirent *ldirent;
       DIR *moddir;
 
-      for (cp = core_modules; *cp; cp++)
-      {
-        snprintf(buf, sizeof(buf), "%s%s", *cp, SHARED_SUFFIX);
-        load_shared_module(*cp, MODPATH, buf);
-      }
-
-      if ((moddir = opendir(AUTOMODPATH)) == NULL)
+      if((moddir = opendir(AUTOMODPATH)) == NULL)
         ilog(L_WARN, "Could not load modules from %s: %s", AUTOMODPATH,
           strerror(errno));
       else
       {
-        while ((ldirent = readdir(moddir)) != NULL)
+        while((ldirent = readdir(moddir)) != NULL)
         {
           strlcpy(buf, ldirent->d_name, sizeof(buf));
-          if ((pp = strchr(buf, '.')) != NULL)
+          if((pp = strchr(buf, '.')) != NULL)
             *pp = 0;
-          if (!find_module(buf, NO))
-            load_shared_module(buf, AUTOMODPATH, ldirent->d_name);
+          if(!Module::find(buf))
+          {
+            Module *m = new Module(buf);
+            if(!m->load(AUTOMODPATH, ldirent->d_name))
+              delete m;
+          }
         }
         closedir(moddir);
       }
     }
-#endif
-
-#ifdef BUILTIN_MODULES
-    {
-      struct Module *mptr;
-
-      for (mptr = builtin_mods; *mptr; mptr++)
-        if (!find_module(mptr->name, NO))
-          init_module(mptr);
-    }
-#endif
   }
 
-  DLINK_FOREACH(ptr, mod_extra.head)
-    if (!find_module((const char *)ptr->data, NO))
-      load_module((const char *)ptr->data);
-
-  for (p = core_modules; *p; p++)
+  for(i = mod_extra.begin(); i != mod_extra.end(); i++)
   {
-    if (!find_module(*p, NO))
+    if(!Module::find(*i))
     {
-//      services_die("No core modules", 0);
+      Module *m = new Module(*i);
+      if(!m->load(AUTOMODPATH, *i))
+        delete m;
     }
   }
 }
@@ -382,21 +266,8 @@ h_switch_conf_pass(va_list args)
 static void *
 h_reset_conf(va_list args)
 {
-  dlink_node *ptr, *ptr_next;
-
-  DLINK_FOREACH_SAFE(ptr, ptr_next, mod_paths.head)
-  {
-    MyFree(ptr->data);
-    dlinkDelete(ptr, &mod_paths);
-    free_dlink_node(ptr);
-  }
-
-  DLINK_FOREACH_SAFE(ptr, ptr_next, mod_extra.head)
-  {
-    MyFree(ptr->data);
-    dlinkDelete(ptr, &mod_extra);
-    free_dlink_node(ptr);
-  }
+  mod_paths.clear();
+  mod_extra.clear();
 
   return pass_callback(hreset);
 }
@@ -414,12 +285,8 @@ mod_add_path(void *value, void *unused)
 {
   if (!chdir((char *) value))
   {
-    char *path;
-
+    mod_paths.push_back((char*)value);
     chdir(DPATH);
-    DupString(path, (char *) value);
-
-    dlinkAddTail(path, make_dlink_node(), &mod_paths);
   }
   else
     parse_error("directory not found");
@@ -436,10 +303,7 @@ mod_add_path(void *value, void *unused)
 static void
 mod_add_module(void *value, void *unused)
 {
-  char *name;
-
-  DupString(name, (char *) value);
-  dlinkAddTail(name, make_dlink_node(), &mod_extra);
+  mod_extra.push_back((char*)value);
 }
 
 /*
@@ -465,12 +329,4 @@ init_modules(void)
 void
 cleanup_modules(void)
 {
-  dlink_node *ptr, *nptr;
-
-  DLINK_FOREACH_SAFE(ptr, nptr, loaded_modules.head)
-  {
-    struct Module *mod = (struct Module *)ptr->data;
-
-    unload_module(mod);
-  }
 }

@@ -33,8 +33,13 @@ public:
   const char *c_user()  const { return user.c_str(); };
   const char *c_host()  const { return host.c_str(); };
 
+  const string& password() const { return pass; };
+  const string& s_name() const { return name; };
+  const string& s_info() const { return info; };
+
   void set_ts(time_t ts) { tsinfo = ts; };
   void set_name(string const& n) { name = n; };
+  void set_password(string const &p) { pass = p; };
 
   static Client *find(string const& name) 
   {
@@ -48,6 +53,7 @@ protected:
   string id;
   string info;
   string user;
+  string pass;
 
   time_t tsinfo;
   time_t enforce_time;

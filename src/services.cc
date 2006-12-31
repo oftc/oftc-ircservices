@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
   //init_client();
   //init_parser();
   //init_channel_modes();
-  modules_init(parser);
 
   read_services_conf(TRUE);
 

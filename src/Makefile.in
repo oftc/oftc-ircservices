@@ -74,6 +74,7 @@ SRCS = 								\
  dbm.cc 		  				\
  hostmask.cc					\
  interface.cc					\
+ irc_protocol.cc			\
  language.cc					\
  packet.cc						\
  parse.cc							\

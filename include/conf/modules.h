@@ -22,16 +22,33 @@
  *  $Id$
  */
 
-struct Module
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
+class Module;
+
+extern vector<Module *>loaded_modules;
+extern vector<string> mod_paths;
+
+class Module
 {
-  char *name;
-  const char *version;
-  void (* modinit) (void);
-  void (* modremove) (void);
-  char *fullname;
+public:
+  Module() : handle(0), address(0) {};
+  Module(string const& n) : name(n) { Module(); };
+
+  bool load(string const&, string const&);
+
+  const string& get_name() const { return name; };
+
+  static Module *find(string const&);
+protected:
+  string name;
+  string version;
   void *handle;
   void *address;
-  dlink_node node;
 };
 
 #define INIT_MODULE(NAME, REV) \
@@ -47,10 +64,6 @@ struct Module
 void init_modules(void);
 #endif
 
-EXTERN dlink_list loaded_modules;
-EXTERN const char *core_modules[];
-
-EXTERN struct Module *find_module(const char *, int);
 EXTERN int load_module(const char *);
 EXTERN void unload_module(struct Module *);
 EXTERN void boot_modules(char);

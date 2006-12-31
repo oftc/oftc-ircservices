@@ -2,6 +2,26 @@
 #define INTERFACE_H
 
 #include <string>
+#include "language.h"
+#include "connection.h"
+
+using std::string;
+
+class Connection;
+
+class Protocol
+{
+public:
+  Protocol(); 
+  void init(Parser *, Connection *);
+
+  void connected();
+  void introduce_server(Client *);
+protected:
+  string name;
+  Parser *parser;
+  Connection *connection;
+};
 
 struct Service;
 //struct Client;
