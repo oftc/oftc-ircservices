@@ -59,7 +59,7 @@ reset_servicesinfo(va_list args)
 static void *
 verify_servicesinfo(va_list args)
 {
-  if (!me->c_name()[0])
+  if (me->name() == "")
     parse_fatal("name= field missing in servicesinfo{} section");
 
 /*  if (!me.info[0])
@@ -90,7 +90,7 @@ si_set_name(void *value, void *unused)
   }
   else if (conf_cold)
     me->set_name(name);
-  else if (strcmp(me->c_name(), name) != 0)
+  else if (strcmp(me->name().c_str(), name) != 0)
     parse_error("cannot change server name on rehash");
 }
 
@@ -104,8 +104,6 @@ si_set_sid(void *value, void *unused)
     parse_error("invalid SID, must match [0-9][0-9A-Z][0-9A-Z]");
 //  else if (conf_cold)
  //   strcpy(me->c_id(), sid);
-  else if (strcmp(me->c_id(), sid) != 0)
-    parse_error("cannot change SID on rehash");
 }
 
 static void

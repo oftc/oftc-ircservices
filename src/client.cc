@@ -30,56 +30,68 @@
 #include "stdinc.h"
 #include <vector>
 #include <string>
+#include <sstream>
 #include <stdexcept>
 #include <tr1/unordered_map>
 
 using std::string;
+using std::stringstream;
 using std::vector;
 using std::tr1::unordered_map;
 using std::runtime_error;
 
-vector<Client *> GlobalClientList;
-unordered_map<string, Client *> GlobalClientHash;
+vector<BaseClient *> GlobalClientList;
+unordered_map<string, BaseClient *> GlobalClientHash;
 
-Client::Client()
+BaseClient::~BaseClient()
 {
-}
 
-Client::Client(string const& nickname, string const& username, string const& infostr,
-    string const &hostname)
-{
-  name = nickname.substr(0, NICKLEN);
-  user = username.substr(0, USERLEN);
-  info = infostr.substr(0, REALLEN);
-  host = hostname.substr(0, HOSTLEN);
-}
-
-string
-Client::nuh() const
-{
-  string str;
-
-  str = name;
-  str.append("!");
-  str.append(user);
-  str.append("@");
-  str.append(host);
-  return str;
 }
 
 void
-Client::introduce()
+BaseClient::init() 
 {
-  if(name.length() == 0)
+  GlobalClientList.push_back(this);
+  GlobalClientHash[_name] = this;
+}
+
+Client::~Client()
+{
+}
+
+Server::~Server()
+{
+}
+
+const string
+Client::nuh() const
+{
+  stringstream ss;
+
+  ss << _name << "!" << _username << "@" << _host;
+  
+  return ss.str();
+}
+
+void
+Client::init() 
+{
+  if(_name.length() == 0)
     throw runtime_error("No name specified");
-  if(user.length() == 0)
+  if(_username.length() == 0)
     throw runtime_error("No username specified");
-  if(host.length() == 0)
+  if(_host.length() == 0)
     throw runtime_error("No hostname specified");
 
-  tsinfo = CurrentTime;
-  GlobalClientList.push_back(this);
-  GlobalClientHash[name.c_str()] = this;
-  ilog(L_DEBUG, "Adding C++ client %s", this->nuh().c_str());
-  //execute_callback(on_newuser_cb, source_p);
+  _ts = CurrentTime;
+  BaseClient::init();
+
+ ilog(L_DEBUG, "Adding C++ client %s", nuh().c_str());
+}
+
+void
+Server::init() 
+{
+  BaseClient::init();
+  ilog(L_DEBUG, "Adding C++ server %s", _name.c_str());
 }

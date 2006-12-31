@@ -71,7 +71,7 @@ Parser::parse_line(Connection *uplink, string const& line)
   irc_string s = line;
   vector<string> strings, args;
   Message *m;
-  Client *source;
+  BaseClient *source;
 
   if(s[0] == ':')
   {

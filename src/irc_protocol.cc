@@ -15,7 +15,7 @@ public:
   IgnoreMessage()
   {
   };
-  void handler(Server *uplink, Client *source, vector<string> args)
+  void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
   }
 };
@@ -27,20 +27,21 @@ public:
   ~ErrorMessage()
   {
   };
-  void handler(Server *uplink, Client *source, vector<string> args)
+  void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
-    string arg;
+    stringstream ss;
+
+    ss << "Error :from " << source->name();
+
+    if(uplink != source)
+      ss << " via " << uplink->name();
 
     if(args.size() == 0)
-      arg = "<>";
+      ss << "<>";
     else
-      arg = args[0];
+      ss << args[0];
 
-    if(uplink == source)
-      ilog(L_DEBUG, "Error :from %s -- %s", source->c_name(), arg.c_str());
-    else
-      ilog(L_DEBUG, "Error :from %s via %s -- %s", source->c_name(), 
-          uplink->c_name(), arg.c_str());
+    ilog(L_DEBUG, "%s", ss.str().c_str());
   };
 };
 
@@ -51,12 +52,12 @@ public:
   ~PingMessage()
   {
   };
-  void handler(Server *uplink, Client *source, vector<string> args)
+  void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
     stringstream ss;
 
-    ss << ":" << me->s_name() << " PONG " << me->s_name() << " :" << 
-      source->s_name();
+    ss << ":" << me->name() << " PONG " << me->name() << " :" << 
+      source->name();
     uplink->send(ss.str());
   };
 };
@@ -68,24 +69,24 @@ public:
   ~ServerMessage()
   {
   };
-  void handler(Server *uplink, Client *source, vector<string> args)
+  void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
     stringstream ss;
     Server *newserver;
 
-    newserver = static_cast<Server *>(Server::find(args[0]));
+    newserver = dynamic_cast<Server *>(Server::find(args[0]));
     if(newserver == uplink)
     {
-      ilog(L_DEBUG, "Completed connection to server %s", uplink->c_name());
+      ilog(L_DEBUG, "Completed connection to server %s", uplink->name().c_str());
       ss << "SVINFO 5 5 0: " << CurrentTime;
       uplink->send(ss.str());
     }
     else
     {
-      newserver = new Server(args[0], "server", args[2], args[0]);
-      newserver->introduce();
+      newserver = new Server(args[0], args[2]);
+      newserver->init();
       ilog(L_DEBUG, "New server %s from hub %s", args[0].c_str(), 
-          source->c_name());
+          source->name().c_str());
     }
   };
 };
@@ -97,33 +98,33 @@ public:
   ~NickMessage()
   {
   };
-  void handler(Server *uplink, Client *source, vector<string> args)
+  void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
     stringstream ss;
-    Client *target;
+    BaseClient *target;
 
     target = Client::find(args[0]);
     if(args.size() == 8)
     {
-      Server *fromserv = static_cast<Server *>(Server::find(args[6]));
+      Server *fromserv = dynamic_cast<Server *>(Server::find(args[6]));
 
       if(fromserv == NULL)
       {
         ilog(L_ERROR, "Got NICK %s from server %s via %s which is an unknown server",
-            args[0].c_str(), args[6].c_str(), source->c_name());
+            args[0].c_str(), args[6].c_str(), source->name().c_str());
         return;
       }
       target = Client::find(args[0]);
       if(target == NULL)
       {
-        target = new Client(args[0], args[4], args[7], args[5]);
-        target->introduce();
+        target = new Client(args[0], args[4], args[5], args[7]);
+        target->init();
         return;
       }
     }
     if(target == source)
     {
-      if(target->s_name() == args[0])
+      if(target->name() != args[0])
         target->set_name(args[0]);
     }
   };
@@ -167,6 +168,6 @@ void Protocol::introduce_server(Client *client)
 {
   stringstream ss;
 
-  ss << "SERVER " << client->s_name() << " 1 :" << client->s_info();
+  ss << "SERVER " << client->name() << " 1 :" << client->gecos();
   connection->send(ss.str());
 }

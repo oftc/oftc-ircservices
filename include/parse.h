@@ -10,6 +10,7 @@ using std::vector;
 using std::tr1::unordered_map;
 
 class Server;
+class BaseClient;
 
 class Message
 {
@@ -20,7 +21,7 @@ public:
   const char *c_name() { return name.c_str(); };
 
   virtual ~Message() = 0;
-  virtual void handler(Server *, Client *, vector<string>) = 0;
+  virtual void handler(Server *, BaseClient *, vector<string>) = 0;
 protected:
   string name;
   unsigned int count;

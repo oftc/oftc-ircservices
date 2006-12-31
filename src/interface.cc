@@ -848,10 +848,10 @@ service::introduce()
   if(name.length() == 0)
     throw std::runtime_error("Need a service name");
 
-  client = new Client(name, "services", name, me->c_name());
+  client = new Client(name, "services", name, me->name());
 
   client->set_ts(CurrentTime);
-  client->introduce();
+  client->init();
 }
 
 void

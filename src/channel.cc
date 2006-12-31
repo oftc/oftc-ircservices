@@ -94,7 +94,7 @@ remove_user_from_channel(struct Membership *member)
 //  dlinkDelete(&member->usernode, &client_p->channel);
 
   BlockHeapFree(member_heap, member);
-  ilog(L_DEBUG, "Removing %s from channel %s", client_p->c_name(), chptr->chname);
+  ilog(L_DEBUG, "Removing %s from channel %s", client_p->name().c_str(), chptr->chname);
 
   if (chptr->members.head == NULL)
   {
@@ -204,7 +204,7 @@ add_user_to_channel(struct Channel *chptr, Client *who,
   ms->chptr = chptr;
   ms->flags = flags;
 
-  ilog(L_DEBUG, "Adding %s to %s", who->c_name(), chptr->chname);
+  ilog(L_DEBUG, "Adding %s to %s", who->name().c_str(), chptr->chname);
 
   dlinkAdd(ms, &ms->channode, &chptr->members);
   //dlinkAdd(ms, &ms->usernode, &who->channel);
@@ -219,8 +219,6 @@ find_bmask(Client *who, const dlink_list *const list)
   {
     struct Ban *bp = (struct Ban *)ptr->data;
 
-    if(who->is_banned(bp))
-      return bp;
   }
   return NULL;
 }

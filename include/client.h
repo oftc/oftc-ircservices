@@ -14,60 +14,90 @@ using std::string;
 using std::vector;
 using std::tr1::unordered_map;
 
-extern vector<Client *> GlobalClientList;
-extern unordered_map<string, Client *> GlobalClientHash;
+class BaseClient;
 
-class Client
+extern vector<BaseClient *> GlobalClientList;
+extern unordered_map<string, BaseClient *> GlobalClientHash;
+
+class BaseClient
 {
 public:
-  Client();
-  Client(string const& n) : name(n.substr(0, NICKLEN)) {};
-  Client(string const&, string const&, string const&, string const&);
-  void introduce();
-  void kill();
-  bool is_banned(struct Ban *) const;
-  void change_nick(string const&);
-  void change_umode(string const&);
+  // Constructors
+  BaseClient() : _name(""), _host(""), _gecos("") {};
+  BaseClient(string const& name) : _name(name), _host(""), _gecos("") {};
+  BaseClient(string const& name, string const& host, string const& gecos) :
+    _name(name), _host(host), _gecos(gecos) {};
+ 
+  // Virtual destructor to make this an abstract class
+  virtual ~BaseClient() = 0;
 
-  string nuh() const;
-  const char *c_nuh()   const { return nuh().c_str(); };
-  const char *c_name()  const { return name.c_str(); };
-  const char *c_id()    const { return id.c_str();   };
-  const char *c_user()  const { return user.c_str(); };
-  const char *c_host()  const { return host.c_str(); };
+  // Static Methods
+  static BaseClient *find(const string& str)
+  { 
+    return GlobalClientHash[str]; 
+  };
 
-  const string& s_name() const { return name; };
-  const string& s_info() const { return info; };
+  // Methods
+  virtual void init();
 
-  void set_ts(time_t ts) { tsinfo = ts; };
-  void set_name(string const& n) { name = n; };
+  // Property Accessors
+  const string& name()   const { return _name; };
+  const string& host()   const { return _host; };
+  const string& gecos()  const { return _gecos; };
 
-  static Client *find(string const& name) 
-  {
-    return GlobalClientHash[name];
-  }
-
+  // Property Setters
+  void set_name(string const& n) { _name = n.substr(0, NICKLEN); };
 protected:
-  string name;
-  string host;
-  string sockhost;
-  string id;
-  string info;
-  string user;
-
-  time_t tsinfo;
-  time_t enforce_time;
-  time_t release_time;
+  // Properties
+  string _name;
+  string _host;
+  string _gecos;
 };
 
-class Server : public Client
+class Client : public BaseClient
 {
 public:
-  Server() : Client() {};
-  Server(string const& a, string const& b, string const& c, string const& d) :
-    Client(a, b, c, d) {};
+  // Constructors
+  Client() : BaseClient(), _username("") {};
+  Client(string const& name) : BaseClient(name), _username("") {};
+  Client(string const& name, string const& host, string const& gecos) :
+    BaseClient(name, host, gecos), _username("") {};
+  Client(string const& name, string const& username, string const& host, 
+      string const& gecos) : 
+    BaseClient(name, host, gecos), _username(username) {};
+
+  ~Client();
+
+  // Methods
+  const string nuh() const;
+  void init();
+
+  // Property Accessors
+  const string& username() const { return _username; };
+
+  // Property Setters
+  void set_ts(time_t ts) { _ts = ts; };
+protected:
+  string _username;
+  time_t _ts;
+};
+
+class Server : public BaseClient
+{
+public:
+  // Constructors
+  Server() : BaseClient() {};
+  Server(string const& name, string const& gecos) : 
+    BaseClient(name, name, gecos) {};
+
+  ~Server();
+
+  // Methods 
+  void init();
+  void send(string const &m) const { connection->send(m); };
+  
+  // Property Setters
   void set_connection(Connection *c) { connection = c; };
-  void send(string const &m) { connection->send(m); };
   
 private:
   Connection *connection;

@@ -81,8 +81,8 @@ Connection::connect_callback(fde_t *fd, int status, void *data)
 
   ilog(L_DEBUG, "serv_connect_callback: Connect succeeded!");
 
-  server = new Server(Connect.name, "server", "server", Connect.host);
-  server->introduce();
+  server = new Server(Connect.name, Connect.name);
+  server->init();
   server->set_connection(connection);
 
   connection->set_server(server);
