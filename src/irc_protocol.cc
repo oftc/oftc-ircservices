@@ -43,9 +43,7 @@ class ErrorMessage : public Message
 {
 public:
   ErrorMessage() : Message("ERROR") {};
-  ~ErrorMessage()
-  {
-  };
+  ~ErrorMessage() {};
   void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
     stringstream ss;
@@ -68,9 +66,7 @@ class PingMessage : public Message
 {
 public:
   PingMessage() : Message("PING") {};
-  ~PingMessage()
-  {
-  };
+  ~PingMessage() {};
   void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
     stringstream ss;
@@ -85,9 +81,7 @@ class ServerMessage : public Message
 {
 public:
   ServerMessage() : Message("SERVER") {};
-  ~ServerMessage()
-  {
-  };
+  ~ServerMessage() {};
   void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
     stringstream ss;
@@ -114,9 +108,7 @@ class NickMessage : public Message
 {
 public:
   NickMessage() : Message("NICK") {};
-  ~NickMessage()
-  {
-  };
+  ~NickMessage() {};
   void handler(Server *uplink, BaseClient *source, vector<string> args)
   {
     stringstream ss;
@@ -179,22 +171,15 @@ public:
 void
 Protocol::init(Parser *p, Connection *c)
 {
-  PingMessage     *ping     = new PingMessage();
-  ErrorMessage    *error    = new ErrorMessage();
-  ServerMessage   *server   = new ServerMessage();
-  NickMessage     *nick     = new NickMessage();
-  PrivmsgMessage  *privmsg  = new PrivmsgMessage();
-  IgnoreMessage   *ignore   = new IgnoreMessage("EOB"); 
-
   parser = p;
   connection = c;
 
-  parser->add_message(ping);
-  parser->add_message(error);
-  parser->add_message(server);
-  parser->add_message(nick);
-  parser->add_message(ignore);
-  parser->add_message(privmsg);
+  parser->add_message(new PingMessage());
+  parser->add_message(new ErrorMessage());
+  parser->add_message(new ServerMessage());
+  parser->add_message(new NickMessage());
+  parser->add_message(new PrivmsgMessage());
+  parser->add_message(new IgnoreMessage("EOB"));
 }
 
 void Protocol::connected(bool handshake)
