@@ -27,6 +27,9 @@
 #define FD_DESC_SZ      128  /* hostlen + comment */
 #define LOWEST_SAFE_FD  4    /* skip stdin, stdout, stderr, and profiler */
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 enum {
     COMM_OK,
     COMM_ERR_BIND,

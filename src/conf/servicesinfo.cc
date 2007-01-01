@@ -21,7 +21,17 @@
  *  $Id$
  */
 
+#include <string>
+#include <vector>
+#include <netdb.h>
+
 #include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
+
 #include "conf/conf.h"
 
 struct ServicesInfoConf ServicesInfo = {};

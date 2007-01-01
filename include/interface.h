@@ -1,13 +1,12 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include <string>
-#include "language.h"
-#include "connection.h"
-
 using std::string;
+using std::vector;
 
 class Connection;
+class Parser;
+class Client;
 
 class Protocol
 {

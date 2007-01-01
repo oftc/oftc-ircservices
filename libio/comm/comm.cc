@@ -22,13 +22,18 @@
  *  $Id$
  */
 
-#include "stdinc.h"
-
 #ifndef _WIN32
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #endif
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
+#include "stdinc.h"
 
 static const char *comm_err_str[] = { "Comm OK", "Error during bind()",
                                       "Error during DNS lookup",

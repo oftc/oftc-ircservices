@@ -32,6 +32,8 @@
 # endif
 #endif
 
+#include <openssl/ssl.h>
+
 #include "misc/event.h"
 #include "misc/list.h"
 #include "misc/log.h"

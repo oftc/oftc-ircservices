@@ -1,6 +1,13 @@
 #ifndef NICKSERV_H
 #define NICKSERV_H
 
+class NickServ : public Service
+{
+public:
+  NickServ() : Service() {};
+  ~NickServ() {};
+};
+
 struct Nick
 {
   dlink_node node;

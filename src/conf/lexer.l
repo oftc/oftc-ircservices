@@ -29,7 +29,15 @@
 
 %{
 
+#include <string>
+#include <vector>
 #include "stdinc.h"
+
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
 #include "conf/conf.h"
 #include "y.tab.h"
 

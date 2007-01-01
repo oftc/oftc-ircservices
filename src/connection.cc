@@ -26,11 +26,18 @@
  *  $Id$
  */
 
-#include "stdinc.h"
 #include <string>
 #include <sstream>
 #include <queue>
 #include <iostream>
+#include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
+#include "conf/connect.h"
+#include "services.h"
 
 using std::string;
 using std::stringstream;

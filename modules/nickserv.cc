@@ -26,14 +26,13 @@
  *  $Id$
  */
 
-#include "stdinc.h"
+#include <string>
+#include <vector>
 
-class NickServ : public Service
-{
-public:
-  NickServ() { printf("Hi!\n"); };
-  ~NickServ() {};
-};
+#include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "nickserv.h"
 
 extern "C" Service *create()
 {

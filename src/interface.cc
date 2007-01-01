@@ -22,10 +22,15 @@
  *  $Id$
  */
 
-#include "stdinc.h"
 #include <string>
 #include <stdexcept>
 #include <vector>
+
+#include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
 
 using std::string;
 using std::runtime_error;

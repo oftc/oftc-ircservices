@@ -23,6 +23,7 @@
  */
 
 #define IN_MISC_C
+#include <openssl/ssl.h>
 #include "libioinc.h"
 #include <sys/time.h>
 #include <time.h>

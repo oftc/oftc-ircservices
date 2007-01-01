@@ -21,17 +21,24 @@
  *
  *  $Id$
  */
+
+#include <string>
+#include <vector>
+#include <sstream>
+
 #include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
+
 #include "conf/conf.h"
 #include "lua_module.h"
 #include "ruby_module.h"
 #include <sys/types.h>
 #include <dirent.h>
 #include <dlfcn.h>
-
-#include <vector>
-#include <string>
-#include <sstream>
 
 using std::string;
 using std::stringstream;

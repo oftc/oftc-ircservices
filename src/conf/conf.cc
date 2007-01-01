@@ -24,8 +24,18 @@
  */
 
 #define IN_CONF_C
+
+#include <string>
+#include <vector>
+
 #include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
 #include "conf/conf.h"
+#include "services.h"
 
 int conf_pass, conf_cold = YES;
 struct ConfParserContext conf_curctx;

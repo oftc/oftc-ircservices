@@ -22,19 +22,16 @@
  *  $Id$
  */
 
-#include <string>
-#include <vector>
-
 using std::string;
 using std::vector;
+
+typedef Service* create_t();
+typedef void destroy_t(Service *);
 
 class Module;
 
 extern vector<Module *>loaded_modules;
 extern vector<string> mod_paths;
-
-typedef Service* create_t();
-typedef void destroy_t(Service *);
 
 class Module
 {

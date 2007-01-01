@@ -80,7 +80,7 @@
  * - Dianora
  */
 
-#include "stdinc.h"
+#include "libioinc.h"
 #include "reslib.h"
 #include <ctype.h>
 

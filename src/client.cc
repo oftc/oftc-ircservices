@@ -26,13 +26,17 @@
  *  $Id$
  */
 
-
-#include "stdinc.h"
 #include <vector>
 #include <string>
 #include <sstream>
 #include <stdexcept>
 #include <tr1/unordered_map>
+
+#include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
 
 using std::string;
 using std::stringstream;

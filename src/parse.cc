@@ -29,7 +29,11 @@
 #include <string>
 #include <vector>
 #include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
 #include "parse.h"
+#include "client.h"
 
 using std::string;
 using std::vector;

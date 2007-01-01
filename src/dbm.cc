@@ -22,8 +22,17 @@
  *  $Id$
  */
 
+#include <string>
+#include <vector>
+
 #include "stdinc.h"
-#include "conf/conf.h"
+#include "dbm.h"
+#include "language.h"
+#include "interface.h"
+#include "chanserv.h"
+#include "nickserv.h"
+#include "msg.h"
+#include "conf/database.h"
 #include <yada.h>
 
 struct Callback *on_nick_drop_cb;

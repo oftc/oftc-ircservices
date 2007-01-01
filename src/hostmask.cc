@@ -23,6 +23,7 @@
  */
 
 #include "stdinc.h"
+#include "hostmask.h"
 
 #ifdef IPV6
 static int try_parse_v6_netmask(const char *, struct irc_ssaddr *, int *);

@@ -23,6 +23,7 @@
  */
 
 #include "stdinc.h"
+#include "language.h"
 
 void
 load_language(struct LanguageFile *language, const char *langfile)

@@ -21,10 +21,16 @@
  *  $Id: /local/oftc-ircservices/branches/ootest/src/conf/connect.cc 1630 2006-12-28T00:33:26.643840Z stu  $
  */
 
-#include "stdinc.h"
-#include "conf/conf.h"
-
+#include <string>
 #include <vector>
+
+#include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
+#include "conf/conf.h"
 
 using std::vector;
 

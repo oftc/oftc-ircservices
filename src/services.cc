@@ -22,7 +22,18 @@
  *  $Id$
  */
 
+#include <string>
+#include <vector>
+#include <sstream>
+
 #include "stdinc.h"
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
+#include "dbm.h"
+
 #include "conf.h"
 #include "conf/conf.h"
 #include "lua_module.h"
@@ -47,7 +58,6 @@ int main(int argc, char *argv[])
 
   memset(&ServicesInfo, 0, sizeof(ServicesInfo));
 
-  iorecv_cb = register_callback("iorecv", iorecv_default);
   //connected_cb = register_callback("server connected", server_connected);
   //iosend_cb = register_callback("iosend", iosend_default);
 

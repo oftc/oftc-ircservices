@@ -3,15 +3,16 @@
 
 #include <deque>
 #include <string>
-#include "parse.h"
-#include "interface.h"
 
 using std::deque;
 using std::string;
 
-extern Client *me;
-
+class Client;
+class Parser;
 class Server;
+class Protocol;
+
+extern Client *me;
 
 class Connection
 {

@@ -8,8 +8,6 @@
 class Client;
 class Connection;
 
-#include "connection.h"
-
 using std::string;
 using std::vector;
 using std::tr1::unordered_map;
