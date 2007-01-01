@@ -59,7 +59,7 @@ Service::init()
   service_list.push_back(this);
   service_hash[_name] = this;
 
-  _client = new Client(_name, "services", _name, me->name());
+  _client = new Client(_name, "services", me->name(), me->gecos());
   _client->init();
 }
 

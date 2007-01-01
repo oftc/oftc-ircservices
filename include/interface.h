@@ -1,6 +1,8 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+#include <tr1/unordered_map>
+
 using std::string;
 using std::vector;
 using std::tr1::unordered_map;
@@ -10,21 +12,31 @@ class Parser;
 class Client;
 class Server;
 class Service;
+class Protocol;
 
 extern vector<Service *> service_list;
+extern vector<Protocol *> protocol_list;
 extern unordered_map<string, Service *> service_hash;
 
 class Protocol
 {
 public:
-  Protocol(); 
-  void init(Parser *, Connection *);
+  // Constructors
+  Protocol() : _name("IRC"), parser(0), connection(0) {}; 
+  Protocol(string const& n) : _name(n) {};
 
-  void connected();
-  void introduce_client(Server *);
-  void introduce_client(Client *);
+  virtual ~Protocol() {};
+
+  // Members
+  virtual void init(Parser *, Connection *);
+  virtual void connected(bool=true);
+  virtual void introduce_client(Server *);
+  virtual void introduce_client(Client *);
+
+  // Property Accessors
+  const string& name() const { return _name; };
 protected:
-  string name;
+  string _name;
   Parser *parser;
   Connection *connection;
 };

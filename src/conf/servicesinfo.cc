@@ -76,11 +76,10 @@ verify_servicesinfo(va_list args)
   if(me->gecos() == "")
     parse_fatal("description= field missing in servicesinfo{} section");
 
-//  if (conf_cold && me->c_id()[0])
-//  {
-  //  hash_add_id(&me);
-  //  memcpy(new_uid, me->c_id(), IRC_MAXSID);
- // }
+  if(conf_cold && me->id() != "")
+  {
+    //
+  }
 
   recalc_fdlimit(NULL);
 
@@ -113,8 +112,8 @@ si_set_sid(void *value, void *unused)
   /* XXX */
   if (!IsDigit(sid[0]) || !IsAlNum(sid[1]) || !IsAlNum(sid[2]) || sid[3] != 0)
     parse_error("invalid SID, must match [0-9][0-9A-Z][0-9A-Z]");
-//  else if (conf_cold)
- //   strcpy(me->c_id(), sid);
+  else if (conf_cold)
+    me->set_id(sid);
 }
 
 static void

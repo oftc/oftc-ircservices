@@ -39,18 +39,6 @@ using std::string;
 using std::stringstream;
 using std::runtime_error;
 
-class IgnoreMessage : public Message
-{
-public:
-  IgnoreMessage(string const& n) : Message(n) {};
-  IgnoreMessage()
-  {
-  };
-  void handler(Server *uplink, BaseClient *source, vector<string> args)
-  {
-  }
-};
-
 class ErrorMessage : public Message
 {
 public:
@@ -177,14 +165,16 @@ public:
     else
       service = Service::find(args[0].substr(0, pos));
 
+    if(service == NULL)
+    {
+      ilog(L_ERROR, "Got PRIVMSG for service %s which doesnt exist", 
+          args[0].c_str());
+      return;
+    }
     service->handle_message(uplink->connection(), dynamic_cast<Client*>(source),
         args[1]);
   }
 };
-
-Protocol::Protocol() : name("IRC"), parser(0), connection(0)
-{
-}
 
 void
 Protocol::init(Parser *p, Connection *c)
@@ -207,14 +197,17 @@ Protocol::init(Parser *p, Connection *c)
   parser->add_message(privmsg);
 }
 
-void Protocol::connected()
+void Protocol::connected(bool handshake)
 {
   stringstream ss;
 
-  ss << "PASS " << connection->password() << " TS 5";
-  connection->send(ss.str());
-  connection->send("CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
-  introduce_client(me);
+  if(handshake)
+  {
+    ss << "PASS " << connection->password() << " TS 5";
+    connection->send(ss.str());
+    connection->send("CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
+    introduce_client(me);
+  }
 
   vector<Service *>::const_iterator i;
   for(i = service_list.begin(); i != service_list.end(); i++)
@@ -231,7 +224,7 @@ void Protocol::introduce_client(Client *client)
   stringstream ss;
 
   ss << "NICK " << client->name() << " 1 1 +o " << client->username() <<
-    " " << client->host() << " " << me->name() << " " << client->gecos();
+    " " << client->host() << " " << me->name() << " :" << client->gecos();
 
   connection->send(ss.str());
 }

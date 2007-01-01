@@ -25,8 +25,11 @@
 using std::string;
 using std::vector;
 
-typedef Service* create_t(string const&);
-typedef void destroy_t(Service *);
+typedef Service* servcreate_t(string const&);
+typedef void servdestroy_t(Service *);
+
+typedef Protocol* protocreate_t(string const&);
+typedef void protodestroy_t(Protocol *);
 
 class Module;
 
@@ -67,8 +70,23 @@ public:
   bool load(string const&, string const&);
 private:
   string service_name;
-  create_t *create_service;
-  destroy_t *destroy_service;
+  servcreate_t *create_service;
+  servdestroy_t *destroy_service;
+};
+
+class ProtocolModule : public Module
+{
+public:
+  ProtocolModule() : Module(), create_protocol(0), destroy_protocol(0) {};
+  ProtocolModule(string const& name) : Module(name), create_protocol(0), destroy_protocol(0) {};
+  ProtocolModule(string const& name, string const& proto) : Module(name),
+    _proto(proto), create_protocol(0), destroy_protocol(0) {};
+
+  bool load(string const&, string const&);
+private:
+  string _proto;
+  protocreate_t *create_protocol;
+  protodestroy_t *destroy_protocol;
 };
 
 EXTERN void boot_modules(char);

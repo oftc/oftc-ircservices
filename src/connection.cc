@@ -49,21 +49,20 @@ using std::endl;
 void
 Connection::connect()
 {
-//  struct Module *protomod;
+  Protocol *p;
+  vector<Protocol *>::const_iterator i;
 
-/*  protomod = find_module(Connect.protocol, NO);
-  if(protomod == NULL)
+  for(i = protocol_list.begin(); i != protocol_list.end(); i++)
   {
-    ilog(L_CRIT, "Unable to connect to uplink, protocol module %s not found.",
-        Connect.protocol);
-    services_die("Connect error", NO);
+    p = *i;
+
+    if(p->name() == Connect.protocol)
+      protocol = p;
   }
+  
+  if(protocol == NULL)
+    protocol = new Protocol();
 
-  ServerModeList = (struct ModeList *)modsym(protomod->handle, "ModeList");
-  ilog(L_DEBUG, "Loaded server mode list %p %c %d", ServerModeList, 
-      ServerModeList[0].letter, ServerModeList[0].mode);*/
-
-  protocol = new Protocol();
   protocol->init(parser, this);
 
   if(comm_open(&fd, AF_INET, SOCK_STREAM, 0, NULL) < 0)

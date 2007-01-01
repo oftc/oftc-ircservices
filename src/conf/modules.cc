@@ -48,6 +48,7 @@ using std::vector;
 vector<Module *> loaded_modules;
 vector<string> mod_paths;
 vector<string> mod_extra;
+vector<Protocol *>protocol_list;
 
 static dlink_node *hreset, *hpass;
 
@@ -96,11 +97,27 @@ ServiceModule::load(string const& dir, string const& fname)
   if(!Module::load(dir, fname))
     return false;
 
-  create_service = (create_t *)modsym(handle, "create");
-  destroy_service = (destroy_t *)modsym(handle, "destroy");
+  create_service = (servcreate_t *)modsym(handle, "create");
+  destroy_service = (servdestroy_t *)modsym(handle, "destroy");
 
   service = create_service(service_name);
   service->init();
+
+  return true;
+}
+
+bool ProtocolModule::load(string const& dir, string const& fname)
+{
+  Protocol *protocol;
+
+  if(!Module::load(dir, fname))
+    return false;
+
+  create_protocol = (protocreate_t *)modsym(handle, "create");
+  destroy_protocol = (protodestroy_t *)modsym(handle, "destroy");
+
+  protocol = create_protocol(_proto);
+  protocol_list.push_back(protocol);
 
   return true;
 }
@@ -165,6 +182,10 @@ boot_modules(char cold)
     if(!m->load(AUTOMODPATH, sc->module))
       delete m;
   }
+
+  Module *m = new ProtocolModule("oftc.so", "oftc");
+  if(!m->load(AUTOMODPATH, "oftc.so"))
+    delete m;
 }
 
 /*

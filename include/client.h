@@ -40,15 +40,18 @@ public:
 
   // Property Accessors
   const string& name()   const { return _name; };
+  const string& id()     const { return _id; };
   const string& host()   const { return _host; };
   const string& gecos()  const { return _gecos; };
 
   // Property Setters
   void set_name(string const& n) { _name = n.substr(0, NICKLEN); };
   void set_gecos(string const& g) { _gecos = g.substr(0, REALLEN); };
+  void set_id(string const& i) { _id = i.substr(0, IRC_MAXSID); };
 protected:
   // Properties
   string _name;
+  string _id;
   string _host;
   string _gecos;
 };

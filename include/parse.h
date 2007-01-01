@@ -27,6 +27,16 @@ protected:
   unsigned int count;
 };
 
+class IgnoreMessage : public Message
+{
+public:
+  IgnoreMessage(string const& n) : Message(n) {};
+  IgnoreMessage() { };
+  void handler(Server *uplink, BaseClient *source, vector<string> args)
+  {
+  }
+};
+
 class Parser
 {
 public:

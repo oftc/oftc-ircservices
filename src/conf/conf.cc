@@ -67,9 +67,6 @@ init_conf(void)
   init_servicesinfo();
   init_database();
   init_connect();
-#ifndef STATIC_MODULES
-  init_modules();
-#endif
   init_logging();
   init_service();
 }
