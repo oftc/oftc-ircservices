@@ -25,6 +25,8 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+#include <iostream>
+#include <tr1/unordered_map>
 
 #include "stdinc.h"
 #include "language.h"
@@ -40,6 +42,7 @@ struct LanguageFile ServicesLanguages[LANG_LAST];
 struct ModeList *ServerModeList;
 
 vector<Service *> service_list;
+unordered_map<string, Service *> service_hash;
 
 void
 init_interface()
@@ -48,11 +51,22 @@ init_interface()
 }
 
 void
-Service::introduce()
+Service::init()
 {
   if(_name.length() == 0)
     throw runtime_error("Need a service name");
 
+  service_list.push_back(this);
+  service_hash[_name] = this;
+
   _client = new Client(_name, "services", _name, me->name());
   _client->init();
+}
+
+void
+Service::handle_message(Connection *connection, Client *source, 
+    string const& message)
+{
+  std::cout << "Service " << _name << " got message " << message << " from " << 
+    source->name() << std::endl;
 }

@@ -28,15 +28,16 @@
 
 #include <string>
 #include <vector>
+#include <tr1/unordered_map>
 
 #include "stdinc.h"
 #include "language.h"
 #include "interface.h"
 #include "nickserv.h"
 
-extern "C" Service *create()
+extern "C" Service *create(string const& name)
 {
-  return new NickServ();
+  return new NickServ(name);
 }
 
 extern "C" void destroy(Service *s)

@@ -12,7 +12,7 @@ class Parser;
 class Server;
 class Protocol;
 
-extern Client *me;
+extern Server *me;
 
 class Connection
 {

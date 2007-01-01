@@ -25,7 +25,7 @@
 using std::string;
 using std::vector;
 
-typedef Service* create_t();
+typedef Service* create_t(string const&);
 typedef void destroy_t(Service *);
 
 class Module;
@@ -36,44 +36,40 @@ extern vector<string> mod_paths;
 class Module
 {
 public:
-  // Constants
-  static const int SERVICE_MODULE = 0;
-
   // Constructors
-  Module() : handle(0), address(0) {};
-  Module(string const& n) : name(n) { Module(); };
+  Module() : _name(""), _version(""), handle(0), address(0) {};
+  Module(string const& n) : _name(n), _version(""), handle(0), address(0) { };
+  virtual ~Module() {};
 
   // Members
-  bool load(string const&, string const&, int=SERVICE_MODULE);
+  virtual bool load(string const&, string const&);
 
   // Property Accessors
-  const string& get_name() const { return name; };
+  const string& name() const { return _name; };
 
   // Static Members
   static Module *find(string const&);
 protected:
-  string name;
-  string version;
-  create_t *create_service;
-  destroy_t *destroy_service;
+  string _name;
+  string _version;
   void *handle;
   void *address;
 };
 
-#define INIT_MODULE(NAME, REV) \
-  static void _modinit(void); \
-  static void _moddeinit(void); \
-  struct Module NAME ## _module = {#NAME, REV, _modinit, _moddeinit}; \
-  static void _modinit(void)
+class ServiceModule : public Module
+{
+public:
+  ServiceModule() : Module(), create_service(0), destroy_service(0) {};
+  ServiceModule(string const& name) : Module(name), create_service(0), destroy_service(0) {};
+  ServiceModule(ServiceConf *c) : 
+    Module(c->module), service_name(c->name), create_service(0), destroy_service(0) {};
+  
+  bool load(string const&, string const&);
+private:
+  string service_name;
+  create_t *create_service;
+  destroy_t *destroy_service;
+};
 
-#define CLEANUP_MODULE \
-  static void _moddeinit(void)
-
-#ifdef IN_CONF_C
-void init_modules(void);
-#endif
-
-EXTERN int load_module(const char *);
-EXTERN void unload_module(struct Module *);
 EXTERN void boot_modules(char);
 EXTERN void cleanup_modules(void);

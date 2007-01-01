@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <tr1/unordered_map>
 
 #include "stdinc.h"
 #include "language.h"
@@ -60,18 +61,17 @@ Module::find(string const& filename)
   {
     Module *m = *i;
 
-    if(m->get_name() == name)
+    if(m->name() == name)
       return m;
   }
   return NULL;
 }
 
 bool
-Module::load(string const& dir, string const& fname, int type)
+Module::load(string const& dir, string const& fname)
 {
   string path = dir + "/" + fname;
   stringstream message;
-  Service *service;
 
   if(!(handle = modload(path.c_str(), &address)))
   {
@@ -79,18 +79,29 @@ Module::load(string const& dir, string const& fname, int type)
     return false;
   }
 
-  create_service = (create_t *)modsym(handle, "create");
-  destroy_service = (destroy_t *)modsym(handle, "destroy");
-
-  service = create_service();
-  service_list.push_back(service);
-
-  message << "Shared module " << name << " loaded at " << address;
+  message << "Shared module " << _name << " loaded at " << address;
 
   ilog(L_NOTICE, "%s", message.str().c_str());
   ilog(L_DEBUG, "%s", message.str().c_str());
 
   loaded_modules.push_back(this);
+  return true;
+}
+
+bool
+ServiceModule::load(string const& dir, string const& fname)
+{
+  Service *service;
+
+  if(!Module::load(dir, fname))
+    return false;
+
+  create_service = (create_t *)modsym(handle, "create");
+  destroy_service = (destroy_t *)modsym(handle, "destroy");
+
+  service = create_service(service_name);
+  service->init();
+
   return true;
 }
 
@@ -150,7 +161,7 @@ boot_modules(char cold)
   for(si = ServiceConfs.begin(); si != ServiceConfs.end(); si++)
   {
     ServiceConf *sc = *si;
-    Module *m = new Module(sc->module);
+    Module *m = new ServiceModule(sc);
     if(!m->load(AUTOMODPATH, sc->module))
       delete m;
   }

@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <tr1/unordered_map>
 
 #include "stdinc.h"
 #include "language.h"
@@ -43,7 +44,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-Client *me;
+Server *me;
 
 static void setup_signals();
 static void signal_handler(int);
@@ -54,7 +55,7 @@ int main(int argc, char *argv[])
   Parser *parser = new Parser();
   Connection *connection = new Connection(parser);
 
-  me = new Client();
+  me = new Server();
 
   memset(&ServicesInfo, 0, sizeof(ServicesInfo));
 

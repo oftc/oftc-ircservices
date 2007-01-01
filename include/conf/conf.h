@@ -30,10 +30,10 @@
 #include "conf/database.h"
 #include "conf/connect.h"
 #include "conf/logging.h"
+#include "conf/service.h"
 #ifndef STATIC_MODULES
 #include "conf/modules.h"
 #endif
-#include "conf/service.h"
 
 #define CONF_FLAGS_DO_IDENTD            0x00000001
 #define CONF_FLAGS_LIMIT_IP             0x00000002

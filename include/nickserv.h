@@ -5,6 +5,7 @@ class NickServ : public Service
 {
 public:
   NickServ() : Service() {};
+  NickServ(string const& n) : Service(n) {};
   ~NickServ() {};
 };
 

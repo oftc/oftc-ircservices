@@ -30,6 +30,8 @@
 #include <sstream>
 #include <queue>
 #include <iostream>
+#include <tr1/unordered_map>
+
 #include "stdinc.h"
 #include "language.h"
 #include "interface.h"

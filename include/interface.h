@@ -3,10 +3,16 @@
 
 using std::string;
 using std::vector;
+using std::tr1::unordered_map;
 
 class Connection;
 class Parser;
 class Client;
+class Server;
+class Service;
+
+extern vector<Service *> service_list;
+extern unordered_map<string, Service *> service_hash;
 
 class Protocol
 {
@@ -15,7 +21,8 @@ public:
   void init(Parser *, Connection *);
 
   void connected();
-  void introduce_server(Client *);
+  void introduce_client(Server *);
+  void introduce_client(Client *);
 protected:
   string name;
   Parser *parser;
@@ -27,11 +34,19 @@ class Service
 public:
   // Constructors
   Service() : _name(""), _client(0) {};
-  Service(string const & name) : _name(name), _client(0) {};
+  Service(string const& name) : _name(name), _client(0) {};
 
   virtual ~Service() {};
 
-  void introduce();
+  // Static members
+  static Service *find(const string& name) { return service_hash[name]; };
+
+  // Members
+  void init();
+  virtual void handle_message(Connection *, Client *, string const&);
+
+  // Property Accessors
+  Client *client () const { return _client; };
 protected:
   string _name;
   Client *_client;
@@ -62,42 +77,11 @@ struct ModeList
   unsigned char letter;
 };
 
-extern dlink_list services_list;
-extern struct Callback *send_newuser_cb;
-extern struct Callback *send_privmsg_cb;
-extern struct Callback *send_notice_cb;
-extern struct Callback *send_gnotice_cb;
-extern struct Callback *send_umode_cb;
-extern struct Callback *send_cloak_cb;
-extern struct Callback *send_nick_cb;
-extern struct Callback *send_akill_cb;
-extern struct Callback *send_unakill_cb;
-extern struct Callback *send_kick_cb;
-extern struct Callback *send_cmode_cb;
-extern struct Callback *send_invite_cb;
-extern struct Callback *send_topic_cb;
-extern struct Callback *send_kill_cb;
-
-extern struct Callback *on_umode_change_cb;
-extern struct Callback *on_cmode_change_cb;
-extern struct Callback *on_squit_cb;
-extern struct Callback *on_quit_cb;
-extern struct Callback *on_part_cb;
-extern struct Callback *on_join_cb;
-extern struct Callback *on_nick_change_cb;
-extern struct Callback *on_identify_cb;
-extern struct Callback *on_newuser_cb;
-extern struct Callback *on_channel_destroy_cb;
-extern struct Callback *on_nick_drop_cb;
-extern struct Callback *on_topic_change_cb;
-
 extern struct ModeList *ServerModeList;
 
 void init_interface();
 void cleanup_interface();
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
-
-extern vector<Service *> service_list;
 
 #endif

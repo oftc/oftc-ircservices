@@ -45,6 +45,7 @@ public:
 
   // Property Setters
   void set_name(string const& n) { _name = n.substr(0, NICKLEN); };
+  void set_gecos(string const& g) { _gecos = g.substr(0, REALLEN); };
 protected:
   // Properties
   string _name;
@@ -92,13 +93,16 @@ public:
 
   // Methods 
   void init();
-  void send(string const &m) const { connection->send(m); };
+  void send(string const &m) const { _connection->send(m); };
   
   // Property Setters
-  void set_connection(Connection *c) { connection = c; };
+  void set_connection(Connection *c) { _connection = c; };
+
+  // Property Accessors
+  Connection *connection() const { return _connection; };
   
 private:
-  Connection *connection;
+  Connection *_connection;
 };
 
 #endif

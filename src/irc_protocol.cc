@@ -26,6 +26,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
+#include <tr1/unordered_map>
 
 #include "stdinc.h"
 #include "language.h"
@@ -160,6 +161,27 @@ public:
   };
 };
 
+class PrivmsgMessage : public Message
+{
+public:
+  PrivmsgMessage() : Message("PRIVMSG") {};
+  ~PrivmsgMessage() {};
+
+  void handler(Server *uplink, BaseClient *source, vector<string> args)
+  {
+    size_t pos = args[0].find_first_of('@');
+    Service *service;
+    
+    if(pos == string::npos)
+      service = Service::find(args[0]);
+    else
+      service = Service::find(args[0].substr(0, pos));
+
+    service->handle_message(uplink->connection(), dynamic_cast<Client*>(source),
+        args[1]);
+  }
+};
+
 Protocol::Protocol() : name("IRC"), parser(0), connection(0)
 {
 }
@@ -167,11 +189,12 @@ Protocol::Protocol() : name("IRC"), parser(0), connection(0)
 void
 Protocol::init(Parser *p, Connection *c)
 {
-  PingMessage   *ping   = new PingMessage();
-  ErrorMessage  *error  = new ErrorMessage();
-  ServerMessage *server = new ServerMessage();
-  NickMessage   *nick   = new NickMessage();
-  IgnoreMessage *ignore = new IgnoreMessage("EOB"); 
+  PingMessage     *ping     = new PingMessage();
+  ErrorMessage    *error    = new ErrorMessage();
+  ServerMessage   *server   = new ServerMessage();
+  NickMessage     *nick     = new NickMessage();
+  PrivmsgMessage  *privmsg  = new PrivmsgMessage();
+  IgnoreMessage   *ignore   = new IgnoreMessage("EOB"); 
 
   parser = p;
   connection = c;
@@ -181,6 +204,7 @@ Protocol::init(Parser *p, Connection *c)
   parser->add_message(server);
   parser->add_message(nick);
   parser->add_message(ignore);
+  parser->add_message(privmsg);
 }
 
 void Protocol::connected()
@@ -190,15 +214,32 @@ void Protocol::connected()
   ss << "PASS " << connection->password() << " TS 5";
   connection->send(ss.str());
   connection->send("CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
-  introduce_server(me);
+  introduce_client(me);
+
+  vector<Service *>::const_iterator i;
+  for(i = service_list.begin(); i != service_list.end(); i++)
+  {
+    Service *s = *i;
+    introduce_client(s->client());
+  }
 
   connection->process_send_queue();
 }
 
-void Protocol::introduce_server(Client *client)
+void Protocol::introduce_client(Client *client)
 {
   stringstream ss;
 
-  ss << "SERVER " << client->name() << " 1 :" << client->gecos();
+  ss << "NICK " << client->name() << " 1 1 +o " << client->username() <<
+    " " << client->host() << " " << me->name() << " " << client->gecos();
+
+  connection->send(ss.str());
+}
+
+void Protocol::introduce_client(Server *server)
+{
+  stringstream ss;
+
+  ss << "SERVER " << server->name() << " 1 :" << server->gecos();
   connection->send(ss.str());
 }

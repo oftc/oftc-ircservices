@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <tr1/unordered_map>
 #include <netdb.h>
 
 #include "stdinc.h"
@@ -69,12 +70,12 @@ reset_servicesinfo(va_list args)
 static void *
 verify_servicesinfo(va_list args)
 {
-  if (me->name() == "")
+  if(me->name() == "")
     parse_fatal("name= field missing in servicesinfo{} section");
 
-/*  if (!me.info[0])
+  if(me->gecos() == "")
     parse_fatal("description= field missing in servicesinfo{} section");
-*/
+
 //  if (conf_cold && me->c_id()[0])
 //  {
   //  hash_add_id(&me);
@@ -119,7 +120,7 @@ si_set_sid(void *value, void *unused)
 static void
 si_set_description(void *value, void *unused)
 {
-//  strlcpy(me.info, (char *) value, sizeof(me.info));
+  me->set_gecos((char*)value);
 }
 
 static void
