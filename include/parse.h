@@ -54,9 +54,12 @@ public:
 class ServerMessage : public Message
 {
 public:
-  ServerMessage() : Message("SERVER") {};
+  ServerMessage() : Message("SERVER"), ts(5) {};
+  ServerMessage(int ts) : Message("SERVER"), ts(6) {};
   ~ServerMessage() {};
   void handler(Server *, BaseClient *, vector<string>);
+private:
+  int ts;
 };
 
 class NickMessage : public Message

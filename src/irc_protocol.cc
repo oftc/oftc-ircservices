@@ -77,7 +77,7 @@ ServerMessage::handler(Server *uplink, BaseClient *source, vector<string> args)
   if(newserver == uplink)
   {
     ilog(L_DEBUG, "Completed connection to server %s", uplink->name().c_str());
-    ss << "SVINFO 5 5 0: " << CurrentTime;
+    ss << "SVINFO 5 " << ts << " 0: " << CurrentTime;
     uplink->send(ss.str());
   }
   else

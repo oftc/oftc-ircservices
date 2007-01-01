@@ -65,6 +65,8 @@ void
 OFTCProtocol::init(Parser *p, Connection *c)
 {
   Protocol::init(p, c);
+  
+  parser->add_message(new ServerMessage(6));
   parser->add_message(new SIDMessage());
   parser->add_message(new UIDMessage());
   parser->add_message(new IgnoreMessage("GNOTICE"));
