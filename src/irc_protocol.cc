@@ -39,123 +39,98 @@ using std::string;
 using std::stringstream;
 using std::runtime_error;
 
-class ErrorMessage : public Message
+void 
+ErrorMessage::handler(Server *uplink, BaseClient *source, vector<string> args)
 {
-public:
-  ErrorMessage() : Message("ERROR") {};
-  ~ErrorMessage() {};
-  void handler(Server *uplink, BaseClient *source, vector<string> args)
-  {
-    stringstream ss;
+  stringstream ss;
 
-    ss << "Error :from " << source->name();
+  ss << "Error :from " << source->name();
 
-    if(uplink != source)
-      ss << " via " << uplink->name();
+  if(uplink != source)
+    ss << " via " << uplink->name();
 
-    if(args.size() == 0)
-      ss << "<>";
-    else
-      ss << args[0];
+  if(args.size() == 0)
+    ss << "<>";
+  else
+    ss << args[0];
 
-    ilog(L_DEBUG, "%s", ss.str().c_str());
-  };
-};
+  ilog(L_DEBUG, "%s", ss.str().c_str());
+}
 
-class PingMessage : public Message
+void
+PingMessage::handler(Server *uplink, BaseClient *source, vector<string> args)
 {
-public:
-  PingMessage() : Message("PING") {};
-  ~PingMessage() {};
-  void handler(Server *uplink, BaseClient *source, vector<string> args)
-  {
-    stringstream ss;
+  stringstream ss;
 
-    ss << ":" << me->name() << " PONG " << me->name() << " :" << 
-      source->name();
+  ss << ":" << me->name() << " PONG " << me->name() << " :" << 
+    source->name();
+  uplink->send(ss.str());
+}
+
+void
+ServerMessage::handler(Server *uplink, BaseClient *source, vector<string> args)
+{
+  stringstream ss;
+  Server *newserver;
+
+  newserver = dynamic_cast<Server *>(Server::find(args[0]));
+  if(newserver == uplink)
+  {
+    ilog(L_DEBUG, "Completed connection to server %s", uplink->name().c_str());
+    ss << "SVINFO 5 5 0: " << CurrentTime;
     uplink->send(ss.str());
-  };
-};
-
-class ServerMessage : public Message
-{
-public:
-  ServerMessage() : Message("SERVER") {};
-  ~ServerMessage() {};
-  void handler(Server *uplink, BaseClient *source, vector<string> args)
+  }
+  else
   {
-    stringstream ss;
-    Server *newserver;
+    newserver = new Server(args[0], args[2]);
+    newserver->init();
+    ilog(L_DEBUG, "New server %s from hub %s", args[0].c_str(), 
+        source->name().c_str());
+  }
+}
 
-    newserver = dynamic_cast<Server *>(Server::find(args[0]));
-    if(newserver == uplink)
-    {
-      ilog(L_DEBUG, "Completed connection to server %s", uplink->name().c_str());
-      ss << "SVINFO 5 5 0: " << CurrentTime;
-      uplink->send(ss.str());
-    }
-    else
-    {
-      newserver = new Server(args[0], args[2]);
-      newserver->init();
-      ilog(L_DEBUG, "New server %s from hub %s", args[0].c_str(), 
-          source->name().c_str());
-    }
-  };
-};
-
-class NickMessage : public Message
+void
+NickMessage::handler(Server *uplink, BaseClient *source, vector<string> args)
 {
-public:
-  NickMessage() : Message("NICK") {};
-  ~NickMessage() {};
-  void handler(Server *uplink, BaseClient *source, vector<string> args)
-  {
-    stringstream ss;
-    BaseClient *target;
+  stringstream ss;
+  BaseClient *target;
 
+  target = Client::find(args[0]);
+  if(args.size() == 8)
+  {
+    Server *fromserv = dynamic_cast<Server *>(Server::find(args[6]));
+
+    if(fromserv == NULL)
+    {
+      ilog(L_ERROR, "Got NICK %s from server %s via %s which is an unknown server",
+          args[0].c_str(), args[6].c_str(), source->name().c_str());
+      return;
+    }
     target = Client::find(args[0]);
-    if(args.size() == 8)
+    if(target == NULL)
     {
-      Server *fromserv = dynamic_cast<Server *>(Server::find(args[6]));
-
-      if(fromserv == NULL)
-      {
-        ilog(L_ERROR, "Got NICK %s from server %s via %s which is an unknown server",
-            args[0].c_str(), args[6].c_str(), source->name().c_str());
-        return;
-      }
-      target = Client::find(args[0]);
-      if(target == NULL)
-      {
-        target = new Client(args[0], args[4], args[5], args[7]);
-        target->init();
-        return;
-      }
+      target = new Client(args[0], args[4], args[5], args[7]);
+      target->init();
+      return;
     }
-    if(target == source)
-    {
-      if(target->name() != args[0])
-        target->set_name(args[0]);
-    }
-  };
+  }
+  if(target == source)
+  {
+    if(target->name() != args[0])
+      target->set_name(args[0]);
+  }
 };
 
-class PrivmsgMessage : public Message
+void
+PrivmsgMessage::handler(Server *uplink, BaseClient *source, vector<string> args)
 {
-public:
-  PrivmsgMessage() : Message("PRIVMSG") {};
-  ~PrivmsgMessage() {};
+  size_t pos = args[0].find_first_of('@');
+  Service *service;
 
-  void handler(Server *uplink, BaseClient *source, vector<string> args)
-  {
-    size_t pos = args[0].find_first_of('@');
-    Service *service;
-    
-    if(pos == string::npos)
-      service = Service::find(args[0]);
-    else
-      service = Service::find(args[0].substr(0, pos));
+  if(pos == string::npos)
+    service = Service::find(args[0]);
+  else
+    service = Service::find(args[0].substr(0, pos));
 
     if(service == NULL)
     {
@@ -165,7 +140,6 @@ public:
     }
     service->handle_message(uplink->connection(), dynamic_cast<Client*>(source),
         args[1]);
-  }
 };
 
 void

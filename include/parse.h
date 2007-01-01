@@ -32,9 +32,48 @@ class IgnoreMessage : public Message
 public:
   IgnoreMessage(string const& n) : Message(n) {};
   IgnoreMessage() { };
-  void handler(Server *uplink, BaseClient *source, vector<string> args)
-  {
-  }
+  void handler(Server *uplink, BaseClient *source, vector<string>) {};
+};
+
+class ErrorMessage : public Message
+{
+public:
+  ErrorMessage() : Message("ERROR") {};
+  ~ErrorMessage() {};
+  void handler(Server *, BaseClient *, vector<string>);
+};
+
+class PingMessage : public Message
+{
+public:
+  PingMessage() : Message("PING") {};
+  ~PingMessage() {};
+  void handler(Server *, BaseClient *, vector<string>);
+};
+
+class ServerMessage : public Message
+{
+public:
+  ServerMessage() : Message("SERVER") {};
+  ~ServerMessage() {};
+  void handler(Server *, BaseClient *, vector<string>);
+};
+
+class NickMessage : public Message
+{
+public:
+  NickMessage() : Message("NICK") {};
+  ~NickMessage() {};
+  void handler(Server *, BaseClient *, vector<string>);
+};
+
+class PrivmsgMessage : public Message
+{
+public:
+  PrivmsgMessage() : Message("PRIVMSG") {};
+  ~PrivmsgMessage() {};
+
+  void handler(Server *, BaseClient *, vector<string>);
 };
 
 class Parser
