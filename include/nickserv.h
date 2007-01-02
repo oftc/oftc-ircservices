@@ -6,7 +6,21 @@ class NickServ : public Service
 public:
   NickServ() : Service() {};
   NickServ(string const& n) : Service(n) {};
+
   ~NickServ() {};
+
+  void init();
+};
+
+class TestMessage : public ServiceMessage
+{
+public:
+  TestMessage() : ServiceMessage() {};
+  TestMessage(string const& n) : ServiceMessage(n) {};
+
+  ~TestMessage() {};
+
+  void handler(Client *, vector<string>);
 };
 
 struct Nick

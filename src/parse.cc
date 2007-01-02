@@ -130,5 +130,5 @@ Parser::parse_line(Connection *uplink, string const& line)
 void
 Parser::add_message(Message *message)
 {
-  message_map[message->c_name()] = message;
+  message_map[message->name()] = message;
 };

@@ -7,6 +7,7 @@ using std::string;
 using std::vector;
 using std::tr1::unordered_map;
 
+class ServiceMessage;
 class Connection;
 class Parser;
 class Client;
@@ -54,13 +55,15 @@ public:
   static Service *find(const string& name) { return service_hash[name]; };
 
   // Members
-  void init();
+  virtual void init();
   virtual void handle_message(Connection *, Client *, string const&);
 
   // Property Accessors
   Client *client () const { return _client; };
 protected:
   string _name;
+  unordered_map<string, ServiceMessage *> message_map;
+  void add_message(ServiceMessage *message);
   Client *_client;
 };
 

@@ -16,22 +16,36 @@ class Message
 {
 public:
   Message() : count(0) {};
-  Message(string const& n) : name(n), count(0) {};
-
-  const char *c_name() { return name.c_str(); };
+  Message(string const& n) : _name(n), count(0) {};
 
   virtual ~Message() = 0;
   virtual void handler(Server *, BaseClient *, vector<string>) = 0;
+
+  string const& name() { return _name; };
 protected:
-  string name;
+  string _name;
   unsigned int count;
+};
+
+class ServiceMessage
+{
+public:
+  ServiceMessage() {};
+  ServiceMessage(string const& n) : _name(n) {};
+
+  virtual ~ServiceMessage() {};
+  virtual void handler(Client *, vector<string>) = 0;
+
+  string const& name() { return _name; };
+protected:
+  string _name;
 };
 
 class IgnoreMessage : public Message
 {
 public:
   IgnoreMessage(string const& n) : Message(n) {};
-  IgnoreMessage() { };
+  IgnoreMessage() {};
   void handler(Server *uplink, BaseClient *source, vector<string>) {};
 };
 

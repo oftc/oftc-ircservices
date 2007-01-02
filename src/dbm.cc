@@ -31,8 +31,8 @@
 #include "language.h"
 #include "interface.h"
 #include "chanserv.h"
+#include "parse.h"
 #include "nickserv.h"
-#include "msg.h"
 #include "conf/database.h"
 #include <yada.h>
 
@@ -887,7 +887,7 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
   access = (struct ChanAccess *)MyMalloc(sizeof(struct ChanAccess));
   access->channel = chan->id;
   access->account = founder;
-  access->level   = MASTER_FLAG;
+  access->level   = 1;
  
   if(!db_list_add(CHACCESS_LIST, access))
   {
@@ -979,7 +979,7 @@ db_get_num_masters(unsigned int chanid)
   yada_rc_t *rc, *brc;
   int count;
 
-  db_query(rc, GET_CHAN_MASTER_COUNT, chanid, MASTER_FLAG);
+  db_query(rc, GET_CHAN_MASTER_COUNT, chanid, 0);
 
   if(rc == NULL)
     return 0;

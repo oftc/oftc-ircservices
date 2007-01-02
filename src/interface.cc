@@ -33,6 +33,7 @@
 #include "interface.h"
 #include "connection.h"
 #include "client.h"
+#include "parse.h"
 
 using std::string;
 using std::runtime_error;
@@ -61,6 +62,12 @@ Service::init()
 
   _client = new Client(_name, "services", me->name(), me->gecos());
   _client->init();
+}
+
+void
+Service::add_message(ServiceMessage *message)
+{
+  message_map[message->name()] = message;
 }
 
 void

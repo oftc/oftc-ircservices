@@ -95,5 +95,11 @@ OFTCProtocol::introduce_client(Server *server)
 void
 OFTCProtocol::introduce_client(Client *client)
 {
+  std::ostringstream ss;
 
+  ss << ":" << me->id() << " UID " << client->name() << " 1 1 +o " << 
+    client->username() << " " << client->host() << " 255.255.255.255 " <<
+    client->id() << " :" << client->gecos();
+
+  connection->send(ss.str());
 }

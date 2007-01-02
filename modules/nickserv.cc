@@ -28,12 +28,28 @@
 
 #include <string>
 #include <vector>
-#include <tr1/unordered_map>
+#include <iostream>
 
 #include "stdinc.h"
 #include "language.h"
 #include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
 #include "nickserv.h"
+
+void
+TestMessage::handler(Client *source, vector<string> args)
+{
+  std::cout << "Test message from " << source->name() << std::endl;
+}
+
+void
+NickServ::init()
+{
+  Service::init();
+  add_message(new TestMessage());
+}
 
 extern "C" Service *create(string const& name)
 {
