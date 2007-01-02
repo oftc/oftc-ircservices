@@ -370,11 +370,7 @@ libio_init(int daemonn)
   eventInit();
   fdlist_init();
   init_comm();
-#if USE_BLOCK_ALLOC
-  initBlockHeap();
-#endif
   init_dlink_nodes();
-  dbuf_init();
 #ifndef _WIN32
   init_resolver();
 #endif

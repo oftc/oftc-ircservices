@@ -49,8 +49,6 @@
 #include "comm/fileio.h"
 #include "comm/comm.h"
 
-#include "mem/balloc.h"
-#include "mem/dbuf.h"
 #include "mem/memory.h"
 
 #include "net/irc_getaddrinfo.h"

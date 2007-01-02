@@ -165,16 +165,6 @@ main () { return 1; } /* F_SETSIG not defined */
   AC_DEFINE_UNQUOTED([USE_IOPOLL_MECHANISM],[$use_iopoll_mechanism],[use this iopoll mechanism])
   dnl }}}
 ])dnl }}}
-dnl {{{ ax_arg_disable_block_alloc
-AC_DEFUN([AX_ARG_DISABLE_BLOCK_ALLOC],[
-  AC_ARG_ENABLE([block-alloc],[AC_HELP_STRING([--disable-block-alloc],[Disable block alloc.])],[block_alloc="$enableval"],[block_alloc="yes"])
-  if test "$block_alloc" = "no" ; then
-    use_block_alloc=0
-  else
-    use_block_alloc=1
-  fi
-  AC_DEFINE_UNQUOTED([USE_BLOCK_ALLOC],[$use_block_alloc],[use block alloc])
-])dnl }}}
 dnl {{{ ax_arg_disable_shared_modules (FIXME)
 AC_DEFUN([AX_ARG_DISABLE_SHARED_MODULES],[
   AC_ARG_ENABLE([shared-modules],[AC_HELP_STRING([--disable-shared-modules],[Disable shared modules.])],[shared_modules="$enableval"],[shared_modules="yes"])

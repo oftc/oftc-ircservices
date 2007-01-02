@@ -24,8 +24,6 @@
 
 #include "libioinc.h"
 
-static BlockHeap *dnode_heap = NULL;
-
 /* init_dlink_nodes()
  *
  * inputs       - NONE
@@ -35,7 +33,6 @@ static BlockHeap *dnode_heap = NULL;
 void
 init_dlink_nodes(void)
 {
-  dnode_heap = BlockHeapCreate("dlink node", sizeof(dlink_node), DNODE_HEAP_SIZE);
 }
 
 /* make_dlink_node()
@@ -47,7 +44,7 @@ init_dlink_nodes(void)
 dlink_node *
 make_dlink_node(void)
 {
-  return (dlink_node *)BlockHeapAlloc(dnode_heap);
+  return new dlink_node();
 }
 
 /* free_dlink_node()
@@ -59,7 +56,7 @@ make_dlink_node(void)
 void
 free_dlink_node(dlink_node *ptr)
 {
-  BlockHeapFree(dnode_heap, ptr);
+  delete ptr;
 }
 
 /* 
