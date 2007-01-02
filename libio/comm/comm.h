@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_comm_comm_h
+#define INCLUDED_libio_comm_comm_h
+
 /* Type of IO */
 #define	COMM_SELECT_READ  1
 #define	COMM_SELECT_WRITE 2
@@ -69,3 +72,5 @@ LIBIO_EXTERN int check_can_use_v6(void);
 #ifdef IPV6
 LIBIO_EXTERN void remove_ipv6_mapping(struct irc_ssaddr *);
 #endif
+
+#endif /* INCLUDED_libio_comm_comm_h */

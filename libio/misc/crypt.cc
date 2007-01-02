@@ -12,7 +12,7 @@
  *  $Id$
  */
 
-#include "stdinc.h"
+#include "libioinc.h"
 
 #define MD5_SIZE 16
 

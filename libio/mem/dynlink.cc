@@ -22,7 +22,10 @@
  *  $Id$
  */
 
+
 #include "libioinc.h"
+#ifdef USE_SHARED_MODULES
+
 /*
  * jmallett's dl* interface
  */
@@ -79,11 +82,7 @@ moderror(void)
   return dlerror();
 }
 
-#else
-
-/*
- * Win32 DLL interface
- */
+#else /* not HAVE_DLOPEN */
 
 #ifdef _WIN32
 
@@ -120,7 +119,7 @@ moderror(void)
   return (const char *) errbuf;
 }
 
-#else
+#else /* not HAVE_DLOPEN and not _WIN32 */
 
 #ifdef HAVE_MACH_O_DYLD_H
 
@@ -217,10 +216,11 @@ moderror(void)
     myErrorTable[myDlError % 7]);
 }
 
-#else
+#else /* not HAVE_DLOPEN and not _WIN32 and not HAVE_MACH_O_DYLD_H */
 
 #error No applicable dynamic loading interface found!
 
-#endif
-#endif
-#endif
+#endif /* HAVE_MACH_O_DYLD_H */
+#endif /* not _WIN32 */
+#endif /* not HAVE_DLOPEN */
+#endif /* USE_SHARED_MODULES */

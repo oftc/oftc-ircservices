@@ -24,13 +24,12 @@
 #ifndef INCLUDED_modules_h
 #define INCLUDED_modules_h
 
-#ifdef HAVE_SHL_LOAD
-#include <dl.h>
-#endif
-#if !defined(STATIC_MODULES) && defined(HAVE_DLFCN_H)
+#ifdef USE_SHARED_MODULES
+#ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
 #endif
 
 extern void modules_init(Parser *);
 
-#endif
+#endif /* USE_SHARED_MODULES */
+#endif /* INCLUDED_modules_h */

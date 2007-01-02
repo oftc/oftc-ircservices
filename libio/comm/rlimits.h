@@ -7,8 +7,8 @@
  *  $Id$
  */
 
-#ifndef INCLUDED_rlimits_h
-#define INCLUDED_rlimits_h
+#ifndef INCLUDED_libio_comm_rlimits_h
+#define INCLUDED_libio_comm_rlimits_h
 
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>

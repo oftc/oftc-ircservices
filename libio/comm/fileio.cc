@@ -279,7 +279,7 @@ fbputs(const char *str, FBFILE *fb, size_t nbytes)
 int
 save_spare_fd(const char *spare_purpose)
 {
-  int spare_fd = open(PATH_DEVNULL, O_RDONLY, 0);
+  int spare_fd = open("/dev/null", O_RDONLY, 0);
 
   if (spare_fd < 0)
   {

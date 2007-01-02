@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_string_irc_string_h
+#define INCLUDED_libio_string_irc_string_h
+
 LIBIO_EXTERN int ircd_pcre_exec(const pcre *, const char *);
 LIBIO_EXTERN pcre *ircd_pcre_compile(const char *, const char **);
 
@@ -166,3 +169,5 @@ LIBIO_EXTERN const unsigned int CharAttrs[];
 
 #define IsNonEOS(c) (CharAttrs[(unsigned char)(c)] & NONEOS_C)
 #define IsEol(c) (CharAttrs[(unsigned char)(c)] & EOL_C)
+
+#endif /* INCLUDED_libio_string_irc_string_h */

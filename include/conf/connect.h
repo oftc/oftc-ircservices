@@ -21,6 +21,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_conf_connect_h
+#define INCLUDED_conf_connect_h
+
 struct ConnectConf
 {
   char *name;
@@ -35,3 +38,5 @@ EXTERN struct ConnectConf Connect;
 #ifdef IN_CONF_C
 void init_connect(void);
 #endif
+
+#endif /* INCLUDED_conf_connect_h */

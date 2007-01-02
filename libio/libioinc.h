@@ -22,7 +22,13 @@
  *  $Id$
  */
 
-#include "setup.h"
+#ifndef INCLUDED_libioinc_h
+#define INCLUDED_libioinc_h
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <assert.h>
 #include <stdio.h>
 #include <errno.h>
@@ -37,9 +43,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+
 #include "irc_libio.h"
 
 #define LEAKED_FDS 10
 #define INIT_LOG_LEVEL L_NOTICE
 #define IRC_MAX(a, b)  ((a) > (b) ? (a) : (b))
 #define IRC_MIN(a, b)  ((a) < (b) ? (a) : (b))
+
+#endif /* INCLUDED_libioinc_h */

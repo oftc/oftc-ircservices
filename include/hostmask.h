@@ -23,7 +23,7 @@
  */
 
 #ifndef INCLUDE_hostmask_h
-#define INCLUDE_hostmask_h 1
+#define INCLUDE_hostmask_h
 
 enum
 {

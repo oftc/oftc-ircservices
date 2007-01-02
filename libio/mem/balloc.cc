@@ -51,6 +51,8 @@
  */
 
 #include "libioinc.h"
+#if USE_BLOCK_ALLOC
+
 #ifdef HAVE_MMAP /* We've got mmap() that is good */
 #include <sys/mman.h>
 
@@ -467,3 +469,4 @@ block_heap_get_size_elm(const BlockHeap *bh)
 {
   return bh->blocksAllocated * bh->elemsPerBlock;
 }
+#endif /* USE_BLOCK_ALLOC */

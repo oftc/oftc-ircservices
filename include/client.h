@@ -1,5 +1,6 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+/* TODO: add copyright block */
+#ifndef INCLUDED_client_h
+#define INCLUDED_client_h
 
 #include <string>
 #include <vector>
@@ -108,4 +109,4 @@ private:
   Connection *_connection;
 };
 
-#endif
+#endif /* INCLUDED_client_h */

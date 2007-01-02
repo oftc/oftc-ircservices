@@ -4,6 +4,11 @@
  * $Id$
  */
 
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_libio_net_res_h
+#define INCLUDED_libio_net_res_h
+
 /* Maximum number of nameservers in /etc/resolv.conf we care about */
 #define IRCD_MAXNS 2
 
@@ -36,3 +41,5 @@ LIBIO_EXTERN void gethost_byname_type(const char *, struct DNSQuery *, int);
 LIBIO_EXTERN void gethost_byname(const char *, struct DNSQuery *);
 LIBIO_EXTERN void gethost_byaddr(const struct irc_ssaddr *, struct DNSQuery *);
 LIBIO_EXTERN void add_local_domain(char *, size_t);
+
+#endif /* INCLUDED_libio_net_res_h */

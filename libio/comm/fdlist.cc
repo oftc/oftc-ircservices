@@ -206,7 +206,7 @@ close_standard_fds(void)
   {
     close(i);
 
-    if (open(PATH_DEVNULL, O_RDWR) < 0)
+    if (open("/dev/null", O_RDWR) < 0)
       exit(-1); /* we're hosed if we can't even open /dev/null */
   }
 }

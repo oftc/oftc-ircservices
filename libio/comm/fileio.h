@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_comm_fileio_h
+#define INCLUDED_libio_comm_fileio_h
+
 #define FB_EOF  0x01
 #define FB_FAIL 0x02
 
@@ -70,3 +73,5 @@ LIBIO_EXTERN int fbputs(const char *, FBFILE *, size_t);
 LIBIO_EXTERN int file_open(fde_t *, const char *, int, int);
 LIBIO_EXTERN void file_close(fde_t *);
 LIBIO_EXTERN int save_spare_fd(const char *);
+
+#endif /* INCLUDED_libio_comm_fileio_h */

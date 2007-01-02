@@ -41,6 +41,9 @@ POSSIBILITY OF SUCH DAMAGE.
 /* The file pcre.h is build by "configure". Do not edit it; instead
 make changes to pcre.in. */
 
+#ifndef INCLUDED_libio_string_pcre_h
+#define INCLUDED_libio_string_pcre_h
+
 #define PCRE_MAJOR          6
 #define PCRE_MINOR          3
 #define PCRE_DATE           15-Aug-2005
@@ -214,3 +217,5 @@ PCRE_DATA_SCOPE pcre_extra *pcre_study(const pcre *, int, const char **);
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
+
+#endif /* INCLUDED_libio_string_pcre_h */

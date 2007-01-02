@@ -1,5 +1,7 @@
-#ifndef SERVICES_H
-#define SERVICES_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_services_h
+#define INCLUDED_services_h
 
 void services_die(const char *, int);
 
@@ -15,4 +17,4 @@ void services_die(const char *, int);
 #define SERV_NO_ACCESS 10
 #define SERV_UNKNOWN_OPTION 11
 
-#endif
+#endif /* INCLUDED_services_h */

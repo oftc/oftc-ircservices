@@ -370,7 +370,7 @@ libio_init(int daemonn)
   eventInit();
   fdlist_init();
   init_comm();
-#ifndef NOBALLOC
+#if USE_BLOCK_ALLOC
   initBlockHeap();
 #endif
   init_dlink_nodes();

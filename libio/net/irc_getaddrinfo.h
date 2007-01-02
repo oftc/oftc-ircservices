@@ -29,6 +29,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_net_irc_getaddrinfo_h
+#define INCLUDED_libio_net_irc_getaddrinfo_h
+
 LIBIO_EXTERN int irc_getaddrinfo(const char *hostname, const char *servname,
                            const struct addrinfo *hints, struct addrinfo **res);
 LIBIO_EXTERN void irc_freeaddrinfo(struct addrinfo *ai);
@@ -69,3 +72,5 @@ LIBIO_EXTERN void irc_freeaddrinfo(struct addrinfo *ai);
 #define EAI_PROTOCOL    13
 #define EAI_MAX     14
 #define AI_MASK (AI_PASSIVE | AI_NUMERICHOST)
+
+#endif /* INCLUDED_libio_net_irc_getaddrinfo_h */

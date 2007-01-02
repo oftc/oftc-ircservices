@@ -22,6 +22,7 @@
  *  $Id$
  */
 
+#ifdef _WIN32
 #include "libioinc.h"
 #include <iphlpapi.h>
 #include "restart.h"
@@ -344,3 +345,4 @@ gethost_byaddr(const struct irc_ssaddr *addr, struct DNSQuery *query)
   else
     dlinkAdd(query, &query->node, &dns_queries);
 }
+#endif /* _WIN32 */

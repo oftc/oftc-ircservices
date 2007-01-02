@@ -1,5 +1,7 @@
-#ifndef LANGUAGE_H
-#define LANGUAGE_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_language_h
+#define INCLUDED_language_h
 
 #define LANG_EN       0
 #define LANG_NAUGHTY  1
@@ -17,4 +19,4 @@ struct LanguageFile
 void load_language(struct LanguageFile *, const char *);
 void unload_languages(struct LanguageFile *);
 
-#endif
+#endif /* INCLUDED_language_h */

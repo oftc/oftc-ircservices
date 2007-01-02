@@ -64,9 +64,8 @@
  *
  **************************************************************/
 
-#include "stdinc.h"
+#include "libioinc.h"
 #if !defined(HAVE_SNPRINTF) || !defined(HAVE_VSNPRINTF)
-
 
 
 /* varargs declarations: */

@@ -23,7 +23,9 @@
  *  $Id$
  */
 
-#include "stdinc.h"
+#include "libioinc.h"
+#if USE_IOPOLL_MECHANISM == __IOPOLL_MECHANISM_POLL
+
 #include <sys/poll.h>
 
 /* I hate linux -- adrian */
@@ -51,7 +53,7 @@ changing_fdlimit(va_list args)
   pass_callback(hookptr, va_arg(args, int));
 
   if (hard_fdlimit != old_fdlimit)
-    pollfds = MyRealloc(pollfds, sizeof(struct pollfd) * hard_fdlimit);
+    pollfds = (pollfd *)MyRealloc(pollfds, sizeof(struct pollfd) * hard_fdlimit);
 
   return NULL;
 }
@@ -67,7 +69,7 @@ init_netio(void)
 {
   int fd;
 
-  pollfds = MyMalloc(sizeof(struct pollfd) * hard_fdlimit);
+  pollfds = (pollfd *)MyMalloc(sizeof(struct pollfd) * hard_fdlimit);
 
   for (fd = 0; fd < hard_fdlimit; fd++)
     pollfds[fd].fd = -1;
@@ -214,3 +216,4 @@ comm_select(void)
     comm_setselect(F, 0, NULL, NULL, 0);
   }
 }
+#endif /* USE_IOPOLL_MECHANISM == __IOPOLL_MECHANISM_POLL */

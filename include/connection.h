@@ -1,5 +1,6 @@
-#ifndef CONNECTIONH
-#define CONNECTIONH
+/* TODO: add copyright block */
+#ifndef INCLUDED_connection_h
+#define INCLUDED_connection_h
 
 #include <deque>
 #include <string>
@@ -54,4 +55,4 @@ private:
   Server *server;
 };
 
-#endif
+#endif /* INCLUDED_connection_h */

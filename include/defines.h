@@ -1,26 +1,26 @@
-#ifndef DEFINESH
-#define DEFINESH
+/* TODO: add copyright block */
 
-#define ETCPATH     SERVICES_PREFIX "/etc/"
-#define AUTOMODPATH SERVICES_PREFIX "/modules/autoload/"
-#define MODPATH     SERVICES_PREFIX "/modules/"
-#define LANGPATH    SERVICES_PREFIX "/languages/"
+#ifndef INCLUDED_defines_h
+#define INCLUDED_defines_h
 
-#define CPATH       ETCPATH "services.conf"
-#define DPATH       SERVICES_PREFIX
+#define AUTOMODPATH LIBDIR "/" PACKAGE "/autoload/"
+#define MODPATH     LIBDIR "/" PACKAGE "/"
+#define LANGPATH    DATADIR "/" PACKAGE "/"
+#define CPATH       SYSCONFDIR "/services.conf"
+#define DPATH       SYSCONFDIR
 
-#define IRC_BUFSIZE 512
-#define CONNECTTIMEOUT  30
+#define IRC_BUFSIZE     512
+#define CONNECTTIMEOUT   30
 #define READBUF_SIZE  16384
-#define IRCD_MAXPARA    15     /* Maximum allowed parameters a command may have */
-#define REALLEN         50
+#define IRCD_MAXPARA     15     /* Maximum allowed parameters a command may have */
+#define REALLEN          50
 #define CHANNELLEN      200
 #define KICKLEN         160
-#define KEYLEN          24
+#define KEYLEN           24
 #define REASONLEN       120
 #define TOPICLEN        300
-#define PASSLEN         40
-#define SALTLEN         16
+#define PASSLEN          40
+#define SALTLEN          16
 #define DATALEN         255
 #define USERHOSTLEN     USERLEN+HOSTLEN+1+1
 #define USERHOST_REPLYLEN       (NICKLEN+HOSTLEN+USERLEN+5)
@@ -52,4 +52,4 @@
 # define strtoken(x, y, z) strtok_r(y, z, x)
 #endif
 
-#endif
+#endif /* INCLUDED_defines_h */

@@ -1,5 +1,6 @@
-#ifndef INTERFACE_H
-#define INTERFACE_H
+/* TODO: add copyright block */
+#ifndef INCLUDED_interface_h
+#define INCLUDED_interface_h
 
 #include <tr1/unordered_map>
 
@@ -99,4 +100,4 @@ void cleanup_interface();
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
-#endif
+#endif /* INCLUDED_interface_h */

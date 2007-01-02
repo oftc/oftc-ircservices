@@ -1,0 +1,2 @@
+Luca Filipozzi <lfilipoz@debian.org>
+  - converted build system to automake/libtool

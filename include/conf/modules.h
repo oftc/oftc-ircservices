@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_conf_modules_h
+#define INCLUDED_conf_modules_h
+
 using std::string;
 using std::vector;
 
@@ -89,5 +92,8 @@ private:
   protodestroy_t *destroy_protocol;
 };
 
+EXTERN void init_modules();
 EXTERN void boot_modules(char);
 EXTERN void cleanup_modules(void);
+
+#endif /* INCLUDED_conf_modules_h */

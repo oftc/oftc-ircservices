@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_misc_event_h
+#define INCLUDED_libio_misc_event_h
+
 /*
  * How many event entries we need to allocate at a time in the block
  * allocator. 16 should be plenty at a time.
@@ -53,3 +56,5 @@ extern void eventInit(void);
 #endif
 LIBIO_EXTERN void eventDelete(EVH *, void *);
 LIBIO_EXTERN void set_back_events(time_t);
+
+#endif /* INCLUDED_libio_misc_event_h */

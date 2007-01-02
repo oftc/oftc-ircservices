@@ -22,8 +22,8 @@
  *  $Id$
  */
 
-#ifndef INCLUDED_CONF_H
-#define INCLUDED_CONF_H
+#ifndef INCLUDED_conf_conf_h
+#define INCLUDED_conf_conf_h
 
 #include "conf/manager.h"
 #include "conf/servicesinfo.h"
@@ -31,7 +31,7 @@
 #include "conf/connect.h"
 #include "conf/logging.h"
 #include "conf/service.h"
-#ifndef STATIC_MODULES
+#ifdef USE_SHARED_MODULES
 #include "conf/modules.h"
 #endif
 
@@ -185,4 +185,4 @@ struct ConfItem
 //    struct ResvChannel ResvChannel;
   } conf;
 };
-#endif
+#endif /* INCLUDED_conf_conf_h */

@@ -25,9 +25,11 @@
  * \todo Get rid of all typedefs in this file
  */
 
-#ifndef INCLUDED_balloc_h
-#define INCLUDED_balloc_h
-#ifndef NOBALLOC
+#ifndef INCLUDED_libio_mem_balloc_h
+#define INCLUDED_libio_mem_balloc_h
+
+#include "libioinc.h"
+#if USE_BLOCK_ALLOC
 
 /*! \brief Block contains status information for
  *         an allocated block in our heap.
@@ -81,7 +83,7 @@ LIBIO_EXTERN unsigned int block_heap_get_free_elm(const BlockHeap *);
 LIBIO_EXTERN unsigned int block_heap_get_size_elm(const BlockHeap *);
 LIBIO_EXTERN const dlink_list *block_heap_get_heap_list(void);
 
-#else /* NOBALLOC */
+#else /* not USE_BLOCK_ALLOC */
 
 typedef struct BlockHeap BlockHeap;
 /* This is really kludgy, passing ints as pointers is always bad. */
@@ -89,5 +91,5 @@ typedef struct BlockHeap BlockHeap;
 #define BlockHeapAlloc(x) MyMalloc((int)x)
 #define BlockHeapFree(x,y) MyFree(y)
 
-#endif /* NOBALLOC */
-#endif
+#endif /* USE_BLOCK_ALLOC */
+#endif /* INCLUDED_libio_mem_balloc_h */

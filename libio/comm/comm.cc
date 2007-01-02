@@ -22,6 +22,8 @@
  *  $Id$
  */
 
+#include "libioinc.h"
+
 #ifndef _WIN32
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
@@ -33,7 +35,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include "stdinc.h"
+#include "libioinc.h"
 
 static const char *comm_err_str[] = { "Comm OK", "Error during bind()",
                                       "Error during DNS lookup",

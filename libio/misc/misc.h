@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_misc_misc_h
+#define INCLUDED_libio_misc_misc_h
+
 #define MAX_DATE_STRING 32  /* maximum string length for a date string */
 
 #ifdef _WIN32
@@ -68,3 +71,5 @@ LIBIO_EXTERN char *servcrypt(const char *, const char *);
 #define _GMKv(x)  (((x) > _1TER) ? (float)((x)/_1TER) : (((x) > _1GIG) ? \
                    (float)((x)/_1GIG) : (((x) > _1MEG) ? (float)((x)/_1MEG) : \
 		   (float)(x))))
+
+#endif /* INCLUDED_libio_misc_misc_h */

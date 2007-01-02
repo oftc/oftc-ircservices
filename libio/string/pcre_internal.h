@@ -44,6 +44,8 @@ POSSIBILITY OF SUCH DAMAGE.
 modules, but which are not relevant to the exported API. This includes some
 functions whose names all begin with "_pcre_". */
 
+#ifndef INCLUDED_libio_string_pcre_internal_h
+#define INCLUDED_libio_string_pcre_internal_h
 
 /* Define DEBUG to get debugging output on stdout. */
 
@@ -764,3 +766,5 @@ extern real_pcre * _pcre_try_flipped(const real_pcre *, real_pcre *,
                      const pcre_study_data *, pcre_study_data *);
 
 /* End of pcre_internal.h */
+
+#endif /* INCLUDED_libio_string_pcre_internal_h */

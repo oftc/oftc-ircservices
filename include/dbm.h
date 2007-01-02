@@ -1,5 +1,7 @@
-#ifndef DBMH
-#define DBMH
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_dbm_h
+#define INCLUDED_dbm_h
 
 #include <yada.h>
 
@@ -164,4 +166,4 @@ int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 
 int db_get_num_masters(unsigned int);
 
-#endif
+#endif /* INCLUDED_dbm_h */

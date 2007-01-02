@@ -24,6 +24,7 @@
  */
 
 #include "libioinc.h"
+#if USE_IOPOLL_MECHANISM == __IOPOLL_MECHANISM_SELECT
 
 /*
  * Note that this is only a single list - multiple lists is kinda pointless
@@ -194,3 +195,4 @@ comm_select(void)
       comm_setselect(F, 0, NULL, NULL, 0);
     }
 }
+#endif /* USE_IOPOLL_MECHANISM == __IOPOLL_MECHANISM_SELECT */

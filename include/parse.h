@@ -1,5 +1,6 @@
-#ifndef PARSE_H
-#define PARSE_H
+/* TODO: add copyright block */
+#ifndef INCLUDED_parse_h
+#define INCLUDED_parse_h
 
 #include <string>
 #include <vector>
@@ -118,4 +119,4 @@ public:
   }
 };
 
-#endif
+#endif /* INCLUDED_parse_h */

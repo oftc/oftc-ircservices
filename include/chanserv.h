@@ -1,5 +1,7 @@
-#ifndef CHANSERV_H
-#define CHANSERV_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_chanserv_h
+#define INCLUDED_chanserv_h
 
 struct RegChannel
 {
@@ -140,4 +142,4 @@ struct RegChannel
 #define CS_NEED_LIMIT 116
 #define CS_NEED_KEY 117
 
-#endif
+#endif /* INCLUDED_chanserv_h */
