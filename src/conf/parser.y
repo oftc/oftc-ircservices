@@ -25,7 +25,16 @@
 
 %{
 
+#include <string>
+#include <vector>
+
 #include "stdinc.h"
+
+#include "language.h"
+#include "interface.h"
+#include "connection.h"
+#include "client.h"
+#include "parse.h"
 #include "conf/conf.h"
 
 #define YY_NO_UNPUT
@@ -68,7 +77,7 @@ void conf_add_number(int number)
     char *string;
 }
 
-%token BOOL
+%token BOOLEAN
 %token BYTES
 %token DAYS
 %token HOURS
@@ -81,7 +90,7 @@ void conf_add_number(int number)
 %token SECONDS
 %token WEEKS
 
-%type <number> BOOL
+%type <number> BOOLEAN
 %type <number> NUMBER
 %type <string> IDENTIFIER
 %type <string> QSTRING
@@ -171,7 +180,7 @@ value: QSTRING {
          conf_assign(CT_STRING, conf_field, $1);
        } | NUMBER {
          conf_assign(CT_NUMBER, conf_field, &$1);
-       } | BOOL {
+       } | BOOLEAN {
          conf_assign(CT_BOOL, conf_field, &$1);
        } | timespec {
          conf_assign(CT_TIME, conf_field, &$1);
