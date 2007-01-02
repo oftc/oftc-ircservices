@@ -178,11 +178,8 @@ AC_DEFUN([AX_ARG_DISABLE_BLOCK_ALLOC],[
 dnl {{{ ax_arg_disable_shared_modules (FIXME)
 AC_DEFUN([AX_ARG_DISABLE_SHARED_MODULES],[
   AC_ARG_ENABLE([shared-modules],[AC_HELP_STRING([--disable-shared-modules],[Disable shared modules.])],[shared_modules="$enableval"],[shared_modules="yes"])
-  AC_CHECK_HEADERS([dlfcn.h link.h])
-  AC_CHECK_FUNCS([dlopen dlinfo])
   if test "$shared_modules" = "yes" ; then
     use_shared_modules="yes"
-    AC_CHECK_LIB([dl],[dlopen],,[AC_MSG_ERROR([dl library not found])])
     AC_DEFINE([USE_SHARED_MODULES],[1],[Define to 1 if you want to use shared modules.])
   else
     use_shared_modules="no"
