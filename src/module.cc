@@ -30,7 +30,7 @@
 #include "parse.h"
 
 #include "conf/service.h"
-#include "modules.h"
+#include "module.h"
 #include "lua_module.h"
 #include "ruby_module.h"
 #include <ltdl.h>

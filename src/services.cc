@@ -39,7 +39,7 @@
 #include "conf/conf.h"
 #include "lua_module.h"
 #include "ruby_module.h"
-#include "modules.h"
+#include "module.h"
 
 #include <signal.h>
 #include <sys/wait.h>
