@@ -22,8 +22,8 @@
  *  $Id$
  */
 
-#ifndef __GETOPT_H_INCLUDED__
-#define __GETOPT_H_INCLUDED__
+#ifndef INCLUDED_libio_misc_ircd_getopt_h
+#define INCLUDED_libio_misc_ircd_getopt_h
 
 struct lgetopt {
   const char *opt; /* name of the argument */
@@ -33,4 +33,5 @@ struct lgetopt {
 };
 
 LIBIO_EXTERN void parseargs(int *, char ***, struct lgetopt *);
-#endif /* __GETOPT_H_INCLUDED__ */
+
+#endif /* INCLUDED_libio_misc_ircd_getopt_h */

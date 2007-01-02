@@ -24,14 +24,11 @@
 #ifndef INCLUDED_modules_h
 #define INCLUDED_modules_h
 
-#ifdef HAVE_SHL_LOAD
-#include <dl.h>
-#endif
-#if !defined(STATIC_MODULES) && defined(HAVE_DLFCN_H)
+#ifdef USE_SHARED_MODULES
+#ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
 #endif
 
-#ifndef STATIC_MODULES
 struct module
 {
   dlink_node node;
@@ -73,7 +70,7 @@ extern int load_a_module(char *, int, int);
 extern dlink_node *findmodule_byname(const char *);
 extern void modules_init(void);
 
-#else /* STATIC_MODULES */
+#else /* not USE_SHARED_MODULES */
 
 extern message_t accept_msgtab;
 extern message_t admin_msgtab;
@@ -209,9 +206,9 @@ extern message_t spoof_msgtab;
 extern message_t statserv_msgtab;
 extern message_t svsnick_msgtab;
 extern message_t uncapture_msgtab;
-#endif
+#endif /* BUILD_CONTRIB */
 
 extern void load_all_modules(int);
 
-#endif /* STATIC_MODULES */
+#endif /* USE_SHARED_MODULES */
 #endif /* INCLUDED_modules_h */

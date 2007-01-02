@@ -1,5 +1,7 @@
-#ifndef CHANNEL_H
-#define CHANNEL_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_channel_h
+#define INCLUDED_channel_h
 
 struct Channel *make_channel(const char *);
 void init_channel();
@@ -49,4 +51,4 @@ struct Membership
 #define AddMemberFlag(x, y) ((x)->flags |=  (y))
 #define DelMemberFlag(x, y) ((x)->flags &= ~(y))
 
-#endif
+#endif /* INCLUDED_channel_h */

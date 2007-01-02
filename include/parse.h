@@ -1,5 +1,7 @@
-#ifndef PARSE_H
-#define PARSE_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_parse_h
+#define INCLUDED_parse_h
 
 struct MessageTree;
 struct ServiceMessageTree;
@@ -63,4 +65,4 @@ struct ServiceMessageTree
 };
 
 
-#endif
+#endif /* INCLUDED_parse_h */

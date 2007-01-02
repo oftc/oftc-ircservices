@@ -29,6 +29,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_net_irc_getnameinfo_h
+#define INCLUDED_libio_net_irc_getnameinfo_h
+
 LIBIO_EXTERN int irc_getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host,
                            size_t hostlen, char *serv, size_t servlen, int flags);
 
@@ -39,3 +42,5 @@ LIBIO_EXTERN int irc_getnameinfo(const struct sockaddr *sa, socklen_t salen, cha
 #ifndef IN_EXPERIMENTAL
 #define IN_EXPERIMENTAL(a)      ((((long int) (a)) & 0xe0000000) == 0xe0000000)
 #endif
+
+#endif /* INCLUDED_libio_net_irc_getnameinfo_h */

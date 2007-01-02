@@ -1,5 +1,7 @@
-#ifndef NICKSERV_H
-#define NICKSERV_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_nickserv_h
+#define INCLUDED_nickserv_h
 
 struct Nick
 {
@@ -139,4 +141,4 @@ struct Nick
 #define NS_REGAINED 106
 #define NS_REGAIN_FAIL 107
 
-#endif
+#endif /* INCLUDED_nickserv_h */

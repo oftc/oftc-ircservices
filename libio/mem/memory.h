@@ -22,6 +22,8 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_mem_memory_h
+#define INCLUDED_libio_mem_memory_h
 LIBIO_EXTERN void (* outofmemory) (void);
 
 LIBIO_EXTERN void *MyMalloc(size_t);
@@ -33,7 +35,7 @@ LIBIO_EXTERN void mem_frob(void *, int);
 /* forte (and maybe others) don't like double declarations, 
  * so we don't declare the inlines unless GNUC
  */
-#ifdef __GNUCXYZBLAH__
+#ifdef __GNUC__
 LIBIO_EXTERN inline void *
 MyMalloc(size_t size)
 {
@@ -76,3 +78,5 @@ _DupString(char **x, const char *y)
 #endif /* __GNUC__ */
 
 #define DupString(x,y) _DupString(&x, y)
+
+#endif /* INCLUDED_libio_mem_memory_h */

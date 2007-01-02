@@ -31,7 +31,7 @@
 
 #include "stdinc.h"
 #include "conf/conf.h"
-#include "y.tab.h"
+#include "parser.h"
 
 int conf_include_sptr = 0;
 
@@ -173,8 +173,8 @@ conf_include(void)
     f = fbopen(fname, "r");
   else
   {
-    buf = MyMalloc(strlen(ETCPATH) + 1 + strlen(fname) + 1);
-    sprintf(buf, "%s/%s", ETCPATH, fname);
+    buf = MyMalloc(strlen(SYSCONFDIR) + 1 + strlen(fname) + 1);
+    sprintf(buf, "%s/%s", SYSCONFDIR, fname);
     f = fbopen(buf, "r");
     MyFree(buf);
   }

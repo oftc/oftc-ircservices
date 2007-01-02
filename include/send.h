@@ -1,5 +1,7 @@
-#ifndef SEND_H
-#define SEND_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_send_h
+#define INCLUDED_send_h
 
 void send_queued_write(struct Client *);
 void send_queued_all(void);
@@ -11,4 +13,4 @@ void sendto_server(struct Client *, const char *, ...);
 #define ONLY_CHANOPS 3
 #define ONLY_SERVERS 4 /* for channel_mode.c */
 
-#endif
+#endif /* INCLUDED_send_h */

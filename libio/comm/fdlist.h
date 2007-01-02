@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_comm_fdlist_h
+#define INCLUDED_libio_comm_fdlist_h
+
 #define FILEIO_V2
 
 #define FD_DESC_SZ      128  /* hostlen + comment */
@@ -124,3 +127,5 @@ extern void close_standard_fds(void);
 #endif
 LIBIO_EXTERN void close_fds(fde_t *);
 LIBIO_EXTERN void recalc_fdlimit(void *);
+
+#endif /* INCLUDED_libio_comm_fdlist_h */

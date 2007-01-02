@@ -132,7 +132,7 @@ init_module(struct Module *mod, const char *fullname)
  *   - file name
  * output: 1 if ok, 0 otherwise
  */
-#ifdef SHARED_MODULES
+#ifdef USE_SHARED_MODULES
 static int
 load_shared_module(const char *name, const char *dir, const char *fname)
 {
@@ -225,7 +225,7 @@ load_module(const char *filename)
     if ((p = strchr(name, '.')) != NULL)
       *p = '\0';
 
-#ifdef SHARED_MODULES
+#ifdef USE_SHARED_MODULES
     {
       dlink_node *ptr;
 
@@ -275,7 +275,7 @@ unload_module(struct Module *mod)
 
   dlinkDelete(&mod->node, &loaded_modules);
 
-#ifdef SHARED_MODULES
+#ifdef USE_SHARED_MODULES
   if (mod->handle != NULL)
     modunload(mod->handle);
 #endif
@@ -297,7 +297,7 @@ boot_modules(char cold)
 
   if (cold)
   {
-#ifdef SHARED_MODULES
+#ifdef USE_SHARED_MODULES
     {
       char buf[PATH_MAX], *pp;
       const char **cp;

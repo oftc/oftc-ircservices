@@ -26,6 +26,9 @@
  * Prototypes
  */
 
+#ifndef INCLUDED_libio_string_sprintf_irc_h
+#define INCLUDED_libio_string_sprintf_irc_h
+
 LIBIO_EXTERN int vsprintf_irc(char *str, const char *format, va_list);
 
 /* XXX NOT USED AND NOT DEFINED */
@@ -44,3 +47,5 @@ LIBIO_EXTERN int ircsprintf(char*, const char*, ...)
 #else
 LIBIO_EXTERN int ircsprintf(char *str, const char *format, ...);
 #endif
+
+#endif /* INCLUDED_libio_string_sprintf_irc_h */

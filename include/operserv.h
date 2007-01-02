@@ -1,5 +1,7 @@
-#ifndef OPERSERV_H
-#define OPERSERV_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_operserv_h
+#define INCLUDED_operserv_h
 
 #define OS_HELP_SHORT 1
 #define OS_HELP_LONG 2
@@ -61,4 +63,4 @@
 #define OS_AKILL_ADDFAIL 58
 #define OS_AKILL_DEL 59
 
-#endif
+#endif /* INCLUDED_operserv_h */

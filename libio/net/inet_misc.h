@@ -57,6 +57,9 @@
  * --Copyright--
  */
 
+#ifndef INCLUDED_libio_net_inet_misc_h
+#define INCLUDED_libio_net_inet_misc_h
+
 #ifndef AI_PASSIVE
 #define AI_PASSIVE      0x00000001 /* get address to use bind() */
 #endif /* AI_PASSIVE */
@@ -106,8 +109,7 @@
 #endif /* INADDR_NONE */
 
 #ifndef HAVE_STRUCT_SOCKADDR_STORAGE
-#ifdef SOCKADDR_IN_HAS_LEN /* BSD style sockaddr_storage for BSD style
-			      sockaddr_in */
+#ifdef HAVE_STRUCT_SOCKADDR_IN_SIN_LEN
 struct sockaddr_storage {
 	unsigned char ss_len;
 	sa_family_t ss_family;
@@ -125,7 +127,7 @@ struct sockaddr_storage
 	u_int32_t __ss_align;
 	char __ss_padding[(128 - (2 * sizeof (u_int32_t)))];
 };
-#endif /* SOCKADDR_IN_HAS_LEN */
+#endif /* HAVE_STRUCT_SOCKADDR_IN_SIN_LEN */
 #endif /* HAVE_STRUCT_SOCKADDR_STORAGE */
 
 #ifndef HAVE_STRUCT_ADDRINFO
@@ -141,18 +143,20 @@ struct addrinfo {
 };
 #endif /* HAVE_STRUCT_ADDRINFO */
 
-#ifdef NO_IN6ADDR_ANY
+#ifndef IN6ADDR_ANY_INIT
 LIBIO_EXTERN const struct in6_addr in6addr_any;
 #endif
 
-#ifdef NO_INET_NTOP
+#ifndef HAVE_INET_NTOP
 LIBIO_EXTERN const char * inet_ntop(int af, const void *src, char *dst, size_t size);
-#endif /* NO_INET_NTOP */
+#endif /* HAVE_INET_NTOP */
 
-#ifdef NO_INET_PTON
+#ifndef HAVE_INET_PTON
 LIBIO_EXTERN int inet_pton(int af, const char *src, void *dst);
-#endif /* NO_INET_PTON */
+#endif /* HAVE_INET_PTON */
 
-#ifdef NO_INET_ATON
+#ifndef HAVE_INET_ATON
 LIBIO_EXTERN int inet_aton(const char *cp, struct in_addr * addr);
-#endif /* NO_INET_ATON */
+#endif /* HAVE_INET_ATON */
+
+#endif /* INCLUDED_libio_net_inet_misc_h */

@@ -41,7 +41,7 @@
  * 27/02/2002
  */
 
-#ifndef STATIC_MODULES
+#ifdef USE_SHARED_MODULES
 
 dlink_list mod_list = { NULL, NULL, 0 };
 
@@ -539,7 +539,7 @@ mo_modrestart(client_t *client_p, client_t *source_p,
        modnum, dlink_list_length(&mod_list));
 }
 #endif
-#else /* STATIC_MODULES */
+#else /* not USE_SHARED_MODULES */
 #include "s_serv.h"
 
 /* load_all_modules()
@@ -693,4 +693,4 @@ load_all_modules(int warn)
   /* FIXME: what about spy*? */
 #endif
 }
-#endif /* STATIC_MODULES */
+#endif /* USE_SHARED_MODULES */

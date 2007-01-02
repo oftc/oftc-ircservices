@@ -22,7 +22,7 @@
  *  $Id$
  */
 
-#include "stdinc.h"
+#include "libioinc.h"
 #include "libio_getopt.h"
 
 #define OPTCHAR '-'

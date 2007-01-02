@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_misc_hook_h
+#define INCLUDED_libio_misc_hook_h
+
 #define HOOK_V2
 
 typedef void *CBFUNC(va_list);
@@ -45,3 +48,5 @@ LIBIO_EXTERN void uninstall_hook(struct Callback *, CBFUNC *);
 LIBIO_EXTERN void *pass_callback(dlink_node *, ...);
 
 #define is_callback_present(c) (!!dlink_list_length(&c->chain))
+
+#endif /* INCLUDED_libio_misc_hook_h */

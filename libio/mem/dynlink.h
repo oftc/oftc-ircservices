@@ -22,9 +22,10 @@
  *  $Id$
  */
 
-#if defined(HAVE_DLOPEN) || defined(_WIN32) || defined(HAVE_MACH_O_DYLD_H)
+#ifndef INCLUDED_libio_mem_dynlink_h
+#define INCLUDED_libio_mem_dynlink_h
 
-#define SHARED_MODULES
+#ifdef HAVE_LIBDL
 
 // Loads a module given by name. void ** receives module base address
 // (best we can determine). Return value: module handle or NULL.
@@ -44,4 +45,6 @@ void modunload(void *);
 
 const char *moderror(void);
 
-#endif
+#endif /* HAVE_LIBDL */
+
+#endif /* INCLUDED_libio_mem_dynlink_h */

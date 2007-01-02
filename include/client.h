@@ -1,5 +1,7 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_client_h
+#define INCLUDED_client_h
 
 extern dlink_list global_client_list;
 extern dlink_list global_server_list;
@@ -145,4 +147,4 @@ void nick_from_server(struct Client *, struct Client *, int,
 void register_remote_user(struct Client *, struct Client *,
                          const char *, const char *, const char *, const char *);
 
-#endif
+#endif /* INCLUDED_client_h */

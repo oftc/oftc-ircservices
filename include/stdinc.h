@@ -1,4 +1,12 @@
-#include "setup.h"
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_stdinc_h
+#define INCLUDED_stdinc_h
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <assert.h>
 #include <stdio.h>
 #include <errno.h>
@@ -37,3 +45,5 @@
 #include "interface.h"
 #include "nickserv.h"
 #include "crypt.h"
+
+#endif /* INCLUDED_stdinc_h */

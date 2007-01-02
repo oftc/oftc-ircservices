@@ -23,6 +23,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_conf_manager_h
+#define INCLUDED_conf_manager_h
+
 #define CONF_BUFSIZE 512
 
 #define CT_NUMBER 0
@@ -87,3 +90,5 @@ EXTERN CONFF_HANDLER conf_assign_string;
 EXTERN struct ConfField *add_conf_field(struct ConfSection *, const char *,
   int, CONFF_HANDLER *, void *);
 EXTERN void delete_conf_field(struct ConfSection *, struct ConfField *);
+
+#endif /* INCLUDED_conf_manager_h */

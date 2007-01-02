@@ -22,14 +22,17 @@
  *  $Id$
  */
 
-#ifndef _WIN32
-# define LIBIO_EXTERN extern
-#else
+#ifndef INCLUDED_irc_libio_h
+#define INCLUDED_irc_libio_h
+
+#ifdef _WIN32
 # ifdef IN_LIBIO
 #  define LIBIO_EXTERN extern __declspec(dllexport)
 # else
 #  define LIBIO_EXTERN extern __declspec(dllimport)
 # endif
+#else /* not _WIN32 */
+# define LIBIO_EXTERN extern
 #endif
 
 #include "misc/event.h"
@@ -56,3 +59,5 @@
 #include "string/sprintf_irc.h"
 #include "string/pcre.h"
 #include "string/irc_string.h"
+
+#endif /* INCLUDED_irc_libio_h */

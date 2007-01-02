@@ -21,6 +21,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_conf_servicesinfo_h
+#define INCLUDED_conf_servicesinfo_h
+
 struct ServicesInfoConf
 {
   struct irc_ssaddr vhost;
@@ -40,3 +43,5 @@ EXTERN struct ServicesInfoConf ServicesInfo;
 #ifdef IN_CONF_C
 void init_servicesinfo(void);
 #endif
+
+#endif /* INCLUDED_conf_servicesinfo_h */

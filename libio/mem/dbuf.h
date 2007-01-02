@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_mem_dbuf_h
+#define INCLUDED_libio_mem_dbuf_h
+
 #define DBUF_BLOCK_SIZE 1024  /* this is also our MTU used for sending */
 
 #define dbuf_length(x) ((x)->total_size)
@@ -44,3 +47,5 @@ extern void dbuf_init(void);
 #endif
 LIBIO_EXTERN void dbuf_put(struct dbuf_queue *, char *, size_t);
 LIBIO_EXTERN void dbuf_delete(struct dbuf_queue *, size_t);
+
+#endif /* INCLUDED_libio_mem_dbuf_h */

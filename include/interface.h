@@ -1,5 +1,7 @@
-#ifndef INTERFACE_H
-#define INTERFACE_H
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_interface_h
+#define INCLUDED_interface_h
 
 struct Service;
 struct Client;
@@ -128,4 +130,4 @@ void get_modestring(unsigned int, char *, int);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
-#endif
+#endif /* INCLUDED_interface_h */

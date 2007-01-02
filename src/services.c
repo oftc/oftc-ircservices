@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
       me.name, me.info, me.id);
 
   db_load_driver();
-#ifndef STATIC_MODULES
+#ifdef USE_SHARED_MODULES
   if(chdir(MODPATH))
   {
     ilog(L_DEBUG, "Could not load core modules. Terminating!");

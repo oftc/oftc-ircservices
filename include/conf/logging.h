@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_conf_logging_h
+#define INCLUDED_conf_logging_h
+
 struct LoggingConf
 {
   char use_logging;
@@ -33,3 +36,5 @@ EXTERN struct LoggingConf Logging;
 #ifdef IN_CONF_C
 void init_logging(void);
 #endif
+
+#endif /* INCLUDED_conf_logging_h */

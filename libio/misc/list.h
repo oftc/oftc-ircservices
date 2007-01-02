@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_misc_list_h
+#define INCLUDED_libio_misc_list_h
+
 /*
  * double-linked-list stuff
  */
@@ -79,3 +82,5 @@ LIBIO_EXTERN dlink_node *dlinkFindDelete(dlink_list *, void *);
               		       
 /* Returns the list length */
 #define dlink_list_length(list) (list)->length
+
+#endif /* INCLUDED_libio_misc_list_h */

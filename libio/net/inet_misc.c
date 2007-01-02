@@ -42,16 +42,16 @@
  *	notice from that file is below.
  */
 
-#include "stdinc.h"
+#include "libioinc.h"
 #include "reslib.h"
 
-#ifdef NO_IN6ADDR_ANY
+#ifndef IN6ADDR_ANY_INIT
 /* Stolen from glibc */
 const struct in6_addr in6addr_any =
 { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } };
 #endif
 
-#ifdef NO_INET_ATON
+#ifndef HAVE_INET_ATON
 /*
  * Check whether "cp" is a valid ascii representation
  * of an Internet address and convert to a binary address.
@@ -155,9 +155,9 @@ inet_aton(const char *cp, struct in_addr * addr)
 	return 1;
 }
 
-#endif /* NO_INET_ATON */
+#endif /* not HAVE_INET_ATON */
 
-#ifdef NO_INET_NTOP
+#ifndef HAVE_INET_NTOP
 static const char *inet_ntop4(const unsigned char *src, char *dst,
 			      size_t size);
 
@@ -315,9 +315,9 @@ inet_ntop6(const unsigned char *src, char *dst, size_t size)
 }
 #endif /* IPV6 */
 
-#endif /* NO_INET_NTOP */
+#endif /* not HAVE_INET_NTOP */
 
-#ifdef NO_INET_PTON
+#ifndef HAVE_INET_PTON
 
 static int inet_pton4(const char *src, unsigned char *dst);
 #ifdef IPV6
@@ -504,4 +504,4 @@ inet_pton6(src, dst)
 }
 #endif /* IPV6 */
 
-#endif /* NO_INET_PTON */
+#endif /* not HAVE_INET_PTON */

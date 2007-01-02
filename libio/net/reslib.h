@@ -4,6 +4,11 @@
  * $Id$
  */
 
+/* TODO: add copyright block */
+
+#ifndef INCLUDED_libio_net_reslib_h
+#define INCLUDED_libio_net_reslib_h
+
 /* Here we define some values lifted from nameser.h */
 #define NS_NOTIFY_OP 4
 #define NS_INT16SZ 2
@@ -111,3 +116,5 @@ extern unsigned long irc_ns_get32(const unsigned char *src);
 extern void irc_ns_put16(unsigned int src, unsigned char *dst);
 extern void irc_ns_put32(unsigned long src, unsigned char *dst);
 extern int irc_res_mkquery(const char *dname, int class, int type, unsigned char *buf, int buflen);
+
+#endif /* INCLUDED_libio_net_reslib_h */

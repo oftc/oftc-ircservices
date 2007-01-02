@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_conf_modules_h
+#define INCLUDED_conf_modules_h
+
 struct Module
 {
   char *name;
@@ -55,3 +58,5 @@ EXTERN int load_module(const char *);
 EXTERN void unload_module(struct Module *);
 EXTERN void boot_modules(char);
 EXTERN void cleanup_modules(void);
+
+#endif /* INCLUDED_conf_modules_h */

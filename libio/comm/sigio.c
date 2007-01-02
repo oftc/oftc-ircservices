@@ -24,12 +24,8 @@
  *  $Id$
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1           /* Needed for F_SETSIG */
-#endif
-
-#include "stdinc.h"
-#include <sys/poll.h>
+#include "libioinc.h"
+#if USE_IOPOLL_MECHANISM == __IOPOLL_MECHANISM_RTSIGIO
 
 #define SIGIO_SIGNAL SIGRTMIN
 
@@ -308,3 +304,4 @@ comm_select(void)
 
   mask_our_signal(SIGIO_SIGNAL);
 }
+#endif /* USE_IOPOLL_MECHANISM == __IOPOLL_MECHANISM_RTSIGIO */

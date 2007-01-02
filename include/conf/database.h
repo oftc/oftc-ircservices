@@ -21,6 +21,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_conf_database_h
+#define INCLUDED_conf_database_h
+
 #include <yada.h>
 
 struct DatabaseConf
@@ -38,3 +41,5 @@ EXTERN struct DatabaseConf Database;
 #ifdef IN_CONF_C
 void init_database(void);
 #endif
+
+#endif /* INCLUDED_conf_database_h */

@@ -22,6 +22,9 @@
  *  $Id$
  */
 
+#ifndef INCLUDED_libio_misc_log_h
+#define INCLUDED_libio_misc_log_h
+
 #define L_CRIT   0
 #define L_ERROR  1
 #define L_WARN   2
@@ -61,3 +64,5 @@ enum {
   LOG_OPERSPY_TYPE,
   LOG_IOERR_TYPE
 };
+
+#endif /* INCLUDED_libio_misc_log_h */

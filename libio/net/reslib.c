@@ -80,7 +80,7 @@
  * - Dianora
  */
 
-#include "stdinc.h"
+#include "libioinc.h"
 #include "reslib.h"
 #include <ctype.h>
 
@@ -158,7 +158,7 @@ parse_resvconf(void)
   char input[MAXLINE];
   FBFILE *file;
 
-  /* XXX "/etc/resolv.conf" should be from a define in setup.h perhaps
+  /* XXX "/etc/resolv.conf" should be from a define in config.h perhaps
    * for cygwin support etc. this hardcodes it to unix for now -db
    */
   if ((file = fbopen("/etc/resolv.conf", "r")) == NULL)

@@ -22,7 +22,7 @@
  *  $Id$
  */
 
-#include "stdinc.h"
+#include "libioinc.h"
 
 #ifndef _WIN32
 #include <netinet/in_systm.h>
