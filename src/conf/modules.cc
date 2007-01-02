@@ -22,11 +22,6 @@
  *  $Id$
  */
 
-#include <string>
-#include <vector>
-#include <sstream>
-#include <tr1/unordered_map>
-
 #include "stdinc.h"
 #include "language.h"
 #include "interface.h"
@@ -37,156 +32,12 @@
 #include "conf/conf.h"
 #include "lua_module.h"
 #include "ruby_module.h"
-#include <sys/types.h>
-#include <dirent.h>
-#include <dlfcn.h>
+#include <ltdl.h>
 
-using std::string;
-using std::stringstream;
-using std::vector;
-
-vector<Module *> loaded_modules;
 vector<string> mod_paths;
 vector<string> mod_extra;
-vector<Protocol *>protocol_list;
 
 static dlink_node *hreset, *hpass;
-
-Module *
-Module::find(string const& filename)
-{
-  const string name = libio_basename(filename.c_str());
-  vector<Module *>::const_iterator i;
-
-  for(i = loaded_modules.begin(); i != loaded_modules.end(); i++)
-  {
-    Module *m = *i;
-
-    if(m->name() == name)
-      return m;
-  }
-  return NULL;
-}
-
-bool
-Module::load(string const& dir, string const& fname)
-{
-  string path = dir + "/" + fname;
-  stringstream message;
-
-  if(!(handle = modload(path.c_str(), &address)))
-  {
-    ilog(L_DEBUG, "Failed to load %s: %s", path.c_str(), dlerror());
-    return false;
-  }
-
-  message << "Shared module " << _name << " loaded at " << address;
-
-  ilog(L_NOTICE, "%s", message.str().c_str());
-  ilog(L_DEBUG, "%s", message.str().c_str());
-
-  loaded_modules.push_back(this);
-  return true;
-}
-
-bool
-ServiceModule::load(string const& dir, string const& fname)
-{
-  Service *service;
-
-  if(!Module::load(dir, fname))
-    return false;
-
-  create_service = (servcreate_t *)modsym(handle, "create");
-  destroy_service = (servdestroy_t *)modsym(handle, "destroy");
-
-  service = create_service(service_name);
-  service->init();
-
-  return true;
-}
-
-bool ProtocolModule::load(string const& dir, string const& fname)
-{
-  Protocol *protocol;
-
-  if(!Module::load(dir, fname))
-    return false;
-
-  create_protocol = (protocreate_t *)modsym(handle, "create");
-  destroy_protocol = (protodestroy_t *)modsym(handle, "destroy");
-
-  protocol = create_protocol(_proto);
-  protocol_list.push_back(protocol);
-
-  return true;
-}
-
-/*
- * boot_modules()
- *
- * [API] Initializes core, autoload and conf (extra) modules.
- *
- * inputs: 0 if we should load only conf modules, 1 otherwise
- * output: none
- */
-void
-boot_modules(char cold)
-{
-  vector<string>::const_iterator i;
-  vector<ServiceConf *>::const_iterator si;
-
-  if(cold)
-  {
-    {
-    /*  char buf[PATH_MAX], *pp;
-      struct dirent *ldirent;
-      DIR *moddir;
-
-      if((moddir = opendir(AUTOMODPATH)) == NULL)
-        ilog(L_WARN, "Could not load modules from %s: %s", AUTOMODPATH,
-          strerror(errno));
-      else
-      {
-        while((ldirent = readdir(moddir)) != NULL)
-        {
-          strlcpy(buf, ldirent->d_name, sizeof(buf));
-          if((pp = strchr(buf, '.')) != NULL)
-            *pp = 0;
-          if(!Module::find(buf))
-          {
-            Module *m = new Module(buf);
-            if(!m->load(AUTOMODPATH, ldirent->d_name))
-              delete m;
-          }
-        }
-        closedir(moddir);
-      }*/
-    }
-  }
-
-  for(i = mod_extra.begin(); i != mod_extra.end(); i++)
-  {
-    if(!Module::find(*i))
-    {
-      Module *m = new Module(*i);
-      if(!m->load(AUTOMODPATH, *i))
-        delete m;
-    }
-  }
-
-  for(si = ServiceConfs.begin(); si != ServiceConfs.end(); si++)
-  {
-    ServiceConf *sc = *si;
-    Module *m = new ServiceModule(sc);
-    if(!m->load(AUTOMODPATH, sc->module))
-      delete m;
-  }
-
-  Module *m = new ProtocolModule("oftc.so", "oftc");
-  if(!m->load(AUTOMODPATH, "oftc.so"))
-    delete m;
-}
 
 /*
  * h_switch_conf_pass()
@@ -267,7 +118,7 @@ mod_add_module(void *value, void *unused)
  * output: none
  */
 void
-init_modules(void)
+init_modules()
 {
   struct ConfSection *s = add_conf_section("modules", 1);
 
@@ -276,9 +127,4 @@ init_modules(void)
 
   add_conf_field(s, "path", CT_STRING, mod_add_path, NULL);
   add_conf_field(s, "module", CT_STRING, mod_add_module, NULL);
-}
-
-void
-cleanup_modules(void)
-{
 }

@@ -3,6 +3,8 @@
 #define INCLUDED_interface_h
 
 #include <tr1/unordered_map>
+#include <string>
+#include <vector>
 
 using std::string;
 using std::vector;

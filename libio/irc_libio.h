@@ -52,7 +52,6 @@
 #include "mem/balloc.h"
 #include "mem/dbuf.h"
 #include "mem/memory.h"
-#include "mem/dynlink.h"
 
 #include "net/irc_getaddrinfo.h"
 #include "net/irc_getnameinfo.h"

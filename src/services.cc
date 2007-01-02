@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
   init_log(ServicesInfo.logfile);
   //init_channel();
   init_conf();
+  init_module();
   //init_client();
   //init_parser();
   //init_channel_modes();
@@ -159,7 +160,7 @@ services_die(const char *msg, int rboot)
   cleanup_log();*/
   //cleanup_ruby();
   cleanup_db();
-  cleanup_modules();
+  cleanup_module();
   //cleanup_interface();
 
   EVP_cleanup();

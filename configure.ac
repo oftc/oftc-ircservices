@@ -2,9 +2,13 @@
 # vim: set fdm=marker ts=2 sw=2 et:
 
 AC_PREREQ(2.59)
-AC_INIT([oftc-services],[0.1])
-AM_INIT_AUTOMAKE([oftc-services],[0.1])
+AC_INIT([oftc-ircservices],[0.1])
+AM_INIT_AUTOMAKE([oftc-ircservices],[0.1])
 AC_CONFIG_HEADERS([config.h])
+AC_LIBTOOL_DLOPEN
+AC_LIBLTDL_CONVENIENCE
+AC_SUBST(INCLTDL)
+AC_SUBST(LIBLTDL)
 
 # Checks for programs.
 AC_PROG_INSTALL
@@ -12,6 +16,7 @@ AC_GNU_SOURCE
 AC_PROG_CC
 AC_PROG_RANLIB
 AC_PROG_LIBTOOL
+LIBTOOL="$LIBTOOL --silent"
 AM_PROG_LEX
 AC_PROG_YACC
 AC_PROG_AWK
@@ -70,4 +75,7 @@ AC_DEFINE_DIR([LIBDIR],[libdir],[Set to libdir.])
 AC_DEFINE_DIR([DATADIR],[datadir],[Set to datadir.])
 AC_DEFINE([SHARED_SUFFIX],[".so"],[Suffix for shared libraries on this platform.]) # wtf is this needed? replace libdl with libltdl to correct
 AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile languages/Makefile include/Makefile include/conf/Makefile])
+
+AC_CONFIG_SUBDIRS(libltdl)
+
 AC_OUTPUT
