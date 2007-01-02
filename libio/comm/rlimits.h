@@ -11,6 +11,7 @@
 #define INCLUDED_libio_comm_rlimits_h
 
 #ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
 
 /* This nest of #ifdefs is because not all 'cpp's support #elif */
 
