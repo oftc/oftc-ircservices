@@ -16,3 +16,6 @@ irc_la_SOURCES=irc.c
 hybrid_la_SOURCES=hybrid.c
 hybridts6_la_SOURCES=hybridts6.c
 oftc_la_SOURCES=oftc.c
+
+install-exec-local:
+	rm -f $(DESTDIR)/$(pkglibdir)/*.la $(DESTDIR)/$(pkblibdir)/*.a
