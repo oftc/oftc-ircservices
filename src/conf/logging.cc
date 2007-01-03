@@ -38,9 +38,10 @@
 
 #include "conf/conf.h"
 
-struct LoggingConf Logging;
+using std::string;
+using std::vector;
 
-static dlink_node *hreset, *hverify;
+struct LoggingConf Logging;
 
 /*
  * reset_logging()
@@ -50,16 +51,14 @@ static dlink_node *hreset, *hverify;
  * inputs: none
  * output: none
  */
-static void *
-reset_logging(va_list args)
+static void 
+reset_logging()
 {
   set_file_log_level(L_NOTICE);
   set_gnotice_log_level(L_NOTICE);
 
   memset(&Logging, 0, sizeof(Logging));
   Logging.use_logging = YES;
-
-  return pass_callback(hreset);
 }
 
 /*
@@ -70,13 +69,11 @@ reset_logging(va_list args)
  * inputs: none
  * output: none
  */
-static void *
-verify_logging(va_list args)
+static void 
+verify_logging()
 {
   if (Logging.use_logging)
     reopen_log(ServicesInfo.logfile);
-
-  return pass_callback(hverify);
 }
 
 static void
@@ -89,7 +86,7 @@ static void
 conf_log_level(void *list, void *logtype)
 {
   int i;
-  char *value;
+  string value;
   struct { char *name; int level; } levels[7] = {
     {"L_CRIT", L_CRIT},
     {"L_ERROR", L_ERROR},
@@ -99,18 +96,20 @@ conf_log_level(void *list, void *logtype)
     {"L_INFO", L_INFO},
     {"L_DEBUG", L_DEBUG}
   };
+  vector<string> strlist = *(vector<string>*)list;
 
-  if (dlink_list_length((dlink_list *) list) != 1)
+  if (strlist.size() != 1)
   {
     error:
     parse_error("invalid log level");
     return;
   }
 
-  value = (char *) ((dlink_list *) list)->head->data;
+  value = *strlist.begin();
 
+  printf("%s\n", value.c_str());
   for (i = 0; i < 7; i++)
-    if (!irccmp(value, levels[i].name))
+    if (!irccmp(value.c_str(), levels[i].name))
     {
       if((int)logtype == 0)
         set_gnotice_log_level(levels[i].level);
@@ -139,13 +138,13 @@ init_logging(void)
   int i;
   struct ConfSection *s = add_conf_section("logging", 2);
   
-  hreset = install_hook(reset_conf, reset_logging);
-  hverify = install_hook(verify_conf, verify_logging);
+//  hreset = install_hook(reset_conf, reset_logging);
+//  hverify = install_hook(verify_conf, verify_logging);
 
   add_conf_field(s, "use_logging", CT_BOOL, NULL, &Logging.use_logging);
   add_conf_field(s, "logpath", CT_STRING, NULL, NULL);
 
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 3; i++)
   {
     add_conf_field(s, short_fields[i], CT_STRING, set_log_path, paths[i]);
     add_conf_field(s, long_fields[i], CT_STRING, set_log_path, paths[i]);

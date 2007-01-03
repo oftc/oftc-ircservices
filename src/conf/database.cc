@@ -35,8 +35,6 @@
 
 struct DatabaseConf Database = {0};
 
-static dlink_node *hreset, *hverify;
-
 /*
  * reset_database()
  *
@@ -45,11 +43,11 @@ static dlink_node *hreset, *hverify;
  * inputs: none
  * output: none
  */
-static void *
-reset_database(va_list args)
-{
-  return pass_callback(hreset);
-}
+//static void *
+//reset_database(va_list args)
+//{
+//  return pass_callback(hreset);
+//}
 
 /*
  * verify_database()
@@ -59,8 +57,8 @@ reset_database(va_list args)
  * inputs: none
  * output: none
  */
-static void *
-verify_database(va_list args)
+static void 
+verify_database()
 {
   if (!Database.driver[0])
     parse_fatal("driver= field missing in database{} section");
@@ -73,8 +71,6 @@ verify_database(va_list args)
 
   if(!Database.password[0])
     parse_fatal("password= field missing in database{} section");
-
-  return pass_callback(hverify);
 }
 
 /*
@@ -90,8 +86,8 @@ init_database(void)
 {
   struct ConfSection *s = add_conf_section("database", 2);
 
-  hreset = install_hook(reset_conf, reset_database);
-  hverify = install_hook(verify_conf, verify_database);
+//  hreset = install_hook(reset_conf, reset_database);
+//  hverify = install_hook(verify_conf, verify_database);
 
   add_conf_field(s, "driver", CT_STRING, NULL, &Database.driver);
   add_conf_field(s, "dbname", CT_STRING, NULL, &Database.dbname);

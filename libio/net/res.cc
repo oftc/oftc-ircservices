@@ -22,6 +22,11 @@
 #include "libioinc.h"
 #include "reslib.h"
 
+#include <vector>
+#include <algorithm>
+
+using std::vector;
+
 #if (CHAR_BIT != 8)
 #error this code needs to be able to address individual octets 
 #endif
@@ -57,7 +62,6 @@ typedef enum
 
 struct reslist 
 {
-  dlink_node node;
   int id;
   int sent;                /* number of requests sent */
   request_state state;     /* State the resolver machine is in */
@@ -68,30 +72,30 @@ struct reslist
   char resend;             /* send flag. 0 == dont resend */
   time_t sentat;
   time_t timeout;
-  struct irc_ssaddr addr;
+  irc_ssaddr addr;
   char *name;
-  struct DNSQuery *query;  /* query callback for this request */
+  DNSQuery *query;  /* query callback for this request */
 };
 
 static fde_t ResolverFileDescriptor;
-static dlink_list request_list    = { NULL, NULL, 0 };
+static vector<reslist *> request_list;
 
-static void rem_request(struct reslist *request);
-static struct reslist *make_request(struct DNSQuery *query);
-static void do_query_name(struct DNSQuery *query,
-                          const char* name, struct reslist *request, int);
-static void do_query_number(struct DNSQuery *query,
-                            const struct irc_ssaddr *,
-                            struct reslist *request);
+static void rem_request(reslist *request);
+static reslist *make_request(DNSQuery *query);
+static void do_query_name(DNSQuery *query,
+                          const char* name, reslist *request, int);
+static void do_query_number(DNSQuery *query,
+                            const irc_ssaddr *,
+                            reslist *request);
 static void query_name(const char *name, int query_class, int query_type, 
-                       struct reslist *request);
+                       reslist *request);
 static int send_res_msg(const char *buf, int len, int count);
-static void resend_query(struct reslist *request);
-static int proc_answer(struct reslist *request, HEADER *header, char *, char *);
-static struct reslist *find_id(int id);
-static struct DNSReply *make_dnsreply(struct reslist *request);
+static void resend_query(reslist *request);
+static int proc_answer(reslist *request, HEADER *header, char *, char *);
+static reslist *find_id(int id);
+static DNSReply *make_dnsreply(reslist *request);
 
-extern struct irc_ssaddr irc_nsaddr_list[IRCD_MAXNS];
+extern irc_ssaddr irc_nsaddr_list[IRCD_MAXNS];
 extern int irc_nscount;
 extern char irc_domain[HOSTLEN+1];
 
@@ -108,23 +112,23 @@ extern char irc_domain[HOSTLEN+1];
  *      revised for ircd, cryogen(stu) may03
  */
 static int
-res_ourserver(const struct irc_ssaddr *inp) 
+res_ourserver(const irc_ssaddr *inp) 
 {
 #ifdef IPV6
-  struct sockaddr_in6 *v6;
-  struct sockaddr_in6 *v6in = (struct sockaddr_in6 *)inp;
+  sockaddr_in6 *v6;
+  sockaddr_in6 *v6in = (sockaddr_in6 *)inp;
 #endif
-  struct sockaddr_in *v4;
-  struct sockaddr_in *v4in = (struct sockaddr_in *)inp; 
+  sockaddr_in *v4;
+  sockaddr_in *v4in = (sockaddr_in *)inp; 
   int ns;
 
   for (ns = 0;  ns < irc_nscount;  ns++)
   {
-    const struct irc_ssaddr *srv = &irc_nsaddr_list[ns];
+    const irc_ssaddr *srv = &irc_nsaddr_list[ns];
 #ifdef IPV6
-    v6 = (struct sockaddr_in6 *)srv;
+    v6 = (sockaddr_in6 *)srv;
 #endif
-    v4 = (struct sockaddr_in *)srv;
+    v4 = (sockaddr_in *)srv;
 
     /* could probably just memcmp(srv, inp, srv.ss_len) here
      * but we'll air on the side of caution - stu
@@ -137,9 +141,9 @@ res_ourserver(const struct irc_ssaddr *inp)
         if (srv->ss.ss_family == inp->ss.ss_family)
           if (v6->sin6_port == v6in->sin6_port)
             if ((memcmp(&v6->sin6_addr.s6_addr, &v6in->sin6_addr.s6_addr, 
-                    sizeof(struct in6_addr)) == 0) || 
+                    sizeof(in6_addr)) == 0) || 
                 (memcmp(&v6->sin6_addr.s6_addr, &in6addr_any, 
-                        sizeof(struct in6_addr)) == 0))
+                        sizeof(in6_addr)) == 0))
               return 1;
         break;
 #endif
@@ -165,15 +169,14 @@ res_ourserver(const struct irc_ssaddr *inp)
 static time_t
 timeout_query_list(time_t now)
 {
-  dlink_node *ptr;
-  dlink_node *next_ptr;
-  struct reslist *request;
+  reslist *request;
   time_t next_time = 0;
   time_t timeout   = 0;
+  vector<reslist *>::const_iterator i;
 
-  DLINK_FOREACH_SAFE(ptr, next_ptr, request_list.head)
+  for(i = request_list.begin(); i != request_list.end(); i++)
   {
-    request = (struct reslist *)ptr->data;
+    request = *i;
     timeout = request->sentat + request->timeout;
 
     if (now >= timeout)
@@ -286,9 +289,9 @@ add_local_domain(char *hname, size_t size)
  * temporary storage of DNS results.
  */
 static void
-rem_request(struct reslist *request)
+rem_request(reslist *request)
 {
-  dlinkDelete(&request->node, &request_list);
+  request_list.erase(std::find(request_list.begin(), request_list.end(), request));
   MyFree(request->name);
   MyFree(request);
 }
@@ -296,10 +299,10 @@ rem_request(struct reslist *request)
 /*
  * make_request - Create a DNS request record for the server.
  */
-static struct reslist *
-make_request(struct DNSQuery *query)
+static reslist *
+make_request(DNSQuery *query)
 {
-  struct reslist *request = (struct reslist *)MyMalloc(sizeof(struct reslist));
+  reslist *request = (reslist *)MyMalloc(sizeof(reslist));
 
   request->sentat  = CurrentTime;
   request->retries = 3;
@@ -308,7 +311,7 @@ make_request(struct DNSQuery *query)
   request->query   = query;
   request->state   = REQ_IDLE;
 
-  dlinkAdd(request, &request->node, &request_list);
+  request_list.push_back(request);
 
   return request;
 }
@@ -318,15 +321,15 @@ make_request(struct DNSQuery *query)
  * for which there no longer exist clients or conf lines.
  */
 void
-delete_resolver_queries(const struct DNSQuery *query)
+delete_resolver_queries(const DNSQuery *query)
 {
-  dlink_node *ptr;
-  dlink_node *next_ptr;
-  struct reslist *request;
+  reslist *request;
+  vector<reslist *>::const_iterator i;
 
-  DLINK_FOREACH_SAFE(ptr, next_ptr, request_list.head)
+  for(i = request_list.begin(); i != request_list.end(); i++)
   {
-    if ((request = (struct reslist *)ptr->data) != NULL)
+    request = *i;
+    if(request != NULL)
     {
       if (query == request->query)
         rem_request(request);
@@ -358,7 +361,7 @@ send_res_msg(const char *msg, int len, int rcount)
   for (i = 0; i < max_queries; ++i)
   {
     if (sendto(ResolverFileDescriptor.fd, msg, len, 0, 
-        (struct sockaddr*)&(irc_nsaddr_list[i]), 
+        (sockaddr*)&(irc_nsaddr_list[i]), 
         irc_nsaddr_list[i].ss_len) == len) 
       ++sent;
   }
@@ -369,14 +372,14 @@ send_res_msg(const char *msg, int len, int rcount)
 /*
  * find_id - find a dns request id (id is determined by dn_mkquery)
  */
-static struct reslist *
+static reslist *
 find_id(int id)
 {
-  dlink_node *ptr = NULL;
+  vector<reslist *>::const_iterator i;
 
-  DLINK_FOREACH(ptr, request_list.head)
+  for(i = request_list.begin(); i != request_list.end(); i++)
   {
-    struct reslist *request = (struct reslist *)ptr->data;
+    reslist *request = *i;
 
     if (request->id == id)
       return request;
@@ -390,7 +393,7 @@ find_id(int id)
  *
  */
 void
-gethost_byname_type(const char *name, struct DNSQuery *query, int type)
+gethost_byname_type(const char *name, DNSQuery *query, int type)
 {
   assert(name != 0);
   do_query_name(query, name, NULL, type);
@@ -400,7 +403,7 @@ gethost_byname_type(const char *name, struct DNSQuery *query, int type)
  * gethost_byname - wrapper for _type - send T_AAAA first if IPV6 supported
  */
 void
-gethost_byname(const char *name, struct DNSQuery *query)
+gethost_byname(const char *name, DNSQuery *query)
 {
 #ifdef IPV6
   gethost_byname_type(name, query, T_AAAA);
@@ -413,7 +416,7 @@ gethost_byname(const char *name, struct DNSQuery *query)
  * gethost_byaddr - get host name from address
  */
 void
-gethost_byaddr(const struct irc_ssaddr *addr, struct DNSQuery *query)
+gethost_byaddr(const irc_ssaddr *addr, DNSQuery *query)
 {
   do_query_number(query, addr, NULL);
 }
@@ -422,8 +425,8 @@ gethost_byaddr(const struct irc_ssaddr *addr, struct DNSQuery *query)
  * do_query_name - nameserver lookup name
  */
 static void
-do_query_name(struct DNSQuery *query, const char *name,
-              struct reslist *request, int type)
+do_query_name(DNSQuery *query, const char *name,
+              reslist *request, int type)
 {
   char host_name[HOSTLEN + 1];
 
@@ -454,8 +457,8 @@ do_query_name(struct DNSQuery *query, const char *name,
  * do_query_number - Use this to do reverse IP# lookups.
  */
 static void
-do_query_number(struct DNSQuery *query, const struct irc_ssaddr *addr,
-                struct reslist *request)
+do_query_number(DNSQuery *query, const irc_ssaddr *addr,
+                reslist *request)
 {
   char ipbuf[128];
   const unsigned char *cp;
@@ -464,7 +467,7 @@ do_query_number(struct DNSQuery *query, const struct irc_ssaddr *addr,
 #endif
   if (addr->ss.ss_family == AF_INET)
   {
-    struct sockaddr_in *v4 = (struct sockaddr_in *)addr;
+    sockaddr_in *v4 = (sockaddr_in *)addr;
     cp = (const unsigned char*)&v4->sin_addr.s_addr;
 
     ircsprintf(ipbuf, "%u.%u.%u.%u.in-addr.arpa.",
@@ -474,7 +477,7 @@ do_query_number(struct DNSQuery *query, const struct irc_ssaddr *addr,
 #ifdef IPV6
   else if (addr->ss.ss_family == AF_INET6)
   {
-    struct sockaddr_in6 *v6 = (struct sockaddr_in6 *)addr;
+    sockaddr_in6 *v6 = (sockaddr_in6 *)addr;
     cp = (const unsigned char *)&v6->sin6_addr.s6_addr;
 
     if (request != NULL && request->state == REQ_INT)
@@ -506,7 +509,7 @@ do_query_number(struct DNSQuery *query, const struct irc_ssaddr *addr,
   {
     request       = make_request(query);
     request->type = T_PTR;
-    memcpy(&request->addr, addr, sizeof(struct irc_ssaddr));
+    memcpy(&request->addr, addr, sizeof(irc_ssaddr));
     request->name = (char *)MyMalloc(HOSTLEN + 1);
   }
 
@@ -518,7 +521,7 @@ do_query_number(struct DNSQuery *query, const struct irc_ssaddr *addr,
  */
 static void
 query_name(const char *name, int query_class, int type,
-           struct reslist *request)
+           reslist *request)
 {
   char buf[MAXPACKET];
   int request_len = 0;
@@ -531,7 +534,7 @@ query_name(const char *name, int query_class, int type,
     HEADER *header = (HEADER *)buf;
 #ifndef HAVE_LRAND48
     int k = 0;
-    struct timeval tv;
+    timeval tv;
 #endif
     /*
      * generate an unique id
@@ -560,7 +563,7 @@ query_name(const char *name, int query_class, int type,
 }
 
 static void
-resend_query(struct reslist *request)
+resend_query(reslist *request)
 {
   if (request->resend == 0)
     return;
@@ -588,7 +591,7 @@ resend_query(struct reslist *request)
  * proc_answer - process name server reply
  */
 static int
-proc_answer(struct reslist *request, HEADER* header, char* buf, char* eob)
+proc_answer(reslist *request, HEADER* header, char* buf, char* eob)
 {
   char hostbuf[HOSTLEN + 100]; /* working buffer */
   unsigned char *current;      /* current position in buf */
@@ -596,9 +599,9 @@ proc_answer(struct reslist *request, HEADER* header, char* buf, char* eob)
   int type;                    /* answer type */
   int n;                       /* temp count */
   int rd_length;
-  struct sockaddr_in *v4;      /* conversion */
+  sockaddr_in *v4;      /* conversion */
 #ifdef IPV6
-  struct sockaddr_in6 *v6;
+  sockaddr_in6 *v6;
 #endif
   current = (unsigned char *)buf + sizeof(HEADER);
 
@@ -670,24 +673,24 @@ proc_answer(struct reslist *request, HEADER* header, char* buf, char* eob)
         /*
          * check for invalid rd_length or too many addresses
          */
-        if (rd_length != sizeof(struct in_addr))
+        if (rd_length != sizeof(in_addr))
           return(0);
-        v4 = (struct sockaddr_in *)&request->addr;
-        request->addr.ss_len = sizeof(struct sockaddr_in);
+        v4 = (sockaddr_in *)&request->addr;
+        request->addr.ss_len = sizeof(sockaddr_in);
         v4->sin_family = AF_INET;
-        memcpy(&v4->sin_addr, current, sizeof(struct in_addr));
+        memcpy(&v4->sin_addr, current, sizeof(in_addr));
         return(1);
         break;
 #ifdef IPV6
       case T_AAAA:
         if (request->type != T_AAAA)
           return(0);
-        if (rd_length != sizeof(struct in6_addr))
+        if (rd_length != sizeof(in6_addr))
           return(0);
-        request->addr.ss_len = sizeof(struct sockaddr_in6);
-        v6 = (struct sockaddr_in6 *)&request->addr;
+        request->addr.ss_len = sizeof(sockaddr_in6);
+        v6 = (sockaddr_in6 *)&request->addr;
         v6->sin6_family = AF_INET6;
-        memcpy(&v6->sin6_addr, current, sizeof(struct in6_addr));
+        memcpy(&v6->sin6_addr, current, sizeof(in6_addr));
         return(1);
         break;
 #endif
@@ -753,14 +756,14 @@ res_readreply(fde_t *fd, void *data)
 #endif 
 	  ;
   HEADER *header;
-  struct reslist *request = NULL;
-  struct DNSReply *reply  = NULL;
+  reslist *request = NULL;
+  DNSReply *reply  = NULL;
   int rc;
   int answer_count;
-  socklen_t len = sizeof(struct irc_ssaddr);
-  struct irc_ssaddr lsin;
+  socklen_t len = sizeof(irc_ssaddr);
+  irc_ssaddr lsin;
 
-  rc = recvfrom(fd->fd, buf, sizeof(buf), 0, (struct sockaddr *)&lsin, &len);
+  rc = recvfrom(fd->fd, buf, sizeof(buf), 0, (sockaddr *)&lsin, &len);
 
   /* Re-schedule a read *after* recvfrom, or we'll be registering
    * interest where it'll instantly be ready for read :-) -- adrian
@@ -895,13 +898,13 @@ res_readreply(fde_t *fd, void *data)
   }
 }
 
-static struct DNSReply *
-make_dnsreply(struct reslist *request)
+static DNSReply *
+make_dnsreply(reslist *request)
 {
-  struct DNSReply *cp;
+  DNSReply *cp;
   assert(request != 0);
 
-  cp = (struct DNSReply *)MyMalloc(sizeof(struct DNSReply));
+  cp = (DNSReply *)MyMalloc(sizeof(DNSReply));
 
   cp->h_name = request->name;
   memcpy(&cp->addr, &request->addr, sizeof(cp->addr));

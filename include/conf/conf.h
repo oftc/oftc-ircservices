@@ -125,8 +125,6 @@ typedef enum
 
 struct split_nuh_item
 {
-  dlink_node node;
-
   char *nuhmask;
   char *nickptr;
   char *userptr;
@@ -140,7 +138,6 @@ struct split_nuh_item
 struct AccessItem
 {
   void *conf_ptr;            /* pointer back to conf */
-  dlink_node node;
   unsigned int     status;   /* If CONF_ILLEGAL, delete when no clients */
   unsigned int     flags;
   unsigned int     modes;
@@ -172,10 +169,8 @@ struct ConfItem
 {
   char *name;           /* Primary key */
   pcre *regexpname;
-  dlink_node node;      /* link into known ConfItems of this type */
   unsigned int flags;
   ConfType type;
-  dlink_list mask_list;
 
   union
   {

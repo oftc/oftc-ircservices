@@ -43,7 +43,7 @@ static const char *comm_err_str[] = { "Comm OK", "Error during bind()",
                                       "Error during connect()",
                                       "Comm Error" };
 
-struct Callback *setup_socket_cb = NULL;
+//struct Callback *setup_socket_cb = NULL;
 
 static void comm_connect_callback(fde_t *, int);
 static PF comm_connect_timeout;
@@ -111,10 +111,9 @@ get_sockerr(int fd)
  *
  * Set the socket non-blocking, and other wonderful bits.
  */
-static void *
-setup_socket(va_list args)
+static void 
+setup_socket(int fd)
 {
-  int fd = va_arg(args, int);
   int opt = 1;
 
   setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char *) &opt, sizeof(opt));
@@ -127,8 +126,6 @@ setup_socket(va_list args)
 #ifndef _WIN32
   fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 #endif
-
-  return NULL;
 }
 
 /*
@@ -139,7 +136,7 @@ setup_socket(va_list args)
 void
 init_comm(void)
 {
-  setup_socket_cb = register_callback("setup_socket", setup_socket);
+//  setup_socket_cb = register_callback("setup_socket", setup_socket);
   init_netio();
 }
 
@@ -499,7 +496,8 @@ comm_open(fde_t *F, int family, int sock_type, int proto, const char *note)
     return -1; /* errno will be passed through, yay.. */
   }
 
-  execute_callback(setup_socket_cb, fd);
+  setup_socket(fd);
+  //execute_callback(setup_socket_cb, fd);
 
   /* update things in our fd tracking */
   fd_open(F, fd, 1, note);
@@ -545,7 +543,8 @@ comm_accept(fde_t *listener, struct irc_ssaddr *pn)
   pn->ss_len = addrlen;
 #endif
 
-  execute_callback(setup_socket_cb, newfd);
+  setup_socket(newfd);
+//  execute_callback(setup_socket_cb, newfd);
 
   /* .. and return */
   return newfd;

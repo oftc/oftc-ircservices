@@ -79,7 +79,7 @@ read_services_conf(int cold_start)
   conf_pass = 2;
   yyparse();          /* Load the values from the conf */
 
-  execute_callback(verify_conf);
+//  execute_callback(verify_conf);
 }
 
 /*

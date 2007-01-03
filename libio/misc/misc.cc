@@ -370,7 +370,6 @@ libio_init(int daemonn)
   eventInit();
   fdlist_init();
   init_comm();
-  init_dlink_nodes();
 #ifndef _WIN32
   init_resolver();
 #endif

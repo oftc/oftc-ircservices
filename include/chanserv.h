@@ -5,8 +5,6 @@
 
 struct RegChannel
 {
-  dlink_node node;
-  
   unsigned int id;
   char channel[CHANNELLEN+1];
   char *description;

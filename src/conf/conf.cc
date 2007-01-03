@@ -37,15 +37,18 @@
 #include "conf/conf.h"
 #include "services.h"
 
+using std::string;
+using std::vector;
+
 int conf_pass, conf_cold = YES;
-struct ConfParserContext conf_curctx;
+ConfParserContext conf_curctx;
 char conf_linebuf[CONF_BUFSIZE];
 
-struct Callback *reset_conf = NULL;
-struct Callback *verify_conf = NULL;
-struct Callback *switch_conf_pass = NULL;
+/*Callback *reset_conf = NULL;
+Callback *verify_conf = NULL;
+Callback *switch_conf_pass = NULL;*/
 
-static dlink_list conf_section_list = {NULL, NULL, 0};
+static vector<ConfSection *> conf_section_list;
 
 extern int yyparse(void);
 
@@ -60,9 +63,9 @@ extern int yyparse(void);
 void
 init_conf(void)
 {
-  reset_conf = register_callback("reset_conf", NULL);
-  verify_conf = register_callback("verify_conf", NULL);
-  switch_conf_pass = register_callback("switch_conf_pass", NULL);
+//  reset_conf = register_callback("reset_conf", NULL);
+//  verify_conf = register_callback("verify_conf", NULL);
+//  switch_conf_pass = register_callback("switch_conf_pass", NULL);
 
   init_servicesinfo();
   init_database();
@@ -164,17 +167,17 @@ conf_yy_input(char *buf, int siz)
  *
  * inputs:
  *   name  -  name of the block
- * output: pointer to struct ConfSection or NULL if not found
+ * output: pointer to ConfSection or NULL if not found
  */
-struct ConfSection *
+ConfSection *
 find_conf_section(const char *name)
 {
-  dlink_node *ptr;
-  struct ConfSection *section;
+  ConfSection *section;
+  vector<ConfSection *>::const_iterator i;
 
-  DLINK_FOREACH(ptr, conf_section_list.head)
+  for(i = conf_section_list.begin(); i != conf_section_list.end(); i++)
   {
-    section = (struct ConfSection *)ptr->data;
+    section = *i;
     if (!strcasecmp(section->name, name))
       return section;
   }
@@ -190,20 +193,20 @@ find_conf_section(const char *name)
  * inputs:
  *   name  -  name of the block
  *   pass  -  pass when the section should be parsed (1 or 2)
- * output: pointer to struct ConfSection or NULL if already exists
+ * output: pointer to ConfSection or NULL if already exists
  */
-struct ConfSection *
+ConfSection *
 add_conf_section(const char *name, int pass)
 {
-  struct ConfSection *section;
+  ConfSection *section;
 
   if (find_conf_section(name) != NULL)
     return NULL;
 
-  section = (struct ConfSection *)MyMalloc(sizeof(struct ConfSection));
+  section = (ConfSection *)MyMalloc(sizeof(ConfSection));
   section->name = name;
   section->pass = pass;
-  dlinkAdd(section, &section->node, &conf_section_list);
+  conf_section_list.push_back(section);
   return section;
 }
 
@@ -217,33 +220,33 @@ add_conf_section(const char *name, int pass)
  * output: none
  */
 void
-delete_conf_section(struct ConfSection *section)
+delete_conf_section(ConfSection *section)
 {
-  dlink_node *ptr, *ptr_next;
+  vector<ConfField *>::iterator i;
 
-  DLINK_FOREACH_SAFE(ptr, ptr_next, section->fields.head)
+  for(i = section->fields.begin(); i != section->fields.end(); i++)
   {
-    dlinkDelete(ptr, &section->fields);
-    MyFree(ptr->data);
+    section->fields.erase(i);
+    MyFree(*i);
   }
 
-  dlinkDelete(&section->node, &conf_section_list);
+  conf_section_list.erase(std::find(conf_section_list.begin(), conf_section_list.end(), section));
 }
 
-struct ConfField *
-find_conf_field(struct ConfSection *section, char *name)
+ConfField *
+find_conf_field(ConfSection *section, char *name)
 {
-  dlink_node *ptr;
-  struct ConfField *field;
+  ConfField *field;
+  vector<ConfField *>::const_iterator i;
 
   if (section == NULL)
     return NULL;
   if (section->pass != conf_pass)
     return NULL;
 
-  DLINK_FOREACH(ptr, section->fields.head)
+  for(i = section->fields.begin(); i != section->fields.end(); i++)
   {
-    field = (struct ConfField *)ptr->data;
+    field = *i;
     if (!strcasecmp(field->name, name))
       return field;
   }
@@ -259,12 +262,12 @@ find_conf_field(struct ConfSection *section, char *name)
  *
  * inputs:
  *   type     -  type of supplied value
- *   field    -  pointer to struct ConfField
+ *   field    -  pointer to ConfField
  *   value    -  address of value data
  * output: none
  */
 void
-conf_assign(int type, struct ConfField *field, void *value)
+conf_assign(int type, ConfField *field, void *value)
 {
   static char *field_types[] =
     {"NUMBER", "BOOLEAN", "TIME", "SIZE", "STRING", "LIST", "NLIST"};
@@ -280,13 +283,13 @@ conf_assign(int type, struct ConfField *field, void *value)
   }
   else if (type == CT_NUMBER && field->type == CT_NLIST)
   {
-    dlink_list list = {NULL, NULL, 0};
+/*    dlink_list list = {NULL, NULL, 0};
     dlink_node node;
 
     dlinkAdd((void *) (long) (*(int *) value), &node, &list);
 
     if (field->handler != NULL)
-      field->handler(&list, field->param);
+      field->handler(&list, field->param);*/
   }
   else
     parse_error("type mismatch, expected %s", field_types[type]);
@@ -334,11 +337,11 @@ conf_assign_string(void *value, void *var)
  *               is encountered (one argument: info)
  * output: none
  */
-struct ConfField *
-add_conf_field(struct ConfSection *section, const char *name, int type,
+ConfField *
+add_conf_field(ConfSection *section, const char *name, int type,
                CONFF_HANDLER *handler, void *param)
 {
-  struct ConfField *field = (struct ConfField *)MyMalloc(sizeof(struct ConfField));
+  ConfField *field = (ConfField *)MyMalloc(sizeof(ConfField));
 
   if (handler == NULL)
     switch (type)
@@ -362,7 +365,7 @@ add_conf_field(struct ConfSection *section, const char *name, int type,
   field->type = type;
   field->handler = handler;
   field->param = param;
-  dlinkAdd(field, &field->node, &section->fields);
+  section->fields.push_back(field);
   return field;
 }
 
@@ -377,13 +380,13 @@ add_conf_field(struct ConfSection *section, const char *name, int type,
  * output: none
  */
 void
-delete_conf_field(struct ConfSection *section, struct ConfField *field)
+delete_conf_field(ConfSection *section, ConfField *field)
 {
-  dlinkDelete(&field->node, &section->fields);
+  section->fields.erase(std::find(section->fields.begin(), section->fields.end(), field));
   MyFree(field);
 }
 
-struct ConfItem *
+ConfItem *
 make_conf_item2(ConfType type)
 {
   return NULL;

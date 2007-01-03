@@ -26,8 +26,6 @@ public:
 
 struct Nick
 {
-  dlink_node node;
-  
   unsigned int id;
   char nick[NICKLEN+1];
   char pass[PASSLEN+1];

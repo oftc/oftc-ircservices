@@ -37,8 +37,6 @@
 vector<string> mod_paths;
 vector<string> mod_extra;
 
-static dlink_node *hreset, *hpass;
-
 /*
  * h_switch_conf_pass()
  *
@@ -48,13 +46,12 @@ static dlink_node *hreset, *hpass;
  * inputs: none
  * output: none
  */
-static void *
-h_switch_conf_pass(va_list args)
+static void 
+h_switch_conf_pass()
 {
   if (conf_pass == 2)
     boot_modules(conf_cold);
 
-  return pass_callback(hpass);
 }
 
 /*
@@ -66,13 +63,11 @@ h_switch_conf_pass(va_list args)
  * inputs: none
  * output: none
  */
-static void *
-h_reset_conf(va_list args)
+static void 
+h_reset_conf()
 {
   mod_paths.clear();
   mod_extra.clear();
-
-  return pass_callback(hreset);
 }
 
 /*
@@ -122,8 +117,8 @@ init_modules()
 {
   struct ConfSection *s = add_conf_section("modules", 1);
 
-  hreset = install_hook(reset_conf, h_reset_conf);
-  hpass = install_hook(switch_conf_pass, h_switch_conf_pass);
+ // hreset = install_hook(reset_conf, h_reset_conf);
+//  hpass = install_hook(switch_conf_pass, h_switch_conf_pass);
 
   add_conf_field(s, "path", CT_STRING, mod_add_path, NULL);
   add_conf_field(s, "module", CT_STRING, mod_add_module, NULL);

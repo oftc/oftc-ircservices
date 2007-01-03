@@ -25,8 +25,9 @@
 
 %{
 
-#include <string>
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include "stdinc.h"
 
@@ -39,35 +40,30 @@
 
 #define YY_NO_UNPUT
 
+using std::vector;
+using std::string;
+
 struct ConfSection *conf_current_section;
 
-static dlink_list conf_list = {NULL, NULL, 0};
+vector<string> conf_list;
 static struct ConfField *conf_field;
 
 void conf_clear_list(int free_items)
 {
-  dlink_node *ptr, *ptr_next;
-
-  DLINK_FOREACH_SAFE(ptr, ptr_next, conf_list.head)
-  {
-    if (free_items)
-      MyFree(ptr->data);
-    dlinkDelete(ptr, &conf_list);
-    free_dlink_node(ptr);
-  }
+  conf_list.clear();
 }
 
 void conf_add_ident(const char *ident)
 {
-  char *str;
-
-  DupString(str, ident);
-  dlinkAdd(str, make_dlink_node(), &conf_list);
+  conf_list.push_back(ident);
 }
 
 void conf_add_number(int number)
 {
-  dlinkAdd((void *) (long) number, make_dlink_node(), &conf_list);
+  std::ostringstream ss;
+
+  ss << number;
+  conf_list.push_back(ss.str());
 }
 
 %}

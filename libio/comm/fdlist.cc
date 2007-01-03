@@ -30,19 +30,19 @@ int number_fd = LEAKED_FDS;
 int hard_fdlimit = 0;
 struct Callback *fdlimit_cb = NULL;
 
-static void *
+/*static void *
 changing_fdlimit(va_list args)
 {
   hard_fdlimit = va_arg(args, int);
   return NULL;
-}
+}*/
 
 void
 fdlist_init(void)
 {
   memset(&fd_hash, 0, sizeof(fd_hash));
 
-  fdlimit_cb = register_callback("changing_fdlimit", changing_fdlimit);
+//  fdlimit_cb = register_callback("changing_fdlimit", changing_fdlimit);
   eventAddIsh("recalc_fdlimit", recalc_fdlimit, NULL, 58);
   recalc_fdlimit(NULL);
 }
@@ -74,7 +74,8 @@ recalc_fdlimit(void *unused)
   fdmax = LIBIO_MIN(fdmax, 65536);
 
   if (fdmax != hard_fdlimit)
-    execute_callback(fdlimit_cb, fdmax);
+    hard_fdlimit = fdmax;
+ //   execute_callback(fdlimit_cb, fdmax);
 #endif
 }
 

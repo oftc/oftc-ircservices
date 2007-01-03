@@ -164,7 +164,6 @@ init_db()
 
   Database.yada = yada_init(dbstr, 0);
   MyFree(dbstr);
-  on_nick_drop_cb = register_callback("Nick DROP Callback", NULL);
 }
 
 void
@@ -482,7 +481,6 @@ db_delete_nick(const char *nick)
   }
 
   TransCommit();
-  execute_callback(on_nick_drop_cb, nick);
  
   return TRUE;
 }

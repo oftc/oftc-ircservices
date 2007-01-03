@@ -38,10 +38,8 @@
 #include <openssl/ssl.h>
 
 #include "misc/event.h"
-#include "misc/list.h"
 #include "misc/log.h"
 #include "misc/misc.h"
-#include "misc/hook.h"
 #include "misc/libio_getopt.h"
 
 #include "net/inet_misc.h"

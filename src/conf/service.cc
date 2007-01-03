@@ -36,7 +36,6 @@ using std::vector;
 
 vector<ServiceConf *> ServiceConfs;
 ServiceConf tmpservice = { 0 };
-static dlink_node *hreset;
 
 /*
  * reset_service()
@@ -46,10 +45,9 @@ static dlink_node *hreset;
  * inputs: none
  * output: none
  */
-static void *
-reset_service(va_list args)
+static void
+reset_service()
 {
-  return pass_callback(hreset);
 }
 
 static void
@@ -89,7 +87,7 @@ init_service(void)
 {
   struct ConfSection *s = add_conf_section("service", 2);
 
-  hreset = install_hook(reset_conf, reset_service);
+//  hreset = install_hook(reset_conf, reset_service);
   s->before = before_service;
 
   add_conf_field(s, "name", CT_STRING, NULL, &tmpservice.name);

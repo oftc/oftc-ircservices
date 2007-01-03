@@ -38,8 +38,6 @@
 struct ServicesInfoConf ServicesInfo = {};
 char new_uid[TOTALSIDUID + 1] = {0};
 
-static dlink_node *hreset, *hverify;
-
 /*
  * reset_servicesinfo()
  *
@@ -48,15 +46,13 @@ static dlink_node *hreset, *hverify;
  * inputs: none
  * output: none
  */
-static void *
-reset_servicesinfo(va_list args)
+static void 
+reset_servicesinfo()
 {
   memset(&ServicesInfo.vhost, 0, sizeof(ServicesInfo.vhost));
 #ifdef IPV6
   memset(&ServicesInfo.vhost6, 0, sizeof(ServicesInfo.vhost6));
 #endif
-
-  return pass_callback(hreset);
 }
 
 /*
@@ -67,8 +63,8 @@ reset_servicesinfo(va_list args)
  * inputs: none
  * output: none
  */
-static void *
-verify_servicesinfo(va_list args)
+static void
+verify_servicesinfo()
 {
   if(me->name() == "")
     parse_fatal("name= field missing in servicesinfo{} section");
@@ -82,8 +78,6 @@ verify_servicesinfo(va_list args)
   }
 
   recalc_fdlimit(NULL);
-
-  return pass_callback(hverify);
 }
 
 static void
@@ -176,8 +170,8 @@ init_servicesinfo(void)
 {
   struct ConfSection *s = add_conf_section("servicesinfo", 2);
 
-  hreset = install_hook(reset_conf, reset_servicesinfo);
-  hverify = install_hook(verify_conf, verify_servicesinfo);
+//  hreset = install_hook(reset_conf, reset_servicesinfo);
+//  hverify = install_hook(verify_conf, verify_servicesinfo);
 
   add_conf_field(s, "name", CT_STRING, si_set_name, NULL);
   add_conf_field(s, "sid", CT_STRING, si_set_sid, NULL);

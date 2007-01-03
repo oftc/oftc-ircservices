@@ -35,8 +35,6 @@
 
 struct ConnectConf Connect = {0};
 
-static dlink_node *hreset, *hverify;
-
 /*
  * reset_connect()
  *
@@ -45,11 +43,11 @@ static dlink_node *hreset, *hverify;
  * inputs: none
  * output: none
  */
-static void *
-reset_connect(va_list args)
-{
-  return pass_callback(hreset);
-}
+//static void *
+//reset_connect(va_list args)
+//{
+//  return pass_callback(hreset);
+//}
 
 /*
  * verify_connect()
@@ -59,8 +57,8 @@ reset_connect(va_list args)
  * inputs: none
  * output: none
  */
-static void *
-verify_connect(va_list args)
+static void 
+verify_connect()
 {
   if (Connect.name == NULL)
     parse_fatal("name= field missing in connect{} section");
@@ -76,8 +74,6 @@ verify_connect(va_list args)
 
   if(Connect.password == NULL)
     parse_fatal("password= field missing in connect{} section");
-
-  return pass_callback(hverify);
 }
 
 /*
@@ -93,8 +89,8 @@ init_connect(void)
 {
   struct ConfSection *s = add_conf_section("connect", 2);
 
-  hreset = install_hook(reset_conf, reset_connect);
-  hverify = install_hook(verify_conf, verify_connect);
+  //hreset = install_hook(reset_conf, reset_connect);
+  //hverify = install_hook(verify_conf, verify_connect);
 
   add_conf_field(s, "host", CT_STRING, NULL, &Connect.host);
   add_conf_field(s, "name", CT_STRING, NULL, &Connect.name);

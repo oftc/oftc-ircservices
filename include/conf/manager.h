@@ -26,6 +26,10 @@
 #ifndef INCLUDED_conf_manager_h
 #define INCLUDED_conf_manager_h
 
+#include <vector>
+
+using std::vector;
+
 #define CONF_BUFSIZE 512
 
 #define CT_NUMBER 0
@@ -50,7 +54,6 @@ struct ConfField {
   int type;
   CONFF_HANDLER *handler;
   void *param;
-  dlink_node node;
 };
 
 struct ConfSection {
@@ -59,8 +62,7 @@ struct ConfSection {
   CONFS_HANDLER *after;
   struct ConfField *def_field;
   int pass;
-  dlink_list fields;
-  dlink_node node;
+  vector<ConfField *> fields;
 };
 
 void init_conf(void);
