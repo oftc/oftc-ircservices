@@ -48,7 +48,7 @@ public:
   // Property Setters
   void set_name(string const& n) { _name = n.substr(0, NICKLEN); };
   void set_gecos(string const& g) { _gecos = g.substr(0, REALLEN); };
-  void set_id(string const& i) { _id = i.substr(0, IRC_MAXSID); };
+  void set_id(string const& i) { _id = i.substr(0, IDLEN); };
 protected:
   // Properties
   string _name;
@@ -101,12 +101,34 @@ public:
   
   // Property Setters
   void set_connection(Connection *c) { _connection = c; };
+  void set_id(string const& i) { _id = i.substr(0, IRC_MAXSID); };
 
   // Property Accessors
   Connection *connection() const { return _connection; };
   
 private:
   Connection *_connection;
+};
+
+class UID
+{
+public:
+  static const string& generate();
+private:
+  static void add_one_to_uid(int);
+  static string& current_uid()
+  {
+    static string uid;
+    static bool res = false;
+
+    if(!res)
+    {
+      uid = me->id();
+      uid.append("AAAAA@");
+      res = true;
+    }
+    return uid;
+  }
 };
 
 #endif /* INCLUDED_client_h */

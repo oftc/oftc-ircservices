@@ -21,6 +21,7 @@
 #define TOPICLEN        300
 #define PASSLEN          40
 #define SALTLEN          16
+#define IDLEN            12
 #define DATALEN         255
 #define USERHOSTLEN     USERLEN+HOSTLEN+1+1
 #define USERHOST_REPLYLEN       (NICKLEN+HOSTLEN+USERLEN+5)

@@ -62,6 +62,7 @@ Service::init()
 
   _client = new Client(_name, "services", me->name(), me->gecos());
   _client->init();
+  _client->set_id(UID::generate());
 }
 
 void

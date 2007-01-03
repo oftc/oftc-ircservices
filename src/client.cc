@@ -99,3 +99,34 @@ Server::init()
   BaseClient::init();
   ilog(L_DEBUG, "Adding C++ server %s", _name.c_str());
 }
+
+const string&
+UID::generate()
+{
+  add_one_to_uid(TOTALSIDUID - 1);
+  return current_uid();
+}
+
+void
+UID::add_one_to_uid(int i)
+{
+  if (i != IRC_MAXSID)    /* Not reached server SID portion yet? */
+  {
+    if (current_uid()[i] == 'Z')
+      current_uid()[i] = '0';
+    else if (current_uid()[i] == '9')
+    {
+      current_uid()[i] = 'A';
+      add_one_to_uid(i-1);
+    }
+    else current_uid()[i] = current_uid()[i] + 1;
+  }
+  else
+  {
+    /* NOTE: if IRC_MAXUID != 6, this will have to be rewritten */
+    if (current_uid()[i] == 'Z')
+      current_uid().insert(IRC_MAXSID, "AAAAAA");
+    else
+      current_uid()[i] = current_uid()[i] + 1;
+  }
+}
