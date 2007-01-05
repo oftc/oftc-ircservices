@@ -5,22 +5,6 @@
   BUILD_CONTRIB
   BUILTIN_MODULES
   NO_BAN_COOKIE
-- execute the following svn operations:
-  - remove stuff
-    svn remove trunk/genlang.rb
-    svn remove trunk/include/setup.h.in
-    svn remove trunk/install-sh
-    find trunk -type f -name Makefile.in -print0 | xargs -0 svn remove
-  - add stuff
-    find trunk -type f -name Makefile.am -print0 | xargs -0 svn add
-    svn add trunk/acinclude.m4
-    svn add trunk/AUTHORS
-    svn add trunk/ChangeLog
-    svn add trunk/NEWS
-    svn add trunk/README
-    svn add trunk/TODO
-  - move stuff
-    svn move trunk/LICENSE trunk/COPYING
 - add people to trunk/AUTHORS
 - consider authoring trunk/INSTALL; it is automatically added by automake but
   if there are specific instructions that a user should know about, then we
