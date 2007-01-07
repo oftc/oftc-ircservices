@@ -12,7 +12,7 @@ CREATE TABLE channel(
   description           VARCHAR(255),
   url                   VARCHAR(255),
   email                 VARCHAR(255),
-  entrymsg              VARCHAR(255),
+  entrymsg              VARCHAR(512),
   topic                 VARCHAR(512),
   mlock                 VARCHAR(255),
   reg_time              INTEGER NOT NULL,
