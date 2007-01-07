@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS forbidden_nickname;
 
 CREATE TABLE account (
   id                  INTEGER PRIMARY KEY auto_increment,
-  primary_nick        INTEGER
+  primary_nick        INTEGER,
   password            CHAR(40),      -- base16 encoded sha1(salt+<userpassword>).  lower case
   salt                CHAR(16),
   url                 VARCHAR(255),
