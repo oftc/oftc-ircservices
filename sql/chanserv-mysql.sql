@@ -17,6 +17,8 @@ CREATE TABLE channel (
   entrymsg                VARCHAR(255) NOT NULL,
   topic                   VARCHAR(255) NOT NULL,
   mlock                   VARCHAR(255) NOT NULL,
+  reg_time                INTEGER NOT NULL,
+  last_used               INTEGER NOT NULL,
   UNIQUE (channel)
 )ENGINE=InnoDB;
 

@@ -15,6 +15,8 @@ CREATE TABLE channel(
   entrymsg              VARCHAR(255),
   topic                 VARCHAR(512),
   mlock                 VARCHAR(255),
+  reg_time              INTEGER NOT NULL,
+  last_used             INTEGER NOT NULL,
   UNIQUE (channel)
 );
 
