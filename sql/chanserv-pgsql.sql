@@ -9,7 +9,7 @@ CREATE TABLE channel(
   flag_verbose          BOOLEAN NOT NULL DEFAULT 'False', -- notice all chanserv actions to the channel
   flag_autolimit        BOOLEAN NOT NULL DEFAULT 'False', -- sets limit just above the current user count
   flag_expirebans       BOOLEAN NOT NULL DEFAULT 'False', -- Expire old bans
-  description           VARCHAR(255),
+  description           VARCHAR(512),
   url                   VARCHAR(255),
   email                 VARCHAR(255),
   entrymsg              VARCHAR(512),
