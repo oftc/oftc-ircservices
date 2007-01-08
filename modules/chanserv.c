@@ -593,7 +593,7 @@ m_access_list(struct Service *service, struct Client *client,
   first = handle = db_list_first(CHACCESS_LIST, regchptr->id, (void**)&access);
   if (handle == NULL)
   {
-    reply_user(service, service, client, CS_ACCESS_LISTEND);
+    reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
     return;
   }
 
