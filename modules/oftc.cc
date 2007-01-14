@@ -46,7 +46,8 @@ extern "C" void destroy(Protocol *p)
   delete p;
 }
 
-void SIDMessage::handler(Server *uplink, BaseClient *source, vector<string> args)
+void SIDMessage::handler(Server *uplink, BaseClient *source, 
+    vector<string> args)
 {
   Server *newserver = new Server(args[0], args[3]);
 
@@ -54,11 +55,20 @@ void SIDMessage::handler(Server *uplink, BaseClient *source, vector<string> args
   newserver->init();
 }
 
-void UIDMessage::handler(Server *uplink, BaseClient *source, vector<string> args)
+void UIDMessage::handler(Server *uplink, BaseClient *source, 
+    vector<string> args)
 {
   Client *newclient = new Client(args[0], args[4], args[5], args[8]);
   newclient->set_id(args[7]);
   newclient->init();
+}
+
+void PassMessage::handler(Server *uplink, BaseClient *source, 
+    vector<string> args)
+{
+  source->set_id(args[3]);
+  // Special case - add to id hash manually
+  GlobalIDHash[args[3]] = source;
 }
 
 void
@@ -69,6 +79,7 @@ OFTCProtocol::init(Parser *p, Connection *c)
   parser->add_message(new ServerMessage(6));
   parser->add_message(new SIDMessage());
   parser->add_message(new UIDMessage());
+  parser->add_message(new PassMessage());
   parser->add_message(new IgnoreMessage("GNOTICE"));
   parser->add_message(new IgnoreMessage("REALHOST"));
 }

@@ -33,7 +33,7 @@
 
 #include "conf/conf.h"
 
-struct DatabaseConf Database = {0};
+struct DatabaseConf DBConf = {0};
 
 /*
  * reset_database()
@@ -60,16 +60,16 @@ struct DatabaseConf Database = {0};
 static void 
 verify_database()
 {
-  if (!Database.driver[0])
+  if (!DBConf.driver[0])
     parse_fatal("driver= field missing in database{} section");
 
-  if (!Database.dbname[0])
+  if (!DBConf.dbname[0])
     parse_fatal("dbname= field missing in database{} section");
 
-  if(!Database.username[0])
+  if(!DBConf.username[0])
     parse_fatal("username= field missing in database{} section");
 
-  if(!Database.password[0])
+  if(!DBConf.password[0])
     parse_fatal("password= field missing in database{} section");
 }
 
@@ -89,9 +89,9 @@ init_database(void)
 //  hreset = install_hook(reset_conf, reset_database);
 //  hverify = install_hook(verify_conf, verify_database);
 
-  add_conf_field(s, "driver", CT_STRING, NULL, &Database.driver);
-  add_conf_field(s, "dbname", CT_STRING, NULL, &Database.dbname);
-  add_conf_field(s, "username", CT_STRING, NULL, &Database.username);
-  add_conf_field(s, "password", CT_STRING, NULL, &Database.password);
-  add_conf_field(s, "hostname", CT_STRING, NULL, &Database.hostname);
+  add_conf_field(s, "driver", CT_STRING, NULL, &DBConf.driver);
+  add_conf_field(s, "dbname", CT_STRING, NULL, &DBConf.dbname);
+  add_conf_field(s, "username", CT_STRING, NULL, &DBConf.username);
+  add_conf_field(s, "password", CT_STRING, NULL, &DBConf.password);
+  add_conf_field(s, "hostname", CT_STRING, NULL, &DBConf.hostname);
 }

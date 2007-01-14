@@ -27,12 +27,15 @@ AC_PATH_PROG([TAIL],[tail])
 AX_CHECK_LIB_RUBY
 AX_CHECK_LIB_LUA
 AX_CHECK_LIB_OPENSSL
-AX_CHECK_LIB_YADA
 AX_CHECK_LIB_IPV4
 AX_CHECK_LIB_IPV6
+AC_SEARCH_LIBS(dbipp_init, [dbipp])
 
 # Checks for header files.
 AC_CHECK_HEADERS([sys/resource.h]) # ick
+AC_LANG(C++)
+AC_CHECK_HEADERS([libdbipp/dbipp.hh])
+AC_LANG(C)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

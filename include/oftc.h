@@ -25,6 +25,15 @@ public:
   void handler(Server *, BaseClient *, vector<string>);
 };
 
+class PassMessage : public Message
+{
+public:
+  PassMessage() : Message("PASS") {};
+  ~PassMessage() {};
+
+  void handler(Server *, BaseClient *, vector<string>);
+};
+
 class OFTCProtocol : public Protocol
 {
 public:

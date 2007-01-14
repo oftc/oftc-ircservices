@@ -75,6 +75,22 @@ void
 Service::handle_message(Connection *connection, Client *source, 
     string const& message)
 {
+  irc_string str = message;
+  vector<string> strings;
+  ServiceMessage *smsg;
+
+  strings = str.split(" ", 1);
+
+  if((smsg = message_map[strings[0]]) == NULL)
+  {
+    std::cout << "Unknown message: " << strings[0] << std::endl;
+    return;
+  }
+
+  strings = str.split(" ");
+    
+  smsg->handler(source, strings);
+
   std::cout << "Service " << _name << " got message " << message << " from " << 
     source->name() << std::endl;
 }

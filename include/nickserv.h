@@ -16,7 +16,7 @@ public:
 class TestMessage : public ServiceMessage
 {
 public:
-  TestMessage() : ServiceMessage() {};
+  TestMessage() : ServiceMessage("TEST") {};
   TestMessage(string const& n) : ServiceMessage(n) {};
 
   ~TestMessage() {};

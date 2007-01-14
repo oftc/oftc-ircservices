@@ -17,6 +17,7 @@ class BaseClient;
 
 extern vector<BaseClient *> GlobalClientList;
 extern unordered_map<string, BaseClient *> GlobalClientHash;
+extern unordered_map<string, BaseClient *> GlobalIDHash;
 
 class BaseClient
 {
@@ -27,13 +28,17 @@ public:
   BaseClient(string const& name, string const& host, string const& gecos) :
     _name(name), _host(host), _gecos(gecos) {};
  
-  // Virtual destructor to make this an abstract class
   virtual ~BaseClient() = 0;
 
   // Static Methods
   static BaseClient *find(const string& str)
   { 
-    return GlobalClientHash[str]; 
+    BaseClient *ret;
+
+    if((ret = GlobalIDHash[str]) != NULL)
+      return ret;
+
+    return GlobalClientHash[str];
   };
 
   // Methods

@@ -88,6 +88,12 @@ Parser::parse_line(Connection *uplink, string const& line)
     strings = s.split(" ", 1);
 
     source = Client::find(sender);
+
+    if(source == NULL)
+    {
+      ilog(L_DEBUG, "Source not found! %s", sender.c_str());
+      return;
+    }
   }
   else
   {

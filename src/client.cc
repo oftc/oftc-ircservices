@@ -46,6 +46,7 @@ using std::runtime_error;
 
 vector<BaseClient *> GlobalClientList;
 unordered_map<string, BaseClient *> GlobalClientHash;
+unordered_map<string, BaseClient *> GlobalIDHash;
 
 BaseClient::~BaseClient()
 {
@@ -57,6 +58,8 @@ BaseClient::init()
 {
   GlobalClientList.push_back(this);
   GlobalClientHash[_name] = this;
+  if(_id != "")
+    GlobalIDHash[_id] = this;
 }
 
 Client::~Client()

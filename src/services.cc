@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
 {
   Parser *parser = new Parser();
   Connection *connection = new Connection(parser);
+  DBM *dbm = new DBM();
 
   me = new Server();
 
@@ -77,9 +78,8 @@ int main(int argc, char *argv[])
 
   read_services_conf(TRUE);
 
-  init_db();
+  dbm->connect();
 
-  db_load_driver();
 #ifdef USE_SHARED_MODULES
   if(chdir(MODPATH))
   {
@@ -159,7 +159,6 @@ services_die(const char *msg, int rboot)
   cleanup_channel_modes();
   cleanup_log();*/
   //cleanup_ruby();
-  cleanup_db();
   cleanup_module();
   //cleanup_interface();
 

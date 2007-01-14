@@ -3,37 +3,6 @@
 #ifndef INCLUDED_dbm_h
 #define INCLUDED_dbm_h
 
-#include <yada.h>
-
-struct AccessEntry 
-{
-  unsigned int id;
-  char *value;
-};
-
-struct ChanAccess
-{
-  unsigned int id;
-  unsigned int account;
-  unsigned int channel;
-  unsigned int level;
-};
-
-struct DBResult
-{
-  yada_rc_t *rc;
-  yada_rc_t *brc;
-};
-
-enum db_list_type
-{
-  ACCESS_LIST = 0,
-  ADMIN_LIST,
-  AKILL_LIST,
-  CHACCESS_LIST,
-  AKICK_LIST
-};
-
 enum db_queries
 {
   GET_FULL_NICK = 0,
@@ -106,64 +75,13 @@ enum db_queries
   QUERY_COUNT
 };
 
-enum query_types {
-  QUERY,
-  EXECUTE
+class DBM
+{
+public:
+  DBM();
+  ~DBM();
+
+  void connect();
 };
-
-typedef struct query {
-  const char *name;
-  yada_rc_t *rc;
-  int type;
-} query_t;
-
-#define TransBegin() Database.yada->trx(Database.yada, 0)
-#define TransCommit() Database.yada->commit(Database.yada)
-#define TransRollback() Database.yada->rollback(Database.yada, 0)
-#define Query(m, args...) Database.yada->query(Database.yada, m, args)
-#define Execute(m, args...) Database.yada->execute(Database.yada, m, args)
-#define Bind(m, args...) Database.yada->bind(Database.yada, m, args)
-#define Fetch(r, b) Database.yada->fetch(Database.yada, r, b)
-#define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
-#define Free(r) Database.yada->free(Database.yada, r)
-#define InsertID(t, c) Database.yada->insert_id(Database.yada, t, c)
-
-void init_db();
-void db_load_driver();
-void cleanup_db();
-
-int db_set_string(unsigned int, unsigned int, const char *);
-int db_set_number(unsigned int, unsigned int, unsigned long);
-int db_set_bool(unsigned int, unsigned int, unsigned char);
-char *db_get_string(const char *, unsigned int, const char *);
-
-int db_register_nick(struct Nick *);
-int db_delete_nick(const char *);
-char *db_get_nickname_from_id(unsigned int);
-unsigned int db_get_id_from_name(const char *, unsigned int);
-
-int db_forbid_nick(const char *nick);
-int db_is_forbid(const char *nick);
-int db_delete_forbid(const char *nick);
-
-int db_link_nicks(unsigned int, unsigned int);
-unsigned int db_unlink_nick(unsigned int);
-
-int db_register_chan(struct RegChannel *, unsigned int);
-int db_delete_chan(const char *);
-
-struct Nick *db_find_nick(const char *);
-struct RegChannel *db_find_chan(const char *);
-struct ServiceBan *db_find_akill(const char *);
-struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
-
-int   db_list_add(unsigned int, const void *);
-void *db_list_first(unsigned int, unsigned int, void **);
-void *db_list_next(void *, unsigned int, void **);
-void  db_list_done(void *);
-int   db_list_del(unsigned int, unsigned int, const char *);
-int   db_list_del_index(unsigned int, unsigned int, unsigned int);
-
-int db_get_num_masters(unsigned int);
 
 #endif /* INCLUDED_dbm_h */
