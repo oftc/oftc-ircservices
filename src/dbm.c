@@ -184,7 +184,23 @@ db_load_driver()
   }
 }
 
-#define db_query(ret, query_id, args...)                              \
+void
+db_try_reconnect()
+{
+  int num_attempts = 0;
+
+  while(num_attempts++ < 10)
+  {
+    if(Database.yada->connect(Database.yada, Database.username,
+          Database.password) != 0)
+      return;
+    sleep(5);
+  }
+  printf("reconnect failed: %s\n", Database.yada->errmsg);
+  services_die("Could not reconnect to database.", 0);
+}
+
+#define db_query(ret, query_id, args...) do                           \
 {                                                                     \
   int __id = query_id;                                                \
   yada_rc_t *__result;                                                \
@@ -197,12 +213,19 @@ db_load_driver()
                                                                       \
   __result = Query(__query->rc, args);                                \
   if(__result == NULL)                                                \
+  {                                                                   \
+    if(Database.yada->error == YADA_ECONNLOST)                        \
+    {                                                                 \
+      db_try_reconnect();                                             \
+      printf("Query failed because server went away, reconnected.");  \
+    }                                                                 \
     printf("db_query: %d Failed: %s\n", __id, Database.yada->errmsg); \
+  }                                                                   \
                                                                       \
   ret = __result;                                                     \
-}
+} while(0)
 
-#define db_exec(ret, query_id, args...)                               \
+#define db_exec(ret, query_id, args...) do                            \
 {                                                                     \
   int __id = query_id;                                                \
   int __result;                                                       \
@@ -215,10 +238,17 @@ db_load_driver()
                                                                       \
   __result = Execute(__query->rc, args);                              \
   if(__result == -1)                                                  \
+  {                                                                   \
+    if(Database.yada->error == YADA_ECONNLOST)                        \
+    {                                                                 \
+      db_try_reconnect();                                             \
+      printf("Exec failed because server went away, reconnected.");   \
+    }                                                                 \
     printf("db_exec: %d Failed: %s\n", __id, Database.yada->errmsg);  \
+  }                                                                   \
                                                                       \
   ret = __result;                                                     \
-}
+} while(0)
 
 struct Nick *
 db_find_nick(const char *nick)
@@ -456,13 +486,9 @@ db_delete_nick(const char *nick)
     char *newnick = db_fix_link(id);
 
     if(newnick == NULL)
-    {
       db_exec(ret, DELETE_ACCOUNT, id);
-    }
     else
-    {
       db_exec(ret, SET_NICK_MASTER, newnick, id);
-    }
   }
 
   if(ret == -1)
@@ -730,13 +756,9 @@ db_list_del(unsigned int type, unsigned int id, const char *param)
   int ret;
 
   if(id > 0)
-  {
     db_exec(ret, type, id, param);
-  }
   else
-  {
     db_exec(ret, type, param);
-  }
 
   if(ret == -1)
     return 0;
