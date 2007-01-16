@@ -189,7 +189,7 @@ db_try_reconnect()
 {
   int num_attempts = 0;
 
-  while(num_attempts++ < 10)
+  while(num_attempts++ < 30)
   {
     if(Database.yada->connect(Database.yada, Database.username,
           Database.password) != 0)
