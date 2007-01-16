@@ -189,6 +189,9 @@ db_try_reconnect()
 {
   int num_attempts = 0;
 
+  ilog(L_NOTICE, "Database connection lost! Attempting reconnect.");
+  send_queued_all();
+
   while(num_attempts++ < 30)
   {
     if(Database.yada->connect(Database.yada, Database.username,
