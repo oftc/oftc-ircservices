@@ -196,10 +196,17 @@ db_try_reconnect()
   {
     if(Database.yada->connect(Database.yada, Database.username,
           Database.password) != 0)
+    {
+      ilog(L_NOTICE, "Database connection restored after %d seconds",
+          num_attempts * 5);
       return;
+    }
     sleep(5);
+    ilog(L_NOTICE, "Database connection still down. Reconnect attempt %d",
+        num_attempts);
+    send_queued_all();
   }
-  printf("reconnect failed: %s\n", Database.yada->errmsg);
+  ilog(L_ERROR, "Database reconnect failed: %s", Database.yada->errmsg);
   services_die("Could not reconnect to database.", 0);
 }
 
