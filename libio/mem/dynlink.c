@@ -22,32 +22,23 @@
  *  $Id$
  */
 
-
 #include "libioinc.h"
-#ifdef USE_SHARED_MODULES
-
-/*
- * jmallett's dl* interface
- */
-
-#ifdef HAVE_DLOPEN
-
-#ifdef HAVE_DLFCN_H
-#include <dlfcn.h>
-#endif
 
 #ifdef HAVE_LINK_H
 #include <link.h>
 #endif
 
-#ifndef RTLD_NOW
-#define RTLD_NOW    RTLD_LAZY /* openbsd deficiency */
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
 #endif
+
+#include <ltdl.h>
+#ifdef USE_SHARED_MODULES
 
 void *
 modload(const char *name, void **base)
 {
-  void *handle = dlopen(name, RTLD_NOW);
+  void *handle = lt_dlopenext(name);
 
   if (handle)
   {
@@ -67,160 +58,19 @@ modload(const char *name, void **base)
 void *
 modsym(void *handle, const char *name)
 {
-  return dlsym(handle, name);
+  return lt_dlsym(handle, name);
 }
 
 void
 modunload(void *handle)
 {
-  dlclose(handle);
+  lt_dlclose(handle);
 }
 
 const char *
 moderror(void)
 {
-  return dlerror();
+  return lt_dlerror();
 }
 
-#else /* not HAVE_DLOPEN */
-
-#ifdef _WIN32
-
-void *
-modload(const char *name, void **base)
-{
-  return (*base = LoadLibrary(filename));
-}
-
-void *
-modsym(void *handle, const char *name)
-{
-  return GetProcAddress((HMODULE) handle, name);
-}
-
-void
-modunload(void *handle)
-{
-  FreeLibrary((HMODULE) module);
-}
-
-const char *
-moderror(void)
-{
-  static char errbuf[IRCD_BUFSIZE];
-  char *p;
-
-  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(),
-    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), errbuf, sizeof(errbuf), NULL);
-
-  if ((p = strpbrk(errbuf, "\r\n")) != NULL)
-    *p = 0;
-
-  return (const char *) errbuf;
-}
-
-#else /* not HAVE_DLOPEN and not _WIN32 */
-
-#ifdef HAVE_MACH_O_DYLD_H
-
-/*
- * NSModule(3) interface
- */
-
-#include <mach-o/dyld.h>
-
-static int myDlError;
-static const char *myErrorTable[] =
-{
-  "Loading file as object failed\n",
-  "Loading file as object succeeded\n",
-  "Not a valid shared object\n",
-  "Architecture of object invalid on this architecture\n",
-  "Invalid or corrupt image\n",
-  "Could not access object\n",
-  "NSCreateObjectFileImageFromFile failed\n",
-  NULL
-};
-
-void
-undefinedErrorHandler(const char *symbolName)
-{
-  return;
-}
-
-NSModule
-multipleErrorHandler(NSSymbol s, NSModule old, NSModule new)
-{
-  /*
-   * XXX This results in substantial leaking of memory... Should free
-   * one module, maybe?
-   */
-  return new;
-}
-
-void
-linkEditErrorHandler(NSLinkEditErrors errorClass, int errnum,
-             const char *fileName, const char *errorString)
-{
-  return;
-}
-
-void *
-modload(const char *name, void **base)
-{
-  NSObjectFileImage myImage;
-  NSModule myModule;
-  static char initialized = NO;
-
-  if (!initialized)
-  {
-    NSLinkEditErrorHandlers linkEditErrorHandlers;
-
-    linkEditErrorHandlers.undefined = undefinedErrorHandler;
-    linkEditErrorHandlers.multiple  = multipleErrorHandler;
-    linkEditErrorHandlers.linkEdit  = linkEditErrorHandler;
-    NSInstallLinkEditErrorHandlers(&linkEditErrorHandlers);
-
-    initialized = YES;
-  }
-
-  myDlError = NSCreateObjectFileImageFromFile(name, &myImage);
-  if (myDlError != NSObjectFileImageSuccess)
-    return NULL;
-
-  *base = NULL;
-
-  return (void *) NSLinkModule(myImage, name,
-    NSLINKMODULE_OPTION_PRIVATE);
-}
-
-void *
-modsym(void *handle, const char *name)
-{
-  NSSymbol mySymbol;
-
-  mySymbol = NSLookupSymbolInModule((NSModule) myModule, mySymbolName);
-  return NSAddressOfSymbol(mySymbol);
-}
-
-void
-modunload(void *handle)
-{
-  NSUnLinkModule(handle, FALSE);
-}
-
-const char *
-moderror(void)
-{
-  return (const char *) (myDlError == NSObjectFileImageSuccess ? NULL :
-    myErrorTable[myDlError % 7]);
-}
-
-#else /* not HAVE_DLOPEN and not _WIN32 and not HAVE_MACH_O_DYLD_H */
-
-#error No applicable dynamic loading interface found!
-
-#endif /* HAVE_MACH_O_DYLD_H */
-#endif /* not _WIN32 */
-#endif /* not HAVE_DLOPEN */
 #endif /* USE_SHARED_MODULES */

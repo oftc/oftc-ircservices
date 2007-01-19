@@ -27,7 +27,7 @@
 #include "ruby_module.h"
 #include <sys/types.h>
 #include <dirent.h>
-#include <dlfcn.h>
+#include <ltdl.h>
 
 dlink_list loaded_modules = {NULL, NULL, 0};
 
@@ -460,6 +460,8 @@ init_modules(void)
 
   add_conf_field(s, "path", CT_STRING, mod_add_path, NULL);
   add_conf_field(s, "module", CT_STRING, mod_add_module, NULL);
+
+  lt_dlinit();
 }
 
 void
@@ -473,4 +475,5 @@ cleanup_modules(void)
 
     unload_module(mod);
   }
+  lt_dlexit();
 }
