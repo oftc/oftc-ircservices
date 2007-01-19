@@ -48,42 +48,42 @@ static void m_join(struct Client *, struct Client *, int, char *[]);
 static void m_tmode(struct Client *, struct Client *, int, char *[]);
 static void m_bmask(struct Client *, struct Client *, int, char *[]);
 
-struct Message gnotice_msgtab = {
+static struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
   { m_ignore, m_ignore }
 };
 
-struct Message pass_msgtab = {
+static struct Message pass_msgtab = {
   "PASS", 0, 0, 4, 0, 0, 0,
   { m_pass, m_pass }
 };
 
-struct Message server_msgtab = {
+static struct Message server_msgtab = {
   "SERVER", 0, 0, 3, 0, 0, 0,
   { m_server, m_server }
 };
 
-struct Message sid_msgtab = {
+static struct Message sid_msgtab = {
   "SID", 0, 0, 5, 0, 0, 0,
   { m_sid, m_sid }
 };
 
-struct Message uid_msgtab = {
+static struct Message uid_msgtab = {
   "UID", 0, 0, 10, 0, 0, 0,
   { m_uid, m_uid }
 };
 
-struct Message join_msgtab = {
+static struct Message join_msgtab = {
   "JOIN", 0, 0, 4, 0, 0, 0,
   { m_join, m_join }
 };
 
-struct Message tmode_msgtab = {
+static struct Message tmode_msgtab = {
   "TMODE", 0, 0, 3, 0, 0, 0,
   { m_tmode, m_tmode }
 };
 
-struct Message bmask_msgtab = {
+static struct Message bmask_msgtab = {
   "BMASK", 0, 0, 4, 0, 0, 0,
   { m_bmask, m_bmask}
 };
