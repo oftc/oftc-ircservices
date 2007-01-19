@@ -76,6 +76,6 @@ AC_DEFINE_DIR([SYSCONFDIR],[sysconfdir],[Set to sysconfdir.])
 AC_DEFINE_DIR([LIBDIR],[libdir],[Set to libdir.])
 AC_DEFINE_DIR([DATADIR],[datadir],[Set to datadir.])
 AC_DEFINE([SHARED_SUFFIX],[".so"],[Suffix for shared libraries on this platform.]) # wtf is this needed? replace libdl with libltdl to correct
-AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile languages/Makefile include/Makefile include/conf/Makefile])
+AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile src/ruby_module/Makefile languages/Makefile include/Makefile include/conf/Makefile])
 AC_CONFIG_SUBDIRS(libltdl)
 AC_OUTPUT
