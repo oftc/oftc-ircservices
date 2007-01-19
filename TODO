@@ -13,6 +13,7 @@
 
 - Does changing passwords work yet? -w
 - Do we reopen logfiles on HUP yet? -w
+- db.log should fflush() after printing stuff. -w
 
 
 Legend:
