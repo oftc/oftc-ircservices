@@ -10,3 +10,16 @@
   if there are specific instructions that a user should know about, then we
   should have an INSTALL file of our own
 - consider converting from libdl to libltdl
+
+- Does changing passwords work yet? -w
+- Do we reopen logfiles on HUP yet? -w
+
+
+Legend:
+        - Not done
+        * Top priority
+        . Partially done
+        o Done
+        d Deferrable
+        D Deferred
+        X Abandoned
