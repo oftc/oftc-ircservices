@@ -650,47 +650,5 @@ load_all_modules(int warn)
   mod_add_cmd(&xline_msgtab);
   mod_add_cmd(&help_msgtab);
   mod_add_cmd(&uhelp_msgtab);
-#ifdef BUILD_CONTRIB
-  mod_add_cmd(&bs_msgtab);
-  mod_add_cmd(&botserv_msgtab);
-  mod_add_cmd(&capture_msgtab);
-  mod_add_cmd(&chanserv_msgtab);
-  mod_add_cmd(&chghost_msgtab);
-  mod_add_cmd(&chgident_msgtab);
-  mod_add_cmd(&chgname_msgtab);
-  mod_add_cmd(&classlist_msgtab);
-  mod_add_cmd(&clearchan_msgtab);
-  mod_add_cmd(&cs_msgtab);
-  mod_add_cmd(&ctrace_msgtab);
-  mod_add_cmd(&delspoof_msgtab);
-  mod_add_cmd(&flags_msgtab);
-  mod_add_cmd(&forcejoin_msgtab);
-  mod_add_cmd(&forcepart_msgtab);
-  mod_add_cmd(&global_msgtab);
-  mod_add_cmd(&help_msgtab);
-  mod_add_cmd(&uhelp_msgtab);
-  mod_add_cmd(&helpserv_msgtab);
-  mod_add_cmd(&hostserv_msgtab);
-  mod_add_cmd(&identify_msgtab);
-  mod_add_cmd(&jupe_msgtab);
-  mod_add_cmd(&killhost_msgtab);
-  mod_add_cmd(&ltrace_msgtab);
-  mod_add_cmd(&memoserv_msgtab);
-  mod_add_cmd(&mkpasswd_msgtab);
-  mod_add_cmd(&ms_msgtab);
-  mod_add_cmd(&nickserv_msgtab);
-  mod_add_cmd(&ns_msgtab);
-  mod_add_cmd(&ojoin_msgtab);
-  mod_add_cmd(&operserv_msgtab);
-  mod_add_cmd(&operspy_msgtab);
-  mod_add_cmd(&opme_msgtab);
-  mod_add_cmd(&os_msgtab);
-  mod_add_cmd(&seenserv_msgtab);
-  mod_add_cmd(&spoof_msgtab);
-  mod_add_cmd(&statserv_msgtab);
-  mod_add_cmd(&svsnick_msgtab);
-  mod_add_cmd(&uncapture_msgtab);
-  /* FIXME: what about spy*? */
-#endif
 }
 #endif /* USE_SHARED_MODULES */

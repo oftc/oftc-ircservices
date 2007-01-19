@@ -168,46 +168,6 @@ extern message_t rxline_msgtab;
 extern message_t help_msgtab;
 extern message_t uhelp_msgtab;
 
-#ifdef BUILD_CONTRIB
-extern message_t bs_msgtab;
-extern message_t botserv_msgtab;
-extern message_t capture_msgtab;
-extern message_t chanserv_msgtab;
-extern message_t chghost_msgtab;
-extern message_t chgident_msgtab;
-extern message_t chgname_msgtab;
-extern message_t classlist_msgtab;
-extern message_t clearchan_msgtab;
-extern message_t cs_msgtab;
-extern message_t ctrace_msgtab;
-extern message_t delspoof_msgtab;
-extern message_t flags_msgtab;
-extern message_t forcejoin_msgtab;
-extern message_t forcepart_msgtab;
-extern message_t global_msgtab;
-extern message_t helpserv_msgtab;
-extern message_t hostserv_msgtab;
-extern message_t identify_msgtab;
-extern message_t jupe_msgtab;
-extern message_t killhost_msgtab;
-extern message_t ltrace_msgtab;
-extern message_t memoserv_msgtab;
-extern message_t mkpasswd_msgtab;
-extern message_t ms_msgtab;
-extern message_t nickserv_msgtab;
-extern message_t ns_msgtab;
-extern message_t ojoin_msgtab;
-extern message_t operserv_msgtab;
-extern message_t operspy_msgtab;
-extern message_t opme_msgtab;
-extern message_t os_msgtab;
-extern message_t seenserv_msgtab;
-extern message_t spoof_msgtab;
-extern message_t statserv_msgtab;
-extern message_t svsnick_msgtab;
-extern message_t uncapture_msgtab;
-#endif /* BUILD_CONTRIB */
-
 extern void load_all_modules(int);
 
 #endif /* USE_SHARED_MODULES */

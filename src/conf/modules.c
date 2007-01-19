@@ -37,9 +37,6 @@ const char *core_modules[] =
   NULL
 };
 
-#ifdef BUILTIN_MODULES
-static struct Module builtin_mods[] = {BUILTIN_MODULES, NULL};
-#endif
 static dlink_list mod_paths = {NULL, NULL, 0};
 static dlink_list mod_extra = {NULL, NULL, 0};
 static dlink_node *hreset, *hpass;
@@ -234,22 +231,6 @@ load_module(const char *filename)
           return 1;
     }
 #endif
-
-#ifdef BUILTIN_MODULES
-    if (mod == NULL)
-    {
-      struct Module **mptr;
-
-      for (mptr = builtin_mods; *mptr; mptr++)
-      {
-        if (!_COMPARE((*mptr)->name, filename))
-        {
-          init_module(*mptr, mod->name);
-          return 1;
-        }
-      }
-    }
-#endif
   }
 
   ilog(L_CRIT, "Cannot locate module %s", filename);
@@ -325,16 +306,6 @@ boot_modules(char cold)
         }
         closedir(moddir);
       }
-    }
-#endif
-
-#ifdef BUILTIN_MODULES
-    {
-      struct Module *mptr;
-
-      for (mptr = builtin_mods; *mptr; mptr++)
-        if (!find_module(mptr->name, NO))
-          init_module(mptr);
     }
 #endif
   }

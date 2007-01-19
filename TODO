@@ -1,26 +1,16 @@
-- preprocessor defines that aren't set but perhaps should be:
-  IN_IRDC
-  IN_EXPERIMENTAL
-  IN_MULTICAST
-  BUILD_CONTRIB
-  BUILTIN_MODULES
-  NO_BAN_COOKIE
 - add people to trunk/AUTHORS
 - consider authoring trunk/INSTALL; it is automatically added by automake but
   if there are specific instructions that a user should know about, then we
   should have an INSTALL file of our own
-- consider converting from libdl to libltdl
 
-- Does changing passwords work yet? -w
-- Do we reopen logfiles on HUP yet? -w
-- db.log should fflush() after printing stuff. -w
-
+- Does changing passwords work yet? -w - it should
+- Do we reopen logfiles on HUP yet? -w - we do not
+- db.log should actually be created. -w
 
 Legend:
         - Not done
         * Top priority
         . Partially done
-        o Done
         d Deferrable
         D Deferred
         X Abandoned

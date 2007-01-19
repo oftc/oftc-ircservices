@@ -452,16 +452,7 @@ chm_ban(struct Client *client_p, struct Client *source_p,
         return;
       break;
     case MODE_DEL:
-/* XXX grrrrrrr */
-#ifdef NO_BAN_COOKIE
-      if (!del_id(chptr, mask, CHFL_BAN))
-        return;
-#else
-     /* XXX this hack allows /mode * +o-b nick ban.cookie
-      * I'd like to see this hack go away in the future.
-      */
       del_id(chptr, mask, CHFL_BAN);
-#endif
       break;
     default:
       assert(0);
