@@ -34,6 +34,7 @@ dlink_list loaded_modules = {NULL, NULL, 0};
 const char *core_modules[] =
 {
   "irc",
+  "oftc",
   NULL
 };
 
