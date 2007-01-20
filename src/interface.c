@@ -76,6 +76,7 @@ init_interface()
   send_invite_cb      = register_callback("Send INVITE", NULL);
   send_topic_cb       = register_callback("Send TOPIC", NULL);
   send_kill_cb        = register_callback("Send KILL", NULL);
+  send_newserver_cb   = register_callback("Introduce new server", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
