@@ -59,7 +59,8 @@ query_t queries[QUERY_COUNT] = {
     "flag_restricted, flag_topic_lock, flag_verbose, flag_autolimit, "
       "flag_expirebans, url, email, topic, mlock FROM channel WHERE "
       "lower(channel)=lower(?v)", NULL, QUERY },
-  { "INSERT INTO channel (channel, description) VALUES(?v, ?v)", NULL, EXECUTE },
+  { "INSERT INTO channel (channel, description, reg_time, last_used) "
+    "VALUES(?v, ?v, ?d, ?d)", NULL, EXECUTE },
   { "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
     "(?d, ?d, ?d)", NULL, EXECUTE } ,
   { "UPDATE channel_access SET level=?d WHERE account_id=?d", NULL, EXECUTE },
@@ -891,7 +892,8 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
 
   TransBegin();
 
-  db_exec(ret, INSERT_CHAN, chan->channel, chan->description);
+  db_exec(ret, INSERT_CHAN, chan->channel, chan->description, CurrentTime,
+      CurrentTime);
 
   if(ret == -1)
   {
