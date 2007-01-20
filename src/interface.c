@@ -39,6 +39,7 @@ struct Callback *send_cmode_cb;
 struct Callback *send_invite_cb;
 struct Callback *send_topic_cb;
 struct Callback *send_kill_cb;
+struct Callback *send_newserver_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -126,6 +127,21 @@ introduce_client(const char *name)
     execute_callback(send_newuser_cb, me.uplink, name, "services", me.name,
       name, "o");
   }
+}
+
+void
+introduce_server(const char *name, const char *gecos)
+{
+  struct Client *client = make_client(&me);
+
+  client->tsinfo = CurrentTime;
+  dlinkAdd(client, &client->node, &global_client_list);
+
+  strlcpy(client->name, name, sizeof(client->name));
+  hash_add_client(client);
+
+  if(me.uplink != NULL)
+    execute_callback(send_newserver_cb, client);
 }
 
 void

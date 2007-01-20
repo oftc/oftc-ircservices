@@ -49,6 +49,7 @@ static void *irc_sendmsg_akill(va_list);
 static void *irc_sendmsg_unakill(va_list);
 static void *irc_sendmsg_topic(va_list);
 static void *irc_sendmsg_kill(va_list);
+static void *irc_sendmsg_server(va_list);
 static void *irc_server_connected(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
@@ -178,6 +179,7 @@ static dlink_node *akill_hook;
 static dlink_node *unakill_hook;
 static dlink_node *topic_hook;
 static dlink_node *kill_hook;
+static dlink_node *newserver_hook;
 
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
@@ -202,6 +204,7 @@ INIT_MODULE(irc, "$Revision$")
   unakill_hook    = install_hook(send_unakill_cb, irc_sendmsg_unakill);
   topic_hook      = install_hook(send_topic_cb, irc_sendmsg_topic);
   kill_hook       = install_hook(send_kill_cb, irc_sendmsg_kill);
+  newserver_hook  = install_hook(send_newserver_cb, irc_sendmsg_server);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -259,17 +262,12 @@ CLEANUP_MODULE
  * name server to introduce
  * info Server Information string
  */
-static void 
-irc_sendmsg_server(struct Client *client, char *prefix, char *name, char *info) 
+static void *
+irc_sendmsg_server(va_list args) 
 {
-  if (prefix == NULL) 
-  {
-    sendto_server(client, "SERVER %s 1 :%s", name, info);
-  } 
-  else 
-  {
-    sendto_server(client, ":%s SERVER %s 2 :%s", prefix, name, info);
-  }
+  struct Client *client = va_arg(args, struct Client *);
+
+  sendto_server(client, "SERVER %s 1 :%s", client->name, client->info);
 }
 
 /** Introduce a new user
@@ -550,7 +548,7 @@ irc_server_connected(va_list args)
   
   sendto_server(client, "PASS %s TS 5", client->server->pass);
   sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
-  irc_sendmsg_server(client, NULL, me.name, me.info);
+  sendto_server(client, "SERVER %s 1 :%s", me.name, me.info);
   send_queued_write(client);
 
   me.uplink = client;

@@ -58,6 +58,7 @@ extern struct Callback *send_cmode_cb;
 extern struct Callback *send_invite_cb;
 extern struct Callback *send_topic_cb;
 extern struct Callback *send_kill_cb;
+extern struct Callback *send_newserver_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;

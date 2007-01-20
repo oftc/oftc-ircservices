@@ -292,8 +292,8 @@ boot_modules(char cold)
         load_shared_module(*cp, MODPATH, buf);
       }
 
-      if ((moddir = opendir(AUTOMODPATH)) == NULL)
-        ilog(L_WARN, "Could not load modules from %s: %s", AUTOMODPATH,
+      if ((moddir = opendir(MODPATH)) == NULL)
+        ilog(L_WARN, "Could not load modules from %s: %s", MODPATH,
           strerror(errno));
       else
       {
@@ -303,7 +303,7 @@ boot_modules(char cold)
           if ((pp = strchr(buf, '.')) != NULL)
             *pp = 0;
           if (!find_module(buf, NO))
-            load_shared_module(buf, AUTOMODPATH, ldirent->d_name);
+            load_shared_module(buf, MODPATH, ldirent->d_name);
         }
         closedir(moddir);
       }
