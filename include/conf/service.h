@@ -28,6 +28,7 @@ struct ServiceConf
 {
   char *name;
   char *module;
+  dlink_node node;
 };
 
 EXTERN struct ServiceConf ;
