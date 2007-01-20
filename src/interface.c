@@ -196,6 +196,9 @@ void
 kill_user(struct Service *service, struct Client *client, const char *reason)
 {
   execute_callback(send_kill_cb, me.uplink, service, client, reason);
+  hash_del_client(client);
+  if(client->id[0] != '\0')
+    hash_del_id(client);
 }
 
 void
