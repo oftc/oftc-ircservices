@@ -1,5 +1,5 @@
 /*
- *  database.h: Defines database{} conf section.
+ *  service.h: Defines service{} conf section.
  *
  *  Copyright (C) 2005 by the Hybrid Development Team.
  *
