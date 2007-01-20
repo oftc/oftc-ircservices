@@ -262,10 +262,6 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   service = find_service(classname);
   service->data = (void *)self;
 
-  ruby_cmode_hook = install_hook(on_cmode_change_cb, rb_cmode_hdlr);
-  ruby_umode_hook = install_hook(on_umode_change_cb, rb_umode_hdlr);
-  ruby_newusr_hook = install_hook(on_newuser_cb, rb_newusr_hdlr);
-
   return 1;
 }
 
@@ -298,6 +294,10 @@ init_ruby(void)
   ruby_server_hooks = rb_ary_new();
   for(i=0; i < RB_HOOKS_COUNT; ++i)
     rb_ary_push(ruby_server_hooks, rb_ary_new());
+
+  ruby_cmode_hook = install_hook(on_cmode_change_cb, rb_cmode_hdlr);
+  ruby_umode_hook = install_hook(on_umode_change_cb, rb_umode_hdlr);
+  ruby_newusr_hook = install_hook(on_newuser_cb, rb_newusr_hdlr);
 }
 
 void
