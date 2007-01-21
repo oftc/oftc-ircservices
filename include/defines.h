@@ -3,6 +3,7 @@
 #ifndef INCLUDED_defines_h
 #define INCLUDED_defines_h
 
+#define LOGDIR      LOCALSTATEDIR "/log/"
 #define AUTOMODPATH LIBDIR "/" PACKAGE "/autoload/"
 #define MODPATH     LIBDIR "/" PACKAGE "/"
 #define LANGPATH    DATADIR "/" PACKAGE "/"
