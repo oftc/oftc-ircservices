@@ -5,3 +5,6 @@ SUBDIRS=libltdl libio modules languages include src etc
 maintainer-clean-local:
 	rm -f ${PACKAGE}-${VERSION}.tar.gz
 	rm -rf libltdl
+
+install-data-local:
+	$(INSTALL) -d ${localstatedir}/log
