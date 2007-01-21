@@ -23,6 +23,7 @@ struct ServicesState_t
   char *logfile;
   char *dblogfile;
   char *pidfile;
+  char *namesuffix;
   int foreground;
   int printversion;
 };

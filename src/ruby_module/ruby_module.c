@@ -239,6 +239,8 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   ruby_exec();
 
   strncpy(classname, fname, strlen(fname)-3);
+  if(ServicesState.namesuffix)
+    strlcat(classname, ServicesState.namesuffix, sizeof(classname));
 
   klass = rb_protect(RB_CALLBACK(rb_path2class), (VALUE)(classname), &status);
 

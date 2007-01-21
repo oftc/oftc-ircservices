@@ -41,6 +41,8 @@ static struct lgetopt myopts[] = {
    STRING, "File to use for services.log"},
   {"pidfile",    &ServicesState.pidfile,
    STRING, "File to use for process ID"},
+  {"namesuffix", &ServicesState.namesuffix,
+   STRING, "Suffix to use on service names"},
   {"foreground", &ServicesState.foreground,
    YESNO, "Run in foreground (don't detach)"},
   {"version",    &ServicesState.printversion,

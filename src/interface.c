@@ -104,6 +104,8 @@ make_service(char *name)
   struct Service *service = BlockHeapAlloc(services_heap);  
 
   strlcpy(service->name, name, sizeof(service->name));
+  if(ServicesState.namesuffix != NULL)
+    strlcat(service->name, ServicesState.namesuffix, sizeof(service->name));
 
   return service;
 }
