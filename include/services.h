@@ -17,4 +17,16 @@ void services_die(const char *, int);
 #define SERV_NO_ACCESS 10
 #define SERV_UNKNOWN_OPTION 11
 
+struct ServicesState_t
+{
+  char *configfile;
+  char *logfile;
+  char *dblogfile;
+  char *pidfile;
+  int foreground;
+  int printversion;
+};
+
+EXTERN struct ServicesState_t ServicesState;
+
 #endif /* INCLUDED_services_h */

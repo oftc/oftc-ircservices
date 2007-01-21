@@ -32,15 +32,162 @@
 #include <sys/wait.h>
 
 struct Client me;
+struct ServicesState_t ServicesState = { 0 };
+
+static struct lgetopt myopts[] = {
+  {"configfile", &ServicesState.configfile,
+   STRING, "File to use for services.conf"},
+  {"logfile",    &ServicesState.logfile,
+   STRING, "File to use for services.log"},
+  {"pidfile",    &ServicesState.pidfile,
+   STRING, "File to use for process ID"},
+  {"foreground", &ServicesState.foreground,
+   YESNO, "Run in foreground (don't detach)"},
+  {"version",    &ServicesState.printversion,
+   YESNO, "Print version and exit"},
+  {"help", NULL, USAGE, "Print this text"},
+  {NULL, NULL, STRING, NULL},
+};
 
 static void setup_signals();
 static void signal_handler(int);
 static void sigchld_handler(int);
 
+static void
+check_pidfile(const char *filename)
+{
+#ifndef _WIN32
+  FBFILE *fb;
+  char buff[32];
+  pid_t pidfromfile;
+
+  // Don't do logging here, since we don't have log() initialised
+  if ((fb = fbopen(filename, "r")))
+  {
+    if (fbgets(buff, 20, fb) == NULL)
+    {
+      /* log(L_ERROR, "Error reading from pid file %s (%s)", filename,
+       * strerror(errno));
+       */
+    }
+    else
+    {
+      pidfromfile = atoi(buff);
+
+      if (!kill(pidfromfile, 0))
+      {
+        // log(L_ERROR, "Server is already running");
+        printf("oftc-ircservices: daemon is already running\n");
+        exit(-1);
+      }
+    }
+
+    fbclose(fb);
+  }
+  else if (errno != ENOENT)
+  {
+    // log(L_ERROR, "Error opening pid file %s", filename);
+  }
+#endif
+}
+
+
+#ifndef _WIN32
+/*
+ * print_startup - print startup information
+ */
+static void
+print_startup(int pid)
+{
+  printf("oftc-ircservices: version %s\n", "UNRELEASED");
+  printf("oftc-ircservices: pid %d\n", pid);
+  printf("oftc-ircservices: running in %s mode from %s\n",
+         ServicesState.foreground ? "foreground" : "background", DPATH);
+}
+
+static void
+make_daemon(void)
+{
+  int pid;
+
+  if ((pid = fork()) < 0)
+  {
+    perror("fork");
+    exit(EXIT_FAILURE);
+  }
+  else if (pid > 0)
+  {
+    print_startup(pid);
+    exit(EXIT_SUCCESS);
+  }
+
+  setsid();
+}
+#endif
+
+static void
+write_pidfile(const char *filename)
+{
+  FBFILE *fb;
+
+  if ((fb = fbopen(filename, "w")))
+  {
+    char buff[32];
+    unsigned int pid = (unsigned int)getpid();
+    size_t nbytes = ircsprintf(buff, "%u\n", pid);
+
+    if ((fbputs(buff, fb, nbytes) == -1))
+      ilog(L_ERROR, "Error writing %u to pid file %s (%s)",
+           pid, filename, strerror(errno));
+
+    fbclose(fb);
+  }
+  else
+  {
+    ilog(L_ERROR, "Error opening pid file %s", filename);
+  }
+}
+
 int main(int argc, char *argv[])
 {
+#ifndef _WIN32
+  if (geteuid() == 0)
+  {
+    fprintf(stderr, "Running IRC services is root is not recommended.");
+    return 1;
+  }
+  setup_corefile();
+#endif
   memset(&ServicesInfo, 0, sizeof(ServicesInfo));
+  memset(&ServicesState, 0, sizeof(ServicesState));
 
+  ServicesState.configfile = CPATH; 
+  ServicesState.logfile    = LPATH;
+  ServicesState.dblogfile  = DBLPATH;
+  ServicesState.pidfile    = PPATH;
+
+  parseargs(&argc, &argv, myopts);
+
+  if(ServicesState.printversion)
+  {
+    printf("oftc-ircservices: version: %s\n", "UNRELEASED");
+    exit(EXIT_SUCCESS);
+  }
+
+  if(chdir(DPATH))
+  {
+    perror("chdir");
+    exit(EXIT_FAILURE);
+  }
+
+#ifndef _WIN32
+  if(!ServicesState.foreground)
+    make_daemon();
+  else
+    print_startup(getpid());
+#endif
+
+  setup_signals();
   memset(&me, 0, sizeof(me));
 
   iorecv_cb = register_callback("iorecv", iorecv_default);
@@ -51,8 +198,10 @@ int main(int argc, char *argv[])
  
   init_interface();
   strcpy(ServicesInfo.logfile, "services.log");
-  libio_init(FALSE);
-  init_log(ServicesInfo.logfile);
+  libio_init(!ServicesState.foreground);
+  check_pidfile(ServicesState.pidfile);
+  init_log(ServicesState.logfile);
+
   init_channel();
   init_conf();
   init_client();
@@ -70,9 +219,9 @@ int main(int argc, char *argv[])
     hash_add_id(&me);
 
   init_db();
-
-  ilog(L_DEBUG, "Services starting with name %s description %s sid %s",
-      me.name, me.info, me.id);
+ 
+  write_pidfile(ServicesState.pidfile);
+  ilog(L_NOTICE, "Services Ready");
 
   db_load_driver();
 #ifdef USE_SHARED_MODULES
@@ -93,8 +242,6 @@ int main(int argc, char *argv[])
   load_all_modules(1);
 #endif
   
-  setup_signals();
-
   connect_server();
 
   for(;;)

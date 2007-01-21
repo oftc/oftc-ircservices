@@ -8,6 +8,9 @@
 #define LANGPATH    DATADIR "/" PACKAGE "/"
 #define CPATH       SYSCONFDIR "/services.conf"
 #define DPATH       SYSCONFDIR
+#define LPATH       DATADIR "/services.log"
+#define DBLPATH     DATADIR "/db.log"
+#define PPATH       SYSCONFDIR "/services.pid"
 
 #define IRC_BUFSIZE     512
 #define CONNECTTIMEOUT   30
