@@ -1,2 +1,12 @@
+oftc-ircservices is a daemon written primary for usage on OFTC but designed
+with a few to be as generic a service as possible.  The follow people helped
+made it happen, in alphabetical order:
+
 Luca Filipozzi <lfilipoz@debian.org>
   - converted build system to automake/libtool
+TJ Fontaine<insert@email.here>
+  - Wrote the ruby bindings and other odd bits
+Rico Gloeckner<insert@email.here>
+  - miscellaneous contributions to both the core and service modules
+Stuart Walsh<stu@ipng.org.uk>
+  - Responsible for more of the horrors that befowl this daemon
