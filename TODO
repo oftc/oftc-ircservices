@@ -1,11 +1,10 @@
-- add people to trunk/AUTHORS
 - consider authoring trunk/INSTALL; it is automatically added by automake but
   if there are specific instructions that a user should know about, then we
   should have an INSTALL file of our own
 
-- Does changing passwords work yet? -w - it should
+. Does changing passwords work yet? -w - it should
 - Do we reopen logfiles on HUP yet? -w - we do not
-- db.log should actually be created. -w
+. db.log should actually be created. -w
 
 Legend:
         - Not done
