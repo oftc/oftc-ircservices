@@ -101,7 +101,7 @@ check_pidfile(const char *filename)
 static void
 print_startup(int pid)
 {
-  printf("oftc-ircservices: version %s\n", "UNRELEASED");
+  printf("oftc-ircservices: version %s\n", VERSION); 
   printf("oftc-ircservices: pid %d\n", pid);
   printf("oftc-ircservices: running in %s mode from %s\n",
          ServicesState.foreground ? "foreground" : "background", DPATH);
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 
   if(ServicesState.printversion)
   {
-    printf("oftc-ircservices: version: %s\n", "UNRELEASED");
+    printf("oftc-ircservices: version: %s\n", VERSION);
     exit(EXIT_SUCCESS);
   }
 
