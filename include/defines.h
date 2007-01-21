@@ -8,7 +8,7 @@
 #define MODPATH     LIBDIR "/" PACKAGE "/"
 #define LANGPATH    DATADIR "/" PACKAGE "/"
 #define CPATH       SYSCONFDIR "/services.conf"
-#define DPATH       "/"
+#define DPATH       PREFIX "/"
 #define LPATH       DATADIR "/services.log"
 #define DBLPATH     DATADIR "/db.log"
 #define PPATH       SYSCONFDIR "/services.pid"

@@ -72,6 +72,7 @@ AX_ARG_ENABLE_DEBUGGING
 AX_ARG_ENABLE_WARNINGS
 AX_ARG_ENABLE_EFENCE
 
+AC_DEFINE_DIR([PREFIX],[prefix],[Set to prefix.])
 AC_DEFINE_DIR([SYSCONFDIR],[sysconfdir],[Set to sysconfdir.])
 AC_DEFINE_DIR([LIBDIR],[libdir],[Set to libdir.])
 AC_DEFINE_DIR([DATADIR],[datadir],[Set to datadir.])
