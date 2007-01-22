@@ -271,7 +271,7 @@ process_enforce_list(void *param)
       free_dlink_node(ptr);
       user->enforce_time = 0;
 
-      strlcpy(user->enforcename, user->name, sizeof(oldnick));
+      SetEnforce(user);
       guest_user(user);
    }
   }
@@ -1005,18 +1005,17 @@ ns_on_nick_change(va_list args)
   struct Client *user = va_arg(args, struct Client *);
   char *oldnick       = va_arg(args, char *);
   struct Nick *nick_p;
+  struct Client *enforcer;
   char userhost[USERHOSTLEN+1]; 
   int oldid = 0;
 
-  if(user->enforcename[0] != '\0')
+  if(IsEnforce(user))
   {
-    struct Client *enforcer;
-
-    oldnick = user->enforcename;
     introduce_client(oldnick);
     enforcer = find_client(oldnick);
     enforcer->release_time = CurrentTime + (1*60*60);
     dlinkAdd(enforcer, make_dlink_node(), &nick_release_list);
+    ClearEnforce(user);
   }
 
   ilog(L_DEBUG, "%s changing nick to %s", oldnick, user->name);

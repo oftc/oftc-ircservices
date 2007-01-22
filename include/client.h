@@ -13,6 +13,7 @@ EXTERN unsigned int user_modes[];
 #define FLAGS_CLOSING       0x00000008UL /* set when closing */
 #define FLAGS_CONNECTING    0x00000010UL /* Currently connecting not bursted */
 #define FLAGS_ONACCESS      0x00000020UL /* Client isnt authed with nickserv but does match the access list*/
+#define FLAGS_ENFORCE       0x00000040UL /* User is to be enforced */
 
 #define STAT_SERVER         0x01
 #define STAT_CLIENT         0x02
@@ -49,13 +50,16 @@ EXTERN unsigned int user_modes[];
 #define IsDead(x)               ((x)->flags & FLAGS_DEADSOCKET)
 #define IsClosing(x)            ((x)->flags & FLAGS_CLOSING)
 #define IsOnAccess(x)           ((x)->flags & FLAGS_ONACCESS)
+#define IsEnforce(x)            ((x)->flags & FLAGS_ENFORCE)
 
 #define SetConnecting(x)        ((x)->flags |= FLAGS_CONNECTING)
 #define SetClosing(x)           ((x)->flags |= FLAGS_CLOSING)
 #define SetOnAccess(x)          ((x)->flags |= FLAGS_ONACCESS)
+#define SetEnforce(x)           ((x)->flags |= FLAGS_ENFORCE)
 
 #define ClearConnecting(x)      ((x)->flags &= ~FLAGS_CONNECTING)
 #define ClearOnAccess(x)        ((x)->flags &= ~FLAGS_ONACCESS)
+#define ClearEnforce(x)         ((x)->flags &= ~FLAGS_ENFORCE)
 
 #define IsServer(x)             ((x)->status & STAT_SERVER)
 #define IsClient(x)             ((x)->status & STAT_CLIENT)
@@ -110,7 +114,6 @@ struct Client
   struct Nick   *nickname;
 
   char          name[HOSTLEN+1];
-  char          enforcename[HOSTLEN+1];
   char          host[HOSTLEN+1];
   char          sockhost[HOSTLEN+1];
   char          id[IDLEN + 1];      /* client ID, unique ID per client */

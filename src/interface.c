@@ -214,9 +214,6 @@ send_nick_change(struct Service *service, struct Client *client,
 {
   if(!IsMe(client->from))
     execute_callback(send_nick_cb, me.uplink, client, newnick);
-  hash_del_client(client);
-  strlcpy(client->name, newnick, sizeof(client->name));
-  hash_add_client(client);
 }
 
 void
