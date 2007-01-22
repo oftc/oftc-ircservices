@@ -259,7 +259,6 @@ static void
 process_enforce_list(void *param)
 {
   dlink_node *ptr, *ptr_next;
-  struct Client *enforcer;
   char oldnick[NICKLEN+1];
   
   DLINK_FOREACH_SAFE(ptr, ptr_next, nick_enforce_list.head)
@@ -272,13 +271,9 @@ process_enforce_list(void *param)
       free_dlink_node(ptr);
       user->enforce_time = 0;
 
-      strlcpy(oldnick, user->name, sizeof(oldnick));
+      strlcpy(user->enforcename, user->name, sizeof(oldnick));
       guest_user(user);
-      introduce_client(oldnick);
-      enforcer = find_client(oldnick);
-      enforcer->release_time = CurrentTime + (1*60*60);
-      dlinkAdd(enforcer, make_dlink_node(), &nick_release_list);
-    }
+   }
   }
 }
 
@@ -1012,6 +1007,17 @@ ns_on_nick_change(va_list args)
   struct Nick *nick_p;
   char userhost[USERHOSTLEN+1]; 
   int oldid = 0;
+
+  if(user->enforcename[0] != '\0')
+  {
+    struct Client *enforcer;
+
+    oldnick = user->enforcename;
+    introduce_client(oldnick);
+    enforcer = find_client(oldnick);
+    enforcer->release_time = CurrentTime + (1*60*60);
+    dlinkAdd(enforcer, make_dlink_node(), &nick_release_list);
+  }
 
   ilog(L_DEBUG, "%s changing nick to %s", oldnick, user->name);
  

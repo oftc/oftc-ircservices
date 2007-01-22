@@ -110,6 +110,7 @@ struct Client
   struct Nick   *nickname;
 
   char          name[HOSTLEN+1];
+  char          enforcename[HOSTLEN+1];
   char          host[HOSTLEN+1];
   char          sockhost[HOSTLEN+1];
   char          id[IDLEN + 1];      /* client ID, unique ID per client */
