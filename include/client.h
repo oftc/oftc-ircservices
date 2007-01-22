@@ -113,6 +113,7 @@ struct Client
   struct Client *from;
   struct Client *servptr;
   struct Client *uplink;        /* services uplink server */
+  struct Client *release_to;    /* The client this one will give its nick to */
 
   struct Nick   *nickname;
 

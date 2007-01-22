@@ -428,17 +428,22 @@ m_identify(struct Service *service, struct Client *client,
     if((target = find_client(name)) != NULL)
     {
       if(MyConnect(target))
+      {
         exit_client(target, &me, "Enforcer no longer needed");
+        send_nick_change(service, client, nick->nick);
+        hash_del_client(client);
+        strlcpy(client->name, nick->nick, sizeof(client->name));
+        hash_add_client(client);
+      }
       else
+      {
+        target->release_to = client;
         guest_user(target);
+      }
     }
-    send_nick_change(service, client, nick->nick);
-    hash_del_client(client);
-    strlcpy(client->name, nick->nick, sizeof(client->name));
-    hash_add_client(client);
   }
   identify_user(client);
-  reply_user(service, service, client, NS_IDENTIFIED, client->name);
+  reply_user(service, service, client, NS_IDENTIFIED, nick->nick);
 }
 
 static void
@@ -781,6 +786,7 @@ static void
 m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
+  struct Client *target;
 
   if(find_client(parv[1]) == NULL)
   {
@@ -808,8 +814,23 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
+  if((target = find_client(nick->nick)) != NULL)
+  {
+    if(MyConnect(target))
+    {
+      exit_client(target, &me, "Enforcer no longer needed");
+      send_nick_change(service, client, nick->nick);
+      hash_del_client(client);
+      strlcpy(client->name, nick->nick, sizeof(client->name));
+      hash_add_client(client);
+    }
+    else
+    {
+      target->release_to = client;
+      guest_user(target);
+    }
+  }
   reply_user(service, service, client, NS_GHOST_SUCCESS, parv[1]);
-  sendto_server(me.uplink, "GHOST Command recieved from %s", client->name);
 }
 
 static void
@@ -988,15 +1009,17 @@ m_regain(struct Service *service, struct Client *client, int parc,
   {
     dlinkFindDelete(&nick_enforce_list, client);
     exit_client(enforcer, &me, "RELEASE command issued");
+    send_nick_change(service, client, nick->nick);
+    hash_del_client(client);
+    strlcpy(client->name, nick->nick, sizeof(client->name));
+    hash_add_client(client);
   }
   else if(enforcer != NULL)
+  {
+    enforcer->release_to = client;
     guest_user(enforcer);
+  }
   
-  send_nick_change(service, client, nick->nick);
-  hash_del_client(client);
-  strlcpy(client->name, nick->nick, sizeof(client->name));
-  hash_add_client(client);
- 
   identify_user(client);
   reply_user(service, service, client, NS_REGAINED, client->name);
 }
@@ -1028,6 +1051,25 @@ ns_on_nick_change(va_list args)
     enforcer->release_time = CurrentTime + (1*60*60);
     dlinkAdd(enforcer, make_dlink_node(), &nick_release_list);
     ClearEnforce(user);
+  }
+
+  /* This user was using a nick wanted elsewhere, release it now */
+  if(user->release_to != NULL)
+  {
+    struct Client *client = user->release_to;
+    struct Client *target;
+
+    if((target = find_client(client->nickname->nick)) != NULL)
+    {
+      if(target != client)
+        kill_user(nickserv, target, "This nickname is registered and protected");
+    }
+    send_nick_change(nickserv, client, client->nickname->nick);
+    hash_del_client(client);
+    strlcpy(client->name, client->nickname->nick, sizeof(client->name));
+    hash_add_client(client);
+    user->release_to = NULL;
+    identify_user(client);
   }
 
   ilog(L_DEBUG, "%s changing nick to %s", oldnick, user->name);
