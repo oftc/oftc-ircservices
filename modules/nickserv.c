@@ -424,10 +424,18 @@ m_identify(struct Service *service, struct Client *client,
   if(parc > 1)
   {
     struct Client *target;
-    /* User specified nick to change them to, so do so */
+    /* User specified nick to change them too, so do so */
     if((target = find_client(name)) != NULL)
-      guest_user(target);
+    {
+      if(MyConnect(target))
+        exit_client(target, &me, "Enforcer no longer needed");
+      else
+        guest_user(target);
+    }
     send_nick_change(service, client, nick->nick);
+    hash_del_client(client);
+    strlcpy(client->name, nick->nick, sizeof(client->name));
+    hash_add_client(client);
   }
   identify_user(client);
   reply_user(service, service, client, NS_IDENTIFIED, client->name);
@@ -985,6 +993,10 @@ m_regain(struct Service *service, struct Client *client, int parc,
     guest_user(enforcer);
   
   send_nick_change(service, client, nick->nick);
+  hash_del_client(client);
+  strlcpy(client->name, nick->nick, sizeof(client->name));
+  hash_add_client(client);
+ 
   identify_user(client);
   reply_user(service, service, client, NS_REGAINED, client->name);
 }

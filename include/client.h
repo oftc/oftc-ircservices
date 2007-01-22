@@ -78,6 +78,9 @@ EXTERN unsigned int user_modes[];
 #define ClearOper(x)            ((x)->umodes &= ~UMODE_OPER)
 #define ClearIdentified(x)      ((x)->umodes &= ~UMODE_IDENTIFIED)
 
+#define MyConnect(x)            ((x)->from == &me)
+#define MyClient(x)             (MyConnect(x) && IsClient(x))
+
 #define IDLEN           12 /* this is the maximum length, not the actual
                               generated length; DO NOT CHANGE! */
 
