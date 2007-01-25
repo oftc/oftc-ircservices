@@ -227,6 +227,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   VALUE params;
   struct Service *service;
 
+
   memset(classname, 0, sizeof(classname));
 
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
@@ -236,7 +237,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   if(!do_ruby(RB_CALLBACK(rb_load_file), (VALUE)path))
     return 0;
 
-  ruby_exec();
+  do_ruby(RB_CALLBACK(ruby_exec), (VALUE)NULL);
 
   strncpy(classname, fname, strlen(fname)-3);
   if(ServicesState.namesuffix)
@@ -248,7 +249,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
     return 0;
 
   ilog(L_TRACE, "RUBY INFO: Loaded Class %s", classname);
-
+  
   params = rb_ary_new();
   rb_ary_push(params, klass);
   rb_ary_push(params, rb_intern("new"));
@@ -262,7 +263,8 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   ilog(L_TRACE, "RUBY INFO: Initialized Class %s", classname);
 
   service = find_service(classname);
-  service->data = (void *)self;
+  if(service != NULL)
+    service->data = (void *)self;
 
   return 1;
 }

@@ -74,7 +74,7 @@ rb_cchannel2rbchannel(struct RegChannel *channel)
   VALUE fc2params, rbchannel, real_channel;
   int status;
 
-  rbchannel = Data_Wrap_Struct(rb_cObject, 0, free_regchan, channel);
+  rbchannel = Data_Wrap_Struct(rb_cObject, 0, 0, channel);
 
   fc2params = rb_ary_new();
   rb_ary_push(fc2params, cChannelStruct);

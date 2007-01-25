@@ -109,7 +109,7 @@ rb_cnick2rbnick(struct Nick *nick)
   VALUE fc2params, rbnick, real_nick;
   int status;
 
-  rbnick = Data_Wrap_Struct(rb_cObject, 0, free_nick, nick);
+  rbnick = Data_Wrap_Struct(rb_cObject, 0, 0, nick);
 
   fc2params = rb_ary_new();
   rb_ary_push(fc2params, cNickStruct);

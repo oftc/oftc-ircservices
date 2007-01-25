@@ -251,6 +251,8 @@ int main(int argc, char *argv[])
     while (eventNextTime() <= CurrentTime)
       eventRun();
 
+    rb_thread_schedule();
+
     comm_select();
     send_queued_all();
   }

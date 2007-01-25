@@ -99,7 +99,7 @@ rb_cclient2rbclient(struct Client *client)
   VALUE fc2params, rbclient, real_client;
   int status;
 
-  rbclient = Data_Wrap_Struct(rb_cObject, 0, free, client);
+  rbclient = Data_Wrap_Struct(rb_cObject, 0, 0, client);
 
   fc2params = rb_ary_new();
   rb_ary_push(fc2params, cClientStruct);
