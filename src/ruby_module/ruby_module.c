@@ -270,14 +270,6 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 }
 
 void
-sigabrt()
-{
-  signal(SIGABRT, sigabrt);
-  ilog(L_DEBUG, "We've encountered a SIGABRT");
-  ruby_script_error();
-}
-
-void
 init_ruby(void)
 {
   int i;
@@ -289,10 +281,6 @@ init_ruby(void)
   Init_ClientStruct();
   Init_ChannelStruct();
   Init_NickStruct();
-  signal(SIGINT, SIG_DFL);
-  signal(SIGHUP, SIG_DFL);
-  signal(SIGQUIT, SIG_DFL);
-  signal(SIGABRT, sigabrt);
 
   /* Place holder for hooks */
   ruby_server_hooks = rb_ary_new();
@@ -307,5 +295,5 @@ init_ruby(void)
 void
 cleanup_ruby(void)
 {
-//  ruby_finalize();
+  ruby_finalize();
 }
