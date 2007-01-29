@@ -9,12 +9,12 @@ class XmlRpc < ServiceModule
   def initialize
     service_name("XmlRpc")
     begin
-      foo = Thread.new {
+#      foo = Thread.new {
         
-        @s = XMLRPC::Server.new(8080)  
-        @s.add_handler("sample", MyHandler.new)
-        @s.serve
-      }
+#        @s = XMLRPC::Server.new(8080)  
+#        @s.add_handler("sample", MyHandler.new)
+#        @s.serve
+#      }
     rescue Exception => ex
       puts ex
     end

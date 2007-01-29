@@ -160,10 +160,10 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     {
       return load_ruby_module(name, dir, fname);
     }
-/*    else if(strcmp(tmpext, "pl") == 0)
+    else if(strcmp(tmpext, "pl") == 0)
     {
       return load_perl_module(name, dir, fname);
-    }*/
+    }
     else if(strcmp(tmpext, "lua") == 0)
     {
       return load_lua_module(name, dir, fname);

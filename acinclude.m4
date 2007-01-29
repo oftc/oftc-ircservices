@@ -310,3 +310,15 @@ AC_DEFUN([AC_DEFINE_DIR], [
   test "$prefix_NONE" && prefix=NONE
   test "$exec_prefix_NONE" && exec_prefix=NONE
 ])dnl }}}
+dnl {{{ ax_check_perl
+AC_DEFUN([AX_CHECK_PERL],[
+	AC_MSG_CHECKING(for working Perl support)
+
+  PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
+  PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts 2>/dev/null`
+
+  PERL_CFLAGS=`echo $PERL_CFLAGS | $perlpath -pe 's/^(.* )?-[^DUIfm][^ ]+/\1/g; s/^(.* )?\+[^ ]+/\1/g'`
+
+  AC_SUBST(PERL_CFLAGS)
+  AC_SUBST(PERL_LDFLAGS)
+]) dnl }}}

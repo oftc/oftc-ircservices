@@ -4,7 +4,7 @@ INCLUDES=-I$(top_srcdir)/libio -I$(top_srcdir)/include
 if USE_SHARED_MODULES
 AM_LDFLAGS=-no-undefined -module -avoid-version
 pkglib_LTLIBRARIES=chanserv.la operserv.la nickserv.la irc.la hybrid.la hybridts6.la oftc.la
-dist_pkglib_DATA=luaserv.lua RubyServ.rb nickserv.lua JupeServ.rb XmlRpc.rb
+dist_pkglib_DATA=luaserv.lua RubyServ.rb nickserv.lua JupeServ.rb XmlRpc.rb PerlServ.pl
 else
 AM_LDFLAGS=-static
 noinst_LTLIBRARIES=chanserv.la operserv.la nickserv.la

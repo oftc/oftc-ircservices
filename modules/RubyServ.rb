@@ -2,11 +2,11 @@ class RubyServ < ServiceModule
   def initialize
     service_name("RubyServ")
     register(["HELP", "SAY"])
-    add_hook([
-      [ServiceModule::CMODE_HOOK, 'cmode'],
-      [ServiceModule::UMODE_HOOK, 'umode'],
-      [ServiceModule::NEWUSR_HOOK, 'newuser']
-    ])
+#    add_hook([
+#      [ServiceModule::CMODE_HOOK, 'cmode'],
+#      [ServiceModule::UMODE_HOOK, 'umode'],
+#      [ServiceModule::NEWUSR_HOOK, 'newuser']
+#    ])
   end
   def HELP(client, parv = [])
     log(ServiceModule::LOG_DEBUG, "RubyServ::Help")

@@ -6,6 +6,7 @@
 struct MessageTree;
 struct ServiceMessageTree;
 struct ServiceMessage;
+struct Service;
 
 struct Message *find_command(const char *, struct MessageTree*);
 struct ServiceMessage *find_services_command(const char *cmd, struct ServiceMessageTree *msg_tree);

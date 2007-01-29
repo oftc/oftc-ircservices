@@ -24,6 +24,7 @@ AC_PROG_YACC
 AC_PROG_AWK
 AC_PROG_EGREP
 AC_PATH_PROG([TAIL],[tail])
+AC_PATH_PROG(perlpath, perl)
 
 # Checks for libraries.
 AX_CHECK_LIB_RUBY
@@ -32,6 +33,8 @@ AX_CHECK_LIB_OPENSSL
 AX_CHECK_LIB_YADA
 AX_CHECK_LIB_IPV4
 AX_CHECK_LIB_IPV6
+
+AX_CHECK_PERL
 
 # Checks for header files.
 AC_CHECK_HEADERS([sys/resource.h]) # ick
@@ -78,6 +81,6 @@ AC_DEFINE_DIR([LIBDIR],[libdir],[Set to libdir.])
 AC_DEFINE_DIR([DATADIR],[datadir],[Set to datadir.])
 AC_DEFINE_DIR([LOCALSTATEDIR],[localstatedir],[Set to localstatedir.])
 AC_DEFINE([SHARED_SUFFIX],[".so"],[Suffix for shared libraries on this platform.]) # wtf is this needed? replace libdl with libltdl to correct
-AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile src/ruby_module/Makefile languages/Makefile include/Makefile include/conf/Makefile])
+AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile src/ruby_module/Makefile src/perl_module/Makefile languages/Makefile include/Makefile include/conf/Makefile])
 AC_CONFIG_SUBDIRS(libltdl)
 AC_OUTPUT

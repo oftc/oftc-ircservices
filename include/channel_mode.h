@@ -113,6 +113,7 @@ struct Mode
 };
 
 struct Membership;
+struct Channel;
 
 EXTERN struct Callback *channel_access_cb;
 
