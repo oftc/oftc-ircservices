@@ -22,6 +22,8 @@
  *  $Id$
  */
 
+#define STUS_HACKERY 1
+#ifdef STUS_HACKERY
 struct crypt_data
 {
   char keysched[16 * 8];
@@ -35,7 +37,7 @@ struct crypt_data
   long int current_saltbits;
   int  direction, initialized;
 };
-
+#endif
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
