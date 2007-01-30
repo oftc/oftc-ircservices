@@ -1,6 +1,6 @@
 # Copyright (C) 2006 Luca Filipozzi
 MAINTAINERCLEANFILES=Makefile.in
-SUBDIRS=conf ruby_module perl_module
+SUBDIRS=conf ruby_module perl_module lua_module
 sbin_PROGRAMS=services
 services_SOURCES=channel.c channel_mode.c conf.c client.c crypt.c connection.c dbm.c hash.c hostmask.c interface.c language.c m_error.c packet.c parse.c  services.c send.c lua_module.c
 #services_LDADD=$(foreach dir,$(SUBDIRS),$(wildcard $(dir)/*.$(OBJEXT))) $(top_srcdir)/libio/libio.a

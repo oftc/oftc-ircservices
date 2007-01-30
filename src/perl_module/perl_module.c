@@ -76,7 +76,7 @@ static const char *core_code =
 "  #destroy(\"Services::Script::$id\");\n"
 "\n"
 "  my $package = \"Services::Script::$id\";\n"
-"  my $eval = qq{package $package; sub handler { $data; }};\n"
+"  my $eval = qq{package $package; use Services; sub handler { $data; }};\n"
 "  {\n"
 "      # hide our variables within this block\n"
 "      my ($filename, $package, $data);\n"
@@ -102,22 +102,6 @@ static const char *core_code =
 "\n"
 "  eval_data($data, $id);\n"
 "}\n";
-
-XS(plog)
-{
-  size_t notused;
-  char *msg;
-  dXSARGS;
-
-  (void) cv;
-
-  if (items < 1)
-    XSRETURN_IV(-1);
-
-  msg = SvPV(ST(0), notused);
-  ilog(L_DEBUG, "[PERL]: %s", msg);
-  XSRETURN_IV(0);
-}
 
 XS(register_service)
 {
@@ -161,7 +145,6 @@ xs_init(pTHX)
   dXSUB_SYS;
 
   newXS("DynaLoader::boot_Dynaloader", boot_DynaLoader, __FILE__);
-  newXS("Services::log", plog, __FILE__);
   newXS("Services::Service::register", register_service, __FILE__);
 }
 
