@@ -1,22 +1,6 @@
-maintainer info
-===============
+                            oftc-ircservices readme
 
-- to prepare a release:
-  - update the release number in configure.ac to X.Y and commit
-  - create a simple tag with 'svn copy trunk tags/release-X.Y'
-  - in directory tags/release-X.Y, do:
-    ./autogen.sh
-    ./configure
-    fakeroot make dist
-  - upload resulting oftc-services-X.Y.tar.gz to distribution site
+$Id: $
 
-- to interact with subversion:
-  - remove all generated files
-    make maintainer-clean
-  - see what's changed:
-    svn diff
-  - add/remove files as necessary:
-    svn add <file>
-    svn remove <file>
-  - commit changes:
-    svn commit
+This guide will hopefully one day tell you about operating oftc-ircservices.
+Someone just needs to write it.
