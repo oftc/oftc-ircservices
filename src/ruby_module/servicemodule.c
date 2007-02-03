@@ -108,6 +108,13 @@ ServiceModule_add_hook(VALUE self, VALUE hooks)
 }
 
 static VALUE
+ServiceModule_introduce_server(VALUE self, VALUE server, VALUE gecos)
+{
+  introduce_server(StringValueCStr(server), StringValueCStr(gecos));
+  return self;
+}
+
+static VALUE
 ServiceModule_log(VALUE self, VALUE level, VALUE message)
 {
   ilog(NUM2INT(level), StringValueCStr(message));
@@ -265,6 +272,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "service_name", ServiceModule_service_name, 1);
   rb_define_method(cServiceModule, "add_hook", ServiceModule_add_hook, 1);
   rb_define_method(cServiceModule, "log", ServiceModule_log, 2);
+  rb_define_method(cServiceModule, "introduce_server", ServiceModule_introduce_server, 1);
 
   rb_define_method(cServiceModule, "string", ServiceModule_db_set_string, 3);
   rb_define_method(cServiceModule, "string?", ServiceModule_db_get_string, 3);
