@@ -165,7 +165,6 @@ int main(int argc, char *argv[])
 
   ServicesState.configfile = CPATH; 
   ServicesState.logfile    = LPATH;
-  ServicesState.dblogfile  = DBLPATH;
   ServicesState.pidfile    = PPATH;
 
   parseargs(&argc, &argv, myopts);

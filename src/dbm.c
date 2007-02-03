@@ -26,7 +26,10 @@
 #include "conf/conf.h"
 #include <yada.h>
 
+#define LOG_BUFSIZE 2048
+
 struct Callback *on_nick_drop_cb;
+static FBFILE *db_log_fb;
 
 query_t queries[QUERY_COUNT] = { 
   { "SELECT account.id, (SELECT nick FROM nickname WHERE id=account.primary_nick), "
@@ -148,6 +151,7 @@ void
 init_db()
 {
   char *dbstr;
+  char logpath[LOG_BUFSIZE];
 
   dbstr = MyMalloc(strlen(Database.driver) + strlen(Database.hostname) + strlen(Database.dbname) +
       3 /* ::: */ + 1);
@@ -156,6 +160,16 @@ init_db()
   Database.yada = yada_init(dbstr, 0);
   MyFree(dbstr);
   on_nick_drop_cb = register_callback("Nick DROP Callback", NULL);
+
+  snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
+  if(db_log_fb == NULL)
+  {
+    if(Logging.sqllog[0] != '\0' && (db_log_fb = fbopen(logpath, "r")) != NULL)
+    {
+      fbclose(db_log_fb);
+      db_log_fb = fbopen(logpath, "a");
+    }
+  }
 }
 
 void
@@ -166,15 +180,36 @@ cleanup_db()
 }
 
 void
+db_log(const char *format, ...)
+{
+  char *buf;
+  char lbuf[LOG_BUFSIZE];
+  va_list args;
+  size_t bytes;
+
+  if(db_log_fb == NULL)
+    return;
+
+  va_start(args, format);
+  vasprintf(&buf, format, args);
+  va_end(args);
+
+  bytes = snprintf(lbuf, sizeof(lbuf), "[%s] %s\n", smalldate(CurrentTime), buf);
+  MyFree(buf);
+
+  fbputs(lbuf, db_log_fb, bytes);
+}
+
+void
 db_load_driver()
 {
   int i;
 
   if(Database.yada->connect(Database.yada, Database.username, 
         Database.password) == 0)
-    printf("db: Failed to connect to database %s\n", Database.yada->errmsg);
+    db_log("db: Failed to connect to database %s\n", Database.yada->errmsg);
   else
-    printf("db: Database connection succeeded.\n");
+    db_log("db: Database connection succeeded.\n");
 
   for(i = 0; i < QUERY_COUNT; i++)
   {
@@ -218,7 +253,7 @@ db_try_reconnect()
   query_t *__query;                                                   \
                                                                       \
   __query = &queries[__id];                                           \
-  printf("db_query: %d %s\n", __id, __query->name);                   \
+  db_log("db_query: %d %s\n", __id, __query->name);                   \
   assert(__query->type == QUERY);                                     \
   assert(__query->rc);                                                \
                                                                       \
@@ -228,9 +263,9 @@ db_try_reconnect()
     if(Database.yada->error == YADA_ECONNLOST)                        \
     {                                                                 \
       db_try_reconnect();                                             \
-      printf("Query failed because server went away, reconnected.");  \
+      db_log("Query failed because server went away, reconnected.");  \
     }                                                                 \
-    printf("db_query: %d Failed: %s\n", __id, Database.yada->errmsg); \
+    db_log("db_query: %d Failed: %s\n", __id, Database.yada->errmsg); \
   }                                                                   \
                                                                       \
   ret = __result;                                                     \
@@ -243,7 +278,7 @@ db_try_reconnect()
   query_t *__query;                                                   \
                                                                       \
   __query = &queries[__id];                                           \
-  printf("db_exec: %d %s\n", __id, __query->name);                    \
+  db_log("db_exec: %d %s\n", __id, __query->name);                    \
   assert(__query->type == EXECUTE);                                   \
   assert(__query->rc);                                                \
                                                                       \
@@ -253,9 +288,9 @@ db_try_reconnect()
     if(Database.yada->error == YADA_ECONNLOST)                        \
     {                                                                 \
       db_try_reconnect();                                             \
-      printf("Exec failed because server went away, reconnected.");   \
+      db_log("Exec failed because server went away, reconnected.");   \
     }                                                                 \
-    printf("db_exec: %d Failed: %s\n", __id, Database.yada->errmsg);  \
+    db_log("db_exec: %d Failed: %s\n", __id, Database.yada->errmsg);  \
   }                                                                   \
                                                                       \
   ret = __result;                                                     \
@@ -288,7 +323,7 @@ db_find_nick(const char *nick)
 
   if(Fetch(rc, brc) == 0)
   {
-    printf("db_find_nick: '%s' not found.\n", nick);
+    db_log("db_find_nick: '%s' not found.\n", nick);
     Free(brc);
     Free(rc);
     return NULL;
@@ -306,7 +341,7 @@ db_find_nick(const char *nick)
   DupString(nick_p->last_realname, nick_p->last_realname);
   DupString(nick_p->last_quit, nick_p->last_quit);
 
-  printf("db_find_nick: Found nick %s(asked for %s)\n", nick_p->nick, nick);
+  db_log("db_find_nick: Found nick %s(asked for %s)\n", nick_p->nick, nick);
 
   Free(brc);
   Free(rc);
@@ -328,7 +363,7 @@ db_get_nickname_from_id(unsigned int id)
   brc = Bind("?ps", &retnick);
   if(Fetch(rc, brc) == 0)
   {
-    printf("db_get_nickname_from_id: %d not found.\n", id);
+    db_log("db_get_nickname_from_id: %d not found.\n", id);
     Free(brc);
     Free(rc);
     return NULL;
@@ -356,7 +391,7 @@ db_get_id_from_name(const char *name, unsigned int type)
   brc = Bind("?d", &ret);
   if(Fetch(rc, brc) == 0)
   {
-    printf("db_get_id_from_name: '%s' not found.\n", name);
+    db_log("db_get_id_from_name: '%s' not found.\n", name);
     Free(brc);
     Free(rc);
     return 0;
@@ -861,7 +896,7 @@ db_find_chan(const char *channel)
 
   if(Fetch(rc, brc) == 0)
   {
-    printf("db_find_chan: '%s' not found.\n", channel);
+    db_log("db_find_chan: '%s' not found.\n", channel);
     Free(brc);
     Free(rc);
     return NULL;
@@ -876,7 +911,7 @@ db_find_chan(const char *channel)
   DupString(channel_p->topic, channel_p->topic);
   DupString(channel_p->mlock, channel_p->mlock);
 
-  printf("db_find_chan: Found nick %s\n", channel_p->channel);
+  db_log("db_find_chan: Found nick %s\n", channel_p->channel);
 
   Free(brc);
   Free(rc);
@@ -979,7 +1014,7 @@ db_find_akill(const char *mask)
 
   if(Fetch(rc, brc) == 0)
   {
-    printf("db_find_akill: '%s' not found.\n", mask);
+    db_log("db_find_akill: '%s' not found.\n", mask);
     Free(brc);
     Free(rc);
     return NULL;
@@ -988,7 +1023,7 @@ db_find_akill(const char *mask)
   DupString(akill->mask, akill->mask);
   DupString(akill->reason, akill->reason);
 
-  printf("db_find_akill: Found akill %s(asked for %s)\n", akill->mask, mask);
+  db_log("db_find_akill: Found akill %s(asked for %s)\n", akill->mask, mask);
 
   Free(brc);
   Free(rc);

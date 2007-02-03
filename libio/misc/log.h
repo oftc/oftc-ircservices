@@ -29,9 +29,9 @@
 #define L_ERROR  1
 #define L_WARN   2
 #define L_NOTICE 3
-#define L_TRACE  4
-#define L_INFO   5
-#define L_DEBUG  6
+#define L_INFO   4
+#define L_DEBUG  5
+#define L_TRACE  6
 
 #ifndef SYSLOG_USERS
 LIBIO_EXTERN void *user_log_fb;

@@ -68,9 +68,9 @@ static const char *logLevelToString[] =
   "L_ERROR",
   "L_WARN",
   "L_NOTICE",
-  "L_TRACE",
   "L_INFO",
-  "L_DEBUG"
+  "L_DEBUG",
+  "L_TRACE"
 };
 
 /*

@@ -10,7 +10,6 @@
 #define CPATH       SYSCONFDIR "/services.conf"
 #define DPATH       PREFIX "/"
 #define LPATH       LOGDIR "/services.log"
-#define DBLPATH     LOGDIR "/db.log"
 #define PPATH       SYSCONFDIR "/services.pid"
 
 #define IRC_BUFSIZE     512
