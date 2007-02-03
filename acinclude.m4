@@ -15,18 +15,28 @@ dnl {{{ ax_check_lib_ruby
 AC_DEFUN([AX_CHECK_LIB_RUBY],[
   AC_PATH_PROG([RUBY],[ruby],[no])
   if test "$RUBY" = "no" ; then
-    AC_MSG_ERROR([ruby binary not found])
+    $have_ruby = "no"
   fi
-  AC_CHECK_LIB([ruby1.8],[ruby_init],,[AC_MSG_ERROR([ruby1.8 library not found])])
-  ruby_cflags=$($RUBY -r mkmf -e 'print "-I" + Config::CONFIG[["archdir"]]')
-  ruby_ldflags=$($RUBY -r mkmf -e 'print "-L" + Config::CONFIG[["libdir"]] + " " + Config::CONFIG[["LIBS"]]')
-  AC_SUBST([RUBY_CFLAGS],["$ruby_cflags"])
-  AC_SUBST([RUBY_LDFLAGS],["$ruby_ldflags"])
+  AC_CHECK_LIB([ruby1.8],[ruby_init],[have_ruby="yes"],[have_ruby="no"])
+  if test "$have_ruby" = "yes" ; then
+    ruby_cflags=$($RUBY -r mkmf -e 'print "-I" + Config::CONFIG[["archdir"]]')
+    ruby_ldflags=$($RUBY -r mkmf -e 'print "-L" + Config::CONFIG[["libdir"]] + " " + Config::CONFIG[["LIBS"]]')
+    AC_SUBST([RUBY_CFLAGS],["$ruby_cflags"])
+    AC_SUBST([RUBY_LDFLAGS],["$ruby_ldflags"])
+  else
+    AC_MSG_WARN([Ruby 1.8 not found, disabling])
+  fi
+  AM_CONDITIONAL([USE_RUBY], [test "$have_ruby" = "yes"])
 ])dnl }}}
 dnl {{{ ax_check_lib_lua
 AC_DEFUN([AX_CHECK_LIB_LUA],[
-  AC_CHECK_HEADERS([lua5.1/lua.h lua5.1/lualib.h lua5.1/lauxlib.h],,[AC_MSG_ERROR([lua5.1 header files not found])])
-  AC_CHECK_LIB([lua5.1],[lua_pcall],,[AC_MSG_ERROR([lua5.1 library not found])])
+  AC_CHECK_HEADERS([lua5.1/lua.h lua5.1/lualib.h lua5.1/lauxlib.h],
+    [have_lua="yes"], [have_lua="no"])
+  AC_CHECK_LIB([lua5.1],[lua_pcall],[], [have_lua="no"])
+  if test "$have_lua" = "no" ; then
+    AC_MSG_WARN([LUA 5.1 was not found, disabling])
+  fi
+  AM_CONDITIONAL([USE_LUA], [test "$have_lua" = "yes"])
 ])dnl }}}
 dnl {{{ ax_check_lib_openssl
 AC_DEFUN([AX_CHECK_LIB_OPENSSL],[
@@ -321,4 +331,7 @@ AC_DEFUN([AX_CHECK_PERL],[
 
   AC_SUBST(PERL_CFLAGS)
   AC_SUBST(PERL_LDFLAGS)
+
+  have_perl="yes"
+  AM_CONDITIONAL([USE_PERL], [test "$have_perl" = "yes"])
 ]) dnl }}}
