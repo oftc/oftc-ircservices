@@ -33,6 +33,7 @@
 
 struct Client me;
 struct ServicesState_t ServicesState = { 0 };
+int dorehash = 0;
 
 static struct lgetopt myopts[] = {
   {"configfile", &ServicesState.configfile,
@@ -194,11 +195,11 @@ int main(int argc, char *argv[])
   iorecv_cb = register_callback("iorecv", iorecv_default);
   connected_cb = register_callback("server connected", server_connected);
   iosend_cb = register_callback("iosend", iosend_default);
+  on_nick_drop_cb = register_callback("Nick DROP Callback", NULL);
 
   OpenSSL_add_all_digests();
  
   init_interface();
-  strcpy(ServicesInfo.logfile, "services.log");
   libio_init(!ServicesState.foreground);
   check_pidfile(ServicesState.pidfile);
   init_log(ServicesState.logfile);
@@ -215,10 +216,6 @@ int main(int argc, char *argv[])
   dlinkAdd(&me, &me.node, &global_client_list);
   
   read_services_conf(TRUE);
-  hash_add_client(&me);
-  if(me.id[0] != '\0')
-    hash_add_id(&me);
-
   init_db();
  
   write_pidfile(ServicesState.pidfile);
@@ -242,7 +239,6 @@ int main(int argc, char *argv[])
   init_ruby();
 #endif
 
-  boot_modules(1);
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */
   chdir(DPATH);
 #else
@@ -258,6 +254,13 @@ int main(int argc, char *argv[])
 
     comm_select();
     send_queued_all();
+
+    if(dorehash)
+    {
+      ilog(L_INFO, "Got SIGHUP, reloading configuration");
+      read_services_conf(NO);
+      dorehash = 0;
+    }
   }
 
   return 0;
@@ -338,6 +341,9 @@ signal_handler(int signum)
       break;
     case SIGINT:
       services_die("got SIGINT", NO);
+      break;
+    case SIGHUP:
+      dorehash = 1;
       break;
   }
 }

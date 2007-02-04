@@ -501,3 +501,97 @@ stripws(char *txt)
   *(tmp + 1) = 0;
   return txt;
 }
+
+/*
+ * split_nuh()
+ *
+ * Fills split_nuh_item struct according to the following table:
+ *
+ * mask               nick     user  host
+ * -----------------  -------  ----  ------
+ * Dianora!db@db.net  Dianora  db    db.net
+ * Dianora            Dianora  *     *
+ * Dianora            *        *     Dianora  (if nick pointer is NULL)
+ * Dianora!           Dianora  *     *
+ * Dianora!db         Dianora  db    *
+ * Dianora!@db.net    Dianora  *     db.net
+ * db.net             *        *     db.net
+ * db@db.net          *        db    db.net
+ *
+ * Mask is modified in place.
+ *
+ * inputs: pointer to split_nuh_item struct to fill in
+ * output: none
+ */
+void
+split_nuh(struct split_nuh_item *iptr)
+{
+  char *p = NULL, *q = NULL;
+
+  if (iptr->nickptr)
+    strlcpy(iptr->nickptr, "*", iptr->nicksize);
+  if (iptr->userptr)
+    strlcpy(iptr->userptr, "*", iptr->usersize);
+  if (iptr->hostptr)
+    strlcpy(iptr->hostptr, "*", iptr->hostsize);
+
+  if ((p = strchr(iptr->nuhmask, '!'))) {
+    *p++ = '\0';
+
+    if (iptr->nickptr && *iptr->nuhmask != '\0')
+      strlcpy(iptr->nickptr, iptr->nuhmask, iptr->nicksize);
+
+    if ((q = strchr(p, '@'))) {
+      *q++ = '\0';
+
+      if (*p != '\0')
+        strlcpy(iptr->userptr, p, iptr->usersize);
+
+      if (*q != '\0')
+        strlcpy(iptr->hostptr, q, iptr->hostsize);
+    }
+    else {
+      if (*p != '\0')
+        strlcpy(iptr->userptr, p, iptr->usersize);
+    }
+  }
+  else {
+    /* No ! found so lets look for a user@host */
+    if ((p = strchr(iptr->nuhmask, '@'))) {
+      /* if found a @ */
+      *p++ = '\0';
+
+      if (*iptr->nuhmask != '\0')
+        strlcpy(iptr->userptr, iptr->nuhmask, iptr->usersize);
+
+      if (*p != '\0')
+        strlcpy(iptr->hostptr, p, iptr->hostsize);
+    }
+    else {
+      /* no @ found */
+      if (!iptr->nickptr || strpbrk(iptr->nuhmask, ".:"))
+        strlcpy(iptr->hostptr, iptr->nuhmask, iptr->hostsize);
+      else
+        strlcpy(iptr->nickptr, iptr->nuhmask, iptr->nicksize);
+    }
+  }
+}
+
+/*
+ * hash_text()
+ *
+ * Hash algorithm for case-insensitive strings.
+ *
+ * inputs: text to hash
+ * output: hash value
+ */
+unsigned int
+hash_text(const char *p, unsigned int size)
+{
+  unsigned int av = 0;
+
+  for (; *p; p++)
+    av = (av << 4) - (av + ToLower(*p));
+
+  return av % size;
+}

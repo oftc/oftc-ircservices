@@ -31,7 +31,7 @@ struct ServiceConf
   dlink_node node;
 };
 
-EXTERN struct ServiceConf ;
+EXTERN dlink_list service_confs;
 
 #ifdef IN_CONF_C
 void init_service(void);

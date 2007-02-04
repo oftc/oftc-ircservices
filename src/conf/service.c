@@ -28,9 +28,12 @@
 #include "client.h"
 #include "parse.h"
 #include "conf/conf.h"
+#include "conf/service.h"
+#include "conf/manager.h"
 
 static struct ServiceConf tmpservice = {0};
-static dlink_list service_confs = {0};
+dlink_list service_confs = {0};
+static dlink_node *hreset;
 
 /*
  * reset_service()
@@ -40,7 +43,7 @@ static dlink_list service_confs = {0};
  * inputs: none
  * output: none
  */
-static void
+static void *
 reset_service()
 {
   dlink_node *ptr;
@@ -64,7 +67,7 @@ before_service()
 static void
 after_service()
 {
-  ServiceConf *service;
+  struct ServiceConf *service;
 
   if(tmpservice.name == NULL)
     parse_fatal("name= field missing in service{} section");
@@ -72,8 +75,9 @@ after_service()
   if(tmpservice.module == NULL)
     parse_fatal("module= field missing in service{} section");
 
-  service = (ServiceConf *)MyMalloc(sizeof(ServiceConf));
-  memcpy(service, &tmpservice, sizeof(ServiceConf));
+  service = (struct ServiceConf *)MyMalloc(sizeof(struct ServiceConf));
+  DupString(service->name, tmpservice.name);
+  DupString(service->module, tmpservice.module);
   dlinkAdd(service, &service->node, &service_confs);
 }
 
@@ -88,7 +92,7 @@ after_service()
 void
 init_service(void)
 {
-  struct ConfSection *s = add_conf_section("service", 2);
+  struct ConfSection *s = add_conf_section("service", 1);
 
   hreset = install_hook(reset_conf, reset_service);
   s->before = before_service;

@@ -46,111 +46,31 @@ conf_fbgets(char *lbuf, int max_size, FBFILE *fb)
 }
 
 void
-read_services_conf(int cold_start)
+read_services_conf(int cold)
 { 
-  FBFILE *file;
-
-  if ((file = fbopen(CPATH, "r")) == NULL)
+  conf_curctx.f = fbopen(ServicesState.configfile, "r");
+  if(!conf_curctx.f)
   {
-    printf("config file not found!\n");
-    exit(0);
+    parse_error("Cannot open %s", ServicesState.configfile);
+    return;
   }
 
-  conf_curctx.filename = CPATH;
-  conf_curctx.f = file;
-  conf_curctx.lineno = 1;
+  conf_cold = cold;
+  execute_callback(reset_conf);
 
   conf_pass = 1;
-  yyparse();        /* pick up the classes first */
+  conf_curctx.filename = ServicesState.configfile;
+  conf_curctx.lineno = 0;
+  conf_linebuf[0] = 0;
+  yyparse();
 
-  fbrewind(file);
-
-  conf_curctx.lineno = 1;
   conf_pass = 2;
-  yyparse();          /* Load the values from the conf */
+  execute_callback(switch_conf_pass);
+  fbrewind(conf_curctx.f);
+  conf_curctx.lineno = 0;
+  conf_linebuf[0] = 0;
+  yyparse();
 
   execute_callback(verify_conf);
+  conf_pass = 0;
 }
-
-/*
- * split_nuh
- *
- * inputs - pointer to original mask (modified in place)
- *    - pointer to pointer where nick should go
- *    - pointer to pointer where user should go
- *    - pointer to pointer where host should go
- * output - NONE
- * side effects - mask is modified in place
- *      If nick pointer is NULL, ignore writing to it
- *      this allows us to use this function elsewhere.
- *
- * mask       nick  user  host
- * ---------------------- ------- ------- ------
- * Dianora!db@db.net    Dianora db  db.net
- * Dianora      Dianora * *
- * db.net                       *       *       db.net
- * OR if nick pointer is NULL
- * Dianora      - * Dianora
- * Dianora!     Dianora * *
- * Dianora!@      Dianora * *
- * Dianora!db     Dianora db  *
- * Dianora!@db.net    Dianora * db.net
- * db@db.net      * db  db.net
- * !@       * * *
- * @        * * *
- * !        * * *
- */
-void
-split_nuh(struct split_nuh_item *const iptr)
-{
-  char *p = NULL, *q = NULL;
-
-  if (iptr->nickptr)
-    strlcpy(iptr->nickptr, "*", iptr->nicksize);
-  if (iptr->userptr)
-    strlcpy(iptr->userptr, "*", iptr->usersize);
-  if (iptr->hostptr)
-    strlcpy(iptr->hostptr, "*", iptr->hostsize);
-
-  if ((p = strchr(iptr->nuhmask, '!'))) {
-    *p = '\0';
-
-    if (iptr->nickptr && *iptr->nuhmask != '\0')
-      strlcpy(iptr->nickptr, iptr->nuhmask, iptr->nicksize);
-
-    if ((q = strchr(++p, '@'))) {
-      *q++ = '\0';
-
-      if (*p != '\0')
-        strlcpy(iptr->userptr, p, iptr->usersize);
-
-      if (*q != '\0')
-        strlcpy(iptr->hostptr, q, iptr->hostsize);
-    }
-    else {
-      if (*p != '\0')
-        strlcpy(iptr->userptr, p, iptr->usersize);
-    }
-  }
-  else {
-    /* No ! found so lets look for a user@host */
-    if ((p = strchr(iptr->nuhmask, '@'))) {
-      /* if found a @ */
-      *p++ = '\0';
-
-      if (*iptr->nuhmask != '\0')
-        strlcpy(iptr->userptr, iptr->nuhmask, iptr->usersize);
-
-      if (*p != '\0')
-        strlcpy(iptr->hostptr, p, iptr->hostsize);
-    }
-    else {
-      /* no @ found */
-      if (!iptr->nickptr || strpbrk(iptr->nuhmask, ".:"))
-        strlcpy(iptr->hostptr, iptr->nuhmask, iptr->hostsize);
-      else
-        strlcpy(iptr->nickptr, iptr->nuhmask, iptr->nicksize);
-    }
-  }
-}
-

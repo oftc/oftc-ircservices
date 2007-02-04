@@ -122,20 +122,6 @@ typedef enum
   GDENY_TYPE
 } ConfType;
 
-struct split_nuh_item
-{
-  dlink_node node;
-
-  char *nuhmask;
-  char *nickptr;
-  char *userptr;
-  char *hostptr;
-
-  size_t nicksize;
-  size_t usersize;
-  size_t hostsize;
-};
-
 struct AccessItem
 {
   void *conf_ptr;            /* pointer back to conf */

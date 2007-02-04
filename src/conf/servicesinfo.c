@@ -65,15 +65,23 @@ verify_servicesinfo(va_list args)
   if (!me.info[0])
     parse_fatal("description= field missing in servicesinfo{} section");
 
-  if (conf_cold && me.id[0])
-  {
-    hash_add_id(&me);
-    memcpy(new_uid, me.id, IRC_MAXSID);
-  }
-
   recalc_fdlimit(NULL);
 
   return pass_callback(hverify);
+}
+
+static void
+after_servicesinfo()
+{
+  if (conf_cold)
+  {
+    hash_add_client(&me);
+    if(me.id[0])
+    {
+      hash_add_id(&me);
+      memcpy(new_uid, me.id, IRC_MAXSID);
+    }
+  }
 }
 
 static void
@@ -166,7 +174,7 @@ si_set_ssl_certificate(void *value, void *unused)
 void
 init_servicesinfo(void)
 {
-  struct ConfSection *s = add_conf_section("servicesinfo", 2);
+  struct ConfSection *s = add_conf_section("servicesinfo", 1);
 
   hreset = install_hook(reset_conf, reset_servicesinfo);
   hverify = install_hook(verify_conf, verify_servicesinfo);
@@ -184,4 +192,6 @@ init_servicesinfo(void)
   add_conf_field(s, "ssl_certificate_file", CT_STRING, si_set_ssl_certificate,
     NULL);
 #endif
+
+  s->after = after_servicesinfo;
 }

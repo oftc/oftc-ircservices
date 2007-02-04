@@ -393,25 +393,6 @@ hash_ipv6(const struct irc_ssaddr *addr, int bits)
 #endif
 
 #if 0
-/* int hash_text(const char *start)
- * Input: The start of the text to hash.
- * Output: The hash of the string between 1 and (TH_MAX-1)
- * Side-effects: None.
- */
-static int
-hash_text(const char *start)
-{
-  const char *p = start;
-  unsigned long h = 0;
-
-  for (; *p; ++p)
-    h = (h << 4) - (h + ToLower(*p));
-
-  return h & (ATABLE_SIZE - 1);
-}
-#endif
-
-#if 0
 
 XXX Not used atm. 
 

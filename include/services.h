@@ -29,5 +29,6 @@ struct ServicesState_t
 };
 
 EXTERN struct ServicesState_t ServicesState;
+EXTERN int dorehash;
 
 #endif /* INCLUDED_services_h */

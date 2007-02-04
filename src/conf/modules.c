@@ -23,6 +23,7 @@
  */
 #include "stdinc.h"
 #include "conf/conf.h"
+#include "conf/service.h"
 #include "lua_module.h"
 #include "ruby_module.h"
 #include <sys/types.h>
@@ -176,7 +177,6 @@ load_shared_module(const char *name, const char *dir, const char *fname)
 #endif
   }
 
-  
   if (!(handle = modload(path, &base)))
   {
     ilog(L_DEBUG, "Failed to load %s: %s", path, dlerror());
@@ -298,8 +298,8 @@ boot_modules(char cold)
         load_shared_module(*cp, MODPATH, buf);
       }
 
-      if ((moddir = opendir(MODPATH)) == NULL)
-        ilog(L_WARN, "Could not load modules from %s: %s", MODPATH,
+      if ((moddir = opendir(AUTOMODPATH)) == NULL)
+        ilog(L_WARN, "Could not load modules from %s: %s", AUTOMODPATH,
           strerror(errno));
       else
       {
@@ -309,7 +309,7 @@ boot_modules(char cold)
           if ((pp = strchr(buf, '.')) != NULL)
             *pp = 0;
           if (!find_module(buf, NO))
-            load_shared_module(buf, MODPATH, ldirent->d_name);
+            load_shared_module(buf, AUTOMODPATH, ldirent->d_name);
         }
         closedir(moddir);
       }
@@ -327,6 +327,14 @@ boot_modules(char cold)
     {
       services_die("No core modules", 0);
     }
+  }
+
+  DLINK_FOREACH(ptr, service_confs.head)
+  {
+    struct ServiceConf *sc = ptr->data;
+
+    if(!find_module(sc->module, NO))
+      load_shared_module(sc->name, MODPATH, sc->module);
   }
 }
 

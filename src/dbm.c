@@ -159,7 +159,6 @@ init_db()
 
   Database.yada = yada_init(dbstr, 0);
   MyFree(dbstr);
-  on_nick_drop_cb = register_callback("Nick DROP Callback", NULL);
 
   snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
   if(db_log_fb == NULL)
