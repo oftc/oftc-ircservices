@@ -3,8 +3,6 @@
   should have an INSTALL file of our own
 
 . Does changing passwords work yet? -w - it should
-- Do we reopen logfiles on HUP yet? -w - we do not
-. db.log should actually be created. -w
 
 Legend:
         - Not done
