@@ -232,9 +232,15 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
+#ifdef HAVE_LUA
   init_lua();
+#endif
+#ifdef HAVE_PERL
   init_perl();
+#endif
+#ifdef HAVE_RUBY
   init_ruby();
+#endif
 
   boot_modules(1);
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */

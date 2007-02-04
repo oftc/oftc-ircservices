@@ -13,27 +13,38 @@ AC_DEFUN([AX_CHECK_LIB_IPV6],[
 ])dnl }}}
 dnl {{{ ax_check_lib_ruby
 AC_DEFUN([AX_CHECK_LIB_RUBY],[
-  AC_PATH_PROG([RUBY],[ruby],[no])
-  if test "$RUBY" = "no" ; then
-    $have_ruby = "no"
-  fi
-  AC_SEARCH_LIBS([ruby_init],[ruby1.8],[have_ruby="yes"],[have_ruby="no"])
-  if test "$have_ruby" = "yes" ; then
-    ruby_cflags=$($RUBY -r mkmf -e 'print "-I" + Config::CONFIG[["archdir"]]')
-    ruby_ldflags=$($RUBY -r mkmf -e 'print "-L" + Config::CONFIG[["libdir"]] + " " + Config::CONFIG[["LIBS"]]')
-    AC_SUBST([RUBY_CFLAGS],["$ruby_cflags"])
-    AC_SUBST([RUBY_LDFLAGS],["$ruby_ldflags"])
+  AC_ARG_ENABLE([ruby],[AC_HELP_STRING([--disable-ruby],[Disable Ruby scripting engine])],[use_ruby="$enableval"],[use_ruby="yes"])
+  if test "$use_ruby" = "no"; then
+    have_ruby="no"
   else
-    AC_MSG_WARN([Ruby 1.8 not found, disabling])
+    AC_PATH_PROG([RUBY],[ruby],[no])
+    if test "$RUBY" = "no" ; then
+      have_ruby="no"
+    else
+      AC_SEARCH_LIBS([ruby_init],[ruby1.8],[have_ruby="yes"],[have_ruby="no"])
+      if test "$have_ruby" = "yes" ; then
+        ruby_cflags=$($RUBY -r mkmf -e 'print "-I" + Config::CONFIG[["archdir"]]')
+        ruby_ldflags=$($RUBY -r mkmf -e 'print "-L" + Config::CONFIG[["libdir"]] + " " + Config::CONFIG[["LIBS"]]')
+        AC_SUBST([RUBY_CFLAGS],["$ruby_cflags"])
+        AC_SUBST([RUBY_LDFLAGS],["$ruby_ldflags"])
+      else
+        AC_MSG_WARN([Ruby 1.8 not found, disabling])
+      fi
+    fi
   fi
   AM_CONDITIONAL([USE_RUBY], [test "$have_ruby" = "yes"])
 ])dnl }}}
 dnl {{{ ax_check_lib_lua
 AC_DEFUN([AX_CHECK_LIB_LUA],[
-  AC_CHECK_HEADERS([lua5.1/lua.h lua5.1/lualib.h lua5.1/lauxlib.h],[have_lua="yes"],[have_lua="no"])
-  AC_SEARCH_LIBS([lua_pcall],[lua5.1],[have_loa="yes"],[have_lua="no"])
-  if test "$have_lua" = "no" ; then
-    AC_MSG_WARN([LUA 5.1 was not found, disabling])
+  AC_ARG_ENABLE([lua],[AC_HELP_STRING([--disable-lua],[Disable LUA scripting engine])],[use_lua="$enableval"],[use_lua="yes"])
+  if test "$use_lua" = "no"; then
+    have_lua="no"
+  else
+    AC_CHECK_HEADERS([lua5.1/lua.h lua5.1/lualib.h lua5.1/lauxlib.h],[have_lua="yes"],[have_lua="no"])
+    AC_SEARCH_LIBS([lua_pcall],[lua5.1],[have_loa="yes"],[have_lua="no"])
+    if test "$have_lua" = "no" ; then
+      AC_MSG_WARN([LUA 5.1 was not found, disabling])
+    fi
   fi
   AM_CONDITIONAL([USE_LUA], [test "$have_lua" = "yes"])
 ])dnl }}}
@@ -322,15 +333,22 @@ AC_DEFUN([AC_DEFINE_DIR], [
 dnl {{{ ax_check_perl
 AC_DEFUN([AX_CHECK_PERL],[
 	AC_MSG_CHECKING(for working Perl support)
+  AC_ARG_ENABLE([perl],[AC_HELP_STRING([--disable-perl],[Disable Perl scripting engine])],[use_perl="$enableval"],[use_perl="yes"])
+  if test "$use_perl" = "no"; then
+    have_perl="no"
+  else
+    AC_PATH_PROG([PERL],[perl],[no])
+    if test "$PERL" = "no" ; then
+      have_perl="no"
+    else
+      PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
+      PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts 2>/dev/null`
+    
+      AC_SUBST(PERL_CFLAGS)
+      AC_SUBST(PERL_LDFLAGS)
 
-  PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
-  PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts 2>/dev/null`
-
-  PERL_CFLAGS=`echo $PERL_CFLAGS | $perlpath -pe 's/^(.* )?-[^DUIfm][^ ]+/\1/g; s/^(.* )?\+[^ ]+/\1/g'`
-
-  AC_SUBST(PERL_CFLAGS)
-  AC_SUBST(PERL_LDFLAGS)
-
-  have_perl="yes"
+      have_perl="yes"
+    fi
+  fi
   AM_CONDITIONAL([USE_PERL], [test "$have_perl" = "yes"])
 ]) dnl }}}
