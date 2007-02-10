@@ -25,7 +25,7 @@ NS_HELP_ID_LONG
 NS_HELP_DROP_SHORT      
 	%s: Releases your nickname for use. 
 NS_HELP_DROP_LONG
-	Usage: REGISTER
+	Usage: DROP
 	Releases your nickname for use and deletes it from the database.  
 	This cannot be undone.
 NS_HELP_ACCESS_SHORT		
