@@ -1,6 +1,6 @@
 # Copyright (C) 2006 Luca Filipozzi
 MAINTAINERCLEANFILES=Makefile.in
-INCLUDES=-I$(top_srcdir)/libio -I$(top_srcdir)/include
+INCLUDES=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/languages
 if USE_SHARED_MODULES
 AM_LDFLAGS=-no-undefined -module -avoid-version
 pkglib_LTLIBRARIES=chanserv.la operserv.la nickserv.la irc.la hybrid.la hybridts6.la oftc.la

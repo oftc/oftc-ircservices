@@ -5,4 +5,4 @@ BUILT_SOURCES=chanserv-lang.h nickserv-lang.h operserv-lang.h services-lang.h
 CLEANFILES=$(BUILT_SOURCES)
 
 %-lang.h: %.en.lang
-	$(TAIL) +2 $< | $(EGREP) -v "^[[:space:]]" | $(AWK) '{print "#define " $1 " " FNR}' > $@
+	$(TAIL) -n +2 $< | $(EGREP) -v "^[[:space:]]" | $(AWK) '{print "#define " $$1 " " FNR}' > $@

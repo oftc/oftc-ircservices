@@ -68,6 +68,7 @@ static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_cloak(struct Service *, struct Client *, int, char *[]);
 static void m_set_cloakstring(struct Service *, struct Client *, int, char *[]);
 static void m_set_master(struct Service *, struct Client *, int, char *[]);
+static void m_set_private(struct Service *, struct Client *, int, char *[]);
 
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
@@ -117,6 +118,8 @@ static struct ServiceMessage set_sub[] = {
     NS_HELP_SET_CLOAKSTRING_LONG, m_set_cloakstring },
   { NULL, "MASTER", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
     NS_HELP_SET_MASTER_LONG, m_set_master },
+  { NULL, "PRIVATE", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_PRIVATE_SHORT, 
+    NS_HELP_SET_PRIVATE_LONG, m_set_private },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, NULL }
 };
 
@@ -711,6 +714,41 @@ m_set_master(struct Service *service, struct Client *client,
 }
 
 static void
+m_set_private(struct Service *service, struct Client *client, 
+    int parc, char *parv[])
+{
+  struct Nick *nick = client->nickname;
+  unsigned char flag;
+  
+  if(parc == 0)
+  {
+    reply_user(service, service, client, NS_SET_VALUE, "PRIVATE", 
+       nick->priv ? "ON" : "OFF");
+    return;
+  }
+
+  if(strcasecmp(parv[1], "ON") == 0)
+    flag = 1;
+  else if(strcasecmp(parv[1], "OFF") == 0)
+    flag = 0;
+  else
+  {
+    reply_user(service, service, client, NS_SET_VALUE, "PRIVATE", 
+        nick->priv ? "ON" : "OFF");
+    return;
+  }
+
+  if(db_set_bool(SET_NICK_PRIVATE, nick->id, flag))
+  {
+    nick->priv = flag;
+    reply_user(service, service, client, NS_SET_SUCCESS, "PRIVATE", flag ? "ON" : "OFF");
+  }
+  else
+    reply_user(service, service, client, NS_SET_FAILED, "PRIVATE", parv[1]);
+}
+
+
+static void
 m_access_add(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
@@ -922,7 +960,8 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       
   reply_user(service, service, client, NS_INFO, regtime, 
       (nick->last_quit == NULL) ? "Unknown" : nick->last_quit, quittime, 
-      nick->email, (nick->url == NULL) ? "Not set" : nick->url, 
+      (nick->priv) ? "Private" : nick->email, 
+      (nick->url == NULL) ? "Not set" : nick->url, 
       (nick->cloak[0] == '\0') ? "Not set" : nick->cloak);
 
   if(IsIdentified(client) && (client->nickname == nick || 

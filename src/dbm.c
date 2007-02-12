@@ -33,9 +33,9 @@ static FBFILE *db_log_fb;
 
 query_t queries[QUERY_COUNT] = { 
   { "SELECT account.id, (SELECT nick FROM nickname WHERE id=account.primary_nick), "
-    "password, salt, url, email, cloak, flag_enforce, "
-    "flag_secure, flag_verified, flag_cloak_enabled, "
-    "flag_admin, flag_email_verified, language, last_host, last_realname, "
+    "password, salt, url, email, cloak, flag_enforce, flag_secure, "
+    "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
+    "flag_private, language, last_host, last_realname, "
     "last_quit_msg, last_quit_time, account.reg_time, nickname.reg_time, "
     "last_seen FROM account, nickname WHERE account.id = nickname.user_id AND "
     "lower(nick) = lower(?v)", NULL, QUERY },
@@ -90,6 +90,7 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE account SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_enforce=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_admin=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE account SET flag_private=?B WHERE id=?d", NULL, EXECUTE },
   { "DELETE FROM account_access WHERE parent_id=?d AND entry=?v", NULL,
     EXECUTE },
   { "DELETE FROM account_access WHERE parent_id=?d", NULL, EXECUTE },
@@ -100,12 +101,12 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE nickname SET user_id=?d WHERE user_id=?d", NULL, EXECUTE },
   { "INSERT INTO account (password, salt, url, email, cloak, flag_enforce, "
     "flag_secure, flag_verified, flag_cloak_enabled, "
-    "flag_admin, flag_email_verified, language, last_host, last_realname, "
-    "last_quit_msg, last_quit_time, reg_time) SELECT password, salt, url, "
-    "email, cloak, flag_enforce, flag_secure, flag_verified, "
-    "flag_cloak_enabled, flag_admin, flag_email_verified, language, last_host, "
-    "last_realname, last_quit_msg, last_quit_time, reg_time FROM account "
-    "WHERE id=?d", NULL, EXECUTE },
+    "flag_admin, flag_email_verified, flag_private, language, last_host, "
+    "last_realname, last_quit_msg, last_quit_time, reg_time) "
+    "SELECT password, salt, url, email, cloak, flag_enforce, flag_secure, "
+    "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
+    "flag_private, language, last_host, last_realname, last_quit_msg, "
+    "last_quit_time, reg_time FROM account WHERE id=?d", NULL, EXECUTE },
   { "SELECT nick FROM nickname WHERE user_id=?d", NULL, QUERY },
   { "UPDATE channel SET description=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET url=?v WHERE id=?d", NULL, EXECUTE },
@@ -311,10 +312,10 @@ db_find_nick(const char *nick)
  
   nick_p = MyMalloc(sizeof(struct Nick));
  
-  brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
+  brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
     &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->url, &nick_p->email,
     &retcloak, &nick_p->enforce, &nick_p->secure, &nick_p->verified, 
-    &nick_p->cloak_on, &nick_p->admin, 
+    &nick_p->cloak_on, &nick_p->admin, &nick_p->priv,
     &nick_p->email_verified, &nick_p->language, &nick_p->last_host,
     &nick_p->last_realname, &nick_p->last_quit,
     &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->nick_reg_time,

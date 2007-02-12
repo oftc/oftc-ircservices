@@ -17,6 +17,7 @@ CREATE TABLE account (
   flag_cloak_enabled  BOOLEAN NOT NULL DEFAULT FALSE,
   flag_admin          BOOLEAN NOT NULL DEFAULT FALSE,
   flag_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  flag_private        BOOLEAN NOT NULL DEFAULT FALSE,
   language            INTEGER NOT NULL default '0',
   last_host           VARCHAR(255),
   last_realname       VARCHAR(255),

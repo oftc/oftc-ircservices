@@ -99,6 +99,14 @@ NS_HELP_SET_MASTER_SHORT
 	moo
 NS_HELP_SET_MASTER_LONG
 	moo
+NS_HELP_SET_PRIVATE_SHORT
+	Makes various parts of your nickname information private
+NS_HELP_SET_PRIVATE_LONG
+	Usage SET PRIVATE (ON|OFF)
+	
+	Enables the private flag on your nickname which prevents your email address
+	being shown in an INFO request, and also prevents your nickname showing in a
+	LIST.
 NS_HELP_GHOST_SHORT			
 	%s: Terminate a GHOST IRC session.
 NS_HELP_GHOST_LONG     

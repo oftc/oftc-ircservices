@@ -24,7 +24,7 @@ if USE_PERL
 services_LDFLAGS+=perl_module/libperl_module.a 
 endif
 services_LDFLAGS+=@PERL_LDFLAGS@ -export-dynamic
-services_CFLAGS=-I$(top_srcdir)/libio -I$(top_srcdir)/include
+services_CFLAGS=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/languages
 INCLUDES=@INCLTDL@
 if USE_SHARED_MODULES
 services_LDADD+=
