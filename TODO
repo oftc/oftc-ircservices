@@ -3,6 +3,8 @@
   should have an INSTALL file of our own
 
 . Does changing passwords work yet? -w - it should
+- Make the yada configure check not suck
+- Talk TS6 properly
 
 Legend:
         - Not done
