@@ -369,6 +369,17 @@ do_help(struct Service *service, struct Client *client,
       return;
     }
 
+    char header[22] = "*** ";
+    char footer[29] = "*** End of ";
+
+    strlcat(header, service->name, sizeof(service->name));
+    strcat(header, " Help ***");
+
+    strlcat(footer, service->name, sizeof(service->name));
+    strcat(footer, " Help ***");
+
+    reply_user(service, service, client, header, "");
+
     sub = msg->sub;
     
     if(parc > 1)
@@ -400,6 +411,9 @@ do_help(struct Service *service, struct Client *client,
       if(sub->cmd == NULL)
         sub = NULL;
     }
+    
+    reply_user(service, service, client, footer, "");
+    
     return;
   }
   do_serv_help_messages(service, client);
