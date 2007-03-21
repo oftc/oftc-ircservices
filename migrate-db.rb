@@ -18,8 +18,8 @@ CI_VERBOSE      = 0x800
 
 $oftcid = -1
 
-$nicks = []
-$channels = []
+$nicks = {}
+$channels = {}
 
 def bit_check(flags, level)
   if (flags & level > 0) then true else false end
@@ -32,8 +32,10 @@ def process_nicks()
     ORDER BY link_id")
   source_handle.execute
 
+  skipped = {}
+
   while row = source_handle.fetch do
-    if row["link_id"] != 0
+    if row["link_id"].to_i != 0
       linkid = row["link_id"].to_i
       if $nicks.include?(linkid)
         insert_handle = $dest.prepare("INSERT INTO nickname(nick, user_id,
@@ -48,8 +50,9 @@ def process_nicks()
 
         insert_handle.finish
       else
-        puts "link id not in yet retrieved"
-        exit(-1)
+        puts "link id: #{linkid} not in yet handled"
+	skipped[linkid] = [] unless skipped[linkid]
+	skipped[linkid] << row
       end
     else
       insert_handle = $dest.prepare("INSERT INTO account(password, salt, url, 
@@ -67,8 +70,7 @@ def process_nicks()
       insert_handle.execute(row["pass"], row["salt"], row["url"], row["email"],
         row["cloak_string"], row["last_usermask"], row["last_realname"],
         row["last_quit"], row["last_quit_time"], row["time_registered"],
-        row["nick"], row["last_seen"], flag_enforce, flag_secure, flag_cloak,
-        flag_private)
+        flag_cloak, flag_secure, flag_enforce, flag_private)
 
       insert_handle.finish
 
@@ -87,9 +89,15 @@ def process_nicks()
       $nicks[row["nick_id"].to_i] = accid[0].to_i
 
       nickid = $dest.select_one("SELECT currval('nickname_id_seq')")
-      $dest.execute("UDPATE account SET primary_nick = ? WHERE id = ?",
+      $dest.execute("UPDATE account SET primary_nick = ? WHERE id = ?",
         nickid[0], accid[0])
     end
+  end
+
+  if skipped.length > 1
+  	skipped.each_key do |x|
+		puts x
+	end
   end
 end
 
@@ -110,7 +118,7 @@ def process_nickaccess()
 
   while row = handle.fetch do
     $dest.execute("INSERT INTO account_access (parent_id, entry) VALUES(?, ?)",
-      row["nick_id"], row["userhost"])
+      $nicks[row["nick_id"]], row["userhost"])
   end
 
   handle.finish
@@ -146,7 +154,7 @@ def process_channels()
 
     insert_handle.finish
 
-    cid = $dest.select_ond("SELECT currval('channel_id_seq')")
+    cid = $dest.select_one("SELECT currval('channel_id_seq')")
 
     chanid = cid[0].to_i
     oldchanid = row["channel_id"].to_i
@@ -172,14 +180,14 @@ def process_channels()
   handle.finish
 end
 
-def process_channaccess()
+def process_chanaccess()
   handle = $source.prepare("SELECT channel.channel_id, level, nick_id, 
     founder, successor FROM chanaccess, channel
     WHERE chanaccess.channel_id = channel.channel_id ORDER BY channel_id")
   handle.execute
 
   lastid = -1
-  done = []
+  done = {}
 
   while row = handle.fetch do
     chanid = row["channel_id"].to_i
@@ -188,13 +196,13 @@ def process_channaccess()
     successor = row["successor"].to_i
     level = row["level"].to_i
 
-    done.each { |key| done.remove(key) } if lastid != chanid
+    done.each_key { |key| done.delete(key) } if lastid != chanid
 
-    next if accid == founder or 
-      accid == successor or
-      done.include?($nicks[accid]) or
-      $nicks[accid] == $nicks[founder] or
-      ($nicks.include?(successor) and $nicks[successor] == $nicks[accid])
+    if (accid == founder || accid == successor || done.include?($nicks[accid]) ||
+      $nicks[accid] == $nicks[founder] ||
+      ($nicks.include?(successor) and $nicks[successor] == $nicks[accid])) then
+      next
+    end
 
     insert_handle = $dest.prepare("INSERT INTO channel_access (channel_id,
       account_id, level) VALUES (?, ?, ?)");
@@ -223,7 +231,7 @@ conf = YAML::load(File.open(conffile))
 $source = DBI.connect(conf["source_str"], conf["source_user"], conf["source_pass"])
 $dest   = DBI.connect(conf["dest_str"], conf["dest_user"], conf["dest_pass"])
 
-$dest.begin
+$dest.do("BEGIN")
 
 start = Time.now
 puts "process_nicks #{Time.now}"
