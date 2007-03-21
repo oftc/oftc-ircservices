@@ -196,7 +196,10 @@ def process_chanaccess()
     successor = row["successor"].to_i
     level = row["level"].to_i
 
-    done.each_key { |key| done.delete(key) } if lastid != chanid
+    if lastid != chanid
+      lastid = chanid
+      done.each_key { |key| done.delete(key) }
+    end
 
     if (accid == founder || accid == successor || done.include?($nicks[accid]) ||
       $nicks[accid] == $nicks[founder] ||
@@ -254,7 +257,7 @@ puts "process_chanaccess #{Time.now} (#{total})"
 process_chanaccess()
 
 total = Time.now - start
-puts "done #{time.now} total #{total}"
+puts "done #{Time.now} total #{total}"
 
 $dest.commit
 
