@@ -48,6 +48,7 @@ static void m_join(struct Client *, struct Client *, int, char *[]);
 static void m_tmode(struct Client *, struct Client *, int, char *[]);
 static void m_bmask(struct Client *, struct Client *, int, char *[]);
 static void m_svsmode(struct Client *, struct Client *, int, char *[]);
+static void m_eob(struct Client *, struct Client *, int, char *[]);
 
 static struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
@@ -93,6 +94,10 @@ static struct Message svsmode_msgtab = {
   "SVSMODE", 0, 0, 2, 0, 0, 0, { m_svsmode, m_svsmode }
 };
 
+static struct Message eob_msgtab = {
+  "EOB", 0, 0, 0, 0, 0, 0, { m_eob, m_eob } 
+};
+
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
   { MODE_TOPICLIMIT,  't' },
@@ -124,6 +129,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&tmode_msgtab);
   mod_add_cmd(&bmask_msgtab);
   mod_add_cmd(&svsmode_msgtab);
+  mod_add_cmd(&eob_msgtab);
 }
 
 CLEANUP_MODULE
@@ -137,6 +143,7 @@ CLEANUP_MODULE
   mod_del_cmd(&tmode_msgtab);
   mod_del_cmd(&bmask_msgtab);
   mod_del_cmd(&svsmode_msgtab);
+  mod_del_cmd(&eob_msgtab);
 
   uninstall_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
   uninstall_hook(send_umode_cb, oftc_sendmsg_svsmode);
@@ -185,6 +192,12 @@ static void
 m_pass(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   strlcpy(client->id, parv[4], sizeof(client->id));
+}
+
+static void
+m_eob(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  ilog(L_INFO, "Completed server burst");
 }
 
 static void
