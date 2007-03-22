@@ -1070,6 +1070,15 @@ ns_on_umode_change(va_list args)
   int what            = va_arg(args, int);
   int umode           = va_arg(args, int);
 
+  if(what == MODE_ADD && umode == UMODE_IDENTIFIED)
+  {
+    user->nickname = db_find_nick(user->name);
+    if(user->nickname != NULL)
+    {
+      dlinkFindDelete(&nick_enforce_list, user);
+      identify_user(user);
+    }
+  }
   return pass_callback(ns_nick_hook, user, what, umode);
 }
 
@@ -1210,7 +1219,6 @@ ns_on_newuser(va_list args)
 
  if(IsIdentified(newuser))
   {
-    reply_user(nickserv, nickserv, newuser, NS_NICK_AUTOID, newuser->name);
     newuser->nickname = nick_p;
     identify_user(newuser);
     return pass_callback(ns_newuser_hook, newuser);

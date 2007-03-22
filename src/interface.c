@@ -150,7 +150,7 @@ introduce_server(const char *name, const char *gecos)
 void
 tell_user(struct Service *service, struct Client *client, char *text)
 {
-  execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, text);
+  //execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, text);
 }
 
 void
@@ -190,16 +190,24 @@ reply_user(struct Service *source, struct Service *service,
     s += strcspn(s, "\n");
     if (*s)
       *s++ = 0;
-    execute_callback(send_notice_cb, me.uplink, source->name, client->name, 
-        *t != '\0' ? t : " ");
+    if(ServicesState.debugmode)
+      ilog(L_DEBUG, "Was going to send: %s to %s", t, client->name);
+    else
+      execute_callback(send_notice_cb, me.uplink, source->name, client->name, 
+          *t != '\0' ? t : " ");
   }
 }
 
 void
 kill_user(struct Service *service, struct Client *client, const char *reason)
 {
-  execute_callback(send_kill_cb, me.uplink, service, client, reason);
-  exit_client(client, &me, reason);
+  if(ServicesState.debugmode)
+    ilog(L_DEBUG, "Was going to kill: %s (%s)", client->name, reason);
+  else
+  {
+    execute_callback(send_kill_cb, me.uplink, service, client, reason);
+    exit_client(client, &me, reason);
+  }
 }
 
 void
@@ -212,15 +220,19 @@ void
 send_nick_change(struct Service *service, struct Client *client, 
     const char *newnick)
 {
-  if(!IsMe(client->from))
-    execute_callback(send_nick_cb, me.uplink, client, newnick);
+  if(!ServicesState.debugmode)
+  {
+    if(!IsMe(client->from))
+      execute_callback(send_nick_cb, me.uplink, client, newnick);
+  }
 }
 
 void
 send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
 {
-  execute_callback(send_akill_cb, me.uplink, service, setter, akill->mask,
-      akill->reason);
+  if(!ServicesState.debugmode)
+    execute_callback(send_akill_cb, me.uplink, service, setter, akill->mask,
+        akill->reason);
 }
 
 void
@@ -234,6 +246,9 @@ set_limit(struct Service *service, struct Channel *chptr, int limit)
 {
   char limitstr[16];
 
+  if(ServicesState.debugmode)
+    return;
+
   snprintf(limitstr, 16, "%d", limit);
   execute_callback(send_cmode_cb, me.uplink, service->name, chptr->chname,
       "+l", limitstr);
@@ -244,7 +259,10 @@ void
 send_cmode(struct Service *service, struct Channel *chptr, const char *mode,
     const char *param)
 {
-  execute_callback(send_cmode_cb, me.uplink, service->name, chptr->chname, 
+   if(ServicesState.debugmode)
+    return;
+
+ execute_callback(send_cmode_cb, me.uplink, service->name, chptr->chname, 
       mode, param);
 }
 
@@ -252,6 +270,9 @@ void
 send_topic(struct Service *service, struct Channel *chptr, 
     struct Client *client, const char *topic)
 {
+  if(ServicesState.debugmode)
+    return;
+
   execute_callback(send_topic_cb, me.uplink, service, chptr, client,
       topic);
 }
@@ -260,39 +281,57 @@ void
 kick_user(struct Service *service, struct Channel *chptr, const char *client, 
     const char *reason)
 {
-  execute_callback(send_kick_cb, me.uplink, service->name, chptr->chname, 
+   if(ServicesState.debugmode)
+    return;
+
+ execute_callback(send_kick_cb, me.uplink, service->name, chptr->chname, 
       client, reason);
 }
 
 void
 op_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
-  send_cmode(service, chptr, "+o", client->name);
+    if(ServicesState.debugmode)
+    return;
+
+send_cmode(service, chptr, "+o", client->name);
 }
 
 void
 deop_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
-  send_cmode(service, chptr, "-o", client->name);
+    if(ServicesState.debugmode)
+    return;
+
+    send_cmode(service, chptr, "-o", client->name);
 }
 
 void
 devoice_user(struct Service *service, struct Channel *chptr, 
     struct Client *client)
 {
-  send_cmode(service, chptr, "-v", client->name);
+   if(ServicesState.debugmode)
+    return;
+
+ send_cmode(service, chptr, "-v", client->name);
 }
 
 void
 invite_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
-  execute_callback(send_invite_cb, me.uplink, service, chptr, client);
+    if(ServicesState.debugmode)
+    return;
+
+execute_callback(send_invite_cb, me.uplink, service, chptr, client);
 }
 
 void
 ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
   struct Client *client = find_client(service->name);
+  if(ServicesState.debugmode)
+    return;
+
 
   send_cmode(service, chptr, "+b", mask);
   add_id(client, chptr, (char*)mask, CHFL_BAN);
@@ -301,7 +340,10 @@ ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 void
 unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
-  send_cmode(service, chptr, "-b", mask);
+   if(ServicesState.debugmode)
+    return;
+
+ send_cmode(service, chptr, "-b", mask);
   del_id(chptr, (char*)mask, CHFL_BAN);
 }
   
@@ -330,7 +372,10 @@ identify_user(struct Client *client)
 void
 cloak_user(struct Client *client, char *cloak)
 {
-  execute_callback(send_cloak_cb, client, cloak);
+    if(ServicesState.debugmode)
+    return;
+
+execute_callback(send_cloak_cb, client, cloak);
 }
 
 void

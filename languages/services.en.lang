@@ -6,9 +6,9 @@ SERV_SUB_HELP_NOT_AVIL
 SERV_HELP_SHORT
 	%s: %s
 SERV_HELP_HEADER
-        *** %s Help *** 
+	      *** %s Help *** 
 SERV_HELP_FOOTER
-        *** End of %s Help ***
+	      *** End of %s Help ***
 SERV_UNKNOWN_CMD
 	Unknown command %s, /msg %s HELP for help.
 SERV_INSUFF_PARAM

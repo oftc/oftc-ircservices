@@ -48,6 +48,8 @@ static struct lgetopt myopts[] = {
    YESNO, "Run in foreground (don't detach)"},
   {"version",    &ServicesState.printversion,
    YESNO, "Print version and exit"},
+  {"debugmode",  &ServicesState.debugmode,
+      YESNO, "Set debug mode and disable all interaction"},
   {"help", NULL, USAGE, "Print this text"},
   {NULL, NULL, STRING, NULL},
 };

@@ -16,6 +16,7 @@ struct ServicesState_t
   char *namesuffix;
   int foreground;
   int printversion;
+  int debugmode;
 };
 
 EXTERN struct ServicesState_t ServicesState;
