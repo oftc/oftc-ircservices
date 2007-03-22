@@ -106,7 +106,7 @@ def process_admins
   handle.execute
 
   while row = handle.fetch do
-    $dest.execute("UPDATE account SET flag_admin=true WHERE id = ?", row["nick_id"])
+    $dest.execute("UPDATE account SET flag_admin=true WHERE id = ?", $nicks[row["nick_id"]])
   end
 
   handle.finish
