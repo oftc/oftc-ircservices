@@ -259,7 +259,7 @@ process_chanaccess()
 total = Time.now - start
 puts "done #{Time.now} total #{total}"
 
-$dest.commit
+$dest.do("COMMIT")
 
 $source.disconnect
 $dest.disconnect
