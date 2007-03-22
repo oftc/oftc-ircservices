@@ -414,7 +414,7 @@ do_help(struct Service *service, struct Client *client,
       return;
     }
 
-    reply_user(service, service, client, SERV_HELP_HEADER, "");
+    reply_user(service, NULL, client, SERV_HELP_HEADER, "");
 
     sub = msg->sub;
     
@@ -429,7 +429,7 @@ do_help(struct Service *service, struct Client *client,
         }
         sub++;
       }
-      reply_user(service, service, client, SERV_SUB_HELP_NOT_AVIL, command, parv[2]);
+      reply_user(service, NULL, client, SERV_SUB_HELP_NOT_AVIL, command, parv[2]);
       return;
     }
 
@@ -448,7 +448,7 @@ do_help(struct Service *service, struct Client *client,
         sub = NULL;
     }
     
-    reply_user(service, service, client, SERV_HELP_FOOTER, "");
+    reply_user(service, NULL, client, SERV_HELP_FOOTER, "");
     
     return;
   }
