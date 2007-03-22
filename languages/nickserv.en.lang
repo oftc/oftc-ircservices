@@ -157,6 +157,10 @@ NS_HELP_SENDPASS_SHORT
 	%s: Send a password reset request. 
 NS_HELP_SENDPASS_LONG   
 	Send a password reset request.
+NS_HELP_SUDO_SHORT
+	%s: Execute a command as another user.
+NS_HELP_SUDO_LONG
+	Execute a command as another user.
 NS_ALREADY_REG          
 	Nickname %s is already registered.
 NS_REG_COMPLETE         

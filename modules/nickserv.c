@@ -58,6 +58,7 @@ static void m_info(struct Service *,struct Client *, int, char *[]);
 static void m_forbid(struct Service *,struct Client *, int, char *[]);
 static void m_unforbid(struct Service *,struct Client *, int, char *[]);
 static void m_regain(struct Service *,struct Client *, int, char *[]);
+static void m_sudo(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -178,6 +179,11 @@ static struct ServiceMessage regain_msgtab = {
   NS_HELP_REGAIN_LONG, m_regain
 };
 
+static struct ServiceMessage sudo_msgtab = {
+  NULL, "SUDO", 0, 2, 0, ADMIN_FLAG, NS_HELP_SUDO_SHORT,
+  NS_HELP_SUDO_LONG, m_sudo
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -203,6 +209,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &unforbid_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &regain_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &id_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &sudo_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -235,6 +242,7 @@ CLEANUP_MODULE
   mod_del_servcmd(&nickserv->msg_tree, &unforbid_msgtab);
   mod_del_servcmd(&nickserv->msg_tree, &regain_msgtab);
   mod_del_servcmd(&nickserv->msg_tree, &id_msgtab);
+  mod_del_servcmd(&nickserv->msg_tree, &sudo_msgtab);
   dlinkDelete(&nickserv->node, &services_list);
   eventDelete(process_enforce_list, NULL);
   eventDelete(process_release_list, NULL);
@@ -1058,9 +1066,54 @@ m_regain(struct Service *service, struct Client *client, int parc,
     enforcer->release_to = client;
     guest_user(enforcer);
   }
-  
+ 
   identify_user(client);
   reply_user(service, service, client, NS_REGAINED, client->name);
+}
+
+static void 
+m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Nick *oldnick, *nick;
+  struct ServicesMessage *mptr;
+  char **newparv;
+  int i, oldaccess;
+  char buf[IRC_BUFSIZE] = { '\0' };
+
+  oldnick = client->nickname;
+  oldaccess = client->access;
+
+  nick = db_find_nick(parv[1]);
+  if(nick == NULL)
+  {
+    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
+    return;
+  }
+
+  client->nickname = nick;
+  if(nick->admin)
+    client->access = ADMIN_FLAG;
+  else
+    client->access = IDENTIFIED_FLAG;
+
+  newparv = MyMalloc(4 * sizeof(char*));
+
+  newparv[0] = parv[0];
+  newparv[1] = service->name;
+
+  join_params(buf, parc-1, &parv[2]);
+
+  DupString(newparv[2], buf);
+
+  for(i = 3; i < parc; i++)
+    newparv[i] = parv[i];
+
+  process_privmsg(me.uplink, client, 3, newparv);
+  MyFree(newparv[2]);
+  MyFree(newparv);
+
+  client->nickname = oldnick;
+  client->access = oldaccess;
 }
 
 static void*
