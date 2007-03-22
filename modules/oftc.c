@@ -47,6 +47,7 @@ static void m_uid(struct Client *, struct Client *, int, char *[]);
 static void m_join(struct Client *, struct Client *, int, char *[]);
 static void m_tmode(struct Client *, struct Client *, int, char *[]);
 static void m_bmask(struct Client *, struct Client *, int, char *[]);
+static void m_svsmode(struct Client *, struct Client *, int, char *[]);
 
 static struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
@@ -88,6 +89,10 @@ static struct Message bmask_msgtab = {
   { m_bmask, m_bmask}
 };
 
+static struct Message svsmode_msgtab = {
+  "SVSMODE", 0, 0, 2, 0, 0, 0, { m_svsmode, m_svsmode }
+};
+
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
   { MODE_TOPICLIMIT,  't' },
@@ -118,6 +123,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&join_msgtab);
   mod_add_cmd(&tmode_msgtab);
   mod_add_cmd(&bmask_msgtab);
+  mod_add_cmd(&svsmode_msgtab);
 }
 
 CLEANUP_MODULE
@@ -128,7 +134,9 @@ CLEANUP_MODULE
   mod_del_cmd(&sid_msgtab);
   mod_del_cmd(&uid_msgtab);
   mod_del_cmd(&join_msgtab);
-  mod_add_cmd(&tmode_msgtab);
+  mod_del_cmd(&tmode_msgtab);
+  mod_del_cmd(&bmask_msgtab);
+  mod_del_cmd(&svsmode_msgtab);
 
   uninstall_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
   uninstall_hook(send_umode_cb, oftc_sendmsg_svsmode);
@@ -410,7 +418,25 @@ m_bmask(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
   } while (s != NULL);
 }
 
-  static void *
+static void
+m_svsmode(struct Client *client_p, struct Client *source_p, int parc, 
+    char *parv[])
+{
+  struct Client *target_p;
+  
+  if((target_p = find_client(parv[1])) == NULL)
+    return;
+
+  if(*parv[2] == '+')
+  {
+    execute_callback(on_umode_change_cb, target_p, MODE_ADD, UMODE_IDENTIFIED);
+    target_p->umodes |= UMODE_IDENTIFIED;
+  }
+  else
+    target_p->umodes &= ~UMODE_IDENTIFIED;
+}
+
+static void *
 oftc_server_connected(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);

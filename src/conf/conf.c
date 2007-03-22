@@ -55,13 +55,13 @@ init_conf(void)
   switch_conf_pass = register_callback("switch_conf_pass", NULL);
 
   init_servicesinfo();
+  init_logging();
   init_database();
   init_connect();
   init_service();
 #ifdef USE_SHARED_MODULES
   init_modules();
 #endif
-  init_logging();
 }
 
 /*
