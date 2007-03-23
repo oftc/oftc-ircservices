@@ -171,7 +171,8 @@ read_packet(fde_t *fd, void *data)
       if (length < 0 && ignoreErrno(errno))
         break;
 
-      printf("connection went dead on read!\n");
+      ilog(L_ERROR, "Lost server connection, trying reconnect");
+      connect_server();
       return;
     }
     

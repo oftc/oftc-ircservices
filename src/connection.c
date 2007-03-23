@@ -93,7 +93,6 @@ connect_server()
 
   comm_connect_tcp(&server->fd, Connect.host, Connect.port,
       NULL, 0, serv_connect_callback, client, AF_INET, CONNECTTIMEOUT);
-  
 }
 
 void *
