@@ -748,7 +748,7 @@ m_set_topic(struct Service *service, struct Client *client,
         LIBIO_MAX(strlen(topic), strlen(regchptr->topic))) != 0)
     changetopic = TRUE;
 
-  if(changetopic || (topic == NULL && regchptr->topic != NULL))
+  if(changetopic || (topic == NULL && regchptr->topic != NULL) && chptr != NULL)
     send_topic(service, chptr, client, regchptr->topic);
 
   MyFree(topic);
