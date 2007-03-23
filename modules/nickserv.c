@@ -929,6 +929,7 @@ static void
 m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
+  struct Client *target;
   char regtime[IRC_BUFSIZE/2+1];
   char quittime[IRC_BUFSIZE/2+1];
 
@@ -962,7 +963,13 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   else
     strftime(quittime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
         gmtime(&nick->last_quit_time));
-      
+
+  if((target = find_client(parv[1])) != NULL && target->nickname != NULL)
+  {
+    reply_user(service, service, client, NS_INFO_ONLINE, parv[1], 
+        target->nickname->nick);
+  }
+
   reply_user(service, service, client, NS_INFO, regtime, 
       (nick->last_quit == NULL) ? "Unknown" : nick->last_quit, quittime, 
       (nick->priv) ? "Private" : nick->email, 
