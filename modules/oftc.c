@@ -198,6 +198,7 @@ static void
 m_eob(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   ilog(L_INFO, "Completed server burst");
+  sendto_server(client, "EOB");
 }
 
 static void

@@ -96,7 +96,7 @@ static struct ServiceMessage help_msgtab = {
 };
 
 static struct ServiceMessage drop_msgtab = {
-  NULL, "DROP", 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_DROP_SHORT, NS_HELP_DROP_LONG,
+  NULL, "DROP", 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_DROP_SHORT, NS_HELP_DROP_LONG,
   m_drop
 };
 
@@ -370,16 +370,13 @@ static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  if(!IsIdentified(client)) 
-  {
-    reply_user(service, service, client, NS_NEED_IDENTIFY, client->name);
-  }
-
-  if(db_delete_nick(parv[1])) 
+  if(db_delete_nick(client->name)) 
   {
     if(ircncmp(client->name, parv[1], sizeof(client->name)) == 0)
     {
       ClearIdentified(client);
+      free_nickname(client->nickname);
+      client->nickname = NULL;
       client->access = USER_FLAG;
       send_umode(nickserv, client, "-R");
     }
@@ -1103,6 +1100,9 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   join_params(buf, parc-1, &parv[2]);
 
   DupString(newparv[2], buf);
+
+  ilog(L_INFO, "%s executed %s SUDO: %s", client->name, service->name, 
+      newparv[2]);
 
   process_privmsg(me.uplink, client, 3, newparv);
   MyFree(newparv[2]);
