@@ -38,7 +38,8 @@ typedef enum ServicesPermission {
   USER_FLAG = 0,
   IDENTIFIED_FLAG,
   OPER_FLAG,
-  ADMIN_FLAG
+  ADMIN_FLAG,
+  SUDO_FLAG
 } ServicePermissionType;
 
 typedef enum ChannelPermission {

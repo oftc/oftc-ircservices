@@ -355,6 +355,9 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
           level = access->level;
           free_chanaccess(access);
         }
+
+        if(from->access == SUDO_FLAG)
+          level = MASTER_FLAG;
       }
 
       if(level < mptr->access)

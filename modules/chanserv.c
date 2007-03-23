@@ -48,6 +48,7 @@ static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *, struct Client *, int, char *[]);
+static void m_sudo(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
@@ -208,6 +209,11 @@ static struct ServiceMessage clear_msgtab = {
   CS_HELP_CLEAR_SHORT, CS_HELP_CLEAR_LONG, NULL
 };
 
+static struct ServiceMessage sudo_msgtab = {
+  NULL, "SUDO", 0, 2, 0, ADMIN_FLAG,
+  CS_HELP_SUDO_SHORT, CS_HELP_SUDO_LONG, m_sudo
+};
+
 /*
 LIST
 SYNC
@@ -238,6 +244,7 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &clear_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &unban_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &sudo_msgtab);
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
   cs_channel_destroy_hook = 
@@ -269,6 +276,7 @@ CLEANUP_MODULE
   mod_del_servcmd(&chanserv->msg_tree, &clear_msgtab);
   mod_del_servcmd(&chanserv->msg_tree, &unban_msgtab);
   mod_del_servcmd(&chanserv->msg_tree, &invite_msgtab);
+  mod_del_servcmd(&chanserv->msg_tree, &sudo_msgtab);
 
   unload_languages(chanserv->languages);
 
@@ -1432,6 +1440,32 @@ m_set_flag(struct Service *service, struct Client *client,
 
   ilog(L_TRACE, "T: Leaving CS:m_set_flag(%s:%s)", client->name, channel);
   return 0;
+}
+
+static void
+m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct RegChannel *channel;
+  char buf[IRC_BUFSIZE] = { '\0' };
+  char **newparv;
+  int i;
+
+  newparv = MyMalloc(4 * sizeof(char*));
+
+  newparv[0] = parv[0];
+  newparv[1] = service->name;
+
+  join_params(buf, parc, &parv[1]);
+
+  DupString(newparv[2], buf);
+
+  client->access = SUDO_FLAG;
+
+  process_privmsg(me.uplink, client, 3, newparv);
+  MyFree(newparv[2]);
+  MyFree(newparv);
+
+  client->access = MASTER_FLAG;
 }
 
 /**

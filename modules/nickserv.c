@@ -1075,10 +1075,9 @@ static void
 m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *oldnick, *nick;
-  struct ServicesMessage *mptr;
   char **newparv;
-  int i, oldaccess;
   char buf[IRC_BUFSIZE] = { '\0' };
+  int i, oldaccess;
 
   oldnick = client->nickname;
   oldaccess = client->access;
@@ -1104,9 +1103,6 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   join_params(buf, parc-1, &parv[2]);
 
   DupString(newparv[2], buf);
-
-  for(i = 3; i < parc; i++)
-    newparv[i] = parv[i];
 
   process_privmsg(me.uplink, client, 3, newparv);
   MyFree(newparv[2]);
