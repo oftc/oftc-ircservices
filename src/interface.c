@@ -352,8 +352,6 @@ identify_user(struct Client *client)
 {
   struct Nick *nick = client->nickname;
 
-  SetIdentified(client);
-
   if(nick->admin && IsOper(client))
     client->access = ADMIN_FLAG;
   else if(!nick->admin && IsOper(client))

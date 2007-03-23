@@ -487,6 +487,7 @@ oftc_identify(va_list args)
   if(!IsIdentified(client))
     send_umode(NULL, client, "+R");
 
+  SetIdentified(client);
   return pass_callback(oftc_identify_hook, uplink, client);
 }
 
