@@ -326,6 +326,7 @@ db_find_nick(const char *nick)
     db_log("db_find_nick: '%s' not found.\n", nick);
     Free(brc);
     Free(rc);
+    MyFree(nick_p);
     return NULL;
   }
 
