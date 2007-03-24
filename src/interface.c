@@ -573,8 +573,10 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
       snprintf(host, HOSTLEN, "%s!*@*", nick);
       ban_mask(service, chptr, host);
       kick_user(service, chptr, client->name, sban->reason);
+      MyFree(nick);
       return TRUE;
     }
+    MyFree(nick);
     return FALSE;
   }
   DupString(nuh.nuhmask, sban->mask);
@@ -908,15 +910,10 @@ free_nick(struct Nick *nick)
 {
   ilog(L_DEBUG, "Freeing nick %p for %s", nick, nick->nick);
   MyFree(nick->email);
-  nick->email = NULL;
   MyFree(nick->url);
-  nick->url = NULL;
   MyFree(nick->last_quit);
-  nick->last_quit = NULL;
   MyFree(nick->last_host);
-  nick->last_host = NULL;
   MyFree(nick->last_realname);
-  nick->last_realname = NULL;
   MyFree(nick);
 }
 

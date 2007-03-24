@@ -890,6 +890,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(master_nick->id == nick->id)
   {
+    free_nick(master_nick);
     reply_user(service, service, client, NS_LINK_NOSELF);
     return;
   }
@@ -1115,6 +1116,7 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   MyFree(newparv[2]);
   MyFree(newparv);
 
+  free_nick(client->nickname);
   client->nickname = oldnick;
   client->access = oldaccess;
 }
@@ -1206,11 +1208,16 @@ ns_on_nick_change(va_list args)
   if((nick_p = db_find_nick(user->name)) == NULL)
   {
     ilog(L_DEBUG, "Nick Change: %s->%s(nick not registered)", oldnick, user->name);
+    if(user->nickname != NULL)
+      free_nick(user->nickname);
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
+  // Linked nick
   if(oldid == nick_p->id)
   {
+    if(user->nickname != NULL)
+      free_nick(user->nickname);
     user->nickname = nick_p;
     identify_user(user);
     return pass_callback(ns_nick_hook, user, oldnick);
@@ -1224,6 +1231,8 @@ ns_on_nick_change(va_list args)
     SetOnAccess(user);
     if(!nick_p->secure)
     {
+      if(user->nickname != NULL)
+        free_nick(user->nickname);
       user->nickname = nick_p;
       identify_user(user);
     }
@@ -1273,8 +1282,10 @@ ns_on_newuser(va_list args)
     return pass_callback(ns_newuser_hook, newuser);
   }
 
- if(IsIdentified(newuser))
+  if(IsIdentified(newuser))
   {
+    if(newuser->nickname != NULL)
+      free_nick(newuser->nickname);
     newuser->nickname = nick_p;
     identify_user(newuser);
     return pass_callback(ns_newuser_hook, newuser);
