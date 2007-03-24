@@ -795,6 +795,8 @@ db_list_done(void *result)
 
   Free(res->brc);
   Free(res->rc);
+
+  MyFree(res);
 }
 
 int

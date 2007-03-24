@@ -1029,7 +1029,7 @@ set_channel_mode(struct Client *client_p, struct Client *source_p, struct Channe
 {
   int dir = MODE_ADD;
   int parn = 1;
-  int alevel, errors = 0;
+  int alevel = 0, errors = 0;
   char *ml = parv[0], c;
   int table_position;
 

@@ -1130,6 +1130,8 @@ ns_on_umode_change(va_list args)
 
   if(what == MODE_ADD && umode == UMODE_IDENTIFIED)
   {
+    if(user->nickname != NULL)
+      free_nick(uesr->nickname);
     user->nickname = db_find_nick(user->name);
     if(user->nickname != NULL)
     {
@@ -1298,6 +1300,8 @@ ns_on_newuser(va_list args)
     SetOnAccess(newuser);
     if(!nick_p->secure)
     {
+      if(newuser->nickname != NULL)
+        free_nick(newuser->nickname);
       newuser->nickname = nick_p;
       identify_user(newuser);
     }
