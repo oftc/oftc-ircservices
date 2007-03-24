@@ -336,40 +336,42 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
         reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);
         return;
       }
+    }
+    else
+      regchptr = chptr->regchan;
 
-      if(from->access < IDENTIFIED_FLAG && mptr->access == CHIDENTIFIED_FLAG)
-      {
-        reply_user(service, NULL, from, SERV_NOT_IDENTIFIED, from->name);
-        return;
-      }
+    if(from->access < IDENTIFIED_FLAG && mptr->access == CHIDENTIFIED_FLAG)
+    {
+      reply_user(service, NULL, from, SERV_NOT_IDENTIFIED, from->name);
+      return;
+    }
 
-      if(from->nickname == NULL)
+    if(from->nickname == NULL)
+      level = CHUSER_FLAG;
+    else
+    {
+      access = db_find_chanaccess(regchptr->id, from->nickname->id);
+      if(access == NULL)
         level = CHUSER_FLAG;
       else
       {
-        access = db_find_chanaccess(regchptr->id, from->nickname->id);
-        if(access == NULL)
-          level = CHUSER_FLAG;
-        else
-        {
-          level = access->level;
-          free_chanaccess(access);
-        }
-
-        if(from->access == SUDO_FLAG)
-          level = MASTER_FLAG;
+        level = access->level;
+        free_chanaccess(access);
       }
 
-      if(level < mptr->access)
-      {
-        reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN, mptr->cmd,
-            regchptr->channel);
-        return;
-      }
-
-      if(chptr != NULL)
-        chptr->regchan = regchptr;
+      if(from->access == SUDO_FLAG)
+        level = MASTER_FLAG;
     }
+
+    if(level < mptr->access)
+    {
+      reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN, mptr->cmd,
+          regchptr->channel);
+      return;
+    }
+
+    if(chptr != NULL)
+      chptr->regchan = regchptr;
   }
   else
   {
