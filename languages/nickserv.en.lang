@@ -1,40 +1,40 @@
 0 English
 NS_HELP_SHORT
 	%s: Shows this help.
-NS_HELP_LONG            
+NS_HELP_LONG
 	Shows this help message.  Use HELP command for help with a commmand.
-NS_HELP_REG_SHORT       
+NS_HELP_REG_SHORT
 	%s: Registers a nickname for your usage.
-NS_HELP_REG_LONG          
+NS_HELP_REG_LONG
 	Usage: REGISTER password eMail
 	
 	Registers a nickname in our database for your use.
 	
-	The eMail address you enter will be used in case you forget your password, 
+	The eMail address you enter will be used in case you forget your password,
 	so make sure it is valid and correct.
 	
 	Choose a password that you can remember but is not easily guessed.
-NS_HELP_ID_SHORT        
+NS_HELP_ID_SHORT
 	%s: Identify your nickname.
-NS_HELP_ID_LONG					
+NS_HELP_ID_LONG
 	Usage: IDENTIFY [nick] password
 	
 	Identify that you the owner of the nick you are currently using.
 	If you specify a nickname to identify against, your IRC nick will
 	automatically be changed to the one you identify for.
-NS_HELP_DROP_SHORT      
-	%s: Releases your nickname for use. 
+NS_HELP_DROP_SHORT
+	%s: Releases your nickname for use.
 NS_HELP_DROP_LONG
 	Usage: DROP
-	Releases your nickname for use and deletes it from the database.  
+	Releases your nickname for use and deletes it from the database.
 	This cannot be undone.
-NS_HELP_ACCESS_SHORT		
+NS_HELP_ACCESS_SHORT
 	%s: Maintains the nickname ACCESS list.
 NS_HELP_ACCESS_LONG
 	Usage: ACCESS ADD mask
-	       ACCESS DEL (mask|number)
-	       ACCESS LIST
-	 
+				 ACCESS DEL (mask|number)
+				 ACCESS LIST
+	
 	Maintains the nickname access list.  If your IRC userhost matches an entry
 	in your access list, you will be automatically identified to your nickname
 	without having to use the IDENTIFY command.
@@ -69,9 +69,9 @@ NS_HELP_ACCESS_DEL_LONG
 	Examples:
 			ACCESS DEL 1
 			ACCESS DEL foo@*.org
-NS_HELP_SET_SHORT       
+NS_HELP_SET_SHORT
 	%s: Set nickname properties.
-NS_HELP_SET_LONG        
+NS_HELP_SET_LONG
 	Usage: SET property value
 	
 	Set nickname properties.  The various properties are shown below.  Use HELP
@@ -116,7 +116,7 @@ NS_HELP_SET_ENFORCE_LONG
 	Examples:
 			SET ENFORCE ON
 			SET ENFORCE OFF
-  
+	
 	See Also:
 			HELP SET SECURE
 NS_HELP_SET_SECURE_SHORT
@@ -136,33 +136,33 @@ NS_HELP_SET_CLOAK_SHORT
 	%s
 NS_HELP_SET_CLOAK_LONG
 	(BOOLEAN) SET CLOAK enables or disables a cloak on your current account.
-  
-  Examples:
-      SET CLOAK ON
-      SET CLOAK OFF
-  
-  See Also:
-      HELP SET CLOAKSTRING
+	
+	Examples:
+			SET CLOAK ON
+			SET CLOAK OFF
+	
+	See Also:
+			HELP SET CLOAKSTRING
 NS_HELP_SET_CLOAKSTRING_SHORT
 	%s
 NS_HELP_SET_CLOAKSTRING_LONG
 	SET the CLOAKSTRING of a given account.
-  
-  Exampe:
-      SET CLOAKSTRING user.example.org
-  
-  See Also:
-      HELP SET CLOAK
+	
+	Example:
+			SET CLOAKSTRING user.example.org
+	
+	See Also:
+			HELP SET CLOAK
 NS_HELP_SET_MASTER_SHORT
 	%s
 NS_HELP_SET_MASTER_LONG
 	SET the master account of a linked nickname.
-  
-  Example:
-      SET MASTER foobar
-  
-  See Also:
-      HELP LINK
+	
+	Example:
+			SET MASTER foobar
+	
+	See Also:
+			HELP LINK
 NS_HELP_SET_PRIVATE_SHORT
 	Makes various parts of your nickname information private
 NS_HELP_SET_PRIVATE_LONG
@@ -171,17 +171,17 @@ NS_HELP_SET_PRIVATE_LONG
 	Enables the private flag on your nickname which prevents your email address
 	being shown in an INFO request, and also prevents your nickname showing in a
 	LIST.
-NS_HELP_GHOST_SHORT			
+NS_HELP_GHOST_SHORT
 	%s: Terminate a GHOST IRC session.
-NS_HELP_GHOST_LONG     
+NS_HELP_GHOST_LONG
 	Usage: GHOST nickname [password]
 	
 	Terminates the GHOST IRC session with the nickname specified.  If the
 	nickname has SECURE set, or you do not match an entry in the nickname's
 	ACCESS list, you will require a password.
-NS_HELP_LINK_SHORT      
-	%s: Link this nickname to a master nickname. 
-NS_HELP_LINK_LONG       
+NS_HELP_LINK_SHORT
+	%s: Link this nickname to a master nickname.
+NS_HELP_LINK_LONG
 	Usage: LINK master_nickname password
 	
 	Link this nickname to a master nickname.  This effectively creates an alias
@@ -189,114 +189,114 @@ NS_HELP_LINK_LONG
 	you will be checked against the master nickname access list and the master
 	nickname's settings will be applied to you.  To identify for this nickname
 	after linking it, you will need to use the master nickname password.
-NS_HELP_UNLINK_SHORT    
+NS_HELP_UNLINK_SHORT
 	%s: Unlink this nickname from a master nickname.
-NS_HELP_UNLINK_LONG     
+NS_HELP_UNLINK_LONG
 	Usage: UNLINK
 	
 	Unlink this nickname from a master nickname. This removes the link from the
 	master nickname and reverts this nickname to be a standalone nickname with
 	all the settings it had(including password) before it was linked.
-NS_HELP_RECOVER_SHORT   
+NS_HELP_RECOVER_SHORT
 	%s: Recover your nickname in a more forceful way.
-NS_HELP_RECOVER_LONG    
+NS_HELP_RECOVER_LONG
 	Recover your nickname in a more forceful way.
-NS_HELP_REGAIN_SHORT   
+NS_HELP_REGAIN_SHORT
 	%s: Release NickServ's hold on your nickname.
-NS_HELP_REGAIN_LONG    
+NS_HELP_REGAIN_LONG
 	Release NickServ's hold on your nickname.
-NS_HELP_SUSPEND_SHORT   
+NS_HELP_SUSPEND_SHORT
 	%s: Suspend a nickname from use.
-NS_HELP_SUSPEND_LONG    
+NS_HELP_SUSPEND_LONG
 	Suspend a nickname from use.
-NS_HELP_FORBID_SHORT    
+NS_HELP_FORBID_SHORT
 	%s: Forbid a nickname from being used.
-NS_HELP_FORBID_LONG     
+NS_HELP_FORBID_LONG
 	Forbid a nickname from being used.
-NS_HELP_INFO_SHORT      
+NS_HELP_INFO_SHORT
 	%s: Get information on a nickname.
-NS_HELP_INFO_LONG       
+NS_HELP_INFO_LONG
 	Get information on a nickname.
-NS_HELP_SENDPASS_SHORT	
-	%s: Send a password reset request. 
-NS_HELP_SENDPASS_LONG   
+NS_HELP_SENDPASS_SHORT
+	%s: Send a password reset request.
+NS_HELP_SENDPASS_LONG
 	Send a password reset request.
 NS_HELP_SUDO_SHORT
 	%s: Execute a command as another user.
 NS_HELP_SUDO_LONG
 	Execute a command as another user.
-NS_ALREADY_REG          
+NS_ALREADY_REG
 	Nickname %s is already registered.
-NS_REG_COMPLETE         
+NS_REG_COMPLETE
 	Nickname %s has been registered.
-NS_REG_FAIL             
+NS_REG_FAIL
 	Nickname %s failed to register.
-NS_REG_FIRST            
+NS_REG_FIRST
 	Nickname %s is not registered.
-NS_IDENTIFIED           
+NS_IDENTIFIED
 	You are sucessfully identified as %s.
-NS_IDENT_FAIL           
+NS_IDENT_FAIL
 	Identify failed as %s.
-NS_CURR_LANGUAGE        
+NS_CURR_LANGUAGE
 	Current language is %s(%d).
-NS_AVAIL_LANGUAGE       
+NS_AVAIL_LANGUAGE
 	Available languages are:
-NS_LANGUAGE_SET         
+NS_LANGUAGE_SET
 	Language set to %s(%d).
 NS_LANGUAGE_UNAVAIL
 	That language is invalid or not available.
-NS_SET_SUCCESS          
+NS_SET_SUCCESS
 	SET %s to %s.
-NS_SET_FAILED           
+NS_SET_FAILED
 	Failed to SET %s to %s.
-NS_SET_VALUE            
+NS_SET_VALUE
 	%s is SET to: %s.
-NS_NEED_IDENTIFY        
+NS_NEED_IDENTIFY
 	You need to identify to Nickserv first.
-NS_NICK_DROPPED         
+NS_NICK_DROPPED
 	Nickname %s has been DROPped.
-NS_NICK_DROPFAIL        
+NS_NICK_DROPFAIL
 	DROP failed on Nickname %s.
-NS_ACCESS_ADD           
+NS_ACCESS_ADD
 	ACCESS list entry %s added.
-NS_ACCESS_ADDFAIL       
+NS_ACCESS_ADDFAIL
 	Failed to add ACCESS list entry %s.
-NS_ACCESS_INVALID       
+NS_ACCESS_INVALID
 	ACCESS list entry %s is not a userhost. (user@host)
-NS_ACCESS_START         
+NS_ACCESS_START
 	ACCESS list:
-NS_ACCESS_ENTRY         
+NS_ACCESS_ENTRY
 	%d  %s
-NS_ACCESS_DEL           
+NS_ACCESS_DEL
 	%d ACCESS entries deleted.
-NS_GHOST_SUCCESS        
+NS_GHOST_SUCCESS
 	GHOST succeed on nickname %s.
-NS_GHOST_FAILED					
+NS_GHOST_FAILED
 	GHOST failed on nickname %s.
-NS_GHOST_NOSELF         
+NS_GHOST_NOSELF
 	You cannot GHOST yourself, %s.
 NS_GHOST_NOTONLINE
 	%s is not online to GHOST.
-NS_LINK_NOMASTER        
+NS_LINK_NOMASTER
 	Master nickname %s not registered.
-NS_LINK_BADPASS         
+NS_LINK_BADPASS
 	Incorrect password for master nickname %s.
 NS_LINK_NOSELF
 	This nickname is already linked to this master(possibly indirectly).
-NS_LINK_FAIL            
+NS_LINK_FAIL
 	LINK failed to master %s.
-NS_LINK_OK              
+NS_LINK_OK
 	Nickname %s is now linked to master %s.
-NS_UNLINK_FAILED        
+NS_UNLINK_FAILED
 	Nickname %s is failed to unlink.
-NS_UNLINK_OK            
+NS_UNLINK_OK
 	Nickname %s is now unlinked.
-NS_UNLINK_NOLINK        
+NS_UNLINK_NOLINK
 	Nickname %s has is not linked.
 NS_INFO
-	  Time registered: %s
+		Time registered: %s
 	Last quit message: %s
-	   Last quit time: %s
+		 Last quit time: %s
 	    eMail address: %s
 	              URL: %s
 	     Cloak String: %s
