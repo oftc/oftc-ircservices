@@ -211,7 +211,7 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
     SetServer(client);
     hash_add_client(client);
     hash_add_id(client);
-    global_notice(NULL, "Completed server connection to %s %s", client->name,
+    global_notice(NULL, "Completed server connection to %s[%s]", client->name,
         client->id);
     ClearConnecting(client);
     client->servptr = &me;
