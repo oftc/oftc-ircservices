@@ -47,15 +47,28 @@ NS_HELP_ACCESS_LONG
 NS_HELP_ACCESS_ADD_SHORT
 	%s
 NS_HELP_ACCESS_ADD_LONG
-	moo
+	Add an access entry to your access list. If your IRC userhost maches this
+	entry you will be automatically identified to yo your nickname without
+	having to use the IDENTIFY command.
+	
+	Example:
+			ACCESS ADD foo@*.org
 NS_HELP_ACCESS_LIST_SHORT
 	%s
 NS_HELP_ACCESS_LIST_LONG
-	moo
+	List entries in your access list.
+	
+	Example:
+			ACCESS LIST
 NS_HELP_ACCESS_DEL_SHORT
 	%s
 NS_HELP_ACCESS_DEL_LONG
-	moo
+	Delete an entry from your access list. You can either delete by entry index
+	or by userhost matching. Index values will change after each delete.
+	
+	Examples:
+			ACCESS DEL 1
+			ACCESS DEL foo@*.org
 NS_HELP_SET_SHORT       
 	%s: Set nickname properties.
 NS_HELP_SET_LONG        
@@ -66,39 +79,90 @@ NS_HELP_SET_LONG
 NS_HELP_SET_LANG_SHORT
 	%s
 NS_HELP_SET_LANG_LONG
-	moo
+	SET your services language translation. To list available languages provide no
+	other parameters.
+	
+	Examples:
+			SET LANG
+			SET LANG 11
 NS_HELP_SET_PASS_SHORT
 	%s
 NS_HELP_SET_PASS_LONG
-	moo
+	SET the password of your current account. Please use secure passwords.
+	
+	Example:
+			SET PASS foobar
 NS_HELP_SET_URL_SHORT
 	%s
 NS_HELP_SET_URL_LONG
-	moo
+	SET url field to be shown in INFO command.
+	
+	Example:
+			SET URL http://example.org
 NS_HELP_SET_EMAIL_SHORT
 	%s
 NS_HELP_SET_EMAIL_LONG
-	moo
+	SET email field to be used for password recovery and INFO command.
+	
+	Example:
+			SET EMAIL foo@example.org
 NS_HELP_SET_ENFORCE_SHORT
 	%s
 NS_HELP_SET_ENFORCE_LONG
-	moo
+	(BOOLEAN) SET ENFORCE enables or disables nick enforcement of your account.
+	This means that if someone who is not use nicks to your name and doesn't
+	identify within a given period their nick will be changed.
+	
+	Examples:
+			SET ENFORCE ON
+			SET ENFORCE OFF
+  
+	See Also:
+			HELP SET SECURE
 NS_HELP_SET_SECURE_SHORT
 	%s
 NS_HELP_SET_SECURE_LONG
-	moo
+	(BOOLEAN) SET SECURE enables or disables auto identification via ACCESS list.
+	With secure enabled and you connect via a userhost that is in your ACCESS
+	list you won't be automatically identified.
+	
+	Examples:
+			SET SECURE ON
+			SET SECURE OFF
+	
+	See Also:
+			HELP SET ENFORCE
 NS_HELP_SET_CLOAK_SHORT
 	%s
 NS_HELP_SET_CLOAK_LONG
-	moo
+	(BOOLEAN) SET CLOAK enables or disables a cloak on your current account.
+  
+  Examples:
+      SET CLOAK ON
+      SET CLOAK OFF
+  
+  See Also:
+      HELP SET CLOAKSTRING
 NS_HELP_SET_CLOAKSTRING_SHORT
 	%s
 NS_HELP_SET_CLOAKSTRING_LONG
-	moo
+	SET the CLOAKSTRING of a given account.
+  
+  Exampe:
+      SET CLOAKSTRING user.example.org
+  
+  See Also:
+      HELP SET CLOAK
 NS_HELP_SET_MASTER_SHORT
-	moo
+	%s
 NS_HELP_SET_MASTER_LONG
-	moo
+	SET the master account of a linked nickname.
+  
+  Example:
+      SET MASTER foobar
+  
+  See Also:
+      HELP LINK
 NS_HELP_SET_PRIVATE_SHORT
 	Makes various parts of your nickname information private
 NS_HELP_SET_PRIVATE_LONG
