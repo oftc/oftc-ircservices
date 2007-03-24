@@ -288,6 +288,27 @@ kick_user(struct Service *service, struct Channel *chptr, const char *client,
       client, reason);
 }
 
+static void 
+opdeop_user(struct Channel *chptr, struct Client *client, int op)
+{
+  struct Membership *member;
+
+  if ((member = find_channel_link(client, chptr)) == NULL)
+    return;
+
+  if(op && has_member_flags(member, CHFL_CHANOP) || !op && 
+      !has_member_flags(member, CHFL_CHANOP))
+    return;
+
+  if(op)
+  {
+  AddMemberFlag(member, CHFL_CHANOP);
+  DelMemberFlag(member, CHFL_DEOPPED | CHFL_HALFOP);
+  }
+  else
+    DelMemberFlag(member, CHFL_CHANOP);
+}
+
 void
 op_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
@@ -295,6 +316,7 @@ op_user(struct Service *service, struct Channel *chptr, struct Client *client)
     return;
 
   send_cmode(service, chptr, "+o", client->name);
+  opdeop_user(chptr, client, 1);
 }
 
 void
@@ -304,6 +326,7 @@ deop_user(struct Service *service, struct Channel *chptr, struct Client *client)
     return;
 
   send_cmode(service, chptr, "-o", client->name);
+  opdeop_user(chptr, client, 0);
 }
 
 void
