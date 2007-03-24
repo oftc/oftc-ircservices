@@ -500,7 +500,7 @@ m_access_add(struct Service *service, struct Client *client,
     level = MEMBER_FLAG;
   else
   {
-    reply_user(service, service, client, CS_ACCESS_BADLEVEL);
+    reply_user(service, service, client, CS_ACCESS_BADLEVEL, parv[3]);
     if(chptr == NULL)
       free_regchan(regchptr);
     return;
