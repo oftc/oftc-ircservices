@@ -82,7 +82,7 @@ connect_server()
   strlcpy(client->host, Connect.host, sizeof(client->host));
 
   SetConnecting(client);
-  client->from = &me;
+  client->from = client;
     
   dlinkAdd(client, &client->node, &global_client_list);
 
