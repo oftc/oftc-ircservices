@@ -233,7 +233,7 @@ CS_HELP_ACCESS_LIST_LONG
 	
 	Show the current channel access list.
 CS_HELP_SUDO_SHORT	
-	Execute a command on a channel as channel master.
+	%s: Execute a command on a channel as channel master.
 CS_HELP_SUDO_LONG
 	Execute a command on a channel as channel master.
 CS_REGISTER_NICK
