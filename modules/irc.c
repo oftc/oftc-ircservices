@@ -1379,6 +1379,11 @@ m_squit(struct Client *client, struct Client *source, int parc, char *parv[])
 
   exit_client(target, source, comment);
   chain_squit(client, source, comment);
+
+  if(target == me.uplink)
+  {
+    connect_server();
+  }
 }
 
 /*
