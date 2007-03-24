@@ -933,6 +933,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Client *target;
   char regtime[IRC_BUFSIZE/2+1];
   char quittime[IRC_BUFSIZE/2+1];
+  char *name;
 
   if(parc == 0)
   {
@@ -946,6 +947,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
         return;
       }
     }
+    name = client->name;
   }
   else
   {
@@ -955,6 +957,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
           parv[1]);
       return;
     }
+    name = parv[1];
   }
 
   strftime(regtime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
@@ -965,9 +968,9 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     strftime(quittime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
         gmtime(&nick->last_quit_time));
 
-  if((target = find_client(parv[1])) != NULL && target->nickname != NULL)
+  if((target = find_client(name)) != NULL && target->nickname != NULL)
   {
-    reply_user(service, service, client, NS_INFO_ONLINE, parv[1], 
+    reply_user(service, service, client, NS_INFO_ONLINE, name, 
         target->nickname->nick);
   }
 
