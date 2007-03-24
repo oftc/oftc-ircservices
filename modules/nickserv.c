@@ -968,10 +968,9 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     strftime(quittime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
         gmtime(&nick->last_quit_time));
 
-  if((target = find_client(name)) != NULL && target->nickname != NULL)
+  if((target = find_client(nick->nick)) != NULL && target->nickname != NULL)
   {
-    reply_user(service, service, client, NS_INFO_ONLINE, name, 
-        target->nickname->nick);
+    reply_user(service, service, client, NS_INFO_ONLINE, name, target->name);
   }
 
   reply_user(service, service, client, NS_INFO, regtime, 
@@ -981,7 +980,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       (nick->cloak[0] == '\0') ? "Not set" : nick->cloak);
 
   if(IsIdentified(client) && (client->nickname == nick || 
-      client->access == ADMIN_FLAG))
+      client->access == OPER_FLAG))
   {
     reply_user(service, service, client, NS_LANGUAGE_SET,
         service->languages[nick->language].name, nick->language); 
