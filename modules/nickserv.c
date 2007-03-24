@@ -1131,7 +1131,7 @@ ns_on_umode_change(va_list args)
   if(what == MODE_ADD && umode == UMODE_IDENTIFIED)
   {
     if(user->nickname != NULL)
-      free_nick(uesr->nickname);
+      free_nick(user->nickname);
     user->nickname = db_find_nick(user->name);
     if(user->nickname != NULL)
     {
