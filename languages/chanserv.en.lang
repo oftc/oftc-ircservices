@@ -2,7 +2,10 @@
 CS_HELP_REG_SHORT
 	%s: Registers a channel for your usage.
 CS_HELP_REG_LONG
-	Registers a channel for your usage.
+	Usage: REGISTER channel description
+
+	Registers a channel for your usage. To register the channel you must be an
+	operator, and the channel name must begin with '#'
 CS_HELP_SHORT
 	%s: Shows this help.
 CS_HELP_LONG
