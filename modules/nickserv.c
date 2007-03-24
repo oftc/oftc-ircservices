@@ -1018,6 +1018,9 @@ static void
 m_unforbid(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
+  struct Client *target;
+  dlink_node *ptr;
+
   if(!db_is_forbid(parv[1]))
   {
     reply_user(service, service, client, NS_UNFORBID_NOT_FORBID, parv[1]);
@@ -1028,6 +1031,17 @@ m_unforbid(struct Service *service, struct Client *client, int parc,
     reply_user(service, service, client, NS_UNFORBID_OK, parv[1]);
   else
     reply_user(service, service, client, NS_UNFORBID_FAIL, parv[1]);
+
+  target = find_client(parv[1]);
+
+  ptr = dlinkFind(&nick_release_list, target);
+  if(ptr != NULL)
+  {
+    exit_client(target, &me, "Held nickname released");
+    dlinkDelete(ptr, &nick_release_list);
+    free_dlink_node(ptr);
+    target->enforce_time = 0;
+  }
 }
 
 static void
@@ -1338,6 +1352,10 @@ ns_on_quit(va_list args)
     db_set_number(SET_NICK_LAST_QUITTIME, nick->id, CurrentTime);
     db_set_number(SET_NICK_LAST_SEEN, nick->id, CurrentTime);
   }
+
+  dlinkFindDelete(&nick_enforce_list, user);
+  if(IsMe(user->from))
+    dlinkFindDelete(&nick_release_list, user);
 
   return pass_callback(ns_quit_hook, user, comment);
 }
