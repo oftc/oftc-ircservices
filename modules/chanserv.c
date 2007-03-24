@@ -163,32 +163,32 @@ static struct ServiceMessage akick_msgtab = {
 };
 
 static struct ServiceMessage drop_msgtab = {
-  NULL, "DROP", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
+  NULL, "DROP", 0, 1, SFLG_CHANARG, MASTER_FLAG, 
   CS_HELP_DROP_SHORT, CS_HELP_DROP_LONG, m_drop
 };
 
 static struct ServiceMessage info_msgtab = {
-  NULL, "INFO", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, CHUSER_FLAG,
+  NULL, "INFO", 0, 1, SFLG_CHANARG, CHUSER_FLAG,
   CS_HELP_INFO_SHORT, CS_HELP_INFO_LONG, m_info
 };
 
 static struct ServiceMessage op_msgtab = {
-  NULL, "OP", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
+  NULL, "OP", 0, 1, SFLG_CHANARG, CHANOP_FLAG, 
   CS_HELP_OP_SHORT, CS_HELP_OP_LONG, m_op
 };
 
 static struct ServiceMessage deop_msgtab = {
-  NULL, "DEOP", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
+  NULL, "DEOP", 0, 1, SFLG_CHANARG, CHANOP_FLAG, 
   CS_HELP_DEOP_SHORT, CS_HELP_DEOP_LONG, m_deop
 };
 
 static struct ServiceMessage unban_msgtab = {
-  NULL, "UNBAN", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG, 
+  NULL, "UNBAN", 0, 1, SFLG_CHANARG, MEMBER_FLAG, 
   CS_HELP_UNBAN_SHORT, CS_HELP_UNBAN_LONG, m_unban
 };
 
 static struct ServiceMessage invite_msgtab = {
-  NULL, "INVITE", 0, 1, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG,
+  NULL, "INVITE", 0, 1, SFLG_CHANARG, MEMBER_FLAG,
   CS_HELP_INVITE_SHORT, CS_HELP_INVITE_LONG, m_invite
 };
 
@@ -1032,13 +1032,13 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
   int numbans = 0;
  
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr->regchan;
 
   if(chptr == NULL)
   {
     reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
     return;
   }
+  regchptr = chptr->regchan;
 
   DLINK_FOREACH_SAFE(ptr, nptr, chptr->banlist.head)
   {
@@ -1065,7 +1065,6 @@ m_clear_ops(struct Service *service, struct Client *client, int parc,
   int opcount = 0;
  
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr->regchan;
 
   if(chptr == NULL)
   {
@@ -1073,6 +1072,7 @@ m_clear_ops(struct Service *service, struct Client *client, int parc,
     return;
   }
 
+  regchptr = chptr->regchan;
   DLINK_FOREACH(ptr, chptr->members.head)
   {
     struct Membership *ms = ptr->data;
@@ -1098,7 +1098,6 @@ m_clear_voices(struct Service *service, struct Client *client, int parc,
   int voicecount = 0;
  
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr->regchan;
 
   if(chptr == NULL)
   {
@@ -1106,6 +1105,7 @@ m_clear_voices(struct Service *service, struct Client *client, int parc,
     return;
   }
 
+  regchptr = chptr->regchan;
   DLINK_FOREACH(ptr, chptr->members.head)
   {
     struct Membership *ms = ptr->data;
@@ -1132,13 +1132,13 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
   int usercount = 0;
  
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr->regchan;
 
   if(chptr == NULL)
   {
     reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
     return;
   }
+  regchptr = chptr->regchan;
 
   snprintf(buf, IRC_BUFSIZE, "CLEAR USERS command used by %s", client->name);
 
@@ -1164,13 +1164,14 @@ m_op(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Membership *ms;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr->regchan;
 
   if(chptr == NULL)
   {
     reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
     return;
   }
+
+  regchptr = chptr->regchan;
 
   if(parv[2] == NULL)
     target = client;
@@ -1199,7 +1200,6 @@ m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Membership *ms;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr->regchan;
 
   if(chptr == NULL)
   {
@@ -1207,6 +1207,7 @@ m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
+  regchptr = chptr->regchan;
   if(parv[2] == NULL)
     target = client;
   else
@@ -1273,13 +1274,13 @@ m_unban(struct Service *service, struct Client *client, int parc, char *parv[])
   int numbans = 0;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr->regchan;
 
   if(chptr == NULL)
   {
     reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
     return;
   }
+  regchptr = chptr->regchan;
 
   banp = find_bmask(client, &chptr->banlist);
   while(banp != NULL)

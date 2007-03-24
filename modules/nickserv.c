@@ -372,24 +372,21 @@ m_drop(struct Service *service, struct Client *client,
 {
   if(db_delete_nick(client->name)) 
   {
-    if(ircncmp(client->name, parv[1], sizeof(client->name)) == 0)
-    {
-      ClearIdentified(client);
-      free_nickname(client->nickname);
-      client->nickname = NULL;
-      client->access = USER_FLAG;
-      send_umode(nickserv, client, "-R");
-    }
+    ClearIdentified(client);
+    free_nickname(client->nickname);
+    client->nickname = NULL;
+    client->access = USER_FLAG;
+    send_umode(nickserv, client, "-R");
 
-    reply_user(service, service, client, NS_NICK_DROPPED, parv[1]);
-    global_notice(NULL, "%s!%s@%s dropped nick %s\n", parv[1], 
-      client->username, client->host, client->name);
-  } 
+    reply_user(service, service, client, NS_NICK_DROPPED, client->name);
+    global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
+        client->username, client->host, client->name);
+  }
   else
   {
     global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", 
-        client->name, client->username, client->host, parv[1]);
-    reply_user(service, service, client, NS_NICK_DROPFAIL, parv[1]);
+        client->name, client->username, client->host, client->name);
+    reply_user(service, service, client, NS_NICK_DROPFAIL, client->name);
   }
 }
 
