@@ -724,7 +724,8 @@ recurse_help_messages(struct Service *service, struct Client *client,
 
   if (mtree->msg != NULL && !(mtree->msg->flags & SFLG_ALIAS))
   {
-    if(client->access >= mtree->msg->access)
+    if(mtree->msg->flags & SFLG_CHANARG || 
+        client->access >= mtree->msg->access)
       reply_user(service, service, client, mtree->msg->help_short, 
           mtree->msg->cmd);
   }
