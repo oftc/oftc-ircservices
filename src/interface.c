@@ -259,10 +259,10 @@ void
 send_cmode(struct Service *service, struct Channel *chptr, const char *mode,
     const char *param)
 {
-   if(ServicesState.debugmode)
+  if(ServicesState.debugmode)
     return;
 
- execute_callback(send_cmode_cb, me.uplink, service->name, chptr->chname, 
+  execute_callback(send_cmode_cb, me.uplink, service->name, chptr->chname, 
       mode, param);
 }
 
@@ -281,48 +281,48 @@ void
 kick_user(struct Service *service, struct Channel *chptr, const char *client, 
     const char *reason)
 {
-   if(ServicesState.debugmode)
+  if(ServicesState.debugmode)
     return;
 
- execute_callback(send_kick_cb, me.uplink, service->name, chptr->chname, 
+  execute_callback(send_kick_cb, me.uplink, service->name, chptr->chname, 
       client, reason);
 }
 
 void
 op_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
-    if(ServicesState.debugmode)
+  if(ServicesState.debugmode)
     return;
 
-send_cmode(service, chptr, "+o", client->name);
+  send_cmode(service, chptr, "+o", client->name);
 }
 
 void
 deop_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
-    if(ServicesState.debugmode)
+  if(ServicesState.debugmode)
     return;
 
-    send_cmode(service, chptr, "-o", client->name);
+  send_cmode(service, chptr, "-o", client->name);
 }
 
 void
 devoice_user(struct Service *service, struct Channel *chptr, 
     struct Client *client)
 {
-   if(ServicesState.debugmode)
+  if(ServicesState.debugmode)
     return;
 
- send_cmode(service, chptr, "-v", client->name);
+  send_cmode(service, chptr, "-v", client->name);
 }
 
 void
 invite_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
-    if(ServicesState.debugmode)
+  if(ServicesState.debugmode)
     return;
 
-execute_callback(send_invite_cb, me.uplink, service, chptr, client);
+  execute_callback(send_invite_cb, me.uplink, service, chptr, client);
 }
 
 void
@@ -332,7 +332,6 @@ ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
   if(ServicesState.debugmode)
     return;
 
-
   send_cmode(service, chptr, "+b", mask);
   add_id(client, chptr, (char*)mask, CHFL_BAN);
 }
@@ -340,10 +339,10 @@ ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 void
 unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
-   if(ServicesState.debugmode)
+  if(ServicesState.debugmode)
     return;
 
- send_cmode(service, chptr, "-b", mask);
+  send_cmode(service, chptr, "-b", mask);
   del_id(chptr, (char*)mask, CHFL_BAN);
 }
   
@@ -370,10 +369,10 @@ identify_user(struct Client *client)
 void
 cloak_user(struct Client *client, char *cloak)
 {
-    if(ServicesState.debugmode)
+  if(ServicesState.debugmode)
     return;
 
-execute_callback(send_cloak_cb, client, cloak);
+  execute_callback(send_cloak_cb, client, cloak);
 }
 
 void
