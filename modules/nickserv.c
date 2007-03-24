@@ -980,7 +980,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       (nick->cloak[0] == '\0') ? "Not set" : nick->cloak);
 
   if(IsIdentified(client) && (client->nickname == nick || 
-      client->access == OPER_FLAG))
+      client->access >= OPER_FLAG))
   {
     reply_user(service, service, client, NS_LANGUAGE_SET,
         service->languages[nick->language].name, nick->language); 
