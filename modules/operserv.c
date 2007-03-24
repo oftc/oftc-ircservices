@@ -88,11 +88,6 @@ static struct ServiceMessage admin_msgtab = {
   OS_ADMIN_HELP_LONG, NULL
 };
 
-static struct ServiceMessage session_msgtab = {
-  NULL, "SESSION", 1, 1, 0, ADMIN_FLAG, OS_SESSION_HELP_SHORT, 
-  OS_SESSION_HELP_LONG, m_operserv_notimp
-};
-
 static struct ServiceMessage akill_subs[] = {
   { NULL, "ADD", 0, 3, 0, ADMIN_FLAG, OS_AKILL_ADD_HELP_SHORT, 
     OS_AKILL_ADD_HELP_LONG, m_akill_add },
@@ -106,16 +101,6 @@ static struct ServiceMessage akill_subs[] = {
 static struct ServiceMessage akill_msgtab = {
   akill_subs, "AKILL", 1, 2, 0, ADMIN_FLAG, OS_AKILL_HELP_SHORT, 
   OS_AKILL_HELP_LONG, NULL
-};
-
-static struct ServiceMessage exceptions_msgtab = {
-  NULL, "EXCEPTIONS", 1, 1, 0, ADMIN_FLAG, OS_EXCEPTIONS_HELP_SHORT, 
-  OS_EXCEPTIONS_HELP_LONG, m_operserv_notimp
-};
-
-static struct ServiceMessage jupe_msgtab = {
-  NULL, "JUPE", 1, 1, 0, ADMIN_FLAG, OS_JUPE_HELP_SHORT, OS_JUPE_HELP_LONG,
-  m_operserv_notimp
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -149,10 +134,7 @@ INIT_MODULE(operserv, "$Revision$")
   mod_add_servcmd(&operserv->msg_tree, &mod_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &admin_msgtab);
-  mod_add_servcmd(&operserv->msg_tree, &session_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &akill_msgtab);
-  mod_add_servcmd(&operserv->msg_tree, &exceptions_msgtab);
-  mod_add_servcmd(&operserv->msg_tree, &jupe_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &shutdown_msgtab);
@@ -166,10 +148,7 @@ CLEANUP_MODULE
   mod_del_servcmd(&operserv->msg_tree, &mod_msgtab);
   mod_del_servcmd(&operserv->msg_tree, &raw_msgtab);
   mod_del_servcmd(&operserv->msg_tree, &admin_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &session_msgtab);
   mod_del_servcmd(&operserv->msg_tree, &akill_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &exceptions_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &jupe_msgtab);
   mod_del_servcmd(&operserv->msg_tree, &set_msgtab);
   mod_del_servcmd(&operserv->msg_tree, &raw_msgtab);
   mod_del_servcmd(&operserv->msg_tree, &shutdown_msgtab);

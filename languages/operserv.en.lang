@@ -1,91 +1,79 @@
 0 English
 OS_HELP_SHORT
-	%s: Shows this help
+	%s: Shows this help.
 OS_HELP_LONG
 	Use HELP to get help on commands.  /msg OperServ HELP command
 OS_MOD_LIST_HELP_SHORT
-	%s: moo
+	%s: List the currently running modules
 OS_MOD_LIST_HELP_LONG
 	moo
 OS_MOD_LOAD_HELP_SHORT
-	%s: moo
+	%s: Load a module by name.
 OS_MOD_LOAD_HELP_LONG
 	moo
 OS_MOD_UNLOAD_HELP_SHORT
-	%s: moo
+	%s: Unload a module by name.
 OS_MOD_UNLOAD_HELP_LONG
 	moo
 OS_MOD_RELOAD_HELP_SHORT
-	%s: moo
+	%s: Reload a module by name.
 OS_MOD_RELOAD_HELP_LONG
 	moo
 OS_MOD_HELP_SHORT
-	%s: moo
+	%s: Manage modules.
 OS_MOD_HELP_LONG
 	moo
 OS_RAW_HELP_SHORT
-	%s: moo
+	%s: Execute a RAW server command(USE WITH CAUTION).
 OS_RAW_HELP_LONG
 	Sends a command to the server directly.  Abuse this and cdlu will bite off
 	your hand.
 OS_GLOBAL_HELP_SHORT
-	%s: moo
+	%s: Send a global notice.
 OS_GLOBAL_HELP_LONG
 	moo
 OS_ADMIN_HELP_SHORT
-	%s: moo
+	%s: Manage services admins.
 OS_ADMIN_HELP_LONG
 	moo
 OS_ADMIN_ADD_HELP_SHORT
-	%s: moo
+	%s: Add a service admin.
 OS_ADMIN_ADD_HELP_LONG
 	moo
 OS_ADMIN_LIST_HELP_SHORT
-	%s: moo	
+	%s: List services admins.
 OS_ADMIN_LIST_HELP_LONG
 	moo
 OS_ADMIN_DEL_HELP_SHORT
-	%s: moo
+	%s: Delete a services admin.
 OS_ADMIN_DEL_HELP_LONG
 	moo
 OS_AKILL_ADD_HELP_SHORT
-	%s: moo
+	%s: Add an akill.
 OS_AKILL_ADD_HELP_LONG
 	moo
 OS_AKILL_LIST_HELP_SHORT
-	%s: moo	
+	%s: List akills.
 OS_AKILL_LIST_HELP_LONG
 	moo
 OS_AKILL_DEL_HELP_SHORT
-	%s: moo
+	%s: Delete an akill.
 OS_AKILL_DEL_HELP_LONG
 	moo
-OS_SESSION_HELP_SHORT
-	%s: moo
-OS_SESSION_HELP_LONG
-	moo
 OS_AKILL_HELP_SHORT
-	%s: moo
+	%s: Manage the akill list.
 OS_AKILL_HELP_LONG
 	moo
-OS_EXCEPTIONS_HELP_SHORT
-	%s: moo
-OS_EXCEPTIONS_HELP_LONG
-	moo
-OS_JUPE_HELP_SHORT
-	%s: moo
-OS_JUPE_HELP_LONG
-	moo
 OS_SET_HELP_SHORT
-	%s: moo
+	%s: Set services options.
 OS_SET_HELP_LONG
 	moo
 OS_SHUTDOWN_HELP_SHORT
-	%s: moo
+	%s: Shutdown services.
 OS_SHUTDOWN_HELP_LONG
 	moo
 OS_QUARENTINE_HELP_SHORT
-	%s: moo
+	%s: Quarentine a nickname.
 OS_QUARENTINE_HELP_LONG
 	moo
 OS_ADMIN_LIST
