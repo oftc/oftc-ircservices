@@ -1233,13 +1233,14 @@ m_invite(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Client *target;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr->regchan;
 
   if(chptr == NULL)
   {
     reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
     return;
   }
+  
+  regchptr = chptr->regchan;
 
   if(parv[2] == NULL)
     target = client;
