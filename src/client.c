@@ -376,8 +376,8 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
   }
 
   execute_callback(on_quit_cb, source_p, comment);
-  if(!IsMe(source_p));
-  exit_one_client(source_p);
+  if(!IsMe(source_p))
+    exit_one_client(source_p);
 }
 
 /* check_clean_nick()
