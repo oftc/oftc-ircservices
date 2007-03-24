@@ -33,6 +33,7 @@ static void m_quit(struct Client *, struct Client *, int, char*[]);
 static void m_squit(struct Client *, struct Client *, int, char*[]);
 static void m_mode(struct Client *, struct Client *, int, char*[]);
 static void m_topic(struct Client *, struct Client *, int, char*[]);
+static void m_kill(struct Client *, struct Client *, int, char*[]);
 
 //static void do_user_modes(struct Client *client, const char *modes);
 static void set_final_mode(struct Mode *, struct Mode *);
@@ -148,6 +149,11 @@ static struct Message quit_msgtab = {
   { m_quit, m_ignore }
 };
 
+static struct Message kill_msgtab = {
+  "KILL", 0, 0, 0, 0, 0, 0,
+  { m_kill, m_ignore }
+};
+
 static struct Message squit_msgtab = {
   "SQUIT", 0, 0, 1, 0, 0, 0,
   { m_squit, m_ignore }
@@ -227,6 +233,7 @@ INIT_MODULE(irc, "$Revision$")
   mod_add_cmd(&trace_msgtab);
   mod_add_cmd(&stats_msgtab);
   mod_add_cmd(&topic_msgtab);
+  mod_add_cmd(&kill_msgtab);
 }
 
 CLEANUP_MODULE
@@ -1316,7 +1323,30 @@ m_part(struct Client *client, struct Client *source, int parc, char *parv[])
 }
 
 static void
+m_kick(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  struct Client *target;
+
+  target = find_client(parv[2]);
+  if(target == NULL)
+    return;
+
+  part_one_client(client, target, parv[1]);
+}
+
+static void
 m_quit(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  char *comment = (parc > 1 && parv[1]) ? parv[1] : client->name;
+
+  if (strlen(comment) > (size_t)KICKLEN)
+    comment[KICKLEN] = '\0';
+
+  exit_client(source, source, comment);
+}
+
+static void
+m_kill(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   char *comment = (parc > 1 && parv[1]) ? parv[1] : client->name;
 
