@@ -172,6 +172,8 @@ read_packet(fde_t *fd, void *data)
         break;
 
       ilog(L_ERROR, "Lost server connection, trying reconnect");
+      exit_client(me.uplink, &me, "Connection lost");
+      me.uplink = NULL;
       connect_server();
       return;
     }
