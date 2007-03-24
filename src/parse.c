@@ -724,7 +724,9 @@ recurse_help_messages(struct Service *service, struct Client *client,
 
   if (mtree->msg != NULL && !(mtree->msg->flags & SFLG_ALIAS))
   {
-    reply_user(service, service, client, mtree->msg->help_short, mtree->msg->cmd);
+    if(client->access >= mtree->msg->access)
+      reply_user(service, service, client, mtree->msg->help_short, 
+          mtree->msg->cmd);
   }
   for (i = 0; i < MAXPTRLEN; i++)
   {
@@ -739,11 +741,15 @@ do_serv_help_messages(struct Service *service, struct Client *client)
   struct ServiceMessageTree *mtree = &service->msg_tree;
   int i;
 
+  reply_user(service, NULL, client, SERV_HELP_HEADER, service->name);
+
   for (i = 0; i < MAXPTRLEN; i++)
   {
     if (mtree->pointers[i] != NULL)
       recurse_help_messages(service, client, mtree->pointers[i]);
   }
+
+  reply_user(service, NULL, client, SERV_HELP_FOOTER, service->name);
 }
 
 #if 0

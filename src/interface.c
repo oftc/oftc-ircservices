@@ -412,7 +412,16 @@ do_help(struct Service *service, struct Client *client,
       return;
     }
 
-    reply_user(service, NULL, client, SERV_HELP_HEADER, "");
+    if(!(msg->flags & SFLG_CHANARG))
+    {
+      if(client->access < msg->access)
+      {
+        reply_user(service, NULL, client, SERV_HELP_NOT_AVAIL, command);
+        return;
+      }
+    }
+
+    reply_user(service, NULL, client, SERV_HELP_HEADER, command);
 
     sub = msg->sub;
     
@@ -446,7 +455,7 @@ do_help(struct Service *service, struct Client *client,
         sub = NULL;
     }
     
-    reply_user(service, NULL, client, SERV_HELP_FOOTER, "");
+    reply_user(service, NULL, client, SERV_HELP_FOOTER, command);
     
     return;
   }
