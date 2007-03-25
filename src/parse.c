@@ -320,9 +320,9 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   if (i < mptr->parameters)
   {
     reply_user(service, NULL, from, SERV_INSUFF_PARAM, mptr->parameters, i,
-        service->name, mptr->cmd);
+        service->name);
     ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
-        from->name);
+        from->name, mptr->cmd);
     return;
   }
  
