@@ -12,7 +12,7 @@ SERV_HELP_FOOTER
 SERV_UNKNOWN_CMD
 	Unknown command %s, /msg %s HELP for help.
 SERV_INSUFF_PARAM
-	Insufficient paramters.  Expected at least %d, got %d.
+	Insufficient paramters.  Expected at least %d, got %d.  /msg %s HELP for help.
 SERV_NOT_IDENTIFIED
 	Nickname %s is not identified to nickname services.
 SERV_ACCESS_DENIED
