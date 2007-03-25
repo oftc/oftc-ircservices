@@ -370,23 +370,49 @@ static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  if(db_delete_nick(client->name)) 
-  {
-    ClearIdentified(client);
-    free_nick(client->nickname);
-    client->nickname = NULL;
-    client->access = USER_FLAG;
-    send_umode(nickserv, client, "-R");
+  struct Client *target;
 
-    reply_user(service, service, client, NS_NICK_DROPPED, client->name);
-    global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
+  /* This might be being executed via sudo, find the real user of the nick */
+  if(irccmp(client->name, client->nickname->nick) != 0)
+    target = find_client(client->nickname->nick);
+  else
+    target = client;
+
+  if(db_delete_nick(client->nickname->nick)) 
+  {
+    if(target != NULL)
+    {
+      ClearIdentified(target);
+      if(target->nickname != NULL)
+        free_nick(target->nickname);
+      target->nickname = NULL;
+      target->access = USER_FLAG;
+      send_umode(nickserv, target, "-R");
+      reply_user(service, service, client, NS_NICK_DROPPED, target->name);
+      global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
+        client->username, client->host, target->name);
+    }
+    else
+    {
+      reply_user(service, service, client, NS_NICK_DROPPED, client->name);
+      global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
         client->username, client->host, client->name);
+    }
   }
   else
   {
-    global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", 
-        client->name, client->username, client->host, client->name);
-    reply_user(service, service, client, NS_NICK_DROPFAIL, client->name);
+    if(target == NULL)
+    {
+      global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", 
+          client->name, client->username, client->host, client->name);
+      reply_user(service, service, client, NS_NICK_DROPFAIL, client->name);
+    }
+    else
+    {
+      global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", 
+          client->name, client->username, client->host, target->name);
+      reply_user(service, service, client, NS_NICK_DROPFAIL, target->name);
+    }
   }
 }
 
