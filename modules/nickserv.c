@@ -373,7 +373,7 @@ m_drop(struct Service *service, struct Client *client,
   if(db_delete_nick(client->name)) 
   {
     ClearIdentified(client);
-    free_nickname(client->nickname);
+    free_nick(client->nickname);
     client->nickname = NULL;
     client->access = USER_FLAG;
     send_umode(nickserv, client, "-R");
