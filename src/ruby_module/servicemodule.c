@@ -221,7 +221,7 @@ ServiceModule_db_find_chan(VALUE self, VALUE name)
     return Qnil;
   else
   {
-    VALUE channel = rb_cchannel2rbchannel(ret);
+    VALUE channel = rb_cregchan2rbregchan(ret);
     return channel;
   }
 }

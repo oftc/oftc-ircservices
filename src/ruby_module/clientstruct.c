@@ -3,12 +3,23 @@
 
 static VALUE ClientStruct_Initialize(VALUE, VALUE);
 static VALUE ClientStruct_Name(VALUE);
+static VALUE ClientStruct_NameSet(VALUE, VALUE);
 static VALUE ClientStruct_Host(VALUE);
+static VALUE ClientStruct_HostSet(VALUE, VALUE);
 static VALUE ClientStruct_ID(VALUE);
+static VALUE ClientStruct_IDSet(VALUE, VALUE);
 static VALUE ClientStruct_Info(VALUE);
+static VALUE ClientStruct_InfoSet(VALUE, VALUE);
 static VALUE ClientStruct_Username(VALUE);
-static VALUE ClientStruct_Umodes(VALUE);
+static VALUE ClientStruct_UsernameSet(VALUE, VALUE);
 static VALUE ClientStruct_Nick(VALUE);
+static VALUE ClientStruct_NickSet(VALUE, VALUE);
+static VALUE ClientStruct_IsOper(VALUE);
+static VALUE ClientStruct_IsAdmin(VALUE);
+static VALUE ClientStruct_IsIdentified(VALUE);
+static VALUE ClientStruct_IsServer(VALUE);
+static VALUE ClientStruct_IsClient(VALUE);
+static VALUE ClientStruct_IsMe(VALUE);
 
 static VALUE
 ClientStruct_Initialize(VALUE self, VALUE client)
@@ -25,10 +36,28 @@ ClientStruct_Name(VALUE self)
 }
 
 static VALUE
+ClientStruct_NameSet(VALUE self, VALUE value)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  /*TODO check length < HOSTLEN */
+  //client->name = StringValueCStr(value);
+  return value;
+}
+
+static VALUE
 ClientStruct_Host(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
   return rb_str_new2(client->host);
+}
+
+static VALUE
+ClientStruct_HostSet(VALUE self, VALUE value)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  /* TODO check length < HOSTLEN */
+  //client->host = StringValueCStr(value);
+  return value;
 }
 
 static VALUE
@@ -39,10 +68,28 @@ ClientStruct_ID(VALUE self)
 }
 
 static VALUE
+ClientStruct_IDSet(VALUE self, VALUE value)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  /* TODO check length < IDLEN */
+  //client->id = StringValueCStr(value);
+  return value;
+}
+
+static VALUE
 ClientStruct_Info(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
   return rb_str_new2(client->info);
+}
+
+static VALUE
+ClientStruct_InfoSet(VALUE self, VALUE value)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  /* TODO check length < REALLEN */
+  //client->info = StringValueCStr(value);
+  return value;
 }
 
 static VALUE
@@ -53,10 +100,12 @@ ClientStruct_Username(VALUE self)
 }
 
 static VALUE
-ClientStruct_Umodes(VALUE self)
+ClientStruct_UsernameSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  return INT2NUM(client->umodes);
+  /* TODO check length < USERLEN */
+  //client->username = StringValueCStr(value);
+  return value;
 }
 
 static VALUE
@@ -65,6 +114,55 @@ ClientStruct_Nick(VALUE self)
   struct Client *client = rb_rbclient2cclient(self);
   VALUE nick = rb_cnick2rbnick(client->nickname);
   return nick;
+}
+
+static VALUE
+ClientStruct_NickSet(VALUE self, VALUE value)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  client->nickname = rb_rbnick2cnick(value);
+  return value;
+}
+
+static VALUE
+ClientStruct_IsOper(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  return (IsOper(client));
+}
+
+static VALUE
+ClientStruct_IsAdmin(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  return (IsAdmin(client));
+}
+
+static VALUE
+ClientStruct_IsIdentified(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  return (IsIdentified(client));
+}
+
+static VALUE
+ClientStruct_IsServer(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  return (IsServer(client));
+}
+
+static VALUE
+ClientStruct_IsClient(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  return (IsClient(client));
+}
+
+static VALUE ClientStruct_IsMe(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  return (IsMe(client));
 }
 
 void
@@ -76,12 +174,23 @@ Init_ClientStruct(void)
 
   rb_define_method(cClientStruct, "initialize", ClientStruct_Initialize, 1);
   rb_define_method(cClientStruct, "name", ClientStruct_Name, 0);
+  rb_define_method(cClientStruct, "name=", ClientStruct_NameSet, 1);
   rb_define_method(cClientStruct, "host", ClientStruct_Host, 0);
+  rb_define_method(cClientStruct, "host=", ClientStruct_HostSet, 1);
   rb_define_method(cClientStruct, "id", ClientStruct_ID, 0);
+  rb_define_method(cClientStruct, "id=", ClientStruct_IDSet, 1);
   rb_define_method(cClientStruct, "info", ClientStruct_Info, 0);
+  rb_define_method(cClientStruct, "info=", ClientStruct_InfoSet, 1);
   rb_define_method(cClientStruct, "username", ClientStruct_Username, 0);
-  rb_define_method(cClientStruct, "umodes", ClientStruct_Umodes, 0);
+  rb_define_method(cClientStruct, "username=", ClientStruct_UsernameSet, 1);
   rb_define_method(cClientStruct, "nick", ClientStruct_Nick, 0);
+  rb_define_method(cClientStruct, "nick=", ClientStruct_NickSet, 1);
+  rb_define_method(cClientStruct, "is_oper?", ClientStruct_IsOper, 0);
+  rb_define_method(cClientStruct, "is_admin?", ClientStruct_IsAdmin, 0);
+  rb_define_method(cClientStruct, "is_identified?", ClientStruct_IsIdentified, 0);
+  rb_define_method(cClientStruct, "is_server?", ClientStruct_IsServer, 0);
+  rb_define_method(cClientStruct, "is_client?", ClientStruct_IsClient, 0);
+  rb_define_method(cClientStruct, "is_me?", ClientStruct_IsMe, 0);
 }
 
 struct Client*

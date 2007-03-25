@@ -71,9 +71,11 @@ EXTERN unsigned int user_modes[];
 
 #define IsOper(x)               ((x)->umodes & UMODE_OPER)
 #define IsIdentified(x)         ((x)->umodes & UMODE_IDENTIFIED)
+#define IsAdmin(x)              ((x)->umodes & UMODE_ADMIN)
 
 #define SetOper(x)              ((x)->umodes |= UMODE_OPER)
 #define SetIdentified(x)        ((x)->umodes |= UMODE_IDENTIFIED)
+#define SetAdmin(x)             ((x)->umodes |= UMODE_ADMIN)
 
 #define ClearOper(x)            ((x)->umodes &= ~UMODE_OPER)
 #define ClearIdentified(x)      ((x)->umodes &= ~UMODE_IDENTIFIED)

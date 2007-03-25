@@ -311,7 +311,7 @@ rb_rbregchan2cregchan(VALUE self)
 {
   struct RegChannel* out;
   VALUE channel = rb_iv_get(self, "@realptr");
-  Data_Get_Struct(channel, struct Channel, out);
+  Data_Get_Struct(channel, struct RegChannel, out);
   return out;
 }
 
@@ -324,7 +324,7 @@ rb_cregchan2rbregchan(struct RegChannel *channel)
   rbchannel = Data_Wrap_Struct(rb_cObject, 0, 0, channel);
 
   fc2params = rb_ary_new();
-  rb_ary_push(fc2params, cChannelStruct);
+  rb_ary_push(fc2params, cRegChannel);
   rb_ary_push(fc2params, rb_intern("new"));
   rb_ary_push(fc2params, 1);
   rb_ary_push(fc2params, (VALUE)&rbchannel);
