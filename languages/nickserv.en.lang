@@ -300,9 +300,10 @@ NS_INFO
 	  Time registered: %s
 	Last quit message: %s
 	   Last quit time: %s
-	    eMail address: %s
 	              URL: %s
 	     Cloak String: %s
+NS_INFO_EMAIL
+	    eMail address: %s
 NS_INFO_ONLINE
 	%s is currently online from nick %s.
 NS_INFO_OPTION

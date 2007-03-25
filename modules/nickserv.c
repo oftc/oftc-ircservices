@@ -991,20 +991,22 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     strftime(quittime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
         gmtime(&nick->last_quit_time));
 
-  if((target = find_client(nick->nick)) != NULL && target->nickname != NULL)
+  if((target = find_client(nick->nick)) != NULL && target->nickname != NULL &&
+      target != client)
   {
     reply_user(service, service, client, NS_INFO_ONLINE, name, target->name);
   }
 
   reply_user(service, service, client, NS_INFO, regtime, 
       (nick->last_quit == NULL) ? "Unknown" : nick->last_quit, quittime, 
-      (nick->priv) ? "Private" : nick->email, 
       (nick->url == NULL) ? "Not set" : nick->url, 
       (nick->cloak[0] == '\0') ? "Not set" : nick->cloak);
 
   if(IsIdentified(client) && (client->nickname == nick || 
       client->access >= OPER_FLAG))
   {
+
+    reply_user(service, service, client, NS_INFO_EMAIL, nick->email);
     reply_user(service, service, client, NS_LANGUAGE_SET,
         service->languages[nick->language].name, nick->language); 
 
@@ -1012,9 +1014,13 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
         "OFF");
     reply_user(service, service, client, NS_INFO_OPTION, "SECURE", nick->secure ? "ON" :
         "OFF");
+    reply_user(service, service, client, NS_INFO_OPTION, "PRIVATE", nick->priv ? "ON" :
+        "OFF");
     reply_user(service, service, client, NS_INFO_OPTION, "CLOAK", nick->cloak_on ? "ON" :
         "OFF");
-  }
+ }
+  else if(!nick->priv)
+    reply_user(service, service, client, NS_INFO_EMAIL, nick->email);
  
   if(nick != client->nickname)
     free_nick(nick);

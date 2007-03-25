@@ -315,11 +315,10 @@ db_find_nick(const char *nick)
   brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
     &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->url, &nick_p->email,
     &retcloak, &nick_p->enforce, &nick_p->secure, &nick_p->verified, 
-    &nick_p->cloak_on, &nick_p->admin, &nick_p->priv,
-    &nick_p->email_verified, &nick_p->language, &nick_p->last_host,
-    &nick_p->last_realname, &nick_p->last_quit,
-    &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->nick_reg_time,
-    &nick_p->last_seen);
+    &nick_p->cloak_on, &nick_p->admin, &nick_p->email_verified, &nick_p->priv,
+    &nick_p->language, &nick_p->last_host, &nick_p->last_realname, 
+    &nick_p->last_quit, &nick_p->last_quit_time, &nick_p->reg_time, 
+    &nick_p->nick_reg_time, &nick_p->last_seen);
 
   if(Fetch(rc, brc) == 0)
   {
