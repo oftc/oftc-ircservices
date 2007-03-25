@@ -329,6 +329,12 @@ m_register(struct Service *service, struct Client *client,
     reply_user(service, service, client, NS_NOREG_FORBID, client->name);
     return;
   }
+
+  if(strchr(parv[2], '@') == NULL)
+  {
+    reply_user(service, service, client, NS_INVALID_EMAIL, parv[2]);
+    return;
+  }
     
   if((nick = db_find_nick(client->name)) != NULL)
   {

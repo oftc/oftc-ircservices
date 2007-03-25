@@ -329,6 +329,8 @@ NS_NOREG_GUEST
 	You may not register guest nicknames, %s.
 NS_NOREG_FORBID
 	You may not register %s because it is forbidden to be used.
+NS_INVALID_EMAIL
+	%s is an invalid email address.
 NS_LANG_LIST
 	%d : %s
 NS_MASTER_NOT_LINKED
