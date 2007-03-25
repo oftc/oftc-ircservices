@@ -9,13 +9,17 @@ class Jupes
 	def find(s)
 		return @jupes[s]
 	end
+	
+	def remove(s)
+	  @jupes.delete(s)
+	end
 
 	def jupe(c,s)
 		jupe = Jupe.new
 		jupe.server = s
 		jupe.client = c
 		jupe.datetime = Time.new
-		@jupes[s] = jupe
+		@jupes[s.name] = jupe
 	end
 
 	def each
@@ -33,7 +37,22 @@ class JupeServ < ServiceModule
   def initialize
     service_name("JupeServ")
     register(["HELP", "JUPE", "LIST"])
+    add_hook([
+      [ServiceModule::SERVER_HOOK, 'server'],
+      [ServiceModule::SQUIT_HOOK, 'squit']
+    ])
     @jupes = Jupe.new
+  end
+  
+  def squit(client, servername)
+    cjupe = @jupes.find(servername)
+    if cjupe != nil
+      exit_client(cjupe.server, client, "Not jupitered anymore")
+      @jupes.remove(servername)
+      reply_user(client, "Jupe ended.")
+    else
+      reply_user(client, "Server is not jupitered")
+    end
   end
   
   def HELP(client, parv = [])
@@ -46,8 +65,8 @@ class JupeServ < ServiceModule
     	reply_user(client, "Server " + parv[0] + "already juped")
 	return
     end
-    introduce_server(parv[0], "Jupitered")
-    @jupes.jupe(client, parv[0])
+    server = introduce_server(parv[0], "Jupitered")
+    @jupes.jupe(client, server)
     reply_user(client, "Jupitered " + parv[0])
   end
 
@@ -59,7 +78,7 @@ class JupeServ < ServiceModule
     
     reply_user(client, "Currently #{@jupes.size} Jupes active:")
     @jupes.each do |jupe|
-      reply_user(client, "  - #{jupe.server} by #{jupe.client} on #{jupe.datetime}")
+      reply_user(client, "  - #{jupe.server.name} by #{jupe.client.name} on #{jupe.datetime}")
     end 
     reply_user(client, "End of List.")
   end
