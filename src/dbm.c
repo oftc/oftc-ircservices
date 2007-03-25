@@ -142,8 +142,7 @@ query_t queries[QUERY_COUNT] = {
     EXECUTE },
   { "DELETE FROM channel_akick WHERE channel_id=?d AND target IN (SELECT user_id "
     "FROM nickname WHERE lower(nick)=lower(?v))", NULL, EXECUTE },
-  { "UPDATE account SET primary_nick=(SELECT id FROM nickname WHERE "
-    "lower(nick)=lower(?v)) WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE account SET primary_nick=?d WHERE id=?d", NULL, EXECUTE },
   { "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
   { "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=?d",
     NULL, QUERY },

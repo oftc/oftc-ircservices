@@ -76,7 +76,7 @@ CS_HELP_SET_VERBOSE_LONG
 	Usage: SET channel VERBOSE [ON|OFF]
 	
 	When verbose is set, channel operators will have notices sent to them when
-	various actions are performed on the channel	  
+	various actions are performed on the channel.
 CS_HELP_SET_MLOCK_SHORT
 	%s: Set channel mode lock
 CS_HELP_SET_MLOCK_LONG
@@ -235,7 +235,7 @@ CS_HELP_ACCESS_LIST_LONG
 	Usage: ACCESS channel LIST
 	
 	Show the current channel access list.
-CS_HELP_SUDO_SHOR	  
+CS_HELP_SUDO_SHORT
 	%s: Execute a command on a channel as channel master.
 CS_HELP_SUDO_LONG
 	Execute a command on a channel as channel master.
@@ -303,7 +303,7 @@ CS_NOT_ON_CHAN
 	User %s not on channel %s
 CS_OP
 	User %s given ops on %s.
-CS_DEO	  
+CS_DEOP 
 	User %s deopped on %s.
 CS_NICK_NOT_ONLINE
 	User %s is not online.
