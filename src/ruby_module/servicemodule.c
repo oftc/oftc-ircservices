@@ -27,6 +27,7 @@ static VALUE ServiceModule_db_list_next(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_db_list_done(VALUE, VALUE);
 static VALUE ServiceModule_db_list_del(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_db_list_del_index(VALUE, VALUE, VALUE, VALUE);
+static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
 /* DB Prototypes */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -62,6 +63,22 @@ ServiceModule_register(VALUE self, VALUE commands)
     mod_add_servcmd(&ruby_service->msg_tree, generic_msgtab);
   }
 
+  return Qnil;
+}
+
+static VALUE
+ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource, 
+    VALUE rbreason)
+{
+  struct Client *client, *source;
+  char *reason;
+
+  client = rb_rbclient2cclient(rbclient);
+  source = rb_rbclient2cclient(rbsource);
+
+  reason = StringValueCStr(rbreason);
+
+  exit_client(client, source, reason);
   return Qnil;
 }
 
@@ -273,6 +290,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "add_hook", ServiceModule_add_hook, 1);
   rb_define_method(cServiceModule, "log", ServiceModule_log, 2);
   rb_define_method(cServiceModule, "introduce_server", ServiceModule_introduce_server, 1);
+  rb_define_method(cServiceModule, "exit_client", ServiceModule_exit_client, 3);
 
   rb_define_method(cServiceModule, "string", ServiceModule_db_set_string, 3);
   rb_define_method(cServiceModule, "string?", ServiceModule_db_get_string, 3);
