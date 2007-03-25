@@ -26,6 +26,7 @@ int main(int parc, char *parv[])
   }
 
   ptr = fgets(line, 1024, fptr);
+  lineno++;
   printf("This language file contains %s", line);
 
   while((ptr = fgets(line, 1024, fptr)) != NULL)
@@ -35,7 +36,7 @@ int main(int parc, char *parv[])
       printf("ERROR: Line %d: Line starts with a space\n", lineno);
       cleanfile = FALSE;
     }
-    else if(line[0] == '\0')
+    else if(line[0] == '\n')
     {
       printf("ERROR: Line %d: Blank line\n", lineno);
       cleanfile = FALSE;

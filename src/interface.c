@@ -451,7 +451,7 @@ do_help(struct Service *service, struct Client *client,
     { 
       while(sub != NULL && sub->cmd != NULL)
       {
-        if(strncasecmp(sub->cmd, parv[2], sizeof(sub->cmd)) == 0)
+        if(strncasecmp(sub->cmd, parv[2], strlen(sub->cmd)) == 0)
         {
           reply_user(service, service, client, sub->help_long, "");
           return;   

@@ -44,6 +44,9 @@ NS_HELP_ACCESS_LONG
 	    ACCESS DEL foo@*.org
 	    ACCESS DEL 1
 	    ACCESS LIST
+	
+	The following are valid options to this command:
+	
 NS_HELP_ACCESS_ADD_SHORT
 	%s
 NS_HELP_ACCESS_ADD_LONG
@@ -59,7 +62,7 @@ NS_HELP_ACCESS_LIST_LONG
 	List entries in your access list.
 	
 	Example:
-	  	ACCESS LIST
+	    ACCESS LIST
 NS_HELP_ACCESS_DEL_SHORT
 	%s
 NS_HELP_ACCESS_DEL_LONG
@@ -67,8 +70,8 @@ NS_HELP_ACCESS_DEL_LONG
 	or by userhost matching. Index values will change after each delete.
 	
 	Examples:
-	  	ACCESS DEL 1
-	  	ACCESS DEL foo@*.org
+	    ACCESS DEL 1
+	    ACCESS DEL foo@*.org
 NS_HELP_SET_SHORT
 	%s: Set nickname properties.
 NS_HELP_SET_LONG
@@ -83,29 +86,29 @@ NS_HELP_SET_LANG_LONG
 	other parameters.
 	
 	Examples:
-	  	SET LANG
-	  	SET LANG 11
+	    SET LANG
+	    SET LANG 11
 NS_HELP_SET_PASS_SHORT
 	%s
 NS_HELP_SET_PASS_LONG
 	SET the password of your current account. Please use secure passwords.
 	
 	Example:
-	  	SET PASS foobar
+	    SET PASSWORD foobar
 NS_HELP_SET_URL_SHORT
 	%s
 NS_HELP_SET_URL_LONG
 	SET url field to be shown in INFO command.
 	
 	Example:
-	  	SET URL http://example.org
+	     SET URL http://example.org
 NS_HELP_SET_EMAIL_SHORT
 	%s
 NS_HELP_SET_EMAIL_LONG
 	SET email field to be used for password recovery and INFO command.
 	
 	Example:
-	  	SET EMAIL foo@example.org
+	    SET EMAIL foo@example.org
 NS_HELP_SET_ENFORCE_SHORT
 	%s
 NS_HELP_SET_ENFORCE_LONG
@@ -114,11 +117,11 @@ NS_HELP_SET_ENFORCE_LONG
 	identify within a given period their nick will be changed.
 	
 	Examples:
-	  	SET ENFORCE ON
-	  	SET ENFORCE OFF
+	    SET ENFORCE ON
+	    SET ENFORCE OFF
 	
 	See Also:
-	  	HELP SET SECURE
+	    HELP SET SECURE
 NS_HELP_SET_SECURE_SHORT
 	%s
 NS_HELP_SET_SECURE_LONG
@@ -127,44 +130,44 @@ NS_HELP_SET_SECURE_LONG
 	list you won't be automatically identified.
 	
 	Examples:
-	  	SET SECURE ON
-	  	SET SECURE OFF
+	    SET SECURE ON
+	    SET SECURE OFF
 	
 	See Also:
-	  	HELP SET ENFORCE
+	    HELP SET ENFORCE
 NS_HELP_SET_CLOAK_SHORT
 	%s
 NS_HELP_SET_CLOAK_LONG
 	(BOOLEAN) SET CLOAK enables or disables a cloak on your current account.
 	
 	Examples:
-	  	SET CLOAK ON
-	  	SET CLOAK OFF
+	    SET CLOAK ON
+	    SET CLOAK OFF
 	
 	See Also:
-	  	HELP SET CLOAKSTRING
+	    HELP SET CLOAKSTRING
 NS_HELP_SET_CLOAKSTRING_SHORT
 	%s
 NS_HELP_SET_CLOAKSTRING_LONG
 	SET the CLOAKSTRING of a given account.
 	
 	Example:
-	  	SET CLOAKSTRING user.example.org
+	    SET CLOAKSTRING user.example.org
 	
 	See Also:
-	  	HELP SET CLOAK
+	    HELP SET CLOAK
 NS_HELP_SET_MASTER_SHORT
 	%s
 NS_HELP_SET_MASTER_LONG
 	SET the master account of a linked nickname.
 	
 	Example:
-	  	SET MASTER foobar
+	    SET MASTER foobar
 	
 	See Also:
-	  	HELP LINK
+	    HELP LINK
 NS_HELP_SET_PRIVATE_SHORT
-	Makes various parts of your nickname information private
+	%s
 NS_HELP_SET_PRIVATE_LONG
 	Usage SET PRIVATE (ON|OFF)
 	
