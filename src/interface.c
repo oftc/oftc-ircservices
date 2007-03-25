@@ -132,7 +132,7 @@ introduce_client(const char *name)
   }
 }
 
-void
+struct Client*
 introduce_server(const char *name, const char *gecos)
 {
   struct Client *client = make_client(&me);
