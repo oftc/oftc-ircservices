@@ -42,6 +42,7 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT nick from account, nickname WHERE account.id=?d AND "
     "account.primary_nick=nickname.id", NULL, QUERY },
   { "SELECT user_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
+  { "SELECT id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
   { "INSERT INTO account (password, salt, email, reg_time) VALUES "
     "(?v, ?v, ?v, ?d)", NULL, EXECUTE },
   { "INSERT INTO nickname (nick, user_id, reg_time, last_seen) VALUES "
@@ -511,6 +512,36 @@ db_fix_link(unsigned int id, const char *oldnick)
   Free(brc);
 
   return nickid;
+}
+
+int
+db_set_nick_master(unsigned int accid, const char *newnick)
+{
+  int newnickid;
+  int ret;
+  yada_rc_t *rc, *brc;
+
+  brc = Bind("?d", &newnickid);
+  db_query(rc, GET_ID_FROM_NICK, newnick);
+
+  if(rc == NULL)
+    return FALSE;
+
+  if(Fetch(rc, brc) == 0)
+  {
+    Free(rc);
+    Free(brc);
+    return FALSE;
+  }
+
+  Free(rc);
+  Free(brc);
+
+  db_exec(ret, SET_NICK_MASTER, newnickid, accid);
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
 }
 
 int

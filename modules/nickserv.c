@@ -709,7 +709,7 @@ m_set_master(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_set_string(SET_NICK_MASTER, nick->id, parv[1]))
+  if(db_set_nick_master(nick->id, parv[1]))
     reply_user(service, service, client, NS_MASTER_SET_OK, parv[1]);
   else
     reply_user(service, service, client, NS_MASTER_SET_FAIL, parv[1]);
