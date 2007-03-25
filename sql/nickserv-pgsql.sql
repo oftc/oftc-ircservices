@@ -1,7 +1,7 @@
 DROP TABLE account CASCADE;
 CREATE TABLE account (
   id                  SERIAL PRIMARY KEY,
-  primary_nick        INTEGER,
+  primary_nick        INTEGER NOT NULL,
   password            CHAR(40),      -- base16 encoded sha1(salt+<userpassword>).  lower case
   salt                CHAR(16),
   url                 VARCHAR(255),
