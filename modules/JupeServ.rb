@@ -37,11 +37,7 @@ class JupeServ < ServiceModule
   def initialize
     service_name("JupeServ")
     register(["HELP", "JUPE", "LIST"])
-    add_hook([
-      [ServiceModule::SERVER_HOOK, 'server'],
-      [ServiceModule::SQUIT_HOOK, 'squit']
-    ])
-    @jupes = Jupe.new
+    @jupes = Jupes.new
   end
   
   def squit(client, servername)
