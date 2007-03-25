@@ -249,7 +249,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
     return 0;
 
   ilog(L_TRACE, "RUBY INFO: Loaded Class %s", classname);
-  
+
   params = rb_ary_new();
   rb_ary_push(params, klass);
   rb_ary_push(params, rb_intern("new"));
@@ -280,6 +280,7 @@ init_ruby(void)
   Init_ServiceModule();
   Init_ClientStruct();
   Init_ChannelStruct();
+  Init_RegChannel();
   Init_NickStruct();
 
   /* Place holder for hooks */

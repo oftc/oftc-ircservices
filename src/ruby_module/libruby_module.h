@@ -14,17 +14,25 @@
 static VALUE cServiceModule = Qnil;
 static VALUE cClientStruct = Qnil;
 static VALUE cChannelStruct = Qnil;
+static VALUE cRegChannel = Qnil;
 static VALUE cNickStruct = Qnil;
+
+VALUE rb_carray2rbarray(int, char **);
 
 struct Client* rb_rbclient2cclient(VALUE);
 VALUE rb_cclient2rbclient(struct Client*);
-VALUE rb_carray2rbarray(int, char **);
-struct RegChannel* rb_rbchannel2cchannel(VALUE);
-VALUE rb_cchannel2rbchannel(struct RegChannel*);
+
+struct Channel* rb_rbchannel2cchannel(VALUE);
+VALUE rb_cchannel2rbchannel(struct Channel*);
+
+struct RegChannel* rb_rbregchan2cregchan(VALUE);
+VALUE rb_cregchan2rbregchan(struct RegChannel*);
+
 struct Nick* rb_rbnick2cnick(VALUE);
 VALUE rb_cnick2rbnick(struct Nick*);
 
 void Init_ChannelStruct(void);
+void Init_RegChannel(void);
 void Init_ClientStruct(void);
 void Init_NickStruct(void);
 void Init_ServiceModule(void);
