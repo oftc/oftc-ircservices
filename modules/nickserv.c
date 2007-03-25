@@ -997,10 +997,22 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     strftime(quittime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
         gmtime(&nick->last_quit_time));
 
-  if((target = find_client(nick->nick)) != NULL && target->nickname != NULL &&
-      target != client)
+  if(irccmp(nick->nick, name) != 0)
   {
-    reply_user(service, service, client, NS_INFO_ONLINE, name, target->name);
+    if((target = find_client(nick->nick)) != NULL && IsIdentified(target))
+      reply_user(service, service, client, NS_INFO_ONLINE, name, target->name);
+    else if((target = find_client(name)) != NULL && IsIdentified(target))
+    {
+      if(irccmp(target->name, name) == 0)
+        reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
+      else
+        reply_user(service, service, client, NS_INFO_ONLINE, nick->nick, name);
+    }
+  }
+  else
+  {
+    if((target = find_client(name)) != NULL && IsIdentified(target))
+      reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
   }
 
   reply_user(service, service, client, NS_INFO, regtime, 

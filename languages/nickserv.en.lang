@@ -306,6 +306,8 @@ NS_INFO_EMAIL
 	    eMail address: %s
 NS_INFO_ONLINE
 	%s is currently online from nick %s.
+NS_INFO_ONLINE_NONICK
+	%s is currently online.
 NS_INFO_OPTION
 	%s is %s
 NS_NICK_IN_USE

@@ -422,14 +422,17 @@ m_drop(struct Service *service, struct Client *client,
       client->name, client->username, client->host, parv[1]);
 
     free_regchan(regchptr);
-    chptr->regchan = NULL;
+    if(chptr != NULL)
+      chptr->regchan = NULL;
+    regchptr = NULL;
   } 
   else
   {
     ilog(L_DEBUG, "Channel DROP failed for %s on %s", client->name, parv[1]);
     reply_user(service, service, client, CS_DROP_FAILED, parv[1]);
   }
-  if (chptr == NULL)
+
+  if (chptr == NULL && regchptr != NULL)
     free_regchan(regchptr);
 
   ilog(L_TRACE, "T: Leaving CS:m_drop (%s:%s)", client->name, parv[1]);
