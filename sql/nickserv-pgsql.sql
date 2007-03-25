@@ -31,8 +31,6 @@ CREATE TABLE nickname (
   last_seen           INTEGER
 );
 
-ALTER TABLE account ADD FOREIGN KEY (primary_nick) REFERENCES nickname(id) ON DELETE SET NULL;
-
 DROP TABLE forbidden_nickname;
 CREATE TABLE forbidden_nickname (
   nick                VARCHAR(255) PRIMARY KEY

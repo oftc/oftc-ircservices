@@ -107,7 +107,7 @@ query_t queries[QUERY_COUNT] = {
     "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
     "flag_private, language, last_host, last_realname, last_quit_msg, "
     "last_quit_time, reg_time FROM account WHERE id=?d", NULL, EXECUTE },
-  { "SELECT nick FROM nickname WHERE user_id=?d", NULL, QUERY },
+  { "SELECT id FROM nickname WHERE user_id=?d AND NOT nick=?v", NULL, QUERY },
   { "UPDATE channel SET description=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET url=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET email=?v WHERE id=?d", NULL, EXECUTE },
@@ -407,7 +407,7 @@ db_get_id_from_name(const char *name, unsigned int type)
 int
 db_register_nick(struct Nick *nick)
 {
-  int exec, id;
+  int exec, id, nickid;
 
   assert(nick != NULL);
 
@@ -423,7 +423,10 @@ db_register_nick(struct Nick *nick)
   }
 
   if(exec != -1)
-    db_exec(exec, SET_NICK_MASTER, nick->nick, id);
+  {
+    nickid = InsertID("nickname", "id");
+    db_exec(exec, SET_NICK_MASTER, nickid, id);
+  }
 
   if(exec != -1)
   {
@@ -485,36 +488,36 @@ db_delete_forbid(const char *nick)
   return TRUE;
 }
 
-static char *
-db_fix_link(unsigned int id)
+static int
+db_fix_link(unsigned int id, const char *oldnick)
 {
-  char *nick;
+  int nickid = -1;
   yada_rc_t *rc, *brc;
 
-  brc = Bind("?ps", &nick);
-  db_query(rc, GET_NEW_LINK, id);
+  brc = Bind("?d", &nickid);
+  db_query(rc, GET_NEW_LINK, id, oldnick);
 
   if(rc == NULL)
-    return NULL;
+    return -1;
 
   if(Fetch(rc, brc) == 0)
   {
     Free(rc);
     Free(brc);
-    return NULL;
+    return -1;
   }
 
   Free(rc);
   Free(brc);
 
-  return nick;
+  return nickid;
 }
 
 int
 db_delete_nick(const char *nick)
 {
   int ret;
-  unsigned int id;
+  unsigned int id, newid;
 
   /* TODO Do some(more?) stuff with constraints and transactions */
   TransBegin();
@@ -526,16 +529,19 @@ db_delete_nick(const char *nick)
     return FALSE;
   }
 
-  db_exec(ret, DELETE_NICK, nick);
+  newid = db_fix_link(id, nick);
 
-  if(ret != -1)
+  if(newid == -1)
   {
-    char *newnick = db_fix_link(id);
-
-    if(newnick == NULL)
+    db_exec(ret, DELETE_NICK, nick);
+    if(ret != -1)
       db_exec(ret, DELETE_ACCOUNT, id);
-    else
-      db_exec(ret, SET_NICK_MASTER, newnick, id);
+  }
+  else
+  {
+    db_exec(ret, SET_NICK_MASTER, newid, id);
+    if(ret != -1)
+      db_exec(ret, DELETE_NICK, nick);
   }
 
   if(ret == -1)
