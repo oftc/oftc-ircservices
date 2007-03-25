@@ -292,7 +292,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "service_name", ServiceModule_service_name, 1);
   rb_define_method(cServiceModule, "add_hook", ServiceModule_add_hook, 1);
   rb_define_method(cServiceModule, "log", ServiceModule_log, 2);
-  rb_define_method(cServiceModule, "introduce_server", ServiceModule_introduce_server, 1);
+  rb_define_method(cServiceModule, "introduce_server", ServiceModule_introduce_server, 2);
   rb_define_method(cServiceModule, "exit_client", ServiceModule_exit_client, 3);
 
   rb_define_method(cServiceModule, "string", ServiceModule_db_set_string, 3);

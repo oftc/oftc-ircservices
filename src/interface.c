@@ -141,6 +141,7 @@ introduce_server(const char *name, const char *gecos)
   dlinkAdd(client, &client->node, &global_client_list);
 
   strlcpy(client->name, name, sizeof(client->name));
+  strlcpy(client->info, gecos, sizeof(client->info));
   hash_add_client(client);
 
   if(me.uplink != NULL)

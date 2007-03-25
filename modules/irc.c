@@ -274,7 +274,7 @@ irc_sendmsg_server(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
 
-  sendto_server(client, "SERVER %s 1 :%s", client->name, client->info);
+  sendto_server(me.uplink, "SERVER %s 1 :%s", client->name, client->info);
 }
 
 /** Introduce a new user

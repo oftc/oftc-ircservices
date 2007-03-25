@@ -33,6 +33,7 @@ AC_DEFUN([AX_CHECK_LIB_RUBY],[
     fi
   fi
   AM_CONDITIONAL([USE_RUBY], [test "$have_ruby" = "yes"])
+  AC_DEFINE_UNQUOTED([HAVE_RUBY], [$have_ruby], [Is ruby enabled])
 ])dnl }}}
 dnl {{{ ax_check_lib_lua
 AC_DEFUN([AX_CHECK_LIB_LUA],[
