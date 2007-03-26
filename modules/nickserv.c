@@ -478,6 +478,13 @@ m_identify(struct Service *service, struct Client *client,
         guest_user(target);
       }
     }
+    else
+    {
+      send_nick_change(service, client, nick->nick);
+      hash_del_client(client);
+      strlcpy(client->name, nick->nick, sizeof(client->name));
+      hash_add_client(client);
+    }
   }
   identify_user(client);
   reply_user(service, service, client, NS_IDENTIFIED, nick->nick);
@@ -1120,7 +1127,7 @@ m_regain(struct Service *service, struct Client *client, int parc,
     free_nick(client->nickname);
   client->nickname = nick;
  
-  if(enforcer != NULL && dlinkFind(&nick_release_list, enforcer) == NULL)
+  if(enforcer != NULL && dlinkFind(&nick_release_list, enforcer) != NULL)
   {
     dlinkFindDelete(&nick_enforce_list, client);
     exit_client(enforcer, &me, "RELEASE command issued");
@@ -1133,6 +1140,13 @@ m_regain(struct Service *service, struct Client *client, int parc,
   {
     enforcer->release_to = client;
     guest_user(enforcer);
+  }
+  else
+  {
+    send_nick_change(service, client, nick->nick);
+    hash_del_client(client);
+    strlcpy(client->name, nick->nick, sizeof(client->name));
+    hash_add_client(client);
   }
  
   identify_user(client);
