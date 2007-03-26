@@ -44,7 +44,7 @@ ServiceModule_register(VALUE self, VALUE commands)
 
   ruby_service = make_service(StringValueCStr(service_name));
 
-  if(!ircncmp(ruby_service->name, StringValueCStr(service_name), NICKLEN))
+  if(ircncmp(ruby_service->name, StringValueCStr(service_name), NICKLEN) != 0)
     rb_iv_set(self, "@ServiceName", rb_str_new2(ruby_service->name));
 
   clear_serv_tree_parse(&ruby_service->msg_tree);
@@ -112,7 +112,7 @@ ServiceModule_service_name(VALUE self, VALUE name)
 static VALUE
 ServiceModule_add_hook(VALUE self, VALUE hooks)
 {
-  if(RARRAY(hooks)->len)
+  if(RARRAY(hooks)->len > 0)
   {
     int i;
     VALUE current, hook, type;
@@ -185,7 +185,7 @@ static VALUE
 ServiceModule_db_get_nickname_from_id(VALUE self, VALUE id)
 {
   char *ret = db_get_nickname_from_id(NUM2INT(id));
-  if(ret)
+  if(ret != NULL)
   {
     VALUE nick = rb_str_new2(ret);
     MyFree(ret);
@@ -207,7 +207,7 @@ static VALUE
 ServiceModule_db_find_nick(VALUE self, VALUE name)
 {
   struct Nick *ret = db_find_nick(StringValueCStr(name));
-  if(!ret) /* FIXME Exception Needed */
+  if(ret == NULL) /* FIXME Exception Needed */
     return Qnil;
   else
   {
@@ -220,7 +220,7 @@ static VALUE
 ServiceModule_db_find_chan(VALUE self, VALUE name)
 {
   struct RegChannel *ret = db_find_chan(StringValueCStr(name));
-  if(!ret) /* FIXME Exception Needed */
+  if(ret == NULL) /* FIXME Exception Needed */
     return Qnil;
   else
   {
