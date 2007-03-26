@@ -298,12 +298,14 @@ recurse_remove_clients(struct Client *source_p)
   dlink_node *ptr = NULL, *next = NULL;
 
   DLINK_FOREACH_SAFE(ptr, next, source_p->client_list.head)
+  {
+    execute_callback(on_quit_cb, ptr->data, "Server Split");
     exit_one_client(ptr->data);
+  }
 
   DLINK_FOREACH_SAFE(ptr, next, source_p->server_list.head)
   {
     recurse_remove_clients(ptr->data);
-    execute_callback(on_quit_cb, ptr->data, "Server Split");
     exit_one_client(ptr->data);
   }
 }

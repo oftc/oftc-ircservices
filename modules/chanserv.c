@@ -88,8 +88,8 @@ static int m_set_string(struct Service *, struct Client *, const char *,
     const char *, unsigned int, const char *, char **, int);
 
 static struct ServiceMessage register_msgtab = {
-  NULL, "REGISTER", 0, 2, 2, SFLG_UNREGOK, CHIDENTIFIED_FLAG, CS_HELP_REG_SHORT, 
-  CS_HELP_REG_LONG, m_register
+  NULL, "REGISTER", 0, 2, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, CHIDENTIFIED_FLAG, 
+  CS_HELP_REG_SHORT, CS_HELP_REG_LONG, m_register
 };
 
 static struct ServiceMessage help_msgtab = {
