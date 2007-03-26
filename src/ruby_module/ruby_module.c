@@ -127,18 +127,17 @@ rb_cmode_hdlr(va_list args)
   char letter = (char)va_arg(args, int);
   char *param = va_arg(args, char *);
 
-#if 0 
-  XXX fix this 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CMODE);
   VALUE params = rb_ary_new();
 
-  rb_ary_push(params, rb_cclient2rbclient(client_p));
   rb_ary_push(params, rb_cclient2rbclient(source_p));
   rb_ary_push(params, rb_cchannel2rbchannel(chptr));
-  rb_ary_push(params, rb_carray2rbarray(parc, parv));
+  rb_ary_push(params, INT2NUM(dir));
+  rb_ary_push(params, rb_str_new(&letter, 1));
+  if(param)
+    rb_ary_push(params, rb_str_new2(param));
 
   rb_do_hook_cb(hooks, params);
-#endif
 
   return pass_callback(ruby_cmode_hook, source_p, chptr, dir, letter, param);
 }
@@ -232,25 +231,29 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   snprintf(path, sizeof(path), "%s/%s", dir, fname);
 
-  ilog(L_TRACE, "RUBY INFO: Loading ruby module: %s", path);
+  ilog(L_DEBUG, "RUBY INFO: Loading ruby module: %s", path);
 
-  if(!do_ruby(RB_CALLBACK(rb_load_file), (VALUE)path))
+  rb_protect(RB_CALLBACK(rb_load_file), (VALUE)path, &status);
+
+  if(ruby_handle_error(status))
+  {
+    ilog(L_DEBUG, "RUBY INFO: Failed to load file %s", path);
     return 0;
+  }
 
   do_ruby(RB_CALLBACK(ruby_exec), (VALUE)NULL);
 
   strncpy(classname, fname, strlen(fname)-3);
-  if(ServicesState.namesuffix)
-    strlcat(classname, ServicesState.namesuffix, sizeof(classname));
 
   klass = rb_protect(RB_CALLBACK(rb_path2class), (VALUE)(classname), &status);
 
   if(ruby_handle_error(status))
     return 0;
 
-  ilog(L_TRACE, "RUBY INFO: Loaded Class %s", classname);
+  ilog(L_DEBUG, "RUBY INFO: Loaded Class %s", classname);
 
   params = rb_ary_new();
+
   rb_ary_push(params, klass);
   rb_ary_push(params, rb_intern("new"));
   rb_ary_push(params, 0);
@@ -260,7 +263,11 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   if(ruby_handle_error(status))
     return 0;
+
   ilog(L_TRACE, "RUBY INFO: Initialized Class %s", classname);
+
+  if(ServicesState.namesuffix)
+    strlcat(classname, ServicesState.namesuffix, sizeof(classname));
 
   service = find_service(classname);
   if(service != NULL)

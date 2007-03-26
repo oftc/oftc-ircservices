@@ -44,6 +44,9 @@ ServiceModule_register(VALUE self, VALUE commands)
 
   ruby_service = make_service(StringValueCStr(service_name));
 
+  if(!ircncmp(ruby_service->name, StringValueCStr(service_name), NICKLEN))
+    rb_iv_set(self, "@ServiceName", rb_str_new2(ruby_service->name));
+
   clear_serv_tree_parse(&ruby_service->msg_tree);
   dlinkAdd(ruby_service, &ruby_service->node, &services_list);
   hash_add_service(ruby_service);
@@ -321,14 +324,12 @@ m_generic(struct Service *service, struct Client *client,
 {
   char *command = strdup(service->last_command);
   VALUE rbparams, rbparv;
-  VALUE class, real_client, self;
+  VALUE real_client, self;
   VALUE fc2params;
   ID class_command;
 
   strupr(command);
   class_command = rb_intern(command);
-
-  class = rb_path2class(service->name);
 
   rbparams = rb_ary_new();
 

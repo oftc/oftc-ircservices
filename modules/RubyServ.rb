@@ -1,12 +1,12 @@
 class RubyServ < ServiceModule
-  def initialize
+  def initialize()
     service_name("RubyServ")
     register(["HELP", "SAY"])
-#    add_hook([
-#      [ServiceModule::CMODE_HOOK, 'cmode'],
-#      [ServiceModule::UMODE_HOOK, 'umode'],
-#      [ServiceModule::NEWUSR_HOOK, 'newuser']
-#    ])
+    add_hook([
+      [ServiceModule::CMODE_HOOK, 'cmode'],
+      [ServiceModule::UMODE_HOOK, 'umode'],
+      [ServiceModule::NEWUSR_HOOK, 'newuser']
+    ])
   end
   def HELP(client, parv = [])
     log(ServiceModule::LOG_DEBUG, "RubyServ::Help")
@@ -14,19 +14,18 @@ class RubyServ < ServiceModule
   def SAY(client, parv = [])
     parv.shift
     message = parv.join(" ")
-    reply_user(client, client.name + " Said: "+message)
+    reply_user(client, "#{client.name}  Said: #{message}")
   end
   def umode(client, what, mode)
-    log(ServiceModule::LOG_DEBUG, "UMODE client.name: %s what: %d mode: %08x" % [client.name, what, mode])
-    log(ServiceModule::LOG_DEBUG, "client.nick.nick: %s" % [client.nick.nick])
+    log(ServiceModule::LOG_DEBUG, "UMODE client.name: #{client.name} what: #{what} mode: %08x" % [mode])
+    log(ServiceModule::LOG_DEBUG, "client.nick.nick: #{client.nick.nick}")
   end
-  def cmode(clientp, sourcep, channel, params)
-    log(ServiceModule::LOG_DEBUG, "Made it to CMODE client.name: %s source.name: %s" % [clientp.name, sourcep.name])
-    log(ServiceModule::LOG_DEBUG, "\tin chan.name: %s chan.mode: %s" % [channel.name, channel.mode])
-    log(ServiceModule::LOG_DEBUG, "\t%s" % [params.join(" ")])
+  def cmode(source, channel, dir, letter, param = "")
+    log(ServiceModule::LOG_DEBUG, "Made it to CMODE source.name: #{source.name} channel.name: #{channel.name}")
+    log(ServiceModule::LOG_DEBUG, "\t#{dir} #{letter} #{param}")
   end
   def newuser(newuser)
-    log(ServiceModule::LOG_DEBUG, "newuser.name: %s" % [newuser.name])
+    log(ServiceModule::LOG_DEBUG, "newuser.name: #{newuser.name}")
   end
 end
 
