@@ -365,6 +365,11 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
     }
   }
 
+  if(IsClient(source_p) && IsMe(source_p->from))
+  {
+    sendto_server(me.uplink, ":%s QUIT :%s", source_p->name, comment);
+  }
+
   if (IsServer(source_p))
   {
     remove_dependents(source_p, from->from, comment);

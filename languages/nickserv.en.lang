@@ -17,7 +17,7 @@ NS_HELP_REG_LONG
 NS_HELP_ID_SHORT
 	%s: Identify your nickname.
 NS_HELP_ID_LONG
-	Usage: IDENTIFY [nick] password
+	Usage: IDENTIFY password [nick]
 	
 	Identify that you the owner of the nick you are currently using.
 	If you specify a nickname to identify against, your IRC nick will
