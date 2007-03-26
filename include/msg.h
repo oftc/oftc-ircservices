@@ -100,6 +100,7 @@ struct ServiceMessage
                              * or an error will be sent to the user
                              * before the m_func is even called
                              */
+  unsigned int maxpara;     /* Maximum number of paramters */
   unsigned int flags;       
   unsigned int access;      /* Access level required for using this command */
   unsigned int help_short;  /* Help index to show in generic HELP */
@@ -135,5 +136,6 @@ struct ServiceMessage
                                            channel */
 #define   SFLG_NICKARG          0x010   /* First argument should be a registered 
                                            nickname */
+#define   SFLG_NOMAXPARAM       0x020   /* Max paramters is not enforced */
 extern void ms_error(struct Client *, struct Client *, int, char *[]);
 #endif /* INCLUDED_msg_h */
