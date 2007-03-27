@@ -299,7 +299,8 @@ recurse_remove_clients(struct Client *source_p)
 
   DLINK_FOREACH_SAFE(ptr, next, source_p->client_list.head)
   {
-    execute_callback(on_quit_cb, ptr->data, "Server Split");
+    if(!IsMe(source_p))
+      execute_callback(on_quit_cb, ptr->data, "Server Split");
     exit_one_client(ptr->data);
   }
 
@@ -377,7 +378,8 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
     remove_dependents(source_p, from->from, comment);
   }
     
-  execute_callback(on_quit_cb, source_p, comment);
+  if(!IsMe(source_p) && !IsMe(source_p->from))
+    execute_callback(on_quit_cb, source_p, comment);
   if(!IsMe(source_p))
     exit_one_client(source_p);
 }
