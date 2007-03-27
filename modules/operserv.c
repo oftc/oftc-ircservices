@@ -144,15 +144,8 @@ INIT_MODULE(operserv, "$Revision$")
 CLEANUP_MODULE
 {
   uninstall_hook(on_newuser_cb, os_on_newuser);
-  mod_del_servcmd(&operserv->msg_tree, &help_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &mod_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &raw_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &admin_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &akill_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &set_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &raw_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &shutdown_msgtab);
-  mod_del_servcmd(&operserv->msg_tree, &quarentine_msgtab);
+
+  serv_clear_messages(operserv);
 
   unload_languages(operserv->languages);
   ilog(L_DEBUG, "Unloaded operserv");

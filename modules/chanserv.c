@@ -263,20 +263,8 @@ CLEANUP_MODULE
   uninstall_hook(on_channel_destroy_cb, cs_on_channel_destroy);
   uninstall_hook(on_nick_drop_cb, cs_on_nick_drop);
   uninstall_hook(on_topic_change_cb, cs_on_topic_change);
-  mod_del_servcmd(&chanserv->msg_tree, &register_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &help_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &set_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &drop_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &akick_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &access_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &info_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &op_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &deop_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &invite_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &clear_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &unban_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &invite_msgtab);
-  mod_del_servcmd(&chanserv->msg_tree, &sudo_msgtab);
+
+  serv_clear_messages(chanserv);
 
   unload_languages(chanserv->languages);
 
