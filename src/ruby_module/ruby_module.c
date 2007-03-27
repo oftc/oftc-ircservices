@@ -33,6 +33,9 @@ static void *rb_newusr_hdlr(va_list);
 
 static void ruby_script_error();
 
+static int rb_do_hook_each(VALUE key, VALUE name, VALUE params);
+static void unhook_events(const char* name);
+
 char *
 strupr(char *s)
 {
@@ -67,7 +70,6 @@ ruby_handle_error(int status)
   if(status)
   {
     ruby_script_error();
-    //ruby_cleanup(status);
   }
   return status;
 }
@@ -121,7 +123,7 @@ rb_carray2rbarray(int parc, char **parv)
 char **
 rb_rbarray2carray(VALUE parv)
 {
-  int argc = RARRAY(parv)->len;
+  /*int argc = RARRAY(parv)->len;
   char **argv = (char *)MyMalloc(argc * sizeof(char *));
   int i;
   VALUE tmp;
@@ -132,7 +134,8 @@ rb_rbarray2carray(VALUE parv)
     argv[i] = StringValueCStr(tmp);
   }
 
-  return argv;
+  return argv;*/
+  return NULL;
 }
 
 static void *
@@ -151,10 +154,11 @@ rb_cmode_hdlr(va_list args)
   rb_ary_push(params, rb_cchannel2rbchannel(chptr));
   rb_ary_push(params, INT2NUM(dir));
   rb_ary_push(params, rb_str_new(&letter, 1));
-  if(param)
+
+  if(param != NULL)
     rb_ary_push(params, rb_str_new2(param));
 
-  rb_do_hook_cb(hooks, params);
+  rb_hash_foreach(hooks, rb_do_hook_each, params);
 
   return pass_callback(ruby_cmode_hook, source_p, chptr, dir, letter, param);
 }
@@ -172,7 +176,7 @@ rb_umode_hdlr(va_list args)
   rb_ary_push(params, INT2NUM(what));
   rb_ary_push(params, INT2NUM(mode));
 
-  rb_do_hook_cb(hooks, params);
+  rb_hash_foreach(hooks, rb_do_hook_each, params);
 
   return pass_callback(ruby_umode_hook, user, what, mode);
 }
@@ -186,7 +190,7 @@ rb_newusr_hdlr(va_list args)
   VALUE params = rb_ary_new();
 
   rb_ary_push(params, rb_cclient2rbclient(newuser));
-  rb_do_hook_cb(hooks, params);
+  rb_hash_foreach(hooks, rb_do_hook_each, params);
 
   return pass_callback(ruby_newusr_hook, newuser);
 }
@@ -196,41 +200,44 @@ rb_add_hook(VALUE self, VALUE hook, int type)
 {
   VALUE hooks = rb_ary_entry(ruby_server_hooks, type);
   VALUE newhook = rb_ary_new();
-  rb_ary_push(newhook, rb_iv_get(self, "@ServiceName"));
   rb_ary_push(newhook, self);
   rb_ary_push(newhook, hook);
-  rb_ary_push(hooks, newhook);
+  rb_hash_aset(hooks, rb_iv_get(self, "@ServiceName"), newhook);
 }
 
 void
-rb_do_hook_cb(VALUE hooks, VALUE params)
+unhook_events(const char* name)
 {
-  if(!NIL_P(hooks) && RARRAY(hooks)->len)
+  VALUE rname = rb_str_new2(name);
+  int type, i;
+  VALUE hooks;
+
+  for(type = 0; type < RB_HOOKS_COUNT; ++type)
   {
-    int i;
-    VALUE current, service_name, self, command, fc2params;
-    ID command_id;
-
-    for(i = 0; i < RARRAY(hooks)->len; ++i)
-    {
-      current = rb_ary_entry(hooks, i);
-      service_name = rb_ary_entry(current, 0);
-      self = rb_ary_entry(current, 1);
-      command = rb_ary_entry(current, 2);
-      command_id = rb_intern(StringValueCStr(command));
-
-      fc2params = rb_ary_new();
-      rb_ary_push(fc2params, self);
-      rb_ary_push(fc2params, command_id);
-      rb_ary_push(fc2params, RARRAY(params)->len);
-      rb_ary_push(fc2params, (VALUE)RARRAY(params)->ptr);
-
-      if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
-      {
-        ilog(L_DEBUG, "RUBY ERROR: Failed to call: %s", StringValueCStr(command));
-      }
-    }
+    hooks = rb_ary_entry(ruby_server_hooks, type);
+    //if(rb_hash_has_key(rname) == Qtrue)
+    //TODO this may die if the key isn't there
+    //still unsure
+    rb_hash_delete(hooks, rname);
   }
+}
+
+static int
+rb_do_hook_each(VALUE key, VALUE value, VALUE params)
+{
+  VALUE self, command, command_id, fc2params;
+  self = rb_ary_entry(value, 0);
+  command = rb_ary_entry(value, 1);
+  command_id = rb_intern(StringValueCStr(command));
+
+  fc2params = rb_ary_new();
+  rb_ary_push(fc2params, self);
+  rb_ary_push(fc2params, command_id);
+  rb_ary_push(fc2params, RARRAY(params)->len);
+  rb_ary_push(fc2params, (VALUE)RARRAY(params)->ptr);
+
+  if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
+    ilog(L_DEBUG, "RUBY ERROR: Failed to call: %s", StringValueCStr(command));
 }
 
 int
@@ -293,6 +300,31 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   return 1;
 }
 
+int
+unload_ruby_module(const char* name)
+{
+  struct Service *service = find_service(name);
+  VALUE rbservice = (VALUE)service->data;
+
+  /*TODO: call class unload/finalize method
+   * to let it clean up anything it needs to
+   */
+
+  unhook_events(name);
+  serv_clear_messages(service);
+  unload_languages(service->languages);
+
+  exit_client(find_client(service->name), &me, "Service unloaded");
+  hash_del_service(service);
+  dlinkDelete(&service->node, &services_list);
+
+  /*TODO: free/unpin? service->data which held ruby isntance*/
+
+  ilog(L_DEBUG, "Unloaded ruby module: %s", name);
+
+  return 1;
+}
+
 void
 init_ruby(void)
 {
@@ -310,7 +342,7 @@ init_ruby(void)
   /* Place holder for hooks */
   ruby_server_hooks = rb_ary_new();
   for(i=0; i < RB_HOOKS_COUNT; ++i)
-    rb_ary_push(ruby_server_hooks, rb_ary_new());
+    rb_ary_push(ruby_server_hooks, rb_hash_new());
 
   ruby_cmode_hook = install_hook(on_cmode_change_cb, rb_cmode_hdlr);
   ruby_umode_hook = install_hook(on_umode_change_cb, rb_umode_hdlr);
