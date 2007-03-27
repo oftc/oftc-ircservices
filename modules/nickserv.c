@@ -391,7 +391,7 @@ m_drop(struct Service *service, struct Client *client,
       char buf[IRC_BUFSIZE+1] = {0};
       char *hmac;
 
-      snprintf(buf, IRC_BUFSIZE, "DROP %s", target->name);
+      snprintf(buf, IRC_BUFSIZE, "DROP %d %s", CurrentTime, target->name);
       hmac = generate_hmac(buf);
 
       reply_user(service, service, client, NS_DROP_AUTH, service->name, 
@@ -416,7 +416,7 @@ m_drop(struct Service *service, struct Client *client,
       *auth = '\0';
       auth++;
 
-      snprintf(buf, IRC_BUFSIZE, "DROP %s", target->name);
+      snprintf(buf, IRC_BUFSIZE, "DROP %s %s", parv[1], target->name);
       hmac = generate_hmac(buf);
 
       if(strncmp(hmac, auth, strlen(hmac)) != 0)

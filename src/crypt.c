@@ -19,6 +19,37 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
+ *  Base16 en/decoding is:
+ *  Copyright (c) 2001-2004, Roger Dingledine
+ *  Copyright (c) 2004-2007, Roger Dingledine, Nick Mathewson
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are
+ *  met:
+ *
+ *  Redistributions of source code must retain the above copyright
+ *  notice, this list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice, 
+ * this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the distribution.
+ *
+ * Neither the names of the copyright owners nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  *  $Id$
  */
 
@@ -87,4 +118,27 @@ char *crypt_pass(char *password)
 
   DupString(ret, buffer);
   return ret;
+}
+
+/** Encode the <b>srclen</b> bytes at <b>src</b> in a NUL-terminated,
+ * uppercase hexadecimal string; store it in the <b>destlen</b>-byte buffer
+ * <b>dest</b>.
+ */
+void
+base16_encode(char *dest, size_t destlen, const char *src, size_t srclen)
+{
+  const char *end;
+  char *cp;
+
+  assert(destlen >= srclen*2+1);
+  assert(destlen < SIZE_T_CEILING);
+
+  cp = dest;
+  end = src+srclen;
+  while (src<end) {
+    *cp++ = "0123456789ABCDEF"[ (*(const uint8_t*)src) >> 4 ];
+    *cp++ = "0123456789ABCDEF"[ (*(const uint8_t*)src) & 0xf ];
+    ++src;
+  }
+  *cp = '\0';
 }
