@@ -99,7 +99,7 @@ rb_singleton_call(VALUE data)
 VALUE
 rb_carray2rbarray(int parc, char **parv)
 {
-  if(parv)
+  if(parv != NULL)
   {
     VALUE rbarray = rb_ary_new2(parc);
     int i;
@@ -116,6 +116,23 @@ rb_carray2rbarray(int parc, char **parv)
   }
   else
     return rb_ary_new();
+}
+
+char **
+rb_rbarray2carray(VALUE parv)
+{
+  int argc = RARRAY(parv)->len;
+  char **argv = (char *)MyMalloc(argc * sizeof(char *));
+  int i;
+  VALUE tmp;
+
+  for(i = 0; i < argc; i++)
+  {
+    tmp = rb_ary_shift(parv);
+    argv[i] = StringValueCStr(tmp);
+  }
+
+  return argv;
 }
 
 static void *

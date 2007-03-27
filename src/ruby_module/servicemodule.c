@@ -3,10 +3,12 @@
 
 /* Core Functions */
 static VALUE ServiceModule_register(VALUE, VALUE);
-static VALUE ServiceModule_reply_user(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_reply_user(VALUE, VALUE);
 static VALUE ServiceModule_service_name(VALUE, VALUE);
 static VALUE ServiceModule_add_hook(VALUE, VALUE);
 static VALUE ServiceModule_log(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_load_language(VALUE, VALUE);
+static VALUE ServiceModule_do_help(VALUE, VALUE, VALUE, VALUE);
 /* Core Functions */
 /* DB Prototypes */
 static VALUE ServiceModule_db_set_string(VALUE, VALUE, VALUE, VALUE);
@@ -31,6 +33,17 @@ static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
 /* DB Prototypes */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
+
+static struct Service* get_service(VALUE self);
+
+static struct Service *
+get_service(VALUE self)
+{
+  struct Service *service;
+  VALUE rbservice = rb_iv_get(self, "@ServiceName");
+  service = find_service(StringValueCStr(rbservice));
+  return service;
+}
 
 static VALUE
 ServiceModule_register(VALUE self, VALUE commands)
@@ -104,21 +117,31 @@ ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource,
 }
 
 static VALUE
-ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE rbmessage)
+ServiceModule_reply_user(VALUE self, VALUE params)
 {
   struct Client *client;
   struct Service *service;
-  VALUE service_name;
+  VALUE nextparm;
 
-  service_name = rb_iv_get(self, "@ServiceName");
-  service = find_service(StringValueCStr(service_name));
+  service = get_service(self);
 
-  client = rb_rbclient2cclient(rbclient);
+  client = rb_rbclient2cclient(rb_ary_shift(params));
 
-  char *message = StringValueCStr(rbmessage);
+  nextparm = rb_ary_shift(params);
 
-  reply_user(service, service, client, 0, message);
-  return Qnil;
+  if(FIXNUM_P(nextparm))
+  {
+    int lang = NUM2INT(nextparm);
+    VALUE tmp = rb_ary_shift(params);
+    char *message = StringValueCStr(tmp);
+    reply_user(service, service, client, lang, message);
+  }
+  else
+  {
+    reply_user(service, service, client, 0, StringValueCStr(nextparm));
+  }
+
+  return self;
 }
 
 static VALUE
@@ -159,6 +182,28 @@ static VALUE
 ServiceModule_log(VALUE self, VALUE level, VALUE message)
 {
   ilog(NUM2INT(level), StringValueCStr(message));
+  return self;
+}
+
+static VALUE
+ServiceModule_load_language(VALUE self, VALUE lang)
+{
+  struct Service *service = get_service(self);
+  load_language(service->languages, StringValueCStr(lang));
+  return self;
+}
+
+static VALUE
+ServiceModule_do_help(VALUE self, VALUE client, VALUE value, VALUE parv)
+{
+  struct Service *service = get_service(self);
+  struct Client *cclient = rb_rbclient2cclient(client);
+  char *cvalue = StringValueCStr(value);
+  int argc = RARRAY(parv)->len;
+  char **argv = rb_rbarray2carray(parv);
+
+  do_help(service, cclient, cvalue, argc, argv);
+
   return self;
 }
 
@@ -318,12 +363,14 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "SFLG_NOMAXPARAM", INT2NUM(SFLG_NOMAXPARAM));
 
   rb_define_method(cServiceModule, "register", ServiceModule_register, 1);
-  rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, 2);
+  rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, -2);
   rb_define_method(cServiceModule, "service_name", ServiceModule_service_name, 1);
   rb_define_method(cServiceModule, "add_hook", ServiceModule_add_hook, 1);
   rb_define_method(cServiceModule, "log", ServiceModule_log, 2);
   rb_define_method(cServiceModule, "introduce_server", ServiceModule_introduce_server, 2);
   rb_define_method(cServiceModule, "exit_client", ServiceModule_exit_client, 3);
+  rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
+  rb_define_method(cServiceModule, "do_help", ServiceModule_do_help, 3);
 
   rb_define_method(cServiceModule, "string", ServiceModule_db_set_string, 3);
   rb_define_method(cServiceModule, "string?", ServiceModule_db_get_string, 3);

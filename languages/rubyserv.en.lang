@@ -1,0 +1,8 @@
+0 English
+RS_HELP_SAY_SHORT
+	Say something back to the user
+RS_HELP_SAY_LONG
+	Say something back to the user
+	
+	Usage: SAY stuff
+	Example: SAY Hello World!

@@ -18,6 +18,7 @@ static VALUE cRegChannel = Qnil;
 static VALUE cNickStruct = Qnil;
 
 VALUE rb_carray2rbarray(int, char **);
+char** rb_rbarray2carray(VALUE);
 
 struct Client* rb_rbclient2cclient(VALUE);
 VALUE rb_cclient2rbclient(struct Client*);
