@@ -89,7 +89,7 @@ crypt_pass_old(char *password)
   return servcrypt(password, generate_md5_salt(salt, 16));
 }
 
-char *crypt_pass(char *password)
+char *crypt_pass(char *password, int encode)
 {
   EVP_MD_CTX mdctx;
   const EVP_MD *md;
@@ -107,9 +107,15 @@ char *crypt_pass(char *password)
   EVP_DigestFinal_ex(&mdctx, md_value, &md_len);
   EVP_MD_CTX_cleanup(&mdctx);
 
-  base16_encode(buffer, 40, md_value, 20);
-
-  DupString(ret, buffer);
+  if(encode)
+  {
+    base16_encode(buffer, 40, md_value, 20);
+    DupString(ret, buffer);
+  }
+  else
+  {
+    DupString(ret, md_value);
+  }
   return ret;
 }
 

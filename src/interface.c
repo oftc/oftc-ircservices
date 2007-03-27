@@ -978,7 +978,7 @@ check_nick_pass(struct Nick *nick, const char *password)
   
   snprintf(fullpass, PASSLEN*2, "%s%s", password, nick->salt);
   
-  pass = crypt_pass(fullpass);
+  pass = crypt_pass(fullpass, 1);
   if(strncmp(nick->pass, pass, sizeof(nick->pass)) == 0)
     ret = 1;
   else 
@@ -1023,7 +1023,7 @@ generate_hmac(const char *data)
   int len;
   char *key, *hexdata;
 
-  key = crypt_pass(ServicesInfo.hmac_secret);
+  key = crypt_pass(ServicesInfo.hmac_secret, 0);
 
   HMAC(EVP_sha1(), key, 40, data, strlen(data), hash, &len);
 

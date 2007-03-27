@@ -348,7 +348,7 @@ m_register(struct Service *service, struct Client *client,
   make_random_string(nick->salt, SALTLEN+1);
   snprintf(password, sizeof(password), "%s%s", parv[1], nick->salt);
 
-  pass = crypt_pass(password);
+  pass = crypt_pass(password, 1);
   strlcpy(nick->pass, pass, sizeof(nick->pass));
   strlcpy(nick->nick, client->name, sizeof(nick->nick));
   DupString(nick->email, parv[2]);
@@ -559,7 +559,7 @@ m_set_password(struct Service *service, struct Client *client,
 
   snprintf(password, sizeof(password), "%s%s", parv[1], nick->salt);
   
-  pass = crypt_pass(password);
+  pass = crypt_pass(password, 1);
   /* XXX: what about the salt?  shouldn't we make a new one and store that too? -- weasel */
   if(db_set_string(SET_NICK_PASSWORD, client->nickname->id, pass))
   {

@@ -4,6 +4,6 @@
 #define INCLUDED_crypt_h
 
 char *generate_md5_salt(char *, int);
-char *crypt_pass(char *);
+char *crypt_pass(char *, int);
 
 #endif /* INCLUDED_crypt_h */
