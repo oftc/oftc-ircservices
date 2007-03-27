@@ -25,6 +25,14 @@
 #ifndef INCLUDED_conf_modules_h
 #define INCLUDED_conf_modules_h
 
+enum ModType
+{
+  MODTYPE_RUBY,
+  MODTYPE_PERL,
+  MODTYPE_LUA,
+  MODTYPE_SO
+};
+
 struct Module
 {
   char *name;
@@ -35,6 +43,7 @@ struct Module
   void *handle;
   void *address;
   dlink_node node;
+  enum ModType type;
 };
 
 #define INIT_MODULE(NAME, REV) \

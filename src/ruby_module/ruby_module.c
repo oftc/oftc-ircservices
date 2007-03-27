@@ -212,12 +212,11 @@ unhook_events(const char* name)
   int type, i;
   VALUE hooks;
 
+  ilog(L_DEBUG, "Unhooking ruby hooks for: %s", name);
+
   for(type = 0; type < RB_HOOKS_COUNT; ++type)
   {
     hooks = rb_ary_entry(ruby_server_hooks, type);
-    //if(rb_hash_has_key(rname) == Qtrue)
-    //TODO this may die if the key isn't there
-    //still unsure
     rb_hash_delete(hooks, rname);
   }
 }
@@ -294,23 +293,47 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
     strlcat(classname, ServicesState.namesuffix, sizeof(classname));
 
   service = find_service(classname);
-  if(service != NULL)
-    service->data = (void *)self;
 
-  return 1;
+  if(service != NULL)
+  {
+    rb_gc_register_address(self);
+    service->data = (void *)self;
+    return 1;
+  }
+
+  return 0;
 }
 
 int
 unload_ruby_module(const char* name)
 {
-  struct Service *service = find_service(name);
+  char namet[PATH_MAX];
+  struct Service *service;
+
+  strncpy(namet, name, sizeof(namet));
+  service = find_service(namet);
+
+  if(service == NULL && ServicesState.namesuffix)
+  {
+    strlcat(namet, ServicesState.namesuffix, sizeof(namet));
+    service = find_service(namet);
+  }
+
+  if(service == NULL)
+  {
+    ilog(L_DEBUG, "Unabled to find service: %s", namet);
+    return -1;
+  }
+
+  ilog(L_DEBUG, "Unloading ruby module: %s", namet);
+
   VALUE rbservice = (VALUE)service->data;
 
   /*TODO: call class unload/finalize method
    * to let it clean up anything it needs to
    */
 
-  unhook_events(name);
+  unhook_events(namet);
   serv_clear_messages(service);
   unload_languages(service->languages);
 
@@ -318,9 +341,9 @@ unload_ruby_module(const char* name)
   hash_del_service(service);
   dlinkDelete(&service->node, &services_list);
 
-  /*TODO: free/unpin? service->data which held ruby isntance*/
+  rb_gc_unregister_address(service->data);
 
-  ilog(L_DEBUG, "Unloaded ruby module: %s", name);
+  ilog(L_DEBUG, "Unloaded ruby module: %s", namet);
 
   return 1;
 }

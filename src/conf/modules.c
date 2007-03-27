@@ -157,24 +157,53 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     strlcpy(tmpext, ext, sizeof(tmpext));
     ext--;
     *ext = tmp;
+    int result = -1;
+
+    mod = MyMalloc(sizeof(struct Module));
+    DupString(mod->name, name);
+    DupString(mod->fullname, path);
+
 #ifdef HAVE_RUBY
     if(strcmp(tmpext, "rb") == 0)
     {
-      return load_ruby_module(name, dir, fname);
+      result = load_ruby_module(name, dir, fname);
+      mod->type = MODTYPE_RUBY;
     }
 #endif
 #ifdef HAVE_PERL
     if(strcmp(tmpext, "pl") == 0)
     {
-      return load_perl_module(name, dir, fname);
+      result = load_perl_module(name, dir, fname);
+      mod->type = MODTYPE_PERL;
     }
 #endif
 #ifdef HAVE_LUA
     if(strcmp(tmpext, "lua") == 0)
     {
-      return load_lua_module(name, dir, fname);
+      result = load_lua_module(name, dir, fname);
+      mod->type = MODTYPE_LUA;
     }
 #endif
+
+    if(result > -1)
+    {
+      if(result == 1)
+      {
+        dlinkAdd(mod, &mod->node, &loaded_modules);
+        return result;
+      }
+      else
+      {
+        MyFree(mod->name);
+        MyFree(mod->fullname);
+        MyFree(mod);
+        return result;
+      }
+    }
+
+    MyFree(mod->name);
+    MyFree(mod->fullname);
+    MyFree(mod);
   }
 
   if (!(handle = modload(path, &base)))
@@ -198,6 +227,7 @@ load_shared_module(const char *name, const char *dir, const char *fname)
 
   mod->handle = handle;
   mod->address = base;
+  mod->type = MODTYPE_SO;
   init_module(mod, fname);
   return 1;
 }
@@ -256,7 +286,8 @@ load_module(const char *filename)
 void
 unload_module(struct Module *mod)
 {
-  mod->modremove();
+  if(mod->type == MODTYPE_SO)
+    mod->modremove();
 
   MyFree(mod->fullname);
   mod->fullname = NULL;
@@ -264,7 +295,18 @@ unload_module(struct Module *mod)
   dlinkDelete(&mod->node, &loaded_modules);
 
 #ifdef USE_SHARED_MODULES
-  if (mod->handle != NULL)
+
+#ifdef HAVE_RUBY
+  if (mod->type == MODTYPE_RUBY)
+  {
+    unload_ruby_module(mod->name);
+    MyFree(mod->name);
+    MyFree(mod);
+    mod = NULL;
+  }
+#endif
+
+  if (mod != NULL && mod->handle != NULL)
     modunload(mod->handle);
 #endif
 }
