@@ -65,6 +65,9 @@ verify_servicesinfo(va_list args)
   if (!me.info[0])
     parse_fatal("description= field missing in servicesinfo{} section");
 
+  if(!ServicesInfo.hmac_secret)
+    parse_fatal("hmac_secret= field missing in servicesinfo{} section");
+
   recalc_fdlimit(NULL);
 
   return pass_callback(hverify);
@@ -192,6 +195,7 @@ init_servicesinfo(void)
   add_conf_field(s, "ssl_certificate_file", CT_STRING, si_set_ssl_certificate,
     NULL);
 #endif
+  add_conf_field(s, "hmac_secret", CT_STRING, NULL, &ServicesInfo.hmac_secret);
 
   s->after = after_servicesinfo;
 }

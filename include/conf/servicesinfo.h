@@ -36,6 +36,7 @@ struct ServicesInfoConf
   SSL_CTX *ctx;
 #endif
   char logfile[PATH_MAX+1];
+  char *hmac_secret;
 };
 
 EXTERN struct ServicesInfoConf ServicesInfo;

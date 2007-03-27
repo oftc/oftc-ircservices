@@ -1023,7 +1023,8 @@ generate_hmac(const char *data)
   int len;
   char *hexdata;
 
-  HMAC(EVP_sha1(), "thisissecret", 12, data, strlen(data), hash, &len);
+  HMAC(EVP_sha1(), ServicesInfo.hmac_secret, strlen(ServicesInfo.hmac_secret), 
+      data, strlen(data), hash, &len);
 
   hexdata = MyMalloc(len*2 + 1);
   base16_encode(hexdata, len*2, hash, len);
