@@ -979,7 +979,7 @@ check_nick_pass(struct Nick *nick, const char *password)
   snprintf(fullpass, PASSLEN*2, "%s%s", password, nick->salt);
   
   pass = crypt_pass(fullpass, 1);
-  if(strncmp(nick->pass, pass, sizeof(nick->pass)) == 0)
+  if(strncasecmp(nick->pass, pass, sizeof(nick->pass)) == 0)
     ret = 1;
   else 
     ret = 0;
