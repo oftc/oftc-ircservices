@@ -384,6 +384,56 @@ m_drop(struct Service *service, struct Client *client,
   else
     target = client;
 
+  if(target == client)
+  {
+    if(parc == 0)
+    {
+      char buf[IRC_BUFSIZE+1] = {0};
+      char *hmac;
+
+      snprintf(buf, IRC_BUFSIZE, "DROP %s", target->name);
+      hmac = generate_hmac(buf);
+
+      reply_user(service, service, client, NS_DROP_AUTH, service->name, 
+          CurrentTime, hmac);
+
+      MyFree(hmac);
+      return;
+    }
+    else
+    {
+      char buf[IRC_BUFSIZE+1] = {0};
+      char *hmac;
+      char *auth;
+      int timestamp;
+
+      if((auth = strchr(parv[1], ':')) == NULL)
+      {
+        reply_user(service, service, client, NS_DROP_AUTH_FAIL, client->name);
+        return;
+      }
+
+      *auth = '\0';
+      auth++;
+
+      snprintf(buf, IRC_BUFSIZE, "DROP %s", target->name);
+      hmac = generate_hmac(buf);
+
+      if(strncmp(hmac, auth, strlen(hmac)) != 0)
+      {
+        reply_user(service, service, client, NS_DROP_AUTH_FAIL, client->name);
+        return;
+      }
+
+      timestamp = atoi(parv[1]);
+      if((CurrentTime - timestamp) > 3600)
+      {
+        reply_user(service, service, client, NS_DROP_AUTH_FAIL, client->name);
+        return;
+      }
+    }
+  }
+
   if(db_delete_nick(client->nickname->nick)) 
   {
     if(target != NULL)

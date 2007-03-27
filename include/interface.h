@@ -129,6 +129,8 @@ void free_chanaccess(struct ChanAccess *);
 unsigned int get_mode_from_letter(char);
 void get_modestring(unsigned int, char *, int);
 
+char *generate_hmac(const char *);
+
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
 #endif /* INCLUDED_interface_h */

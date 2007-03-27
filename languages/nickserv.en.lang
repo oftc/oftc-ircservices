@@ -258,6 +258,11 @@ NS_NEED_IDENTIFY
 	You need to identify to Nickserv first.
 NS_NICK_DROPPED
 	Nickname %s has been DROPped.
+NS_DROP_AUTH
+	If you are sure you wish to drop this nickname then type /msg %s DROP %d:%s
+NS_DROP_AUTH_FAIL
+	The auth code you supplied is invalid or has expired.  Nickname %s NOT
+	dropped.
 NS_NICK_DROPFAIL
 	DROP failed on Nickname %s.
 NS_ACCESS_ADD
