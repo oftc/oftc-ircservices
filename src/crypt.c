@@ -107,14 +107,7 @@ char *crypt_pass(char *password)
   EVP_DigestFinal_ex(&mdctx, md_value, &md_len);
   EVP_MD_CTX_cleanup(&mdctx);
 
-  for (i = 0, j = 0; i < 20; i++, j += 2) 
-  {
-    high = md_value[i] >> 4;
-    low = md_value[i] - (high << 4);
-    buffer[j] = bin2hex[high];
-    buffer[j + 1] = bin2hex[low];
-  }
-  buffer[40] = '\0';
+  base16_encode(buffer, 40, md_value, 20);
 
   DupString(ret, buffer);
   return ret;

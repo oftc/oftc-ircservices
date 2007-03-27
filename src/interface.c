@@ -1021,10 +1021,11 @@ generate_hmac(const char *data)
 {
   char hash[EVP_MAX_MD_SIZE] = {0};
   int len;
-  char *hexdata;
+  char *key, *hexdata;
 
-  HMAC(EVP_sha1(), ServicesInfo.hmac_secret, strlen(ServicesInfo.hmac_secret), 
-      data, strlen(data), hash, &len);
+  key = crypt_pass(ServicesInfo.hmac_secret);
+
+  HMAC(EVP_sha1(), key, 40, data, strlen(data), hash, &len);
 
   hexdata = MyMalloc(len*2 + 1);
   base16_encode(hexdata, len*2, hash, len);
