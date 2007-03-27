@@ -56,10 +56,28 @@ ServiceModule_register(VALUE self, VALUE commands)
 
   for(i = RARRAY(commands)->len-1; i >= 0; --i)
   {
-    generic_msgtab = MyMalloc(sizeof(struct ServiceMessage));
+    VALUE name, param_min, param_max, flags, access, hlp_shrt, hlp_long;
+
     command = rb_ary_shift(commands);
-    generic_msgtab->cmd = StringValueCStr(command);
-    rb_ary_push(commands, command);
+    Check_Type(command, T_ARRAY);
+
+    name = rb_ary_shift(command);
+    param_min = rb_ary_shift(command);
+    param_max = rb_ary_shift(command);
+    flags = rb_ary_shift(command);
+    access = rb_ary_shift(command);
+    hlp_shrt = rb_ary_shift(command);
+    hlp_long = rb_ary_shift(command);
+
+    generic_msgtab = MyMalloc(sizeof(struct ServiceMessage));
+
+    generic_msgtab->cmd = StringValueCStr(name);
+    generic_msgtab->parameters = NUM2INT(param_min);
+    generic_msgtab->maxpara = NUM2INT(param_max);
+    generic_msgtab->flags = NUM2INT(flags);
+    generic_msgtab->access = NUM2INT(access);
+    generic_msgtab->help_short = NUM2INT(hlp_shrt);
+    generic_msgtab->help_long = NUM2INT(hlp_long);
 
     generic_msgtab->handler = m_generic;
 
@@ -70,7 +88,7 @@ ServiceModule_register(VALUE self, VALUE commands)
 }
 
 static VALUE
-ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource, 
+ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource,
     VALUE rbreason)
 {
   struct Client *client, *source;
@@ -289,6 +307,15 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "LOG_TRACE",  INT2NUM(L_TRACE));
   rb_define_const(cServiceModule, "LOG_INFO",   INT2NUM(L_INFO));
   rb_define_const(cServiceModule, "LOG_DEBUG",  INT2NUM(L_DEBUG));
+
+  rb_define_const(cServiceModule, "MFLG_SLOW", INT2NUM(MFLG_SLOW));
+  rb_define_const(cServiceModule, "MFLG_UNREG", INT2NUM(MFLG_UNREG));
+  rb_define_const(cServiceModule, "SFLG_UNREGOK", INT2NUM(SFLG_UNREGOK));
+  rb_define_const(cServiceModule, "SFLG_ALIAS", INT2NUM(SFLG_ALIAS));
+  rb_define_const(cServiceModule, "SFLG_KEEPARG", INT2NUM(SFLG_KEEPARG));
+  rb_define_const(cServiceModule, "SFLG_CHANARG", INT2NUM(SFLG_CHANARG));
+  rb_define_const(cServiceModule, "SFLG_NICKARG", INT2NUM(SFLG_NICKARG));
+  rb_define_const(cServiceModule, "SFLG_NOMAXPARAM", INT2NUM(SFLG_NOMAXPARAM));
 
   rb_define_method(cServiceModule, "register", ServiceModule_register, 1);
   rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, 2);

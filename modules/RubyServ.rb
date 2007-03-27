@@ -1,7 +1,11 @@
 class RubyServ < ServiceModule
   def initialize()
     service_name("RubyServ")
-    register(["HELP", "SAY"])
+    register([
+      #["COMMAND", PARAM_MIN, PARAM_MAX, FLAGS, ACCESS, HLP_SHORT, HELP_LONG]
+      ["HELP", 0, 0, 0, 0, 0, 0],
+      ["SAY", 1, 0, ServiceModule::SFLG_NOMAXPARAM, 0, 0, 0],
+      ])
     add_hook([
       [ServiceModule::CMODE_HOOK, 'cmode'],
       [ServiceModule::UMODE_HOOK, 'umode'],
