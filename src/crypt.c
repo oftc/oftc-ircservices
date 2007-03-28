@@ -94,12 +94,12 @@ char *crypt_pass(char *password, int encode)
   EVP_MD_CTX mdctx;
   const EVP_MD *md;
   unsigned char md_value[EVP_MAX_MD_SIZE];
-  char buffer[41];
+  char buffer[2*DIGEST_LEN + 1];
   unsigned char *ret;
   int i, j, high, low;
   unsigned int md_len;
 
-  md = EVP_get_digestbyname("SHA1");
+  md = EVP_get_digestbyname(DIGEST_FUNCTION);
 
   EVP_MD_CTX_init(&mdctx);
   EVP_DigestInit_ex(&mdctx, md, NULL);
@@ -109,13 +109,13 @@ char *crypt_pass(char *password, int encode)
 
   if(encode)
   {
-    base16_encode(buffer, 40, md_value, 20);
+    base16_encode(buffer, 2*DIGEST_LEN, md_value, DIGEST_LEN);
     DupString(ret, buffer);
   }
   else
   {
-    ret = MyMalloc(20);
-    memcpy(ret, md_value, 20);
+    ret = MyMalloc(DIGEST_LEN);
+    memcpy(ret, md_value, DIGEST_LEN);
   }
   return ret;
 }
