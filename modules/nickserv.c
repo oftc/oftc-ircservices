@@ -501,27 +501,22 @@ m_identify(struct Service *service, struct Client *client,
       if(MyConnect(target))
       {
         exit_client(target, &me, "Enforcer no longer needed");
-        send_nick_change(service, client, nick->nick);
-        hash_del_client(client);
-        strlcpy(client->name, nick->nick, sizeof(client->name));
-        hash_add_client(client);
+        send_nick_change(service, client, name);
       }
       else
       {
         target->release_to = client;
+        strlcpy(target->release_name, name, NICKLEN);
         guest_user(target);
       }
     }
     else
     {
-      send_nick_change(service, client, nick->nick);
-      hash_del_client(client);
-      strlcpy(client->name, nick->nick, sizeof(client->name));
-      hash_add_client(client);
+      send_nick_change(service, client, name);
     }
   }
   identify_user(client);
-  reply_user(service, service, client, NS_IDENTIFIED, nick->nick);
+  reply_user(service, service, client, NS_IDENTIFIED, name);
 }
 
 static void
@@ -927,19 +922,17 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if((target = find_client(nick->nick)) != NULL)
+  if((target = find_client(parv[1])) != NULL)
   {
     if(MyConnect(target))
     {
       exit_client(target, &me, "Enforcer no longer needed");
-      send_nick_change(service, client, nick->nick);
-      hash_del_client(client);
-      strlcpy(client->name, nick->nick, sizeof(client->name));
-      hash_add_client(client);
+      send_nick_change(service, client, parv[1]);
     }
     else
     {
       target->release_to = client;
+      strlcpy(target->release_name, parv[1], NICKLEN);
       guest_user(target);
     }
   }
@@ -1153,7 +1146,7 @@ m_regain(struct Service *service, struct Client *client, int parc,
   if(!check_nick_pass(nick, parv[2]))
   {
     free_nick(nick);
-    reply_user(service, service, client, NS_REGAIN_FAIL, client->name);
+    reply_user(service, service, client, NS_REGAIN_FAIL, parv[1]);
     return;
   }
 
@@ -1165,22 +1158,17 @@ m_regain(struct Service *service, struct Client *client, int parc,
   {
     dlinkFindDelete(&nick_enforce_list, client);
     exit_client(enforcer, &me, "RELEASE command issued");
-    send_nick_change(service, client, nick->nick);
-    hash_del_client(client);
-    strlcpy(client->name, nick->nick, sizeof(client->name));
-    hash_add_client(client);
+    send_nick_change(service, client, parv[1]);
   }
   else if(enforcer != NULL)
   {
     enforcer->release_to = client;
+    strlcpy(enforcer->release_name, parv[1], NICKLEN);
     guest_user(enforcer);
   }
   else
   {
-    send_nick_change(service, client, nick->nick);
-    hash_del_client(client);
-    strlcpy(client->name, nick->nick, sizeof(client->name));
-    hash_add_client(client);
+    send_nick_change(service, client, parv[1]);
   }
  
   identify_user(client);
@@ -1283,11 +1271,9 @@ ns_on_nick_change(va_list args)
       if(target != client)
         kill_user(nickserv, target, "This nickname is registered and protected");
     }
-    send_nick_change(nickserv, client, client->nickname->nick);
-    hash_del_client(client);
-    strlcpy(client->name, client->nickname->nick, sizeof(client->name));
-    hash_add_client(client);
+    send_nick_change(nickserv, client, user->release_name);
     user->release_to = NULL;
+    memset(user->release_name, 0, sizeof(user->release_name));
     identify_user(client);
   }
 
