@@ -395,8 +395,7 @@ irc_server_connected(va_list args)
   {
     struct Service *service = ptr->data;
 
-    introduce_service(service);
-
+    introduce_client(service->name);
   }
 
   return NULL;

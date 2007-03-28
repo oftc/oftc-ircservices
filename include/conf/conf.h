@@ -30,6 +30,7 @@
 #include "conf/database.h"
 #include "conf/connect.h"
 #include "conf/logging.h"
+#include "conf/service.h"
 #ifdef USE_SHARED_MODULES
 #include "conf/modules.h"
 #endif

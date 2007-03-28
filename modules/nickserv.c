@@ -255,7 +255,6 @@ static void
 process_enforce_list(void *param)
 {
   dlink_node *ptr, *ptr_next;
-  char oldnick[NICKLEN+1];
   
   DLINK_FOREACH_SAFE(ptr, ptr_next, nick_enforce_list.head)
   {
@@ -376,7 +375,7 @@ m_drop(struct Service *service, struct Client *client,
       char buf[IRC_BUFSIZE+1] = {0};
       char *hmac;
 
-      snprintf(buf, IRC_BUFSIZE, "DROP %d %d %s", CurrentTime, 
+      snprintf(buf, IRC_BUFSIZE, "DROP %ld %d %s", CurrentTime, 
           db_get_id_from_name(target->name, GET_NICKID_FROM_NICK), target->name);
       hmac = generate_hmac(buf);
 
@@ -934,8 +933,6 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     }
     else
     {
-      target->release_to = client;
-      strlcpy(target->release_name, parv[1], NICKLEN);
       guest_user(target);
     }
   }
@@ -1184,7 +1181,7 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Nick *oldnick, *nick;
   char **newparv;
   char buf[IRC_BUFSIZE] = { '\0' };
-  int i, oldaccess;
+  int oldaccess;
 
   oldnick = client->nickname;
   oldaccess = client->access;

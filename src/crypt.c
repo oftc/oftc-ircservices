@@ -109,7 +109,7 @@ char *crypt_pass(char *password, int encode)
 
   if(encode)
   {
-    base16_encode(buffer, 2*DIGEST_LEN, md_value, DIGEST_LEN);
+    base16_encode(buffer, sizeof(buffer), md_value, DIGEST_LEN);
     DupString(ret, buffer);
   }
   else
@@ -131,7 +131,6 @@ base16_encode(char *dest, size_t destlen, const char *src, size_t srclen)
   char *cp;
 
   assert(destlen >= srclen*2+1);
-  assert(destlen < SIZE_T_CEILING);
 
   cp = dest;
   end = src+srclen;

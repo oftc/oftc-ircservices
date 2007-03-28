@@ -46,13 +46,13 @@ static dlink_node *hreset;
 static void *
 reset_service()
 {
-  dlink_node *ptr;
-
   while(service_confs.head)
   {
     struct ServiceConf *conf = service_confs.head->data;
     dlinkDelete(&conf->node, &service_confs);
   }
+
+  return pass_callback(hreset);
 }
 
 static void

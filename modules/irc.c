@@ -34,6 +34,7 @@ static void m_squit(struct Client *, struct Client *, int, char*[]);
 static void m_mode(struct Client *, struct Client *, int, char*[]);
 static void m_topic(struct Client *, struct Client *, int, char*[]);
 static void m_kill(struct Client *, struct Client *, int, char*[]);
+static void m_kick(struct Client *, struct Client *, int, char*[]);
 
 //static void do_user_modes(struct Client *client, const char *modes);
 static void set_final_mode(struct Mode *, struct Mode *);
@@ -154,6 +155,11 @@ static struct Message kill_msgtab = {
   { m_kill, m_ignore }
 };
 
+static struct Message kick_msgtab = {
+  "KICK", 0, 0, 0, 0, 0, 0,
+  { m_kick, m_ignore }
+};
+
 static struct Message squit_msgtab = {
   "SQUIT", 0, 0, 1, 0, 0, 0,
   { m_squit, m_ignore }
@@ -234,6 +240,7 @@ INIT_MODULE(irc, "$Revision$")
   mod_add_cmd(&stats_msgtab);
   mod_add_cmd(&topic_msgtab);
   mod_add_cmd(&kill_msgtab);
+  mod_add_cmd(&kick_msgtab);
 }
 
 CLEANUP_MODULE
@@ -275,6 +282,8 @@ irc_sendmsg_server(va_list args)
   struct Client *client = va_arg(args, struct Client *);
 
   sendto_server(me.uplink, "SERVER %s 1 :%s", client->name, client->info);
+
+  return NULL;
 }
 
 /** Introduce a new user
@@ -438,6 +447,8 @@ irc_sendmsg_topic(va_list args)
   struct Channel  *chptr    = va_arg(args, struct Channel *);
   struct Client   *setter   = va_arg(args, struct Client *);
   char            *topic    = va_arg(args, char *);
+
+  source = source;
 
   sendto_server(uplink, ":%s TBURST 1 %s %lu %s :%s", me.name, chptr->chname,
       CurrentTime, setter->name, topic);

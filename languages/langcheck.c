@@ -59,4 +59,6 @@ int main(int parc, char *parv[])
     printf("File %s has errors\n", parv[1]);
 
   fclose(fptr);
+
+  return 0;
 }

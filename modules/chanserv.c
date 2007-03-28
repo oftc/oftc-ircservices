@@ -739,7 +739,7 @@ m_set_topic(struct Service *service, struct Client *client,
         LIBIO_MAX(strlen(topic), strlen(regchptr->topic))) != 0)
     changetopic = TRUE;
 
-  if(changetopic || (topic == NULL && regchptr->topic != NULL) && chptr != NULL)
+  if(changetopic || ((topic == NULL && (regchptr->topic != NULL)) && (chptr != NULL)))
     send_topic(service, chptr, client, regchptr->topic);
 
   MyFree(topic);
@@ -1393,10 +1393,16 @@ m_set_flag(struct Service *service, struct Client *client,
     return -1;
   }
 
-  if (strncasecmp(toggle, "ON", strlen(toggle)) == 0)
+  if (strncasecmp(toggle, "ON", 2) == 0)
     on = TRUE;
-  else if (strncasecmp(toggle, "OFF", strlen(toggle)) == 0)
+  else if (strncasecmp(toggle, "OFF", 3) == 0)
     on = FALSE;
+  else
+  {
+    reply_user(service, service, client, CS_SET_VALUE, flagname,
+        on ? "ON" : "OFF", channel);
+    return -1;
+  }
 
   if (db_set_bool(type, regchptr->id, on))
   {
@@ -1438,10 +1444,8 @@ m_set_flag(struct Service *service, struct Client *client,
 static void
 m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  struct RegChannel *channel;
   char buf[IRC_BUFSIZE] = { '\0' };
   char **newparv;
-  int i;
 
   newparv = MyMalloc(4 * sizeof(char*));
 

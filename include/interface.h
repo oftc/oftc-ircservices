@@ -95,6 +95,8 @@ void send_topic(struct Service *, struct Channel *, struct Client *,
     const char *);
 void send_kill(struct Service *, struct Client *, const char *);
 void set_limit(struct Service *, struct Channel *, int);
+int set_mode_lock(struct Service *, struct Channel *, struct Client *, 
+    const char *, char **);
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
 void chain_squit(struct Client *, struct Client *, char *);
 void chain_quit(struct Client *, char *);

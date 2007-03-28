@@ -1028,7 +1028,7 @@ generate_hmac(const char *data)
   HMAC(EVP_sha1(), key, DIGEST_LEN, data, strlen(data), hash, &len);
 
   hexdata = MyMalloc(len*2 + 1);
-  base16_encode(hexdata, len*2, hash, len);
+  base16_encode(hexdata, len*2+1, hash, len);
 
   MyFree(key);
   return hexdata;
