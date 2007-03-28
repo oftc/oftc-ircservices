@@ -33,7 +33,7 @@ static void *rb_newusr_hdlr(va_list);
 
 static void ruby_script_error();
 
-static int rb_do_hook_each(VALUE key, VALUE name, VALUE params);
+static void rb_do_hook_each(VALUE key, VALUE name, VALUE params);
 static void unhook_events(const char* name);
 
 char *
@@ -209,7 +209,7 @@ void
 unhook_events(const char* name)
 {
   VALUE rname = rb_str_new2(name);
-  int type, i;
+  int type;
   VALUE hooks;
 
   ilog(L_DEBUG, "Unhooking ruby hooks for: %s", name);
@@ -221,7 +221,7 @@ unhook_events(const char* name)
   }
 }
 
-static int
+static void
 rb_do_hook_each(VALUE key, VALUE value, VALUE params)
 {
   VALUE self, command, command_id, fc2params;
@@ -296,7 +296,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   if(service != NULL)
   {
-    rb_gc_register_address(self);
+    rb_gc_register_address(&self);
     service->data = (void *)self;
     return 1;
   }
@@ -326,8 +326,6 @@ unload_ruby_module(const char* name)
   }
 
   ilog(L_DEBUG, "Unloading ruby module: %s", namet);
-
-  VALUE rbservice = (VALUE)service->data;
 
   /*TODO: call class unload/finalize method
    * to let it clean up anything it needs to

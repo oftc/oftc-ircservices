@@ -68,8 +68,8 @@ static VALUE
 NickStruct_NickSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  /* TODO check against NICKLEN */
-  //nick->nick = StringValueCStr(value);
+  /* TODO check length < NICKLEN */
+  strncpy(nick->nick, StringValueCStr(value), sizeof(nick->nick));
   return value;
 }
 
@@ -84,8 +84,8 @@ static VALUE
 NickStruct_PassSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  /* TODO check < passlen */
-  //nick->pass = StringValueCStr(value);
+  /* TODO check length < PASSLEN */
+  strncpy(nick->pass, StringValueCStr(value), sizeof(nick->pass));
   return value;
 }
 
@@ -101,7 +101,7 @@ NickStruct_SaltSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
   /* TODO check < SALTLEN */
-  //nick->salt = StringValueCStr(value);
+  strncpy(nick->salt, StringValueCStr(value), sizeof(nick->salt));
   return value;
 }
 
@@ -117,7 +117,7 @@ NickStruct_CloakSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
   /* TODO check < HOSTLEN */
-  //nick->cloak = StringValueCStr(value);
+  strncpy(nick->cloak, StringValueCStr(value), sizeof(nick->cloak));
   return value;
 }
 
@@ -132,7 +132,7 @@ static VALUE
 NickStruct_EmailSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  nick->email = StringValueCStr(value);
+  DupString(nick->email, StringValueCStr(value));
   return value;
 }
 
@@ -147,7 +147,7 @@ static VALUE
 NickStruct_UrlSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  nick->url = StringValueCStr(value);
+  DupString(nick->url, StringValueCStr(value));
   return value;
 }
 
@@ -162,7 +162,7 @@ static VALUE
 NickStruct_LastRealNameSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  nick->last_realname = StringValueCStr(value);
+  DupString(nick->last_realname, StringValueCStr(value));
   return value;
 }
 
@@ -177,7 +177,7 @@ static VALUE
 NickStruct_LastHostSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  nick->last_host = StringValueCStr(value);
+  DupString(nick->last_host, StringValueCStr(value));
   return value;
 }
 
@@ -200,14 +200,14 @@ static VALUE
 NickStruct_Status(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->status);
+  return UINT2NUM(nick->status);
 }
 
 static VALUE
 NickStruct_StatusSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  nick->status = NUM2INT(value);
+  nick->status = NUM2UINT(value);
   return value;
 }
 
@@ -320,7 +320,7 @@ static VALUE
 NickStruct_Language(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->language);
+  return UINT2NUM(nick->language);
 }
 
 static VALUE
@@ -335,7 +335,7 @@ static VALUE
 NickStruct_RegTime(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->reg_time);
+  return rb_time_new(nick->reg_time, (VALUE)NULL);
 }
 
 static VALUE
@@ -350,7 +350,7 @@ static VALUE
 NickStruct_LastSeenTime(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->last_seen);
+  return rb_time_new(nick->last_seen, (VALUE)NULL);
 }
 
 static VALUE
@@ -365,7 +365,7 @@ static VALUE
 NickStruct_LastQuitTime(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->last_quit_time);
+  return rb_time_new(nick->last_quit_time, (VALUE)NULL);
 }
 
 static VALUE
@@ -380,7 +380,7 @@ static VALUE
 NickStruct_NickRegTime(VALUE self)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  return INT2NUM(nick->nick_reg_time);
+  return rb_time_new(nick->nick_reg_time, (VALUE)NULL);
 }
 
 static VALUE
