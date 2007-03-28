@@ -72,6 +72,7 @@ ServiceModule_register(VALUE self, VALUE commands)
   for(i = RARRAY(commands)->len-1; i >= 0; --i)
   {
     VALUE name, param_min, param_max, flags, access, hlp_shrt, hlp_long;
+    char *tmp;
 
     command = rb_ary_shift(commands);
     Check_Type(command, T_ARRAY);
@@ -85,8 +86,9 @@ ServiceModule_register(VALUE self, VALUE commands)
     hlp_long = rb_ary_shift(command);
 
     generic_msgtab = MyMalloc(sizeof(struct ServiceMessage));
+    DupString(tmp, StringValueCStr(name));
 
-    DupString(generic_msgtab->cmd, StringValueCStr(name));
+    generic_msgtab->cmd = tmp;
     generic_msgtab->parameters = NUM2INT(param_min);
     generic_msgtab->maxpara = NUM2INT(param_max);
     generic_msgtab->flags = NUM2INT(flags);

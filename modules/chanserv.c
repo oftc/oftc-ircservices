@@ -772,11 +772,16 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
 
   if(set_mode_lock(service, chptr, client, value, &regchptr->mlock))
   {
-    reply_user(service, service, client, CS_SET_SUCCESS, parv[1], 
-        regchptr->mlock);
+    if(regchptr->mlock == NULL)
+      m_set_string(service, client, parv[1], "MLOCK", SET_CHAN_MLOCK, value,
+          &regchptr->mlock, parc);
+    else
+      reply_user(service, service, client, CS_SET_SUCCESS, "MLOCK", 
+          regchptr->mlock, parv[1]);
   }
   else
-    reply_user(service, service, client, CS_SET_FAILED, parv[1], value);
+    reply_user(service, service, client, CS_SET_FAILED, "MLOCK", 
+        value, parv[1]);
 
   if(chptr == NULL)
     free_regchan(regchptr);

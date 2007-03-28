@@ -77,6 +77,6 @@ _DupString(char **x, const char *y)
 }
 #endif /* __GNUC__ */
 
-#define DupString(x,y) _DupString(&x, y)
+#define DupString(x,y) _DupString(&(x), (y))
 
 #endif /* INCLUDED_libio_mem_memory_h */
