@@ -27,6 +27,12 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
+static dlink_node *ruby_cmode_hook;
+static dlink_node *ruby_umode_hook;
+static dlink_node *ruby_newusr_hook;
+
+static VALUE ruby_server_hooks = Qnil;
+
 static void *rb_cmode_hdlr(va_list);
 static void *rb_umode_hdlr(va_list);
 static void *rb_newusr_hdlr(va_list);

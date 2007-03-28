@@ -38,12 +38,6 @@ void Init_ServiceModule(void);
 /* Update this when new hooks are added */
 #define RB_HOOKS_COUNT  3
 
-static dlink_node *ruby_cmode_hook;
-static dlink_node *ruby_umode_hook;
-static dlink_node *ruby_newusr_hook;
-
-static VALUE ruby_server_hooks = Qnil;
-
 #define RB_CALLBACK(x) (VALUE (*)())(x)
 
 VALUE rb_singleton_call(VALUE);

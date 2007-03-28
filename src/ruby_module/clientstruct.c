@@ -42,7 +42,7 @@ ClientStruct_NameSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
   /*TODO check length < HOSTLEN */
-  //client->name = StringValueCStr(value);
+  strlcpy(client->name, StringValueCStr(value), sizeof(client->name));
   return value;
 }
 
@@ -58,7 +58,7 @@ ClientStruct_HostSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
   /* TODO check length < HOSTLEN */
-  //client->host = StringValueCStr(value);
+  strlcpy(client->host, StringValueCStr(value), sizeof(client->host));
   return value;
 }
 
@@ -74,7 +74,7 @@ ClientStruct_IDSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
   /* TODO check length < IDLEN */
-  //client->id = StringValueCStr(value);
+  strlcpy(client->id, StringValueCStr(value), sizeof(client->id));
   return value;
 }
 
@@ -90,7 +90,7 @@ ClientStruct_InfoSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
   /* TODO check length < REALLEN */
-  //client->info = StringValueCStr(value);
+  strlcpy(client->info, StringValueCStr(value), sizeof(client->info));
   return value;
 }
 
@@ -106,7 +106,7 @@ ClientStruct_UsernameSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
   /* TODO check length < USERLEN */
-  //client->username = StringValueCStr(value);
+  strlcpy(client->username, StringValueCStr(value), sizeof(client->username));
   return value;
 }
 

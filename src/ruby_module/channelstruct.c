@@ -34,7 +34,7 @@ ChannelStruct_NameSet(VALUE self, VALUE name)
 {
   struct Channel *channel = rb_rbchannel2cchannel(self);
   /* TODO check against CHANNELLEN and throw exception */
-  /*channel->chname = StringValueCStr(name);*/
+  strlcpy(channel->chname, StringValueCStr(name), sizeof(channel->chname));
   return name;
 }
 

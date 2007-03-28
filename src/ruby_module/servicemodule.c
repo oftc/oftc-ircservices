@@ -173,11 +173,12 @@ ServiceModule_add_hook(VALUE self, VALUE hooks)
 static VALUE
 ServiceModule_introduce_server(VALUE self, VALUE server, VALUE gecos)
 {
-  struct Client *serv = introduce_server(StringValueCStr(server), StringValueCStr(gecos));
+  /*struct Client *serv = introduce_server(StringValueCStr(server), StringValueCStr(gecos));
   VALUE rbserver;
 
   rbserver = rb_cclient2rbclient(serv);
-  return rbserver;
+  return rbserver;*/
+  return Qnil;
 }
 
 static VALUE

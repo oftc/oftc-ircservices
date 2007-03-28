@@ -69,7 +69,7 @@ RegChannel_NameSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
   /* TODO check legnth < CHANNELLEN */
-  /*channel->channel = StringValueCStr(value);*/
+  strlcpy(channel->channel, StringValueCStr(value), sizeof(channel->channel));
   return value;
 }
 
@@ -287,7 +287,7 @@ Init_RegChannel(void)
   rb_define_method(cRegChannel, "url", RegChannel_Url, 0);
   rb_define_method(cRegChannel, "url=", RegChannel_UrlSet, 1);
   rb_define_method(cRegChannel, "email", RegChannel_Email, 0);
-  rb_define_method(cRegChannel, "email=", RegChannel_Email, 1);
+  rb_define_method(cRegChannel, "email=", RegChannel_EmailSet, 1);
   rb_define_method(cRegChannel, "topic", RegChannel_Topic, 0);
   rb_define_method(cRegChannel, "topic=", RegChannel_TopicSet, 1);
   rb_define_method(cRegChannel, "mlock", RegChannel_Mlock, 0);
