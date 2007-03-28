@@ -33,7 +33,7 @@ static void *rb_newusr_hdlr(va_list);
 
 static void ruby_script_error();
 
-static void rb_do_hook_each(VALUE key, VALUE name, VALUE params);
+static int rb_do_hook_each(VALUE key, VALUE name, VALUE params);
 static void unhook_events(const char* name);
 
 char *
@@ -221,7 +221,7 @@ unhook_events(const char* name)
   }
 }
 
-static void
+static int
 rb_do_hook_each(VALUE key, VALUE value, VALUE params)
 {
   VALUE self, command, command_id, fc2params;
@@ -237,6 +237,8 @@ rb_do_hook_each(VALUE key, VALUE value, VALUE params)
 
   if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
     ilog(L_DEBUG, "RUBY ERROR: Failed to call: %s", StringValueCStr(command));
+
+  return 1;
 }
 
 int
