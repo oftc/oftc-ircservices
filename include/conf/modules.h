@@ -28,8 +28,6 @@
 enum ModType
 {
   MODTYPE_RUBY,
-  MODTYPE_PERL,
-  MODTYPE_LUA,
   MODTYPE_SO
 };
 

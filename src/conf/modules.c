@@ -24,7 +24,6 @@
 #include "stdinc.h"
 #include "conf/conf.h"
 #include "conf/service.h"
-#include "lua_module.h"
 #include "ruby_module.h"
 #include <sys/types.h>
 #include <dirent.h>
@@ -168,20 +167,6 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     {
       result = load_ruby_module(name, dir, fname);
       mod->type = MODTYPE_RUBY;
-    }
-#endif
-#ifdef HAVE_PERL
-    if(strcmp(tmpext, "pl") == 0)
-    {
-      result = load_perl_module(name, dir, fname);
-      mod->type = MODTYPE_PERL;
-    }
-#endif
-#ifdef HAVE_LUA
-    if(strcmp(tmpext, "lua") == 0)
-    {
-      result = load_lua_module(name, dir, fname);
-      mod->type = MODTYPE_LUA;
     }
 #endif
 

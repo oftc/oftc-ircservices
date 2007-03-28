@@ -25,7 +25,6 @@
 #include "stdinc.h"
 #include "conf.h"
 #include "conf/conf.h"
-#include "lua_module.h"
 #include "ruby_module.h"
 
 #include <signal.h>
@@ -231,12 +230,6 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-#ifdef HAVE_LUA
-  init_lua();
-#endif
-#ifdef HAVE_PERL
-  init_perl();
-#endif
 #ifdef HAVE_RUBY
   init_ruby();
 #endif

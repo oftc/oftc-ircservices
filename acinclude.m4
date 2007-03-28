@@ -35,20 +35,6 @@ AC_DEFUN([AX_CHECK_LIB_RUBY],[
   AM_CONDITIONAL([USE_RUBY], [test "$have_ruby" = "yes"])
   AC_DEFINE_UNQUOTED([HAVE_RUBY], [$have_ruby], [Is ruby enabled])
 ])dnl }}}
-dnl {{{ ax_check_lib_lua
-AC_DEFUN([AX_CHECK_LIB_LUA],[
-  AC_ARG_ENABLE([lua],[AC_HELP_STRING([--disable-lua],[Disable LUA scripting engine])],[use_lua="$enableval"],[use_lua="yes"])
-  if test "$use_lua" = "no"; then
-    have_lua="no"
-  else
-    AC_CHECK_HEADERS([lua5.1/lua.h lua5.1/lualib.h lua5.1/lauxlib.h],[have_lua="yes"],[have_lua="no"])
-    AC_SEARCH_LIBS([lua_pcall],[lua5.1],[have_loa="yes"],[have_lua="no"])
-    if test "$have_lua" = "no" ; then
-      AC_MSG_WARN([LUA 5.1 was not found, disabling])
-    fi
-  fi
-  AM_CONDITIONAL([USE_LUA], [test "$have_lua" = "yes"])
-])dnl }}}
 dnl {{{ ax_check_lib_openssl
 AC_DEFUN([AX_CHECK_LIB_OPENSSL],[
   AC_CHECK_HEADER([openssl/sha.h],,[AC_MSG_ERROR([openssl header files not found])])
@@ -331,25 +317,4 @@ AC_DEFUN([AC_DEFINE_DIR], [
   test "$prefix_NONE" && prefix=NONE
   test "$exec_prefix_NONE" && exec_prefix=NONE
 ])dnl }}}
-dnl {{{ ax_check_perl
-AC_DEFUN([AX_CHECK_PERL],[
-	AC_MSG_CHECKING(for working Perl support)
-  AC_ARG_ENABLE([perl],[AC_HELP_STRING([--disable-perl],[Disable Perl scripting engine])],[use_perl="$enableval"],[use_perl="yes"])
-  if test "$use_perl" = "no"; then
-    have_perl="no"
-  else
-    AC_PATH_PROG([PERL],[perl],[no])
-    if test "$PERL" = "no" ; then
-      have_perl="no"
-    else
-      PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
-      PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts 2>/dev/null`
-    
-      AC_SUBST(PERL_CFLAGS)
-      AC_SUBST(PERL_LDFLAGS)
-
-      have_perl="yes"
-    fi
-  fi
-  AM_CONDITIONAL([USE_PERL], [test "$have_perl" = "yes"])
 ]) dnl }}}
