@@ -1,6 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
+static VALUE cClientStruct = Qnil;
+
 static VALUE ClientStruct_Initialize(VALUE, VALUE);
 static VALUE ClientStruct_Name(VALUE);
 static VALUE ClientStruct_NameSet(VALUE, VALUE);

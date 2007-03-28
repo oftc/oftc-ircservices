@@ -11,12 +11,6 @@
 
 #include "stdinc.h"
 
-static VALUE cServiceModule = Qnil;
-static VALUE cClientStruct = Qnil;
-static VALUE cChannelStruct = Qnil;
-static VALUE cRegChannel = Qnil;
-static VALUE cNickStruct = Qnil;
-
 VALUE rb_carray2rbarray(int, char **);
 char** rb_rbarray2carray(VALUE);
 

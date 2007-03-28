@@ -1,6 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
+static VALUE cNickStruct = Qnil;
+
 static VALUE NickStruct_Initialize(VALUE, VALUE);
 static VALUE NickStruct_Nick(VALUE);
 static VALUE NickStruct_NickSet(VALUE, VALUE);
@@ -69,7 +71,7 @@ NickStruct_NickSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
   /* TODO check length < NICKLEN */
-  strncpy(nick->nick, StringValueCStr(value), sizeof(nick->nick));
+  strlcpy(nick->nick, StringValueCStr(value), sizeof(nick->nick));
   return value;
 }
 
@@ -85,7 +87,7 @@ NickStruct_PassSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
   /* TODO check length < PASSLEN */
-  strncpy(nick->pass, StringValueCStr(value), sizeof(nick->pass));
+  strlcpy(nick->pass, StringValueCStr(value), sizeof(nick->pass));
   return value;
 }
 
@@ -101,7 +103,7 @@ NickStruct_SaltSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
   /* TODO check < SALTLEN */
-  strncpy(nick->salt, StringValueCStr(value), sizeof(nick->salt));
+  strlcpy(nick->salt, StringValueCStr(value), sizeof(nick->salt));
   return value;
 }
 
@@ -117,7 +119,7 @@ NickStruct_CloakSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
   /* TODO check < HOSTLEN */
-  strncpy(nick->cloak, StringValueCStr(value), sizeof(nick->cloak));
+  strlcpy(nick->cloak, StringValueCStr(value), sizeof(nick->cloak));
   return value;
 }
 

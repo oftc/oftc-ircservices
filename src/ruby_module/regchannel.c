@@ -1,6 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
+static VALUE cRegChannel = Qnil;
+
 static VALUE RegChannel_Initialize(VALUE, VALUE);
 static VALUE RegChannel_Id(VALUE);
 static VALUE RegChannel_IdSet(VALUE, VALUE);

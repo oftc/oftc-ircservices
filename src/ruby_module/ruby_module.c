@@ -268,7 +268,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   do_ruby(RB_CALLBACK(ruby_exec), (VALUE)NULL);
 
-  strncpy(classname, fname, strlen(fname)-3);
+  strlcpy(classname, fname, strlen(fname)-3);
 
   klass = rb_protect(RB_CALLBACK(rb_path2class), (VALUE)(classname), &status);
 
@@ -312,7 +312,7 @@ unload_ruby_module(const char* name)
   char namet[PATH_MAX];
   struct Service *service;
 
-  strncpy(namet, name, sizeof(namet));
+  strlcpy(namet, name, sizeof(namet));
   service = find_service(namet);
 
   if(service == NULL && ServicesState.namesuffix)

@@ -1,6 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
+static VALUE cServiceModule = Qnil;
+
 /* Core Functions */
 static VALUE ServiceModule_register(VALUE, VALUE);
 static VALUE ServiceModule_reply_user(VALUE, VALUE);

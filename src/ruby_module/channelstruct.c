@@ -1,6 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
+static VALUE cChannelStruct = Qnil;
+
 static VALUE ChannelStruct_Initialize(VALUE, VALUE);
 static VALUE ChannelStruct_Name(VALUE);
 static VALUE ChannelStruct_NameSet(VALUE, VALUE);
