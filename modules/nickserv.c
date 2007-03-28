@@ -227,6 +227,7 @@ CLEANUP_MODULE
   uninstall_hook(on_umode_change_cb, ns_on_umode_change);
   uninstall_hook(on_nick_change_cb, ns_on_nick_change);
   uninstall_hook(on_newuser_cb, ns_on_newuser);
+  uninstall_hook(on_quit_cb, ns_on_quit);
   eventDelete(process_enforce_list, NULL);
   eventDelete(process_release_list, NULL);
   serv_clear_messages(nickserv);
