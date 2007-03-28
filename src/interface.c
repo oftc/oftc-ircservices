@@ -23,6 +23,7 @@
  */
 
 #include "stdinc.h"
+#include <openssl/hmac.h>
 
 dlink_list services_list = { 0 };
 struct Callback *send_newuser_cb;
@@ -146,6 +147,8 @@ introduce_server(const char *name, const char *gecos)
 
   if(me.uplink != NULL)
     execute_callback(send_newserver_cb, client);
+
+  return client;
 }
 
 void
@@ -297,8 +300,8 @@ opdeop_user(struct Channel *chptr, struct Client *client, int op)
   if ((member = find_channel_link(client, chptr)) == NULL)
     return;
 
-  if(op && has_member_flags(member, CHFL_CHANOP) || !op && 
-      !has_member_flags(member, CHFL_CHANOP))
+  if((op && has_member_flags(member, CHFL_CHANOP)) || (!op && 
+      !has_member_flags(member, CHFL_CHANOP)))
     return;
 
   if(op)
@@ -1019,16 +1022,18 @@ make_random_string(char *buffer, size_t length)
 char *
 generate_hmac(const char *data)
 {
-  char hash[EVP_MAX_MD_SIZE] = {0};
-  int len;
-  char *key, *hexdata;
+  unsigned char hash[EVP_MAX_MD_SIZE] = {0};
+  unsigned int len;
+  char *key;
+  char *hexdata;
 
   key = crypt_pass(ServicesInfo.hmac_secret, 0);
 
-  HMAC(EVP_sha1(), key, DIGEST_LEN, data, strlen(data), hash, &len);
+  HMAC(EVP_sha1(), key, DIGEST_LEN, (unsigned char*)data, strlen(data), hash, 
+      &len);
 
   hexdata = MyMalloc(len*2 + 1);
-  base16_encode(hexdata, len*2+1, hash, len);
+  base16_encode(hexdata, len*2+1, (char*)hash, len);
 
   MyFree(key);
   return hexdata;

@@ -8,5 +8,7 @@
 
 char *generate_md5_salt(char *, int);
 char *crypt_pass(char *, int);
+void
+base16_encode(char *, size_t, const char *, size_t);
 
 #endif /* INCLUDED_crypt_h */

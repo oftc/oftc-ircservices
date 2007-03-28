@@ -62,13 +62,6 @@ static const char saltChars[] =
   "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   /* 0 .. 63, ascii - 64 */
 
-static char bin2hex[] = 
-{
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c',
-  'd', 'e', 'f'
-};
-
-
 char *
 generate_md5_salt(char *salt, int length)
 {
@@ -95,8 +88,7 @@ char *crypt_pass(char *password, int encode)
   const EVP_MD *md;
   unsigned char md_value[EVP_MAX_MD_SIZE];
   char buffer[2*DIGEST_LEN + 1];
-  unsigned char *ret;
-  int i, j, high, low;
+  char *ret;
   unsigned int md_len;
 
   md = EVP_get_digestbyname(DIGEST_FUNCTION);
@@ -109,7 +101,7 @@ char *crypt_pass(char *password, int encode)
 
   if(encode)
   {
-    base16_encode(buffer, sizeof(buffer), md_value, DIGEST_LEN);
+    base16_encode(buffer, sizeof(buffer), (char *)md_value, DIGEST_LEN);
     DupString(ret, buffer);
   }
   else

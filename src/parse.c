@@ -878,7 +878,7 @@ process_ctcp(struct Service *service, struct Client *client, char *command,
   if(irccmp(command, "PING") == 0)
   {
     if(arg == NULL)
-      snprintf(buf, IRC_BUFSIZE, "\001PING\001", arg);
+      snprintf(buf, IRC_BUFSIZE, "\001PING\001");
     else
       snprintf(buf, IRC_BUFSIZE, "\001PING %s\001", arg);
 
