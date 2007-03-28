@@ -86,7 +86,7 @@ ServiceModule_register(VALUE self, VALUE commands)
 
     generic_msgtab = MyMalloc(sizeof(struct ServiceMessage));
 
-    generic_msgtab->cmd = StringValueCStr(name);
+    DupString(generic_msgtab->cmd, StringValueCStr(name));
     generic_msgtab->parameters = NUM2INT(param_min);
     generic_msgtab->maxpara = NUM2INT(param_max);
     generic_msgtab->flags = NUM2INT(flags);

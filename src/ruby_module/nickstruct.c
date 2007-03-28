@@ -194,7 +194,7 @@ static VALUE
 NickStruct_LastQuitSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  nick->last_quit = StringValueCStr(value);
+  DupString(nick->last_quit, StringValueCStr(value));
   return value;
 }
 

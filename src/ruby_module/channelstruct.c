@@ -49,7 +49,7 @@ static VALUE
 ChannelStruct_TopicSet(VALUE self, VALUE value)
 {
   struct Channel *channel = rb_rbchannel2cchannel(self);
-  channel->topic = StringValueCStr(value);
+  DupString(channel->topic, StringValueCStr(value));
   return value;
 }
 
@@ -64,7 +64,7 @@ static VALUE
 ChannelStruct_TopicInfoSet(VALUE self, VALUE value)
 {
   struct Channel *channel = rb_rbchannel2cchannel(self);
-  channel->topic_info = StringValueCStr(value);
+  DupString(channel->topic_info, StringValueCStr(value));
   return value;
 }
 

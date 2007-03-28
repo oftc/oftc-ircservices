@@ -84,7 +84,7 @@ static VALUE
 RegChannel_DescriptionSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  channel->description = StringValueCStr(value);
+  DupString(channel->description, StringValueCStr(value));
   return value;
 }
 
@@ -99,7 +99,7 @@ static VALUE
 RegChannel_EntryMsgSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  channel->entrymsg = StringValueCStr(value);
+  DupString(channel->entrymsg, StringValueCStr(value));
   return value;
 }
 
@@ -114,7 +114,7 @@ static VALUE
 RegChannel_UrlSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  channel->url = StringValueCStr(value);
+  DupString(channel->url, StringValueCStr(value));
   return value;
 }
 
@@ -129,7 +129,7 @@ static VALUE
 RegChannel_EmailSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  channel->email = StringValueCStr(value);
+  DupString(channel->email, StringValueCStr(value));
   return value;
 }
 
@@ -144,7 +144,7 @@ static VALUE
 RegChannel_TopicSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  channel->topic = StringValueCStr(value);
+  DupString(channel->topic, StringValueCStr(value));
   return value;
 }
 
@@ -159,7 +159,7 @@ static VALUE
 RegChannel_MlockSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  channel->mlock = StringValueCStr(value);
+  DupString(channel->mlock, StringValueCStr(value));
   return value;
 }
 
