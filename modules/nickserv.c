@@ -984,7 +984,12 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Nick *nick = client->nickname;
 
   if((nick->id = db_unlink_nick(nick->id)) > 0)
+  {
     reply_user(service, service, client, NS_UNLINK_OK, client->name);
+    // In case this was a slave nick, it is now a master of itself
+    free_nick(client->nickname);
+    client->nickname = db_find_nick(client->name);
+  }
   else
     reply_user(service, service, client, NS_UNLINK_FAILED, client->name);
 }
