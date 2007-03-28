@@ -1025,10 +1025,12 @@ generate_hmac(const char *data)
 
   key = crypt_pass(ServicesInfo.hmac_secret, 0);
 
-  HMAC(EVP_sha1(), key, 40, data, strlen(data), hash, &len);
+  HMAC(EVP_sha1(), key, 20, data, strlen(data), hash, &len);
 
   hexdata = MyMalloc(len*2 + 1);
   base16_encode(hexdata, len*2, hash, len);
+
+  MyFree(key);
   return hexdata;
 }
 

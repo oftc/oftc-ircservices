@@ -95,7 +95,7 @@ char *crypt_pass(char *password, int encode)
   const EVP_MD *md;
   unsigned char md_value[EVP_MAX_MD_SIZE];
   char buffer[41];
-  char *ret;
+  unsigned char *ret;
   int i, j, high, low;
   unsigned int md_len;
 
@@ -114,7 +114,8 @@ char *crypt_pass(char *password, int encode)
   }
   else
   {
-    DupString(ret, md_value);
+    ret = MyMalloc(20);
+    memcpy(ret, md_value, 20);
   }
   return ret;
 }
