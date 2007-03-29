@@ -11,6 +11,9 @@ static VALUE ServiceModule_add_hook(VALUE, VALUE);
 static VALUE ServiceModule_log(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_do_help(VALUE, VALUE, VALUE, VALUE);
+static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
+static VALUE ServiceModule_introduce_server(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_unload(VALUE);
 /* Core Functions */
 /* DB Prototypes */
 static VALUE ServiceModule_db_set_string(VALUE, VALUE, VALUE, VALUE);
@@ -31,7 +34,6 @@ static VALUE ServiceModule_db_list_next(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_db_list_done(VALUE, VALUE);
 static VALUE ServiceModule_db_list_del(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_db_list_del_index(VALUE, VALUE, VALUE, VALUE);
-static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
 /* DB Prototypes */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -175,12 +177,15 @@ ServiceModule_add_hook(VALUE self, VALUE hooks)
 static VALUE
 ServiceModule_introduce_server(VALUE self, VALUE server, VALUE gecos)
 {
-  /*struct Client *serv = introduce_server(StringValueCStr(server), StringValueCStr(gecos));
+  struct Client *serv;
   VALUE rbserver;
+  const char* name = StringValueCStr(server);
+  const char* cgecos = StringValueCStr(gecos);
+
+  serv = introduce_server(name, cgecos);
 
   rbserver = rb_cclient2rbclient(serv);
-  return rbserver;*/
-  return Qnil;
+  return rbserver;
 }
 
 static VALUE
@@ -209,6 +214,13 @@ ServiceModule_do_help(VALUE self, VALUE client, VALUE value, VALUE parv)
 
   do_help(service, cclient, cvalue, argc, argv);
 
+  return self;
+}
+
+static VALUE
+ServiceModule_unload(VALUE self)
+{
+  /* place holder, maybe one day we'll have things we need to free here */
   return self;
 }
 
@@ -376,6 +388,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "exit_client", ServiceModule_exit_client, 3);
   rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
   rb_define_method(cServiceModule, "do_help", ServiceModule_do_help, 3);
+  rb_define_method(cServiceModule, "unload", ServiceModule_unload, 0);
 
   rb_define_method(cServiceModule, "string", ServiceModule_db_set_string, 3);
   rb_define_method(cServiceModule, "string?", ServiceModule_db_get_string, 3);

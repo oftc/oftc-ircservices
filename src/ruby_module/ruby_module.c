@@ -317,6 +317,7 @@ unload_ruby_module(const char* name)
 {
   char namet[PATH_MAX];
   struct Service *service;
+  VALUE fc2params;
 
   strlcpy(namet, name, sizeof(namet));
   service = find_service(namet);
@@ -335,9 +336,14 @@ unload_ruby_module(const char* name)
 
   ilog(L_DEBUG, "Unloading ruby module: %s", namet);
 
-  /*TODO: call class unload/finalize method
-   * to let it clean up anything it needs to
-   */
+  fc2params = rb_ary_new();
+  rb_ary_push(fc2params, (VALUE)service->data);
+  rb_ary_push(fc2params, rb_intern("unload"));
+  rb_ary_push(fc2params, 0);
+  rb_ary_push(fc2params, (VALUE)NULL);
+
+  if(!do_ruby(RB_CALLBACK(rb_singleton_call), fc2params))
+    ilog(L_DEBUG, "Failed to call %s's unload method", namet);
 
   unhook_events(namet);
   serv_clear_messages(service);

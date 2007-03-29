@@ -80,6 +80,7 @@ void cleanup_interface();
 
 struct Service *make_service(char *);
 void introduce_client(const char *);
+struct Client *introduce_server(const char*, const char*);
 void reply_user(struct Service *,struct Service *, struct Client *, 
     unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
