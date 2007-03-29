@@ -140,17 +140,17 @@ int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
 int db_register_nick(struct Nick *);
-int db_delete_nick(const char *);
+int db_delete_nick(unsigned int, unsigned int, const char *);
 char *db_get_nickname_from_id(unsigned int);
 unsigned int db_get_id_from_name(const char *, unsigned int);
 int db_set_nick_master(unsigned int, const char *);
 
-int db_forbid_nick(const char *nick);
-int db_is_forbid(const char *nick);
-int db_delete_forbid(const char *nick);
+int db_forbid_nick(const char *);
+int db_is_forbid(const char *);
+int db_delete_forbid(const char *);
 
-int db_link_nicks(unsigned int, unsigned int);
-unsigned int db_unlink_nick(unsigned int);
+int db_link_nicks(unsigned int, unsigned int, unsigned int);
+unsigned int db_unlink_nick(unsigned int, unsigned int, unsigned int);
 
 int db_register_chan(struct RegChannel *, unsigned int);
 int db_delete_chan(const char *);

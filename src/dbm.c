@@ -32,7 +32,8 @@ struct Callback *on_nick_drop_cb;
 static FBFILE *db_log_fb;
 
 query_t queries[QUERY_COUNT] = { 
-  { "SELECT account.id, (SELECT nick FROM nickname WHERE id=account.primary_nick), "
+  { "SELECT account.id, primary_nick, nickname.id, nickname.nick, "
+    "(SELECT nick FROM nickname WHERE nickname.id=account.primary_nick), "
     "password, salt, url, email, cloak, flag_enforce, flag_secure, "
     "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
     "flag_private, language, last_host, last_realname, "
@@ -99,7 +100,7 @@ query_t queries[QUERY_COUNT] = {
           "(SELECT id FROM account_access AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM account_access AS b WHERE b.id < a.id AND "
           "b.parent_id = ?d) AND parent_id = ?d)", NULL, EXECUTE },
-  { "UPDATE nickname SET user_id=?d WHERE user_id=?d", NULL, EXECUTE },
+  { "UPDATE nickname SET user_id=?d WHERE user_id=?d AND id=?d", NULL, EXECUTE },
   { "INSERT INTO account (password, salt, url, email, cloak, flag_enforce, "
     "flag_secure, flag_verified, flag_cloak_enabled, "
     "flag_admin, flag_email_verified, flag_private, language, last_host, "
@@ -108,7 +109,7 @@ query_t queries[QUERY_COUNT] = {
     "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
     "flag_private, language, last_host, last_realname, last_quit_msg, "
     "last_quit_time, reg_time FROM account WHERE id=?d", NULL, EXECUTE },
-  { "SELECT id FROM nickname WHERE user_id=?d AND NOT nick=?v", NULL, QUERY },
+  { "SELECT id FROM nickname WHERE user_id=?d AND NOT id=?d", NULL, QUERY },
   { "UPDATE channel SET description=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET url=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET email=?v WHERE id=?d", NULL, EXECUTE },
@@ -301,7 +302,7 @@ db_find_nick(const char *nick)
 {
   yada_rc_t *rc, *brc;
   struct Nick *nick_p;
-  char *retnick, *retpass, *retcloak, *retsalt;
+  char *retnick, *retpass, *retcloak, *retsalt, *retrealnick;
 
   assert(nick != NULL);
 
@@ -312,13 +313,14 @@ db_find_nick(const char *nick)
  
   nick_p = MyMalloc(sizeof(struct Nick));
  
-  brc = Bind("?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
-    &nick_p->id, &retnick, &retpass, &retsalt, &nick_p->url, &nick_p->email,
-    &retcloak, &nick_p->enforce, &nick_p->secure, &nick_p->verified, 
-    &nick_p->cloak_on, &nick_p->admin, &nick_p->email_verified, &nick_p->priv,
-    &nick_p->language, &nick_p->last_host, &nick_p->last_realname, 
-    &nick_p->last_quit, &nick_p->last_quit_time, &nick_p->reg_time, 
-    &nick_p->nick_reg_time, &nick_p->last_seen);
+  brc = Bind("?d?d?d?ps?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
+    &nick_p->id, &nick_p->pri_nickid, &nick_p->nickid, &retrealnick, &retnick, 
+    &retpass, &retsalt, &nick_p->url, &nick_p->email, &retcloak, 
+    &nick_p->enforce, &nick_p->secure, &nick_p->verified, &nick_p->cloak_on, 
+    &nick_p->admin, &nick_p->email_verified, &nick_p->priv, &nick_p->language, 
+    &nick_p->last_host, &nick_p->last_realname, &nick_p->last_quit, 
+    &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->nick_reg_time, 
+    &nick_p->last_seen);
 
   if(Fetch(rc, brc) == 0)
   {
@@ -330,6 +332,7 @@ db_find_nick(const char *nick)
   }
 
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
+  strlcpy(nick_p->real_nick, retrealnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
   strlcpy(nick_p->salt, retsalt, sizeof(nick_p->salt));
   if(retcloak)
@@ -431,6 +434,8 @@ db_register_nick(struct Nick *nick)
   {
     TransCommit();
     nick->id = id;
+    nick->nickid = nickid;
+    nick->pri_nickid = nickid;
     return TRUE;
   }
   else
@@ -488,13 +493,13 @@ db_delete_forbid(const char *nick)
 }
 
 static int
-db_fix_link(unsigned int id, const char *oldnick)
+db_fix_link(unsigned int id, unsigned int nickid)
 {
-  int nickid = -1;
+  int new_nickid = -1;
   yada_rc_t *rc, *brc;
 
-  brc = Bind("?d", &nickid);
-  db_query(rc, GET_NEW_LINK, id, oldnick);
+  brc = Bind("?d", &new_nickid);
+  db_query(rc, GET_NEW_LINK, id, nickid);
 
   if(rc == NULL)
     return -1;
@@ -509,7 +514,7 @@ db_fix_link(unsigned int id, const char *oldnick)
   Free(rc);
   Free(brc);
 
-  return nickid;
+  return new_nickid;
 }
 
 int
@@ -543,32 +548,24 @@ db_set_nick_master(unsigned int accid, const char *newnick)
 }
 
 int
-db_delete_nick(const char *nick)
+db_delete_nick(unsigned int accid, unsigned int nickid, const char *nick)
 {
   int ret;
-  unsigned int id, newid;
+  unsigned int newid;
 
-  /* TODO Do some(more?) stuff with constraints and transactions */
   TransBegin();
 
-  id = db_get_id_from_name(nick, GET_NICKID_FROM_NICK);
-  if(id <= 0)
-  {
-    TransRollback();
-    return FALSE;
-  }
-
-  newid = db_fix_link(id, nick);
+  newid = db_fix_link(accid, nickid);
 
   if(newid == -1)
   {
     db_exec(ret, DELETE_NICK, nick);
     if(ret != -1)
-      db_exec(ret, DELETE_ACCOUNT, id);
+      db_exec(ret, DELETE_ACCOUNT, accid);
   }
   else
   {
-    db_exec(ret, SET_NICK_MASTER, newid, id);
+    db_exec(ret, SET_NICK_MASTER, newid, accid);
     if(ret != -1)
       db_exec(ret, DELETE_NICK, nick);
   }
@@ -864,13 +861,13 @@ db_list_del_index(unsigned int type, unsigned int id, unsigned int index)
 }
 
 int    
-db_link_nicks(unsigned int master, unsigned int child)
+db_link_nicks(unsigned int master, unsigned int child, unsigned int nickid)
 {
   int ret;
 
   TransBegin();
 
-  db_exec(ret, SET_NICK_LINK, master, child);
+  db_exec(ret, SET_NICK_LINK, master, child, nickid);
   if(ret != -1)
     db_exec(ret, DELETE_ACCOUNT, child);
 
@@ -885,18 +882,24 @@ db_link_nicks(unsigned int master, unsigned int child)
 }
 
 unsigned int 
-db_unlink_nick(unsigned int id)
+db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
 {
   int ret;
-  unsigned int newid;
+  unsigned int new_accid, new_nickid;
 
   TransBegin();
 
-  db_exec(ret, INSERT_NICK_CLONE, id);
+  db_exec(ret, INSERT_NICK_CLONE, accid);
   if(ret != -1)
   {
-    newid = InsertID("account", "id");
-    db_exec(ret, SET_NICK_LINK, id, newid);
+    new_accid = InsertID("account", "id");
+    db_exec(ret, SET_NICK_LINK, new_accid, accid, nickid);
+  }
+
+  if(ret != -1 && priid == nickid)
+  {
+    new_nickid = db_fix_link(accid, nickid);
+    db_exec(ret, SET_NICK_MASTER, new_nickid, new_accid);
   }
 
   if(ret == -1)
@@ -906,7 +909,7 @@ db_unlink_nick(unsigned int id)
   }
   
   TransCommit();
-  return newid;
+  return new_accid;
 }
 
 struct RegChannel *

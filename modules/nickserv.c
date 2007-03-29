@@ -363,7 +363,8 @@ m_drop(struct Service *service, struct Client *client,
   struct Client *target;
 
   /* This might be being executed via sudo, find the real user of the nick */
-  if(irccmp(client->name, client->nickname->nick) != 0)
+  if(irccmp(client->name, client->nickname->nick) != 0 && 
+      irccmp(client->name, client->nickname->real_nick) != 0)
     target = find_client(client->nickname->nick);
   else
     target = client;
@@ -376,7 +377,7 @@ m_drop(struct Service *service, struct Client *client,
       char *hmac;
 
       snprintf(buf, IRC_BUFSIZE, "DROP %ld %d %s", CurrentTime, 
-          db_get_id_from_name(target->name, GET_NICKID_FROM_NICK), target->name);
+          target->nickname->nickid, target->name);
       hmac = generate_hmac(buf);
 
       reply_user(service, service, client, NS_DROP_AUTH, service->name, 
@@ -402,7 +403,7 @@ m_drop(struct Service *service, struct Client *client,
       auth++;
 
       snprintf(buf, IRC_BUFSIZE, "DROP %s %d %s", parv[1], 
-          db_get_id_from_name(target->name, GET_NICKID_FROM_NICK), target->name);
+          target->nickname->nickid, target->name);
       hmac = generate_hmac(buf);
 
       if(strncmp(hmac, auth, strlen(hmac)) != 0)
@@ -420,7 +421,8 @@ m_drop(struct Service *service, struct Client *client,
     }
   }
 
-  if(db_delete_nick(client->nickname->nick)) 
+  if(db_delete_nick(client->nickname->id, client->nickname->nickid, 
+        client->nickname->nick)) 
   {
     if(target != NULL)
     {
@@ -965,7 +967,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(!db_link_nicks(master_nick->id, nick->id))
+  if(!db_link_nicks(master_nick->id, nick->id, nick->nickid))
   {
     free_nick(master_nick);
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
@@ -983,7 +985,7 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
 
-  if((nick->id = db_unlink_nick(nick->id)) > 0)
+  if((nick->id = db_unlink_nick(nick->id, nick->nickid, nick->pri_nickid)) > 0)
   {
     reply_user(service, service, client, NS_UNLINK_OK, client->name);
     // In case this was a slave nick, it is now a master of itself
@@ -1090,7 +1092,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if((nick = db_find_nick(parv[1])) != NULL)
   {
-    db_delete_nick(nick->nick);
+    db_delete_nick(nick->id, nick->nickid, nick->nick);
     free_nick(nick);
   }
 
