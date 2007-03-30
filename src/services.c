@@ -232,6 +232,7 @@ int main(int argc, char *argv[])
 
 #ifdef HAVE_RUBY
   init_ruby();
+  signal(SIGSEGV, SIG_DFL);
 #endif
 
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */
