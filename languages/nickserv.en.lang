@@ -6,14 +6,21 @@ NS_HELP_LONG
 NS_HELP_REG_SHORT
 	%s: Registers a nickname for your usage.
 NS_HELP_REG_LONG
-	Usage: REGISTER password eMail
+	Usage: REGISTER password e-mail
 	
-	Registers a nickname in our database for your use.
+	Registers a nickname in our database for your use. Registering your nickname
+	ensures it is reserved for your use and cannot be used by others if you do
+	not wish them to use it. It also allows you to associate various pieces of
+	information with your nickname and also to have access to registered
+	channels.
 	
-	The eMail address you enter will be used in case you forget your password,
+	The e-mail address you enter will be used in case you forget your password,
 	so make sure it is valid and correct.
 	
 	Choose a password that you can remember but is not easily guessed.
+	
+	Once your nickname is registered, see HELP SET for information on settings
+	that can be set on it.
 NS_HELP_ID_SHORT
 	%s: Identify your nickname.
 NS_HELP_ID_LONG
