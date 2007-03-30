@@ -304,7 +304,7 @@ m_register(struct Service *service, struct Client *client,
  
   if(strncasecmp(client->name, "guest", 5) == 0)
   {
-    reply_user(service, service, client, NS_NOREG_GUEST, client->name);
+    reply_user(service, service, client, NS_NOREG_GUEST);
     return;
   }
 
@@ -322,7 +322,8 @@ m_register(struct Service *service, struct Client *client,
 
   if(client->nickname != NULL)
   {
-    reply_user(service, service, client, NS_ALREADY_REG, client->nickname->real_nick);
+    reply_user(service, service, client, NS_ALREADY_REG, 
+        client->nickname->real_nick);
     return;
   }
     
@@ -335,10 +336,10 @@ m_register(struct Service *service, struct Client *client,
 
   nick = MyMalloc(sizeof(struct Nick));
 
-  make_random_string(nick->salt, SALTLEN+1);
+  make_random_string(nick->salt, sizeof(nick->salt));
   snprintf(password, sizeof(password), "%s%s", parv[1], nick->salt);
 
-  pass = crypt_pass(password, 1);
+  pass = crypt_pass(password, TRUE);
   strlcpy(nick->pass, pass, sizeof(nick->pass));
   strlcpy(nick->nick, client->name, sizeof(nick->nick));
   DupString(nick->email, parv[2]);

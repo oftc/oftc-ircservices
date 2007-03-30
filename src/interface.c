@@ -1016,7 +1016,7 @@ make_random_string(char *buffer, size_t length)
     j = rand() % (maxidx + 1);
     buffer[i] = randchartab[j];
   }
-  buffer[length - 1] = 0;
+  buffer[length - 1] = '\0';
 }
 
 char *

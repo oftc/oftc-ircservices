@@ -236,11 +236,22 @@ NS_HELP_SUDO_SHORT
 NS_HELP_SUDO_LONG
 	Execute a command as another user.
 NS_ALREADY_REG
-	Nickname %s is already registered.
+	Nickname %s is already registered. If this is your nickname you may try
+  IDENTIFY instead. If this is not your nickname then it may have been
+  registered by someone else first. Please choose another nickname and try
+  again, or if you believe this nickname to be unused, contact network
+  support.
 NS_REG_COMPLETE
-	Nickname %s has been registered.
+	Nickname %s has been registered successfully and is now yours to use.
+  See HELP SET for information on settings that you can set on your new
+  nickname. If you change nickname or reconnect to the IRC network you will be
+  required to identify using the password you chose when you registered. See
+  HELP IDENTIFY for more information on identifying your nickname.
 NS_REG_FAIL
-	Nickname %s failed to register.
+	Nickname %s failed to register. This is usually caused by an internal
+  problem within services or a database problem. Please try again in a short
+  while. If this is not the first time you have received this message, please
+  contact network support.
 NS_REG_FIRST
 	Nickname %s is not registered.
 NS_IDENTIFIED
@@ -340,11 +351,16 @@ NS_FORBID_OK
 NS_FORBID_FAIL
 	%s failed to be forbidden.
 NS_NOREG_GUEST
-	You may not register guest nicknames, %s.
+	Guest nicknames are reserved for services use and may not be registered.
+  Please change your nickname and try again.
 NS_NOREG_FORBID
-	You may not register %s because it is forbidden to be used.
+	%s is forbidden and may not be registered or used. Please change your
+  nickname and try again.
 NS_INVALID_EMAIL
-	%s is an invalid email address.
+	%s is not a valid e-mail address. Please use a valid e-mail address so
+  that you may recover your password should you forget it. Your e-mail will
+  only be used to confirm limited services actions(such as requesting a new
+  password if you forget your current one).
 NS_LANG_LIST
 	%d : %s
 NS_MASTER_NOT_LINKED

@@ -126,7 +126,8 @@ base16_encode(char *dest, size_t destlen, const char *src, size_t srclen)
 
   cp = dest;
   end = src+srclen;
-  while (src<end) {
+  while (src<end) 
+  {
     *cp++ = "0123456789ABCDEF"[ (*(const uint8_t*)src) >> 4 ];
     *cp++ = "0123456789ABCDEF"[ (*(const uint8_t*)src) & 0xf ];
     ++src;
