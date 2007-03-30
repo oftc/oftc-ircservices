@@ -371,7 +371,7 @@ m_drop(struct Service *service, struct Client *client,
   /* This might be being executed via sudo, find the real user of the nick */
   if(irccmp(client->name, client->nickname->nick) != 0 && 
       irccmp(client->name, client->nickname->real_nick) != 0)
-    target = find_client(client->nickname->nick);
+    target = find_client(client->nickname->real_nick);
   else
     target = client;
 
@@ -444,9 +444,10 @@ m_drop(struct Service *service, struct Client *client,
     }
     else
     {
-      reply_user(service, service, client, NS_NICK_DROPPED, client->name);
+      reply_user(service, service, client, NS_NICK_DROPPED,
+          client->nickname->real_nick);
       global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
-        client->username, client->host, client->name);
+        client->username, client->host, client->nickname->real_nick);
     }
   }
   else
@@ -454,8 +455,10 @@ m_drop(struct Service *service, struct Client *client,
     if(target == NULL)
     {
       global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", 
-          client->name, client->username, client->host, client->name);
-      reply_user(service, service, client, NS_NICK_DROPFAIL, client->name);
+          client->name, client->username, client->host, 
+          client->nickname->real_nick);
+      reply_user(service, service, client, NS_NICK_DROPFAIL, 
+          client->nickname->real_nick);
     }
     else
     {
