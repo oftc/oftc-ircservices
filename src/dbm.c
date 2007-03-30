@@ -896,10 +896,16 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
     db_exec(ret, SET_NICK_LINK, new_accid, accid, nickid);
   }
 
-  if(ret != -1 && priid == nickid)
+  if(ret != -1)
   {
-    new_nickid = db_fix_link(accid, nickid);
-    db_exec(ret, SET_NICK_MASTER, new_nickid, new_accid);
+    new_nickid = db_fix_link(accid, priid);
+    if(nickid == priid)
+    {
+      db_exec(ret, SET_NICK_MASTER, new_nickid, accid);
+      db_exec(ret, SET_NICK_MASTER, priid, new_accid);
+    }
+    else
+      db_exec(ret, SET_NICK_MASTER, new_nickid, new_accid);
   }
 
   if(ret == -1)

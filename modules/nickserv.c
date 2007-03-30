@@ -180,7 +180,7 @@ static struct ServiceMessage regain_msgtab = {
 };
 
 static struct ServiceMessage sudo_msgtab = {
-  NULL, "SUDO", 0, 2, 2, 0, ADMIN_FLAG, NS_HELP_SUDO_SHORT,
+  NULL, "SUDO", 0, 2, 2, SFLG_NOMAXPARAM, ADMIN_FLAG, NS_HELP_SUDO_SHORT,
   NS_HELP_SUDO_LONG, m_sudo
 };
 
@@ -317,6 +317,12 @@ m_register(struct Service *service, struct Client *client,
   if(strchr(parv[2], '@') == NULL)
   {
     reply_user(service, service, client, NS_INVALID_EMAIL, parv[2]);
+    return;
+  }
+
+  if(client->nickname != NULL)
+  {
+    reply_user(service, service, client, NS_ALREADY_REG, client->nickname->real_nick);
     return;
   }
     
@@ -973,7 +979,10 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
     return;
   }
+
   strlcpy(master_nick->nick, nick->nick, sizeof(master_nick->nick));
+  master_nick->nickid = nick->nickid;
+  master_nick->pri_nickid = master_nick->nickid;
   client->nickname = master_nick;
   reply_user(service, service, client, NS_LINK_OK, nick->nick, parv[1]);
   free_nick(nick);
@@ -985,7 +994,7 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
 
-  if((nick->id = db_unlink_nick(nick->id, nick->nickid, nick->pri_nickid)) > 0)
+  if((nick->id = db_unlink_nick(nick->id, nick->pri_nickid, nick->nickid)) > 0)
   {
     reply_user(service, service, client, NS_UNLINK_OK, client->name);
     // In case this was a slave nick, it is now a master of itself

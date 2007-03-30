@@ -210,7 +210,7 @@ static struct ServiceMessage clear_msgtab = {
 };
 
 static struct ServiceMessage sudo_msgtab = {
-  NULL, "SUDO", 0, 2, 2, 0, ADMIN_FLAG,
+  NULL, "SUDO", 0, 2, 2, SFLG_NOMAXPARAM, ADMIN_FLAG,
   CS_HELP_SUDO_SHORT, CS_HELP_SUDO_LONG, m_sudo
 };
 
