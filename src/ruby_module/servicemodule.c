@@ -386,6 +386,7 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "NEWUSR_HOOK", INT2NUM(RB_HOOKS_NEWUSR));
   rb_define_const(cServiceModule, "PRIVMSG_HOOK", INT2NUM(RB_HOOKS_PRIVMSG));
   rb_define_const(cServiceModule, "JOIN_HOOK", INT2NUM(RB_HOOKS_JOIN));
+  rb_define_const(cServiceModule, "NICK_HOOK", INT2NUM(RB_HOOKS_NICK));
 
   rb_define_const(cServiceModule, "LOG_CRIT",   INT2NUM(L_CRIT));
   rb_define_const(cServiceModule, "LOG_ERROR",  INT2NUM(L_ERROR));

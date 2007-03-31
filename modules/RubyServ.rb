@@ -12,6 +12,7 @@ class RubyServ < ServiceModule
       [NEWUSR_HOOK, 'newuser'],
       [PRIVMSG_HOOK, 'privmsg'],
       [JOIN_HOOK, 'join'],
+      [NICK_HOOK, 'nick'],
     ])
     load_language("rubyserv.en")
     join_channel("#test")
@@ -41,6 +42,9 @@ class RubyServ < ServiceModule
   end
   def join(source, channel)
     log(LOG_DEBUG, "#{source.name} joined #{channel}")
+  end
+  def nick(source, oldnick)
+    log(LOG_DEBUG, "#{oldnick} is now #{source.name}")
   end
 end
 

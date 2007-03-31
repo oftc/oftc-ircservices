@@ -39,9 +39,10 @@ enum Ruby_Hooks
   RB_HOOKS_NEWUSR,
   RB_HOOKS_PRIVMSG,
   RB_HOOKS_JOIN,
+  RB_HOOKS_NICK,
 };
 /* Update this when new hooks are added */
-#define RB_HOOKS_COUNT   5
+#define RB_HOOKS_COUNT 6
 
 #define RB_CALLBACK(x) (VALUE (*)())(x)
 
