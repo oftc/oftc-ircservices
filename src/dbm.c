@@ -436,6 +436,7 @@ db_register_nick(struct Nick *nick)
     nick->id = id;
     nick->nickid = nickid;
     nick->pri_nickid = nickid;
+    nick->nick_reg_time = nick->reg_time = CurrentTime;
     return TRUE;
   }
   else

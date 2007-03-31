@@ -1,0 +1,25 @@
+NickServ Test Plan
+------------------
+
+REGISTER
+--------
+
+HELP REGISTER -> Register help long version
+HELP REGISTER <x> -> Too many params message
+REGISTER <x> -> Not enough params message
+REGISTER <x> <y> -> Invalid email address
+REGISTER <x> <y> <z> -> Too many params
+REGISTER <y@x> <z> -> Invalid email address
+REGISTER <existing_nickname> <x@y> -> Already registered
+REGISTER <forbidden_nickname> <x@y> -> May not register
+REGISTER <x> <y@z> -> Reigster success, umode +R set, account added to db,
+nickname added to db, primary_nick set to new nickname, user_id of nickname
+set to account.
+SUDO <x> REGISTER <y> <z@a> -> Nick doesnt exist
+SUDO <existing_nick> REGISTER <x> <y@z> -> Already registered
+SUDO <forbidden_nick> REGISTER <x> <y@z> -> May not be registered
+
+After registering INFO nick should show nick online message, time registered,
+last quick message and last quit time should be unknown, utl and cloakstring
+should be 'not set', email address should be whatever was specified language
+should be 0 and all settings should be OFF.
