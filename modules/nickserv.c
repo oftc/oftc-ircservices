@@ -517,7 +517,7 @@ m_identify(struct Service *service, struct Client *client,
         exit_client(target, &me, "Enforcer no longer needed");
         send_nick_change(service, client, name);
       }
-      else
+      else if(target != client)
       {
         target->release_to = client;
         strlcpy(target->release_name, name, NICKLEN);

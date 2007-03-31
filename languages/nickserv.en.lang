@@ -253,11 +253,12 @@ NS_REG_FAIL
 	while. If this is not the first time you have received this message, please
 	contact network support.
 NS_REG_FIRST
-	Nickname %s is not registered.
+	Nickname %s is not registered. You must register your nickname before
+	you can be identified with it. See HELP REGISTER for more information.
 NS_IDENTIFIED
 	You are sucessfully identified as %s.
 NS_IDENT_FAIL
-	Identify failed as %s.
+	Identify failed as %s. You may have entered an incorrect password.
 NS_CURR_LANGUAGE
 	Current language is %s(%d).
 NS_AVAIL_LANGUAGE
