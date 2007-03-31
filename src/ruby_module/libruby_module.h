@@ -32,10 +32,13 @@ void Init_ClientStruct(void);
 void Init_NickStruct(void);
 void Init_ServiceModule(void);
 
-#define RB_HOOKS_CMODE   0
-#define RB_HOOKS_UMODE   1
-#define RB_HOOKS_NEWUSR  2
-#define RB_HOOKS_PRIVMSG 3
+enum Ruby_Hooks
+{
+  RB_HOOKS_CMODE,
+  RB_HOOKS_UMODE,
+  RB_HOOKS_NEWUSR,
+  RB_HOOKS_PRIVMSG,
+};
 /* Update this when new hooks are added */
 #define RB_HOOKS_COUNT   4
 

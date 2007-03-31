@@ -40,14 +40,24 @@ static VALUE ServiceModule_db_list_del_index(VALUE, VALUE, VALUE, VALUE);
 static void m_generic(struct Service *, struct Client *, int, char**);
 
 static struct Service* get_service(VALUE self);
+static void set_service(VALUE, struct Service *); 
 
 static struct Service *
 get_service(VALUE self)
 {
   struct Service *service;
-  VALUE rbservice = rb_iv_get(self, "@ServiceName");
-  service = find_service(StringValueCStr(rbservice));
+
+  VALUE rbservice = rb_iv_get(self, "@service_ptr");
+  Data_Get_Struct(rbservice, struct Service, service);
+
   return service;
+}
+
+static void
+set_service(VALUE self, struct Service *service)
+{
+  VALUE rbservice = Data_Wrap_Struct(rb_cObject, 0, 0, service);
+  rb_iv_set(self, "@service_ptr", rbservice);
 }
 
 static VALUE
@@ -61,6 +71,8 @@ ServiceModule_register(VALUE self, VALUE commands)
   service_name = rb_iv_get(self, "@ServiceName");
 
   ruby_service = make_service(StringValueCStr(service_name));
+
+  set_service(self, ruby_service);
 
   if(ircncmp(ruby_service->name, StringValueCStr(service_name), NICKLEN) != 0)
     rb_iv_set(self, "@ServiceName", rb_str_new2(ruby_service->name));
