@@ -920,14 +920,6 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
   if((s = strchr(parv[1], '@')) != NULL)
     *s++ = '\0';
 
-  service = find_service(parv[1]);
-  if(service == NULL)
-  {
-    ilog(L_DEBUG, "Message for %s from %s, who we know nothing about!", parv[1], 
-        source->name);
-    return;
-  }
-
   if(parv[1][0] == '#')
   {
     channel = hash_find_channel(parv[1]);
@@ -943,6 +935,14 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
 
   if(!privmsg)
     return;
+
+  service = find_service(parv[1]);
+  if(service == NULL)
+  {
+    ilog(L_DEBUG, "Message for %s from %s, who we know nothing about!", parv[1], 
+        source->name);
+    return;
+  }
 
   for (ch = parv[2]; *ch == ' '; ch++) /* skip spaces */
     /* null statement */ ;

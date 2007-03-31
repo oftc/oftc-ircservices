@@ -33,6 +33,7 @@ static dlink_node *ruby_newusr_hook;
 static dlink_node *ruby_privmsg_hook;
 static dlink_node *ruby_join_hook;
 static dlink_node *ruby_nick_hook;
+static dlink_node *ruby_notice_hook;
 
 static VALUE ruby_server_hooks = Qnil;
 
@@ -42,6 +43,7 @@ static void *rb_newusr_hdlr(va_list);
 static void *rb_privmsg_hdlr(va_list);
 static void *rb_join_hdlr(va_list);
 static void *rb_nick_hdlr(va_list);
+static void *rb_notice_hdlr(va_list);
 
 static void ruby_script_error();
 
@@ -260,6 +262,25 @@ rb_nick_hdlr(va_list args)
   return pass_callback(ruby_nick_hook, source, oldnick);
 }
 
+static void *
+rb_notice_hdlr(va_list args)
+{
+  struct Client *source = va_arg(args, struct Client *);
+  struct Channel *channel = va_arg(args, struct Channel *);
+  char *message = va_arg(args, char *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NOTICE);
+  VALUE params = rb_ary_new();
+
+  rb_ary_push(params, rb_cclient2rbclient(source));
+  rb_ary_push(params, rb_cchannel2rbchannel(channel));
+  rb_ary_push(params, rb_str_new2(message));
+
+  rb_hash_foreach(hooks, rb_do_hook_each, params);
+
+  return pass_callback(ruby_notice_hook, source, channel, message);
+}
+
 void
 rb_add_hook(VALUE self, VALUE hook, int type)
 {
@@ -444,6 +465,7 @@ init_ruby(void)
   ruby_privmsg_hook = install_hook(on_privmsg_cb, rb_privmsg_hdlr);
   ruby_join_hook = install_hook(on_join_cb, rb_join_hdlr);
   ruby_nick_hook = install_hook(on_nick_change_cb, rb_nick_hdlr);
+  ruby_notice_hook = install_hook(on_notice_cb, rb_notice_hdlr);
 }
 
 void

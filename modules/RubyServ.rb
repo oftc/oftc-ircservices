@@ -5,6 +5,7 @@ class RubyServ < ServiceModule
       #["COMMAND", PARAM_MIN, PARAM_MAX, FLAGS, ACCESS, HLP_SHORT, HELP_LONG]
       ["HELP", 0, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, 0, 0, 0],
       ["SAY", 1, 0, SFLG_NOMAXPARAM, 0, 1, 2],
+      ["COLLECT", 0, 0, 0, ADMIN_FLAG, 0, 0],
       ])
     add_hook([
       [CMODE_HOOK, 'cmode'],
@@ -13,6 +14,7 @@ class RubyServ < ServiceModule
       [PRIVMSG_HOOK, 'privmsg'],
       [JOIN_HOOK, 'join'],
       [NICK_HOOK, 'nick'],
+      [NOTICE_HOOK, 'notice'],
     ])
     load_language("rubyserv.en")
     join_channel("#test")
@@ -25,6 +27,11 @@ class RubyServ < ServiceModule
     parv.shift
     message = parv.join(" ")
     reply_user(client, "#{client.name} Said: #{message}")
+  end
+  def COLLECT(client, parv = [])
+    reply_user(client, "Starting GC Call")
+    log(LOG_NOTICE, "#{client.name} request Ruby GC Collect")
+    GC.start
   end
   def umode(client, what, mode)
     log(LOG_DEBUG, "UMODE client.name: #{client.name} what: #{what} mode: %08x" % [mode])
@@ -45,6 +52,9 @@ class RubyServ < ServiceModule
   end
   def nick(source, oldnick)
     log(LOG_DEBUG, "#{oldnick} is now #{source.name}")
+  end
+  def notice(source, channel, message)
+    log(LOG_DEBUG, "#{source.name} said #{message} in #{channel.name}")
   end
 end
 

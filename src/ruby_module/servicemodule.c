@@ -387,6 +387,7 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "PRIVMSG_HOOK", INT2NUM(RB_HOOKS_PRIVMSG));
   rb_define_const(cServiceModule, "JOIN_HOOK", INT2NUM(RB_HOOKS_JOIN));
   rb_define_const(cServiceModule, "NICK_HOOK", INT2NUM(RB_HOOKS_NICK));
+  rb_define_const(cServiceModule, "NOTICE_HOOK", INT2NUM(RB_HOOKS_NOTICE));
 
   rb_define_const(cServiceModule, "LOG_CRIT",   INT2NUM(L_CRIT));
   rb_define_const(cServiceModule, "LOG_ERROR",  INT2NUM(L_ERROR));
@@ -404,6 +405,12 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "SFLG_CHANARG", INT2NUM(SFLG_CHANARG));
   rb_define_const(cServiceModule, "SFLG_NICKARG", INT2NUM(SFLG_NICKARG));
   rb_define_const(cServiceModule, "SFLG_NOMAXPARAM", INT2NUM(SFLG_NOMAXPARAM));
+
+  rb_define_const(cServiceModule, "USER_FLAG", INT2NUM(USER_FLAG));
+  rb_define_const(cServiceModule, "IDNETIFIED_FLAG", INT2NUM(IDENTIFIED_FLAG));
+  rb_define_const(cServiceModule, "OPER_FLAG", INT2NUM(OPER_FLAG));
+  rb_define_const(cServiceModule, "ADMIN_FLAG", INT2NUM(ADMIN_FLAG));
+  rb_define_const(cServiceModule, "SUDO_FLAG", INT2NUM(SUDO_FLAG));
 
   rb_define_method(cServiceModule, "register", ServiceModule_register, 1);
   rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, -2);
