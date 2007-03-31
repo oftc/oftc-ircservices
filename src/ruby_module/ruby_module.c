@@ -30,14 +30,16 @@
 static dlink_node *ruby_cmode_hook;
 static dlink_node *ruby_umode_hook;
 static dlink_node *ruby_newusr_hook;
-static dlink_node *ruby_privmsg_channel_hook;
+static dlink_node *ruby_privmsg_hook;
+static dlink_node *ruby_join_hook;
 
 static VALUE ruby_server_hooks = Qnil;
 
 static void *rb_cmode_hdlr(va_list);
 static void *rb_umode_hdlr(va_list);
 static void *rb_newusr_hdlr(va_list);
-static void *rb_privmsg_channel_hdlr(va_list);
+static void *rb_privmsg_hdlr(va_list);
+static void *rb_join_hdlr(va_list);
 
 static void ruby_script_error();
 
@@ -204,7 +206,7 @@ rb_newusr_hdlr(va_list args)
 }
 
 static void *
-rb_privmsg_channel_hdlr(va_list args)
+rb_privmsg_hdlr(va_list args)
 {
   struct Client *source = va_arg(args, struct Client *);
   struct Channel *channel = va_arg(args, struct Channel *);
@@ -219,7 +221,24 @@ rb_privmsg_channel_hdlr(va_list args)
 
   rb_hash_foreach(hooks, rb_do_hook_each, params);
 
-  return pass_callback(ruby_privmsg_channel_hook, source, channel, message);
+  return pass_callback(ruby_privmsg_hook, source, channel, message);
+}
+
+static void *
+rb_join_hdlr(va_list args)
+{
+  struct Client* source = va_arg(args, struct Client *);
+  char *channel = va_arg(args, char *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_JOIN);
+  VALUE params = rb_ary_new();
+
+  rb_ary_push(params, rb_cclient2rbclient(source));
+  rb_ary_push(params, rb_str_new2(channel));
+
+  rb_hash_foreach(hooks, rb_do_hook_each, params);
+
+  return pass_callback(ruby_join_hook, source, channel);
 }
 
 void
@@ -403,7 +422,8 @@ init_ruby(void)
   ruby_cmode_hook = install_hook(on_cmode_change_cb, rb_cmode_hdlr);
   ruby_umode_hook = install_hook(on_umode_change_cb, rb_umode_hdlr);
   ruby_newusr_hook = install_hook(on_newuser_cb, rb_newusr_hdlr);
-  ruby_privmsg_channel_hook = install_hook(on_privmsg_cb, rb_privmsg_channel_hdlr);
+  ruby_privmsg_hook = install_hook(on_privmsg_cb, rb_privmsg_hdlr);
+  ruby_join_hook = install_hook(on_join_cb, rb_join_hdlr);
 }
 
 void

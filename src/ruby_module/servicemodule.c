@@ -384,8 +384,8 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "UMODE_HOOK",  INT2NUM(RB_HOOKS_UMODE));
   rb_define_const(cServiceModule, "CMODE_HOOK",  INT2NUM(RB_HOOKS_CMODE));
   rb_define_const(cServiceModule, "NEWUSR_HOOK", INT2NUM(RB_HOOKS_NEWUSR));
-  rb_define_const(cServiceModule, "PRIVMSG_HOOK",
-      INT2NUM(RB_HOOKS_PRIVMSG));
+  rb_define_const(cServiceModule, "PRIVMSG_HOOK", INT2NUM(RB_HOOKS_PRIVMSG));
+  rb_define_const(cServiceModule, "JOIN_HOOK", INT2NUM(RB_HOOKS_JOIN));
 
   rb_define_const(cServiceModule, "LOG_CRIT",   INT2NUM(L_CRIT));
   rb_define_const(cServiceModule, "LOG_ERROR",  INT2NUM(L_ERROR));
