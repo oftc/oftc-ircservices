@@ -12,6 +12,7 @@ REGISTER <x> <y> <z> -> Too many params
 REGISTER <y@x> <z> -> Invalid email address
 REGISTER <existing_nickname> <x@y> -> Already registered
 REGISTER <forbidden_nickname> <x@y> -> May not register
+REGISTER <guest.*> <x@y> -> Cant register guest nick
 REGISTER <x> <y@z> -> Reigster success, umode +R set, account added to db,
 nickname added to db, primary_nick set to new nickname, user_id of nickname
 set to account.
