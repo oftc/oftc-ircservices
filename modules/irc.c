@@ -52,6 +52,7 @@ static void *irc_sendmsg_unakill(va_list);
 static void *irc_sendmsg_topic(va_list);
 static void *irc_sendmsg_kill(va_list);
 static void *irc_sendmsg_server(va_list);
+static void *irc_sendmsg_join(va_list);
 static void *irc_server_connected(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
@@ -192,6 +193,7 @@ static dlink_node *unakill_hook;
 static dlink_node *topic_hook;
 static dlink_node *kill_hook;
 static dlink_node *newserver_hook;
+static dlink_node *join_hook;
 
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
@@ -217,6 +219,7 @@ INIT_MODULE(irc, "$Revision$")
   topic_hook      = install_hook(send_topic_cb, irc_sendmsg_topic);
   kill_hook       = install_hook(send_kill_cb, irc_sendmsg_kill);
   newserver_hook  = install_hook(send_newserver_cb, irc_sendmsg_server);
+  join_hook       = install_hook(send_join_cb, irc_sendmsg_join);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -520,8 +523,6 @@ irc_sendmsg_ping(struct Client *client, char *source, char *target)
   sendto_server(client, ":%s PING :%s", source, target);
 }
 
-#if 0
-XXX Not used right now
 /** Let a client join a channel
  * @param
  * source who's joining?
@@ -529,21 +530,31 @@ XXX Not used right now
  * mode mode to change with SJOIN, NULL if none
  * para parameter to modes (i.e. (+l) 42), NULL if none
  */
-static void
-irc_sendmsg_join(struct Client *client, char *source, char *target, char *mode, char *para)
+static void *
+irc_sendmsg_join(va_list args)
 {
+  struct Client *client = va_arg(args, struct Client *);
+  char *source          = va_arg(args, char *);
+  char *target          = va_arg(args, char *);
+  time_t ts             = va_arg(args, time_t);
+  char *mode            = va_arg(args, char *);
+  char *para            = va_arg(args, char *);
+
   if (mode == NULL) 
   {
     mode = "0";
-    para = "";
   }
-  else if (para == NULL) 
-  {
-    para = "";
-  }
-  sendto_server(client, ":%s SJOIN 0 %s %s %s", source, target, mode, para);
+
+  ilog(L_DEBUG, "sending :%s SJOIN %lu %s %s :%s", source,
+    (unsigned long)ts, target, mode, para);
+  sendto_server(client, ":%s SJOIN %1u %s %s :%s", source,
+    (unsigned long)ts, target, mode, para);
+
+  return NULL;
 }
 
+#if 0
+XXX Not used right now
 /** Set User or Channelmode
  * not sanity checked!
  * source source of Modechange (server or client)

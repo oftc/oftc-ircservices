@@ -41,6 +41,7 @@ struct Callback *send_invite_cb;
 struct Callback *send_topic_cb;
 struct Callback *send_kill_cb;
 struct Callback *send_newserver_cb;
+struct Callback *send_join_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -54,6 +55,7 @@ struct Callback *on_newuser_cb;
 struct Callback *on_identify_cb;
 struct Callback *on_channel_destroy_cb;
 struct Callback *on_topic_change_cb;
+struct Callback *on_privmsg_cb;
 
 struct LanguageFile ServicesLanguages[LANG_LAST];
 struct ModeList *ServerModeList;
@@ -78,6 +80,7 @@ init_interface()
   send_topic_cb       = register_callback("Send TOPIC", NULL);
   send_kill_cb        = register_callback("Send KILL", NULL);
   send_newserver_cb   = register_callback("Introduce new server", NULL);
+  send_join_cb        = register_callback("Send JOIN", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
@@ -89,6 +92,7 @@ init_interface()
   on_newuser_cb       = register_callback("New user coming to us", NULL);
   on_channel_destroy_cb = register_callback("Channel is being destroyed", NULL);
   on_topic_change_cb  = register_callback("Topic changed", NULL);
+  on_privmsg_cb       = register_callback("Privmsg for channel received", NULL);
 
   load_language(ServicesLanguages, "services.en");
 }
@@ -149,6 +153,23 @@ introduce_server(const char *name, const char *gecos)
     execute_callback(send_newserver_cb, client);
 
   return client;
+}
+
+struct Channel*
+join_channel(struct Client *service, const char *chname)
+{
+  struct Channel *channel = hash_find_channel(chname);
+
+  if(channel == NULL)
+    channel = make_channel(chname);
+
+  execute_callback(send_join_cb, me.uplink, me.name, chname,
+    channel->channelts, 0, service->name);
+
+  add_user_to_channel(channel, service, 0, 0);
+  chain_join(service, channel->chname);
+
+  return channel;
 }
 
 void

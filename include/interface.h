@@ -59,6 +59,7 @@ extern struct Callback *send_invite_cb;
 extern struct Callback *send_topic_cb;
 extern struct Callback *send_kill_cb;
 extern struct Callback *send_newserver_cb;
+extern struct Callback *send_join_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -72,6 +73,7 @@ extern struct Callback *on_newuser_cb;
 extern struct Callback *on_channel_destroy_cb;
 extern struct Callback *on_nick_drop_cb;
 extern struct Callback *on_topic_change_cb;
+extern struct Callback *on_privmsg_cb;
 
 extern struct ModeList *ServerModeList;
 
@@ -81,6 +83,7 @@ void cleanup_interface();
 struct Service *make_service(char *);
 void introduce_client(const char *);
 struct Client *introduce_server(const char*, const char*);
+struct Channel *join_channel(struct Client *, const char*);
 void reply_user(struct Service *,struct Service *, struct Client *, 
     unsigned int, ...);
 void global_notice(struct Service *, char *, ...);

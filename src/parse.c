@@ -913,11 +913,22 @@ process_privmsg(struct Client *client, struct Client *source,
 {
   struct Service *service;
   struct ServiceMessage *mptr;
+  struct Channel *channel;
   char *s, *ch, *ch2;
   int i = 0;
 
   if((s = strchr(parv[1], '@')) != NULL)
     *s++ = '\0';
+
+  if(parv[1][0] == '#')
+  {
+    channel = hash_find_channel(parv[1]);
+    if(channel)
+    {
+      execute_callback(on_privmsg_cb, source, channel, parv[2]);
+      return;
+    }
+  }
 
   service = find_service(parv[1]);
   if(service == NULL)

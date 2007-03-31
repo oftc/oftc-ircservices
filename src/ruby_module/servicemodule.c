@@ -14,6 +14,7 @@ static VALUE ServiceModule_do_help(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_introduce_server(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_unload(VALUE);
+static VALUE ServiceModule_join_channel(VALUE, VALUE);
 /* Core Functions */
 /* DB Prototypes */
 static VALUE ServiceModule_db_set_string(VALUE, VALUE, VALUE, VALUE);
@@ -225,6 +226,16 @@ ServiceModule_unload(VALUE self)
 }
 
 static VALUE
+ServiceModule_join_channel(VALUE self, VALUE channame)
+{
+  struct Service *service = get_service(self);
+  struct Client *client = find_client(service->name);
+  const char* chname = StringValueCStr(channame);
+  struct Channel *channel = join_channel(client, chname);
+  return rb_cchannel2rbchannel(channel);
+}
+
+static VALUE
 ServiceModule_db_set_string(VALUE self, VALUE key, VALUE id, VALUE value)
 {
   int ret = db_set_string(NUM2INT(key), NUM2INT(id), StringValueCStr(value));
@@ -361,6 +372,8 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "UMODE_HOOK",  INT2NUM(RB_HOOKS_UMODE));
   rb_define_const(cServiceModule, "CMODE_HOOK",  INT2NUM(RB_HOOKS_CMODE));
   rb_define_const(cServiceModule, "NEWUSR_HOOK", INT2NUM(RB_HOOKS_NEWUSR));
+  rb_define_const(cServiceModule, "PRIVMSG_HOOK",
+      INT2NUM(RB_HOOKS_PRIVMSG));
 
   rb_define_const(cServiceModule, "LOG_CRIT",   INT2NUM(L_CRIT));
   rb_define_const(cServiceModule, "LOG_ERROR",  INT2NUM(L_ERROR));
@@ -389,6 +402,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
   rb_define_method(cServiceModule, "do_help", ServiceModule_do_help, 3);
   rb_define_method(cServiceModule, "unload", ServiceModule_unload, 0);
+  rb_define_method(cServiceModule, "join_channel", ServiceModule_join_channel, 1);
 
   rb_define_method(cServiceModule, "string", ServiceModule_db_set_string, 3);
   rb_define_method(cServiceModule, "string?", ServiceModule_db_get_string, 3);
