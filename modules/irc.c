@@ -24,6 +24,8 @@
 
 #include "stdinc.h"
 
+static void m_privmsg(struct Client *, struct Client *, int, char *[]);
+static void m_notice(struct Client *, struct Client *, int, char *[]);
 static void m_ping(struct Client *, struct Client *, int, char *[]);
 static void m_nick(struct Client *, struct Client *, int, char*[]);
 static void m_server(struct Client *, struct Client *, int, char*[]);
@@ -178,7 +180,12 @@ static struct Message topic_msgtab = {
 
 static struct Message privmsg_msgtab = {
   "PRIVMSG", 0, 0, 2, 0, 0, 0,
-  { process_privmsg, m_ignore }
+  { m_privmsg, m_ignore }
+};
+
+static struct Message notice_msgtab = {
+  "NOTICE", 0, 0, 2, 0, 0, 0,
+  { m_notice, m_ignore }
 };
 
 static dlink_node *connected_hook;
@@ -244,6 +251,7 @@ INIT_MODULE(irc, "$Revision$")
   mod_add_cmd(&topic_msgtab);
   mod_add_cmd(&kill_msgtab);
   mod_add_cmd(&kick_msgtab);
+  mod_add_cmd(&notice_msgtab);
 }
 
 CLEANUP_MODULE
@@ -821,6 +829,18 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
     dlinkAdd(newclient, &newclient->lnode, &newclient->servptr->server_list);
     ilog(L_DEBUG, "Got server %s from hub %s", parv[1], source->name);
   }
+}
+
+static void
+m_privmsg(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  process_privmsg(1, client, source, parc, parv);
+}
+
+static void
+m_notice(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  process_privmsg(0, client, source, parc, parv);
 }
 
 static void

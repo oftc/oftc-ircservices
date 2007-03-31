@@ -21,7 +21,7 @@ void mod_add_cmd(struct Message *);
 void mod_del_cmd(struct Message *);
 void mod_add_servcmd(struct ServiceMessageTree *, struct ServiceMessage *);
 void mod_del_servcmd(struct ServiceMessageTree *, struct ServiceMessage *);
-void process_privmsg(struct Client *, struct Client *, int, char *[]);
+void process_privmsg(int, struct Client *, struct Client *, int, char *[]);
 void clear_tree_parse(struct MessageTree *);
 void clear_serv_tree_parse(struct ServiceMessageTree *);
 void init_parser();

@@ -908,7 +908,7 @@ process_ctcp(struct Service *service, struct Client *client, char *command,
 }
 
 void
-process_privmsg(struct Client *client, struct Client *source, 
+process_privmsg(int privmsg, struct Client *client, struct Client *source, 
     int parc, char *parv[])
 {
   struct Service *service;
@@ -920,16 +920,6 @@ process_privmsg(struct Client *client, struct Client *source,
   if((s = strchr(parv[1], '@')) != NULL)
     *s++ = '\0';
 
-  if(parv[1][0] == '#')
-  {
-    channel = hash_find_channel(parv[1]);
-    if(channel)
-    {
-      execute_callback(on_privmsg_cb, source, channel, parv[2]);
-      return;
-    }
-  }
-
   service = find_service(parv[1]);
   if(service == NULL)
   {
@@ -937,6 +927,22 @@ process_privmsg(struct Client *client, struct Client *source,
         source->name);
     return;
   }
+
+  if(parv[1][0] == '#')
+  {
+    channel = hash_find_channel(parv[1]);
+    if(channel)
+    {
+      if(privmsg)
+        execute_callback(on_privmsg_cb, source, channel, parv[2]);
+      else
+        execute_callback(on_notice_cb, source, channel, parv[2]);
+      return;
+    }
+  }
+
+  if(!privmsg)
+    return;
 
   for (ch = parv[2]; *ch == ' '; ch++) /* skip spaces */
     /* null statement */ ;

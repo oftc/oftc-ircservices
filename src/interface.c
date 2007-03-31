@@ -56,6 +56,7 @@ struct Callback *on_identify_cb;
 struct Callback *on_channel_destroy_cb;
 struct Callback *on_topic_change_cb;
 struct Callback *on_privmsg_cb;
+struct Callback *on_notice_cb;
 
 struct LanguageFile ServicesLanguages[LANG_LAST];
 struct ModeList *ServerModeList;
@@ -93,6 +94,7 @@ init_interface()
   on_channel_destroy_cb = register_callback("Channel is being destroyed", NULL);
   on_topic_change_cb  = register_callback("Topic changed", NULL);
   on_privmsg_cb       = register_callback("Privmsg for channel received", NULL);
+  on_notice_cb        = register_callback("Notice for channel received", NULL);
 
   load_language(ServicesLanguages, "services.en");
 }
