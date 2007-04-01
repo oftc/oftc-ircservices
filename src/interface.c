@@ -470,7 +470,6 @@ do_help(struct Service *service, struct Client *client,
       }
     }
 
-    reply_user(service, NULL, client, SERV_HELP_HEADER, msg->cmd);
 
     sub = msg->sub;
     
@@ -480,7 +479,11 @@ do_help(struct Service *service, struct Client *client,
       {
         if(strncasecmp(sub->cmd, parv[2], strlen(sub->cmd)) == 0)
         {
+          reply_user(service, NULL, client, SERV_SUB_HELP_HEADER, msg->cmd,
+              sub->cmd);
           reply_user(service, service, client, sub->help_long, "");
+          reply_user(service, NULL, client, SERV_SUB_HELP_FOOTER, msg->cmd,
+              sub->cmd);
           return;   
         }
         sub++;
@@ -489,6 +492,7 @@ do_help(struct Service *service, struct Client *client,
       return;
     }
 
+    reply_user(service, NULL, client, SERV_HELP_HEADER, msg->cmd);
     reply_user(service, service, client, msg->help_long, "");
     sub = msg->sub;
     

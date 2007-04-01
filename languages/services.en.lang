@@ -9,6 +9,10 @@ SERV_HELP_HEADER
 	*** %s Help *** 
 SERV_HELP_FOOTER
 	*** End of %s Help ***
+SERV_SUB_HELP_HEADER
+	*** %s %s Help ***
+SERV_SUB_HELP_FOOTER
+	*** End of %s %s Help ***
 SERV_UNKNOWN_CMD
 	Unknown command %s, /msg %s HELP for help.
 SERV_INSUFF_PARAM
