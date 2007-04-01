@@ -67,7 +67,7 @@ static void m_set_secure(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_cloak(struct Service *, struct Client *, int, char *[]);
-static void m_set_cloakstring(struct Service *, struct Client *, int, char *[]);
+static void m_cloakstring(struct Service *, struct Client *, int, char *[]);
 static void m_set_master(struct Service *, struct Client *, int, char *[]);
 static void m_set_private(struct Service *, struct Client *, int, char *[]);
 
@@ -115,9 +115,7 @@ static struct ServiceMessage set_sub[] = {
     NS_HELP_SET_SECURE_LONG, m_set_secure },
   { NULL, "CLOAK", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_CLOAK_SHORT, 
     NS_HELP_SET_CLOAK_LONG, m_set_cloak },
-  { NULL, "CLOAKSTRING", 0, 0, 1, 0, OPER_FLAG, NS_HELP_SET_CLOAKSTRING_SHORT, 
-    NS_HELP_SET_CLOAKSTRING_LONG, m_set_cloakstring },
-  { NULL, "MASTER", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
+ { NULL, "MASTER", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
     NS_HELP_SET_MASTER_LONG, m_set_master },
   { NULL, "PRIVATE", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_PRIVATE_SHORT, 
     NS_HELP_SET_PRIVATE_LONG, m_set_private },
@@ -125,9 +123,14 @@ static struct ServiceMessage set_sub[] = {
 };
 
 static struct ServiceMessage set_msgtab = {
-  set_sub, "SET", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_SHORT, NS_HELP_SET_LONG,
-  NULL 
+  set_sub, "SET", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_SHORT, 
+  NS_HELP_SET_LONG, NULL 
 };
+
+static struct ServiceMessage cloakstring_msgtab = { 
+  NULL, "CLOAKSTRING", 0, 1, 2, 0, ADMIN_FLAG, NS_HELP_CLOAKSTRING_SHORT, 
+    NS_HELP_CLOAKSTRING_LONG, m_cloakstring 
+}; 
 
 static struct ServiceMessage access_sub[] = {
   { NULL, "ADD", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_ADD_SHORT, 
@@ -208,6 +211,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &regain_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &id_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &sudo_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &cloakstring_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -684,24 +688,33 @@ m_set_cloak(struct Service *service, struct Client *client,
 }
 
 static void
-m_set_cloakstring(struct Service *service, struct Client *client, 
+m_cloakstring(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  struct Nick *nick = client->nickname;
+  struct Nick *nick = db_find_nick(parv[1]);
+
+  if(nick == NULL)
+  {
+    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
+    return;
+  }
  
-  if(parc == 0)
+  if(parc == 1)
   {
     reply_user(service, service, client, NS_SET_VALUE, "CLOAKSTRING", nick->cloak);
     return;
   }
     
-  if(db_set_string(SET_NICK_CLOAK, nick->id, parv[1]))
+  if(db_set_string(SET_NICK_CLOAK, nick->id, parv[2]))
   {
     strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
-    reply_user(service, service, client, NS_SET_SUCCESS, "CLOAKSTRING", nick->cloak);
+    reply_user(service, service, client, NS_SET_SUCCESS, "CLOAKSTRING", 
+        nick->cloak);
   }
   else
-    reply_user(service, service, client, NS_SET_FAILED, "CLOAKSTRING", parv[1]);
+    reply_user(service, service, client, NS_SET_FAILED, "CLOAKSTRING", parv[2]);
+
+  free_nick(nick);
 }
 
 static void
