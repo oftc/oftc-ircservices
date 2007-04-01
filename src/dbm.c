@@ -858,7 +858,7 @@ db_list_del_index(unsigned int type, unsigned int id, unsigned int index)
   if(ret == -1)
     return 0;
 
-  return 1;
+  return ret;
 }
 
 int    
