@@ -78,6 +78,7 @@ enum db_queries
   DELETE_ALL_NICKACCESS,
   DELETE_NICKACCESS_IDX,
   SET_NICK_LINK,
+  SET_NICK_LINK_EXCLUDE,
   INSERT_NICK_CLONE,
   GET_NEW_LINK,
   SET_CHAN_DESC,
@@ -149,7 +150,7 @@ int db_forbid_nick(const char *);
 int db_is_forbid(const char *);
 int db_delete_forbid(const char *);
 
-int db_link_nicks(unsigned int, unsigned int, unsigned int);
+int db_link_nicks(unsigned int, unsigned int);
 unsigned int db_unlink_nick(unsigned int, unsigned int, unsigned int);
 
 int db_register_chan(struct RegChannel *, unsigned int);

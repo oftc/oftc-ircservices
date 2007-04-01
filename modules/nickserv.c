@@ -990,7 +990,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(!db_link_nicks(master_nick->id, nick->id, nick->nickid))
+  if(!db_link_nicks(master_nick->id, nick->id))
   {
     free_nick(master_nick);
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);

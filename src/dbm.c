@@ -100,6 +100,7 @@ query_t queries[QUERY_COUNT] = {
           "(SELECT id FROM account_access AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM account_access AS b WHERE b.id < a.id AND "
           "b.parent_id = ?d) AND parent_id = ?d)", NULL, EXECUTE },
+  { "UPDATE nickname SET user_id=?d WHERE user_id=?d", NULL, EXECUTE },
   { "UPDATE nickname SET user_id=?d WHERE user_id=?d AND id=?d", NULL, EXECUTE },
   { "INSERT INTO account (password, salt, url, email, cloak, flag_enforce, "
     "flag_secure, flag_verified, flag_cloak_enabled, "
@@ -863,13 +864,13 @@ db_list_del_index(unsigned int type, unsigned int id, unsigned int index)
 }
 
 int    
-db_link_nicks(unsigned int master, unsigned int child, unsigned int nickid)
+db_link_nicks(unsigned int master, unsigned int child)
 {
   int ret;
 
   TransBegin();
 
-  db_exec(ret, SET_NICK_LINK, master, child, nickid);
+  db_exec(ret, SET_NICK_LINK, master, child);
   if(ret != -1)
     db_exec(ret, DELETE_ACCOUNT, child);
 
@@ -895,7 +896,7 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
   if(ret != -1)
   {
     new_accid = InsertID("account", "id");
-    db_exec(ret, SET_NICK_LINK, new_accid, accid, nickid);
+    db_exec(ret, SET_NICK_LINK_EXCLUDE, new_accid, accid, nickid);
   }
 
   if(ret != -1)
