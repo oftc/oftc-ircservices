@@ -58,7 +58,6 @@ NS_HELP_ACCESS_LONG
 	    ACCESS LIST
 	
 	The following are valid options to this command:
-	
 NS_HELP_ACCESS_ADD_SHORT
 	%s
 NS_HELP_ACCESS_ADD_LONG
@@ -185,12 +184,11 @@ NS_HELP_SET_CLOAK_LONG
 	    SET CLOAK ON
 	    SET CLOAK OFF
 NS_HELP_CLOAKSTRING_SHORT
-	%s
+	%s: Sets the cloakstring for a nickname.
 NS_HELP_CLOAKSTRING_LONG
-	Usage: CLOAKSTRING [nick] [cloakstring]
+	Usage: CLOAKSTRING nick [cloakstring]
 	
-	Sets or displays a the cloak on the account of the specified nickname. If no
-	nickname is specified it sets or displays the cloakstring on your account.
+	Sets or displays the cloak on the account of the specified nickname.
 	This command is restricted to services admins.
 	
 	Example:
@@ -251,7 +249,7 @@ NS_HELP_UNLINK_LONG
 	master nickname and reverts this nickname to be a standalone nickname with
 	all the settings it had(including password) before it was linked.
 NS_HELP_REGAIN_SHORT
-	%s: Release the	hold on your nickname.
+	%s: Release the hold on your nickname.
 NS_HELP_REGAIN_LONG
 	Usage: REGAIN nickname [password]
 	
