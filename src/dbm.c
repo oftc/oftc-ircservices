@@ -908,7 +908,7 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
       db_exec(ret, SET_NICK_MASTER, priid, new_accid);
     }
     else
-      db_exec(ret, SET_NICK_MASTER, new_nickid, new_accid);
+      db_exec(ret, SET_NICK_MASTER, nickid, new_accid);
   }
 
   if(ret == -1)
