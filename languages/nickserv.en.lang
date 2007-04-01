@@ -375,9 +375,12 @@ NS_ACCESS_DEL
 NS_GHOST_SUCCESS
 	GHOST succeed on nickname %s. The nickname is now available for use.
 NS_GHOST_FAILED
-	GHOST failed on nickname %s. This may have been an internal error, 
-	please try again shortly. If this is not the first time you have seen this 
-	message please contact network support.
+	GHOST failed on nickname %s. You may have given an incorrect password. 
+	If you believe this to be incorrect please contact network support.
+NS_GHOST_FAILED_SECURITY
+	Access Denied. Either you are not on the access list for this nickname, or
+	it has SECURE set on it. If you believe this to be incorrect please contact
+	network support.
 NS_GHOST_NOSELF
 	You cannot GHOST yourself, %s.
 NS_GHOST_NOTONLINE

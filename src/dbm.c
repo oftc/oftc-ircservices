@@ -331,6 +331,7 @@ db_find_nick(const char *nick)
     return NULL;
   }
 
+  assert(retnick != NULL);
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
   strlcpy(nick_p->real_nick, retrealnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));

@@ -935,7 +935,14 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(!check_nick_pass(nick, parv[2]))
+  if(parc == 1 && (nick->secure || !IsOnAccess(client)))
+  {
+    free_nick(nick);
+    reply_user(service, service, client, NS_GHOST_FAILED_SECURITY, parv[1]);   
+    return;
+  }
+
+  if((parc == 2 && !check_nick_pass(nick, parv[2])))
   {
     free_nick(nick);
     reply_user(service, service, client, NS_GHOST_FAILED, parv[1]);   
