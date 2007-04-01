@@ -32,9 +32,14 @@ NS_HELP_ID_LONG
 NS_HELP_DROP_SHORT
 	%s: Releases your nickname for use.
 NS_HELP_DROP_LONG
-	Usage: DROP
+	Usage: DROP [auth code]
+
 	Releases your nickname for use and deletes it from the database.
-	This cannot be undone.
+	This cannot be undone. You will be asked to confirm this action by following
+	the instructions given. If you already have a confirmation auth code, supply
+	it as a paramter. Releasing your nickname in this way will allow others to
+	make use of it, or register it for their use, so make sure you really want
+	this before confirming.
 NS_HELP_ACCESS_SHORT
 	%s: Maintains the nickname ACCESS list.
 NS_HELP_ACCESS_LONG
@@ -276,14 +281,17 @@ NS_SET_VALUE
 NS_NEED_IDENTIFY
 	You need to identify to Nickserv first.
 NS_NICK_DROPPED
-	Nickname %s has been DROPped.
+	Nickname %s has been Dropped. It is now free to be registered by other
+	users.
 NS_DROP_AUTH
 	If you are sure you wish to drop this nickname then type /msg %s DROP %d:%s
 NS_DROP_AUTH_FAIL
 	The auth code you supplied is invalid or has expired.  Nickname %s NOT
 	dropped.
 NS_NICK_DROPFAIL
-	DROP failed on Nickname %s.
+	DROP failed on Nickname %s. This may have been an internal error, please
+	try again shortly. If this is not the first time you have seen this message
+	please contact network support.
 NS_ACCESS_ADD
 	ACCESS list entry %s added.
 NS_ACCESS_ADDFAIL
