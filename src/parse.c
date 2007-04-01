@@ -956,7 +956,8 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
     return;
   }
 
-  if ((mptr = find_services_command(ch, &service->msg_tree)) == NULL)
+  if (*ch == '\0' || 
+      (mptr = find_services_command(ch, &service->msg_tree)) == NULL)
   {
     ilog(L_DEBUG, "Unknown Message: %s %s for service %s from %s", ch, s, 
         parv[1], source->name);
