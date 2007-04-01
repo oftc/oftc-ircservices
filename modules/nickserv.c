@@ -707,7 +707,7 @@ m_cloakstring(struct Service *service, struct Client *client,
     
   if(db_set_string(SET_NICK_CLOAK, nick->id, parv[2]))
   {
-    strlcpy(nick->cloak, parv[1], sizeof(nick->cloak));
+    strlcpy(nick->cloak, parv[2], sizeof(nick->cloak));
     reply_user(service, service, client, NS_SET_SUCCESS, "CLOAKSTRING", 
         nick->cloak);
   }
