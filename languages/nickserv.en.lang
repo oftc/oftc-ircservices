@@ -393,9 +393,9 @@ NS_LINK_BADPASS
 	Incorrect password for master nickname %s. You must supply the correct
 	password for the master nickname in order to link to it.
 NS_LINK_NOSELF
-	This nickname is already linked to this master(possibly indirectly). You may
-	not link to a nickname which is already link to a master. If you wish to do
-	this, you will need to UNLINK one of the nicknames first.
+	This nickname is already linked to that master. You may not link a nickname 
+	which is already linked to a master. If you wish to do this, you will need 
+	to UNLINK one of the nicknames first.
 NS_LINK_FAIL
 	LINK failed to master %s. This may have been an internal error, please
 	try again shortly. If this is not the first time you have seen this 
