@@ -62,15 +62,19 @@ NS_HELP_ACCESS_LONG
 NS_HELP_ACCESS_ADD_SHORT
 	%s
 NS_HELP_ACCESS_ADD_LONG
+	Usage: ACCESS ADD mask
+	
 	Add an access entry to your access list. If your IRC userhost maches this
-	entry you will be automatically identified to yo your nickname without
-	having to use the IDENTIFY command.
+	entry, and SECURE is off, you will be automatically identified to your 
+	nickname without having to use the IDENTIFY command. If SECURE is on, you
+	will not be automatically identified, but ENFORCE will not apply.
 	
 	Example:
 	    ACCESS ADD foo@*.org
 NS_HELP_ACCESS_LIST_SHORT
 	%s
 NS_HELP_ACCESS_LIST_LONG
+	Usage: ACCESS LIST
 	List entries in your access list.
 	
 	Example:
@@ -78,6 +82,8 @@ NS_HELP_ACCESS_LIST_LONG
 NS_HELP_ACCESS_DEL_SHORT
 	%s
 NS_HELP_ACCESS_DEL_LONG
+	Usage: ACCESS DEL (index|mask)
+	
 	Delete an entry from your access list. You can either delete by entry index
 	or by userhost matching. Index values will change after each delete.
 	
@@ -94,8 +100,11 @@ NS_HELP_SET_LONG
 NS_HELP_SET_LANG_SHORT
 	%s
 NS_HELP_SET_LANG_LONG
-	SET your services language translation. To list available languages provide no
-	other parameters.
+	Usage: SET LANGUAGE [language id] 
+	 
+	SET the language services will communicate to you in. To see the list of 
+	available translations execute SET LANGUAGE with no parameters. The default 
+	language is English.
 	
 	Examples:
 	    SET LANG
@@ -103,30 +112,41 @@ NS_HELP_SET_LANG_LONG
 NS_HELP_SET_PASS_SHORT
 	%s
 NS_HELP_SET_PASS_LONG
-	SET the password of your current account. Please use secure passwords.
+	Usage: SET PASSWORD password
+	
+	SET the password of your current account. Please choose a password which you
+	can remember but is not easily guessed.
 	
 	Example:
 	    SET PASSWORD foobar
 NS_HELP_SET_URL_SHORT
 	%s
 NS_HELP_SET_URL_LONG
-	SET url field to be shown in INFO command.
+	Usage: SET URL [url]
+	
+	SET url field to be shown in the INFO command.
 	
 	Example:
-	     SET URL http://example.org
+	     SET URL http://example.com
 NS_HELP_SET_EMAIL_SHORT
 	%s
 NS_HELP_SET_EMAIL_LONG
-	SET email field to be used for password recovery and INFO command.
+	Usage: SET EMAIL [e-mail address]
+	
+	SET e-mail field to be used for password recovery. E-mail addresses are
+	shown in the INFO command if PRIVATE is turned off.
 	
 	Example:
-	    SET EMAIL foo@example.org
+	    SET EMAIL foo@example.com
 NS_HELP_SET_ENFORCE_SHORT
 	%s
 NS_HELP_SET_ENFORCE_LONG
-	(BOOLEAN) SET ENFORCE enables or disables nick enforcement of your account.
-	This means that if someone who is not use nicks to your name and doesn't
-	identify within a given period their nick will be changed.
+	Usage: SET ENFORCE [(ON|OFF)]
+	
+	ENFORCE enables or disables nickname enforcement of your account. This means 
+	that if someone who is not not on your access list attempts to use your
+	nickname and doesn't identify within a given period their nick will be 
+	forcefully changed.
 	
 	Examples:
 	    SET ENFORCE ON
@@ -137,9 +157,13 @@ NS_HELP_SET_ENFORCE_LONG
 NS_HELP_SET_SECURE_SHORT
 	%s
 NS_HELP_SET_SECURE_LONG
-	(BOOLEAN) SET SECURE enables or disables auto identification via ACCESS list.
-	With secure enabled and you connect via a userhost that is in your ACCESS
-	list you won't be automatically identified.
+	Usage: SET SECURE [(ON|OFF)]
+	
+	SECURE enables or disables nickname security. If SECURE is off, when you
+	change to your nickname you be automatically identified if your userhost
+	matches an entry in your access list. If secure is on, you will not be
+	automatically identified, but you will not have your nickname changed by the
+	ENFORCE option.
 	
 	Examples:
 	    SET SECURE ON
@@ -147,21 +171,27 @@ NS_HELP_SET_SECURE_LONG
 	
 	See Also:
 	    HELP SET ENFORCE
+			HELP ACCESS
 NS_HELP_SET_CLOAK_SHORT
 	%s
 NS_HELP_SET_CLOAK_LONG
-	(BOOLEAN) SET CLOAK enables or disables a cloak on your current account.
+	Usage: SET CLOAK [(ON|OFF)]
+	
+	CLOAK enables or disables a cloak on your current account. If your account
+	has a cloak set on it, when cloak is enabled your hostname will be changed
+	to the cloak when you identify(or are automatically identified) to services.
 	
 	Examples:
 	    SET CLOAK ON
 	    SET CLOAK OFF
-	
-	See Also:
-	    HELP SET CLOAKSTRING
-NS_HELP_SET_CLOAKSTRING_SHORT
+NS_HELP_CLOAKSTRING_SHORT
 	%s
-NS_HELP_SET_CLOAKSTRING_LONG
-	SET the CLOAKSTRING of a given account.
+NS_HELP_CLOAKSTRING_LONG
+	Usage: CLOAKSTRING [nick] [cloakstring]
+	
+	Sets or displays a the cloak on the account of the specified nickname. If no
+	nickname is specified it sets or displays the cloakstring on your account.
+	This command is restricted to services admins.
 	
 	Example:
 	    SET CLOAKSTRING user.example.org
@@ -171,7 +201,10 @@ NS_HELP_SET_CLOAKSTRING_LONG
 NS_HELP_SET_MASTER_SHORT
 	%s
 NS_HELP_SET_MASTER_LONG
-	SET the master account of a linked nickname.
+	Usage: SET MASTER [nickname]
+	
+	Sets the master nickname of this account. The master nickname is the one
+	that will display in services displays such as access lists.
 	
 	Example:
 	    SET MASTER foobar
@@ -181,9 +214,9 @@ NS_HELP_SET_MASTER_LONG
 NS_HELP_SET_PRIVATE_SHORT
 	%s
 NS_HELP_SET_PRIVATE_LONG
-	Usage SET PRIVATE (ON|OFF)
+	Usage SET PRIVATE [(ON|OFF)]
 	
-	Enables the private flag on your nickname which prevents your email address
+	Enables the private flag on your nickname which prevents your e-mail address
 	being shown in an INFO request, and also prevents your nickname showing in a
 	LIST.
 NS_HELP_GHOST_SHORT
@@ -193,7 +226,9 @@ NS_HELP_GHOST_LONG
 	
 	Terminates the GHOST IRC session with the nickname specified.  If the
 	nickname has SECURE set, or you do not match an entry in the nickname's
-	ACCESS list, you will require a password.
+	ACCESS list, you will require a password. This command should not be used to
+	prevent someone else from using a nickname you are not currently using. To
+	do this, use the ENFORCE option.
 NS_HELP_LINK_SHORT
 	%s: Link this nickname to a master nickname.
 NS_HELP_LINK_LONG
@@ -204,6 +239,9 @@ NS_HELP_LINK_LONG
 	you will be checked against the master nickname access list and the master
 	nickname's settings will be applied to you.  To identify for this nickname
 	after linking it, you will need to use the master nickname password.
+	
+	See also: HELP UNLINK
+						HELP SET MASTER
 NS_HELP_UNLINK_SHORT
 	%s: Unlink this nickname from a master nickname.
 NS_HELP_UNLINK_LONG
@@ -212,34 +250,56 @@ NS_HELP_UNLINK_LONG
 	Unlink this nickname from a master nickname. This removes the link from the
 	master nickname and reverts this nickname to be a standalone nickname with
 	all the settings it had(including password) before it was linked.
-NS_HELP_RECOVER_SHORT
-	%s: Recover your nickname in a more forceful way.
-NS_HELP_RECOVER_LONG
-	Recover your nickname in a more forceful way.
 NS_HELP_REGAIN_SHORT
-	%s: Release NickServ's hold on your nickname.
+	%s: Release the	hold on your nickname.
 NS_HELP_REGAIN_LONG
-	Release NickServ's hold on your nickname.
-NS_HELP_SUSPEND_SHORT
-	%s: Suspend a nickname from use.
-NS_HELP_SUSPEND_LONG
-	Suspend a nickname from use.
+	Usage: REGAIN nickname [password]
+	
+	If your nickname is being held by services, as is the case if your nickname
+	has been enforced recently, this command will release the hold and change
+	your nickname to the nickname that you specify. If you have SECURE set on,
+	you will need to provide a password.
 NS_HELP_FORBID_SHORT
 	%s: Forbid a nickname from being used.
 NS_HELP_FORBID_LONG
-	Forbid a nickname from being used.
+	Usage: FORBID nickname
+	
+	Adds the nickname specified to the forbidden nickname list, preventing it to
+	be used. Forbidden nicknames may not be registered and anyone attempting to
+	use them will be forced to change their nickname.
+	
+	See also: UNFORBID
 NS_HELP_INFO_SHORT
 	%s: Get information on a nickname.
 NS_HELP_INFO_LONG
-	Get information on a nickname.
+	Usage: INFO [nickname]
+	
+	Displays all the information that services knows about a nickname, or your
+	nickname if no nickname is specified. Settings will only be shown if this
+	nickname is yours, or is linked to yours, or if you are a services admin.
+	E-mail addresses are not shown for PRIVATE accounts.
 NS_HELP_SENDPASS_SHORT
 	%s: Send a password reset request.
 NS_HELP_SENDPASS_LONG
-	Send a password reset request.
+	Usage: SENDPASS [auth code] [newpassword]
+	
+	Sends a password reset request to the e-mail address registered on this
+	account. This e-mail will contain an authentication code which you will need
+	to supply to complete the password reset process. If you have specified such
+	code, and it is valid, your password will be reset to the password you
+	specify.
 NS_HELP_SUDO_SHORT
 	%s: Execute a command as another user.
 NS_HELP_SUDO_LONG
-	Execute a command as another user.
+	Usage: SUDO nickname command
+	
+	This will execute the specified commands as if you are the user that you
+	specify, including taking on their access level. This command should be used
+	with extreme care and caution and only if absolutely necessary. Changing
+	other users settings maliciously is inpolite at best. It can also cause harm
+	to your own nickname if you execute it on a command that does not make
+	sense(REGISTER, IDENTIFY etc). This command is restricted to services
+	admins.
 NS_ALREADY_REG
 	Nickname %s is already registered. If this is your nickname you may try
 	IDENTIFY instead. If this is not your nickname then it may have been
@@ -263,7 +323,9 @@ NS_REG_FIRST
 NS_IDENTIFIED
 	You are sucessfully identified as %s.
 NS_IDENT_FAIL
-	Identify failed as %s. You may have entered an incorrect password.
+	Identify failed as %s. You may have entered an incorrect password. If
+	you believe you have entered the correct password and are still getting this
+	message, please contact network support.
 NS_CURR_LANGUAGE
 	Current language is %s(%d).
 NS_AVAIL_LANGUAGE
@@ -275,19 +337,24 @@ NS_LANGUAGE_UNAVAIL
 NS_SET_SUCCESS
 	SET %s to %s.
 NS_SET_FAILED
-	Failed to SET %s to %s.
+	Failed to SET %s to %s. This may be an internal problem, please try
+	again later. If this is not the first time you have seen this message please
+	contact network support.
 NS_SET_VALUE
 	%s is SET to: %s.
 NS_NEED_IDENTIFY
-	You need to identify to Nickserv first.
+	You need to identify to nickname services before you can execute this
+	command. See HELP IDENTIFY for more information.
 NS_NICK_DROPPED
-	Nickname %s has been Dropped. It is now free to be registered by other
+	Nickname %s has been dropped. It is now free to be registered by other
 	users.
 NS_DROP_AUTH
 	If you are sure you wish to drop this nickname then type /msg %s DROP %d:%s
 NS_DROP_AUTH_FAIL
 	The auth code you supplied is invalid or has expired.  Nickname %s NOT
-	dropped.
+	dropped. This may be an internal error, please try again later. If this is
+	not the first time you have seen this message, please contact network
+	support.
 NS_NICK_DROPFAIL
 	DROP failed on Nickname %s. This may have been an internal error, please
 	try again shortly. If this is not the first time you have seen this message
@@ -295,9 +362,12 @@ NS_NICK_DROPFAIL
 NS_ACCESS_ADD
 	ACCESS list entry %s added.
 NS_ACCESS_ADDFAIL
-	Failed to add ACCESS list entry %s.
+	Failed to add ACCESS list entry %s. This may have been an internal error, 
+	please try again shortly. If this is not the first time you have seen this
+	message please contact network support.
 NS_ACCESS_INVALID
-	ACCESS list entry %s is not a userhost. (user@host)
+	ACCESS list entry %s is not a userhost(user@host). Please try again with
+	a valid user@host address.
 NS_ACCESS_START
 	ACCESS list:
 NS_ACCESS_ENTRY
@@ -305,21 +375,30 @@ NS_ACCESS_ENTRY
 NS_ACCESS_DEL
 	%d ACCESS entries deleted.
 NS_GHOST_SUCCESS
-	GHOST succeed on nickname %s.
+	GHOST succeed on nickname %s. The nickname is now available for use.
 NS_GHOST_FAILED
-	GHOST failed on nickname %s.
+	GHOST failed on nickname %s. This may have been an internal error, 
+	please try again shortly. If this is not the first time you have seen this 
+	message please contact network support.
 NS_GHOST_NOSELF
 	You cannot GHOST yourself, %s.
 NS_GHOST_NOTONLINE
-	%s is not online to GHOST.
+	%s is not online to GHOST. The nickname may be freely used and does not
+	require ghosting.
 NS_LINK_NOMASTER
-	Master nickname %s not registered.
+	Master nickname %s not registered. The nickname you want to link to must
+	be registered with nickname services.
 NS_LINK_BADPASS
-	Incorrect password for master nickname %s.
+	Incorrect password for master nickname %s. You must supply the correct
+	password for the master nickname in order to link to it.
 NS_LINK_NOSELF
-	This nickname is already linked to this master(possibly indirectly).
+	This nickname is already linked to this master(possibly indirectly). You may
+	not link to a nickname which is already link to a master. If you wish to do
+	this, you will need to UNLINK one of the nicknames first.
 NS_LINK_FAIL
-	LINK failed to master %s.
+	LINK failed to master %s. This may have been an internal error, please
+	try again shortly. If this is not the first time you have seen this 
+	message please contact network support.
 NS_LINK_OK
 	Nickname %s is now linked to master %s.
 NS_UNLINK_FAILED
@@ -327,7 +406,8 @@ NS_UNLINK_FAILED
 NS_UNLINK_OK
 	Nickname %s is now unlinked.
 NS_UNLINK_NOLINK
-	Nickname %s has is not linked.
+	Nickname %s is not linked. You cannot unlink a nickname which does not
+	contain a link in the first place.
 NS_INFO
 	  Time registered: %s
 	Last quit message: %s
@@ -350,13 +430,11 @@ NS_NICK_IN_USE_IWILLCHANGE
 	%s is a registered nickname and you are not on its access list.  Change your
 	nickname now or I will change it for you.  If this is your nickname,
 	authenticate yourself to services now with the IDENTIFY command.
-NS_NICK_AUTOID
-	You have been automatically identified as %s.
 NS_NICK_FORBID_IWILLCHANGE
-	This nickname %s may not be used. Choose another or I will forcefully
+	This nickname, %s, may not be used. Choose another or I will forcefully
 	change your nickname.
 NS_FORBID_OK
-	%s has been forbidden.
+	%s has been forbidden and may now not be used.
 NS_FORBID_FAIL
 	%s failed to be forbidden.
 NS_NOREG_GUEST
@@ -373,15 +451,17 @@ NS_INVALID_EMAIL
 NS_LANG_LIST
 	%d : %s
 NS_MASTER_NOT_LINKED
-	%s is not linked to your nickname.
+	%s is not linked to your nickname. You may not set a master nickname
+	which is not linked to this one.
 NS_MASTER_SET_OK
-	Master nickname set to %s.
+	Master nickname set to %s. This nickname will now show in services lists
+	such as access lists.
 NS_MASTER_SET_FAIL
 	Failed to set master nickname to %s.
 NS_UNFORBID_NOT_FORBID
-	Nickname %s is not forbidden.
+	Nickname %s is not forbidden so cannot be removed from the forbid list.
 NS_UNFORBID_OK
-	Nickname %s removed from forbidden list.
+	Nickname %s removed from forbidden list and may now be used again.
 NS_UNFORBID_FAIL
 	Nickname %s could not be removed from the forbidden list.
 NS_REGAINED
