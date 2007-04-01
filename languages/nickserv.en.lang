@@ -33,7 +33,7 @@ NS_HELP_DROP_SHORT
 	%s: Releases your nickname for use.
 NS_HELP_DROP_LONG
 	Usage: DROP [auth code]
-
+	
 	Releases your nickname for use and deletes it from the database.
 	This cannot be undone. You will be asked to confirm this action by following
 	the instructions given. If you already have a confirmation auth code, supply
