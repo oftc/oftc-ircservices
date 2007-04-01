@@ -1,7 +1,7 @@
 DROP TABLE account CASCADE;
 CREATE TABLE account (
   id                  SERIAL PRIMARY KEY,
-  primary_nick        INTEGER REFERENCES nickname(id),
+  primary_nick        INTEGER,
   password            CHAR(40),      -- base16 encoded sha1(salt+<userpassword>).  lower case
   salt                CHAR(16),
   url                 VARCHAR(255),
@@ -30,6 +30,10 @@ CREATE TABLE nickname (
   reg_time            INTEGER NOT NULL, -- This nickname
   last_seen           INTEGER
 );
+
+-- This needs to be here because of the table creation order and the circular
+-- reference
+ALTER TABLE account ADD FOREIGN KEY (primary_nick) REFERENCES nickname(id);
 
 DROP TABLE forbidden_nickname;
 CREATE TABLE forbidden_nickname (
