@@ -192,8 +192,6 @@ INIT_MODULE(nickserv, "$Revision$")
   hash_add_service(nickserv);
   introduce_client(nickserv->name);
   load_language(nickserv->languages, "nickserv.en");
-//  load_language(nickserv, "nickserv.rude");
-//  load_language(nickserv, "nickserv.de");
 
   mod_add_servcmd(&nickserv->msg_tree, &drop_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &identify_msgtab);
@@ -291,9 +289,6 @@ process_release_list(void *param)
   }
 }
 
-/**
- * Someone wants to register with nickserv
- */
 static void 
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
@@ -359,10 +354,6 @@ m_register(struct Service *service, struct Client *client,
   reply_user(service, service, client, NS_REG_FAIL, client->name);
 }
 
-
-/**
- * someone wants to drop a nick
- */
 static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
@@ -415,10 +406,12 @@ m_drop(struct Service *service, struct Client *client,
 
       if(strncmp(hmac, auth, strlen(hmac)) != 0)
       {
+        MyFree(hmac);
         reply_user(service, service, client, NS_DROP_AUTH_FAIL, client->name);
         return;
       }
 
+      MyFree(hmac);
       timestamp = atoi(parv[1]);
       if((CurrentTime - timestamp) > 3600)
       {
