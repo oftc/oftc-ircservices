@@ -207,20 +207,12 @@ rb_rbclient2cclient(VALUE self)
 VALUE
 rb_cclient2rbclient(struct Client *client)
 {
-  VALUE fc2params, rbclient, real_client;
-  int status;
+  VALUE rbclient, real_client;
 
   rbclient = Data_Wrap_Struct(rb_cObject, 0, 0, client);
+  real_client = do_ruby_ret(cClientStruct, rb_intern("new"), 1, rbclient);;
 
-  fc2params = rb_ary_new();
-  rb_ary_push(fc2params, cClientStruct);
-  rb_ary_push(fc2params, rb_intern("new"));
-  rb_ary_push(fc2params, 1);
-  rb_ary_push(fc2params, (VALUE)&rbclient);
-
-  real_client = rb_protect(RB_CALLBACK(rb_singleton_call), fc2params, &status);
-
-  if(ruby_handle_error(status))
+  if(real_client == Qnil)
   {
     ilog(L_DEBUG, "RUBY ERROR: Ruby Failed To Create ClientStruct");
     return Qnil;

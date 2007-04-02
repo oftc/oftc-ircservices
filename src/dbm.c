@@ -449,15 +449,28 @@ db_register_nick(struct Nick *nick)
 }
 
 int 
-db_forbid_nick(const char *nick)
+db_forbid_nick(const char *n)
 {
   int ret;
+  struct Nick *nick;
 
-  db_exec(ret, INSERT_FORBID, nick);
+  TransBegin();
+
+  if((nick = db_find_nick(n)) != NULL)
+  {
+    db_delete_nick(nick->id, nick->nickid, nick->nick);
+    free_nick(nick);
+  }
+
+  db_exec(ret, INSERT_FORBID, n);
 
   if(ret == -1)
+  {
+    TransRollback();
     return FALSE;
+  }
 
+  TransCommit();
   return TRUE;
 }
 

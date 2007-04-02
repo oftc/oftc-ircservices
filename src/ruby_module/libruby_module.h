@@ -53,8 +53,23 @@ void rb_do_hook_cb(VALUE, VALUE);
 void rb_add_hook(VALUE, VALUE, int);
 
 int ruby_handle_error(int);
-int do_ruby(VALUE(*)(), VALUE);
+int do_ruby(VALUE, ID, int, ...);
+VALUE do_ruby_ret(VALUE, ID, int, ...);
 
 char *strupr(char *);
+
+struct ruby_args
+{
+  VALUE recv;
+  ID id;
+  int parc;
+  VALUE *parv;
+};
+
+struct rhook_args
+{
+  int parc;
+  VALUE *parv;
+};
 
 #endif /* INCLUDED_ruby_module_h */

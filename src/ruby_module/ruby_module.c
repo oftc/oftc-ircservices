@@ -89,11 +89,17 @@ ruby_handle_error(int status)
 }
 
 int
-do_ruby(VALUE (*func)(), VALUE args)
+do_rubyv(VALUE recv, ID id, int parc, VALUE *parv)
 {
+  struct ruby_args args;
   int status;
 
-  rb_protect(func, args, &status);
+  args.recv = recv;
+  args.id = id;
+  args.parc = parc;
+  args.parv = parv;
+
+  rb_protect(rb_singleton_call, (VALUE)&args, &status);
 
   if(ruby_handle_error(status))
     return 0;
@@ -102,14 +108,70 @@ do_ruby(VALUE (*func)(), VALUE args)
 }
 
 VALUE
-rb_singleton_call(VALUE data)
+do_ruby_ret(VALUE recv, ID id, int parc, ...)
 {
-  VALUE recv, id, argc, argv;
-  recv = rb_ary_entry(data, 0);
-  id = rb_ary_entry(data, 1);
-  argc = rb_ary_entry(data, 2);
-  argv = rb_ary_entry(data, 3);
-  return rb_funcall2(recv, id, argc, (VALUE *)argv);
+  int i;
+  va_list varg;
+  struct ruby_args args;
+  int status;
+  VALUE *parv;
+  VALUE ret;
+
+  if(parc > 0)
+  {
+    parv = ALLOCA_N(VALUE, parc);
+    va_start(varg, parc);
+
+    for(i = 0; i < parc; i++)
+      parv[i] = va_arg(varg, VALUE);
+
+    va_end(varg);
+  }
+  else
+    parv = 0;
+
+  args.recv = recv;
+  args.id = id;
+  args.parc = parc;
+  args.parv = parv;
+
+  ret = rb_protect(rb_singleton_call, (VALUE)&args, &status);
+
+  if(ruby_handle_error(status))
+    return Qnil;
+
+  return ret;
+}
+
+int
+do_ruby(VALUE recv, ID id, int parc, ...)
+{
+  int i;
+  va_list varg;
+  VALUE *parv;
+
+  if(parc > 0)
+  {
+    parv = ALLOCA_N(VALUE, parc);
+    va_start(varg, parc);
+
+    for(i = 0; i < parc; i++)
+      parv[i] = va_arg(varg, VALUE);
+
+    va_end(varg);
+  }
+  else
+    parv = 0;
+
+  return do_rubyv(recv, id, parc, parv);
+}
+
+VALUE
+rb_singleton_call(VALUE args)
+{
+  struct ruby_args *rarg = (struct ruby_args*)args;
+
+  return rb_funcall2(rarg->recv, rarg->id, rarg->parc, rarg->parv);
 }
 
 VALUE
@@ -160,19 +222,25 @@ rb_cmode_hdlr(va_list args)
   int dir = va_arg(args, int);
   char letter = (char)va_arg(args, int);
   char *param = va_arg(args, char *);
+  struct rhook_args arg;
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CMODE);
-  VALUE params = rb_ary_new();
+  VALUE *params = ALLOCA_N(VALUE, 5);
 
-  rb_ary_push(params, rb_cclient2rbclient(source_p));
-  rb_ary_push(params, rb_cchannel2rbchannel(chptr));
-  rb_ary_push(params, INT2NUM(dir));
-  rb_ary_push(params, rb_str_new(&letter, 1));
+  params[0] = rb_cclient2rbclient(source_p);
+  params[1] = rb_cchannel2rbchannel(chptr);
+  params[2] = INT2NUM(dir);
+  params[3] = rb_str_new(&letter, 1);
 
   if(param != NULL)
-    rb_ary_push(params, rb_str_new2(param));
+    params[4] = rb_str_new2(param);
+  else
+    params[4] = 0;
 
-  rb_hash_foreach(hooks, rb_do_hook_each, params);
+  arg.parc = 5;
+  arg.parv = params;
+
+  rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
 
   return pass_callback(ruby_cmode_hook, source_p, chptr, dir, letter, param);
 }
@@ -183,14 +251,19 @@ rb_umode_hdlr(va_list args)
   struct Client *user = va_arg(args, struct Client *);
   int what = va_arg(args, int);
   int mode = va_arg(args, int);
+  struct rhook_args arg;
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_UMODE);
-  VALUE params = rb_ary_new();
-  rb_ary_push(params, rb_cclient2rbclient(user));
-  rb_ary_push(params, INT2NUM(what));
-  rb_ary_push(params, INT2NUM(mode));
+  VALUE *params = ALLOCA_N(VALUE, 3);
 
-  rb_hash_foreach(hooks, rb_do_hook_each, params);
+  params[0] = rb_cclient2rbclient(user);
+  params[1] = INT2NUM(what);
+  params[2] = INT2NUM(mode);
+
+  arg.parc = 3;
+  arg.parv = params;
+
+  rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
 
   return pass_callback(ruby_umode_hook, user, what, mode);
 }
@@ -199,12 +272,17 @@ static void *
 rb_newusr_hdlr(va_list args)
 {
   struct Client *newuser = va_arg(args, struct Client *);
+  struct rhook_args arg;
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NEWUSR);
-  VALUE params = rb_ary_new();
+  VALUE *params = ALLOCA_N(VALUE, 1);
 
-  rb_ary_push(params, rb_cclient2rbclient(newuser));
-  rb_hash_foreach(hooks, rb_do_hook_each, params);
+  params[0] = rb_cclient2rbclient(newuser);
+
+  arg.parc = 1;
+  arg.parv = params;
+
+  rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
 
   return pass_callback(ruby_newusr_hook, newuser);
 }
@@ -215,15 +293,19 @@ rb_privmsg_hdlr(va_list args)
   struct Client *source = va_arg(args, struct Client *);
   struct Channel *channel = va_arg(args, struct Channel *);
   char *message = va_arg(args, char *);
+  struct rhook_args arg;
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_PRIVMSG);
-  VALUE params = rb_ary_new();
+  VALUE *params = ALLOCA_N(VALUE, 3);
 
-  rb_ary_push(params, rb_cclient2rbclient(source));
-  rb_ary_push(params, rb_cchannel2rbchannel(channel));
-  rb_ary_push(params, rb_str_new2(message));
+  params[0] = rb_cclient2rbclient(source);
+  params[1] = rb_cchannel2rbchannel(channel);
+  params[2] = rb_str_new2(message);
 
-  rb_hash_foreach(hooks, rb_do_hook_each, params);
+  arg.parc = 3;
+  arg.parv = params;
+
+  rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
 
   return pass_callback(ruby_privmsg_hook, source, channel, message);
 }
@@ -233,14 +315,18 @@ rb_join_hdlr(va_list args)
 {
   struct Client* source = va_arg(args, struct Client *);
   char *channel = va_arg(args, char *);
+  struct rhook_args arg;
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_JOIN);
-  VALUE params = rb_ary_new();
+  VALUE *params = ALLOCA_N(VALUE, 2);
 
-  rb_ary_push(params, rb_cclient2rbclient(source));
-  rb_ary_push(params, rb_str_new2(channel));
+  params[0] = rb_cclient2rbclient(source);
+  params[1] = rb_str_new2(channel);
 
-  rb_hash_foreach(hooks, rb_do_hook_each, params);
+  arg.parc = 2;
+  arg.parv = params;
+
+  rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
 
   return pass_callback(ruby_join_hook, source, channel);
 }
@@ -250,14 +336,18 @@ rb_nick_hdlr(va_list args)
 {
   struct Client *source = va_arg(args, struct Client *);
   char *oldnick = va_arg(args, char *);
+  struct rhook_args arg;
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NICK);
-  VALUE params = rb_ary_new();
+  VALUE *params = ALLOCA_N(VALUE, 2);
 
-  rb_ary_push(params, rb_cclient2rbclient(source));
-  rb_ary_push(params, rb_str_new2(oldnick));
+  params[0] = rb_cclient2rbclient(source);
+  params[1] = rb_str_new2(oldnick);
 
-  rb_hash_foreach(hooks, rb_do_hook_each, params);
+  arg.parc = 2;
+  arg.parv = params;
+
+  rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
 
   return pass_callback(ruby_nick_hook, source, oldnick);
 }
@@ -268,15 +358,19 @@ rb_notice_hdlr(va_list args)
   struct Client *source = va_arg(args, struct Client *);
   struct Channel *channel = va_arg(args, struct Channel *);
   char *message = va_arg(args, char *);
+  struct rhook_args arg;
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NOTICE);
-  VALUE params = rb_ary_new();
+  VALUE *params = ALLOCA_N(VALUE, 3);
 
-  rb_ary_push(params, rb_cclient2rbclient(source));
-  rb_ary_push(params, rb_cchannel2rbchannel(channel));
-  rb_ary_push(params, rb_str_new2(message));
+  params[0] = rb_cclient2rbclient(source);
+  params[1] = rb_cchannel2rbchannel(channel);
+  params[2] = rb_str_new2(message);
 
-  rb_hash_foreach(hooks, rb_do_hook_each, params);
+  arg.parc = 3;
+  arg.parv = params;
+
+  rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
 
   return pass_callback(ruby_notice_hook, source, channel, message);
 }
@@ -308,20 +402,16 @@ unhook_events(const char* name)
 }
 
 static int
-rb_do_hook_each(VALUE key, VALUE value, VALUE params)
+rb_do_hook_each(VALUE key, VALUE value, VALUE arg)
 {
-  VALUE self, command, command_id, fc2params;
+  VALUE self, command, command_id;
+  struct rhook_args *args = (struct rhook_args*)arg;
+
   self = rb_ary_entry(value, 0);
   command = rb_ary_entry(value, 1);
   command_id = rb_intern(StringValueCStr(command));
 
-  fc2params = rb_ary_new();
-  rb_ary_push(fc2params, self);
-  rb_ary_push(fc2params, command_id);
-  rb_ary_push(fc2params, RARRAY(params)->len);
-  rb_ary_push(fc2params, (VALUE)RARRAY(params)->ptr);
-
-  if(!do_ruby(RB_CALLBACK(rb_singleton_call), (VALUE)fc2params))
+  if(!do_rubyv(self, command_id, args->parc, args->parv))
     ilog(L_DEBUG, "RUBY ERROR: Failed to call: %s", StringValueCStr(command));
 
   return 1;
@@ -352,7 +442,13 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
     return 0;
   }
 
-  do_ruby(RB_CALLBACK(ruby_exec), (VALUE)NULL);
+  rb_protect(RB_CALLBACK(ruby_exec), (VALUE)NULL, &status);
+
+  if(ruby_handle_error(status))
+  {
+    ilog(L_DEBUG, "RUBY INFO: Failed to load file %s", path);
+    return 0;
+  }
 
   strlcpy(classname, fname, strlen(fname)-2);
 
@@ -370,9 +466,9 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   rb_ary_push(params, 0);
   rb_ary_push(params, (VALUE)NULL);
 
-  self = rb_protect(RB_CALLBACK(rb_singleton_call), params, &status);
+  self = do_ruby_ret(klass, rb_intern("new"), 0);
 
-  if(ruby_handle_error(status))
+  if(self == Qnil)
     return 0;
 
   ilog(L_TRACE, "RUBY INFO: Initialized Class %s", classname);
@@ -397,7 +493,6 @@ unload_ruby_module(const char* name)
 {
   char namet[PATH_MAX];
   struct Service *service;
-  VALUE fc2params;
 
   strlcpy(namet, name, sizeof(namet));
   service = find_service(namet);
@@ -416,13 +511,7 @@ unload_ruby_module(const char* name)
 
   ilog(L_DEBUG, "Unloading ruby module: %s", namet);
 
-  fc2params = rb_ary_new();
-  rb_ary_push(fc2params, (VALUE)service->data);
-  rb_ary_push(fc2params, rb_intern("unload"));
-  rb_ary_push(fc2params, 0);
-  rb_ary_push(fc2params, (VALUE)NULL);
-
-  if(!do_ruby(RB_CALLBACK(rb_singleton_call), fc2params))
+  if(!do_ruby((VALUE)service->data, rb_intern("unload"), 0))
     ilog(L_DEBUG, "Failed to call %s's unload method", namet);
 
   unhook_events(namet);

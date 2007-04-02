@@ -40,26 +40,28 @@ static VALUE ServiceModule_db_list_del_index(VALUE, VALUE, VALUE, VALUE);
 static void m_generic(struct Service *, struct Client *, int, char**);
 
 static struct Service* get_service(VALUE self);
-static void set_service(VALUE, struct Service *); 
+//static void set_service(VALUE, struct Service *); 
 
 static struct Service *
 get_service(VALUE self)
 {
   struct Service *service;
 
-  VALUE rbservice = rb_iv_get(self, "@service_ptr");
-  Data_Get_Struct(rbservice, struct Service, service);
+//  VALUE rbservice = rb_iv_get(self, "@service_ptr");
+//  Data_Get_Struct(rbservice, struct Service, service);
+  VALUE rbservice = rb_iv_get(self, "@ServiceName");
+  service = find_service(StringValueCStr(rbservice));
 
   return service;
 }
 
-static void
-set_service(VALUE self, struct Service *service)
-{
-  VALUE rbservice = Data_Wrap_Struct(rb_cObject, 0, 0, service);
-  rb_iv_set(self, "@service_ptr", rbservice);
-}
-
+//static void
+//set_service(VALUE self, struct Service *service)
+//{
+//  VALUE rbservice = Data_Wrap_Struct(rb_cObject, 0, 0, service);
+//  rb_iv_set(self, "@service_ptr", rbservice);
+//}
+//
 static VALUE
 ServiceModule_register(VALUE self, VALUE commands)
 {
@@ -72,7 +74,7 @@ ServiceModule_register(VALUE self, VALUE commands)
 
   ruby_service = make_service(StringValueCStr(service_name));
 
-  set_service(self, ruby_service);
+//  set_service(self, ruby_service);
 
   if(ircncmp(ruby_service->name, StringValueCStr(service_name), NICKLEN) != 0)
     rb_iv_set(self, "@ServiceName", rb_str_new2(ruby_service->name));
@@ -451,12 +453,11 @@ m_generic(struct Service *service, struct Client *client,
   char *command = strdup(service->last_command);
   VALUE rbparams, rbparv;
   VALUE real_client, self;
-  VALUE fc2params;
   ID class_command;
 
   strupr(command);
   class_command = rb_intern(command);
-
+ 
   rbparams = rb_ary_new();
 
   real_client = rb_cclient2rbclient(client);
@@ -467,15 +468,9 @@ m_generic(struct Service *service, struct Client *client,
 
   self = (VALUE)service->data;
 
-  fc2params = rb_ary_new();
-  rb_ary_push(fc2params, self);
-  rb_ary_push(fc2params, class_command);
-  rb_ary_push(fc2params, RARRAY(rbparams)->len);
-  rb_ary_push(fc2params, (VALUE)RARRAY(rbparams)->ptr);
-
   ilog(L_TRACE, "RUBY INFO: Calling Command: %s From %s", command, client->name);
 
-  if(!do_ruby(RB_CALLBACK(rb_singleton_call), fc2params))
+  if(!do_ruby(self, class_command, 2, real_client, rbparv))
   {
     reply_user(service, service, client, 0, 
         "An error has occurred, please be patient and report this bug");

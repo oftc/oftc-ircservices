@@ -1114,19 +1114,21 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  struct Nick *nick;
-
-  if((nick = db_find_nick(parv[1])) != NULL)
-  {
-    db_delete_nick(nick->id, nick->nickid, nick->nick);
-    free_nick(nick);
-  }
+  struct Client *target;
 
   if(!db_forbid_nick(parv[1]))
   {
     reply_user(service, service, client, NS_FORBID_FAIL, parv[1]);
     return;
   }
+
+  if((target = find_client(parv[1])) == NULL)
+    return;
+
+  reply_user(service, service, target, NS_NICK_FORBID_IWILLCHANGE, 
+      target->name);
+  target->enforce_time = CurrentTime + 10; /* XXX configurable? */
+  dlinkAdd(target, make_dlink_node(), &nick_enforce_list);
 
   reply_user(service, service, client, NS_FORBID_OK, parv[1]);
 }
