@@ -130,6 +130,7 @@ typedef struct query {
 #define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
 #define Free(r) Database.yada->free(Database.yada, r)
 #define InsertID(t, c) Database.yada->insert_id(Database.yada, t, c)
+#define NextID(t, c) Database.yada->next_id(Database.yada, t, c)
 
 void init_db();
 void db_load_driver();

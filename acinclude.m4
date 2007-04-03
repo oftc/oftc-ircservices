@@ -21,7 +21,7 @@ AC_DEFUN([AX_CHECK_LIB_RUBY],[
     if test "$RUBY" = "no" ; then
       have_ruby="no"
     else
-      AC_SEARCH_LIBS([ruby_init],[ruby],[have_ruby="yes"],[have_ruby="no"])
+      AC_SEARCH_LIBS([ruby_init],[ruby1.8],[have_ruby="yes"],[have_ruby="no"])
       if test "$have_ruby" = "yes" ; then
         ruby_cflags=$($RUBY -r mkmf -e 'print "-I" + Config::CONFIG[["archdir"]]')
         ruby_ldflags=$($RUBY -r mkmf -e 'print "-L" + Config::CONFIG[["libdir"]] + " " + Config::CONFIG[["LIBS"]]')

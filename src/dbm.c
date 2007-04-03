@@ -44,10 +44,10 @@ query_t queries[QUERY_COUNT] = {
     "account.primary_nick=nickname.id", NULL, QUERY },
   { "SELECT user_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
   { "SELECT id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
-  { "INSERT INTO account (password, salt, email, reg_time) VALUES "
-    "(?v, ?v, ?v, ?d)", NULL, EXECUTE },
-  { "INSERT INTO nickname (nick, user_id, reg_time, last_seen) VALUES "
-    "(?v, ?d, ?d, ?d)", NULL, EXECUTE },
+  { "INSERT INTO account (primary_nick, password, salt, email, reg_time) VALUES "
+    "(?d, ?v, ?v, ?v, ?d)", NULL, EXECUTE },
+  { "INSERT INTO nickname (id, nick, user_id, reg_time, last_seen) VALUES "
+    "(?d, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
   { "DELETE FROM nickname WHERE lower(nick)=lower(?v)", NULL, EXECUTE },
   { "DELETE FROM account WHERE id=?d", NULL, EXECUTE },
   { "INSERT INTO account_access (parent_id, entry) VALUES(?d, ?v)", 
@@ -102,14 +102,15 @@ query_t queries[QUERY_COUNT] = {
           "b.parent_id = ?d) AND parent_id = ?d)", NULL, EXECUTE },
   { "UPDATE nickname SET user_id=?d WHERE user_id=?d", NULL, EXECUTE },
   { "UPDATE nickname SET user_id=?d WHERE user_id=?d AND id=?d", NULL, EXECUTE },
-  { "INSERT INTO account (password, salt, url, email, cloak, flag_enforce, "
-    "flag_secure, flag_verified, flag_cloak_enabled, "
+  { "INSERT INTO account (primary_nick, password, salt, url, email, cloak, " 
+    "flag_enforce, flag_secure, flag_verified, flag_cloak_enabled, "
     "flag_admin, flag_email_verified, flag_private, language, last_host, "
     "last_realname, last_quit_msg, last_quit_time, reg_time) "
-    "SELECT password, salt, url, email, cloak, flag_enforce, flag_secure, "
-    "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
-    "flag_private, language, last_host, last_realname, last_quit_msg, "
-    "last_quit_time, reg_time FROM account WHERE id=?d", NULL, EXECUTE },
+    "SELECT primary_nick, password, salt, url, email, cloak, flag_enforce, "
+    "flag_secure, flag_verified, flag_cloak_enabled, flag_admin, "
+    "flag_email_verified, flag_private, language, last_host, last_realname, "
+    "last_quit_msg, last_quit_time, reg_time FROM account WHERE id=?d", 
+    NULL, EXECUTE },
   { "SELECT id FROM nickname WHERE user_id=?d AND NOT id=?d", NULL, QUERY },
   { "UPDATE channel SET description=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET url=?v WHERE id=?d", NULL, EXECUTE },
@@ -411,30 +412,32 @@ db_get_id_from_name(const char *name, unsigned int type)
 int
 db_register_nick(struct Nick *nick)
 {
-  int exec, id, nickid;
+  int exec, id, nickid, tmpid;
 
   assert(nick != NULL);
 
   TransBegin();
 
-  db_exec(exec, INSERT_ACCOUNT, nick->pass, nick->salt, nick->email, 
+  nickid = NextID("nickname", "id");
+  db_exec(exec, INSERT_ACCOUNT, nickid, nick->pass, nick->salt, nick->email, 
       CurrentTime);
 
-  if(exec != -1)
-  {
-    id = InsertID("account", "id");
-    db_exec(exec, INSERT_NICK, nick->nick, id, CurrentTime, CurrentTime);
-  }
+  id = InsertID("account", "id");
 
   if(exec != -1)
-  {
-    nickid = InsertID("nickname", "id");
+    db_exec(exec, INSERT_NICK, nickid, nick->nick, id, CurrentTime, CurrentTime);
+
+  tmpid = InsertID("nickname", "id");
+  assert(tmpid == nickid);
+
+  if(exec != -1)
     db_exec(exec, SET_NICK_MASTER, nickid, id);
-  }
 
   if(exec != -1)
   {
-    TransCommit();
+    if(TransCommit() != 0)
+      return FALSE;
+
     nick->id = id;
     nick->nickid = nickid;
     nick->pri_nickid = nickid;
@@ -470,7 +473,9 @@ db_forbid_nick(const char *n)
     return FALSE;
   }
 
-  TransCommit();
+  if(TransCommit() != 0)
+    return FALSE;
+
   return TRUE;
 }
 
@@ -592,7 +597,9 @@ db_delete_nick(unsigned int accid, unsigned int nickid, const char *nick)
     return FALSE;
   }
 
-  TransCommit();
+  if(TransCommit() != 0)
+    return FALSE;
+
   execute_callback(on_nick_drop_cb, nick);
  
   return TRUE;
@@ -893,7 +900,9 @@ db_link_nicks(unsigned int master, unsigned int child)
     return FALSE;
   }
 
-  TransCommit();
+  if(TransCommit() != 0)
+    return FALSE;
+
   return TRUE;
 }
 
@@ -930,7 +939,9 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
     return 0;
   }
   
-  TransCommit();
+  if(TransCommit() != 0)
+    return FALSE;
+
   return new_accid;
 }
 
@@ -1017,7 +1028,9 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
     return FALSE;
   }
 
-  TransCommit();
+  if(TransCommit() != 0)
+    return FALSE;
+
   return TRUE;
 }
 
