@@ -320,20 +320,12 @@ rb_rbregchan2cregchan(VALUE self)
 VALUE
 rb_cregchan2rbregchan(struct RegChannel *channel)
 {
-  VALUE fc2params, rbchannel, real_channel;
-  int status;
+  VALUE rbchannel, real_channel;
 
   rbchannel = Data_Wrap_Struct(rb_cObject, 0, 0, channel);
+  real_channel = do_ruby_ret(cRegChannel, rb_intern("new"), 1, rbchannel);
 
-  fc2params = rb_ary_new();
-  rb_ary_push(fc2params, cRegChannel);
-  rb_ary_push(fc2params, rb_intern("new"));
-  rb_ary_push(fc2params, 1);
-  rb_ary_push(fc2params, (VALUE)&rbchannel);
-
-  real_channel = rb_protect(RB_CALLBACK(rb_singleton_call), fc2params, &status);
-
-  if(ruby_handle_error(status))
+  if(real_channel == Qnil)
   {
     ilog(L_DEBUG, "RUBY ERROR: Ruby Failed To Create RegChannelStruct");
     return Qnil;
