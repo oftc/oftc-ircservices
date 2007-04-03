@@ -68,13 +68,18 @@ ruby_script_error()
   if(!NIL_P(ruby_errinfo))
   {
     lasterr = rb_gv_get("$!");
-    err = RSTRING(rb_obj_as_string(lasterr))->ptr;
-
+    VALUE tmp2 = rb_class_path(CLASS_OF(lasterr));
+    ilog(L_DEBUG, "RUBY ERROR: %s", StringValueCStr(tmp2));
+    VALUE tmp = rb_obj_as_string(lasterr);
+    err = StringValueCStr(tmp);
     ilog(L_DEBUG, "RUBY ERROR: Error while executing Ruby Script: %s", err);
     array = rb_funcall(ruby_errinfo, rb_intern("backtrace"), 0);
     ilog(L_DEBUG, "RUBY ERROR: BACKTRACE");
     for (i = 0; i < RARRAY(array)->len; ++i)
-      ilog(L_DEBUG, "RUBY ERROR:   %s", RSTRING(RARRAY(array)->ptr[i])->ptr);
+    {
+      tmp = rb_ary_entry(array, i);
+      ilog(L_DEBUG, "RUBY ERROR:   %s", StringValueCStr(tmp));
+    }
   }
 }
 
@@ -555,6 +560,9 @@ init_ruby(void)
   ruby_join_hook = install_hook(on_join_cb, rb_join_hdlr);
   ruby_nick_hook = install_hook(on_nick_change_cb, rb_nick_hdlr);
   ruby_notice_hook = install_hook(on_notice_cb, rb_notice_hdlr);
+
+  /* pin any ruby address we keep on the C side */
+  rb_gc_register_address(&ruby_server_hooks);
 }
 
 void
