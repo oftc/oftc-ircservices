@@ -458,20 +458,12 @@ struct Nick* rb_rbnick2cnick(VALUE self)
 VALUE
 rb_cnick2rbnick(struct Nick *nick)
 {
-  VALUE fc2params, rbnick, real_nick;
-  int status;
+  VALUE rbnick, real_nick;
 
   rbnick = Data_Wrap_Struct(rb_cObject, 0, 0, nick);
+  real_nick = do_ruby_ret(cNickStruct, rb_intern("new"), 1, rbnick);
 
-  fc2params = rb_ary_new();
-  rb_ary_push(fc2params, cNickStruct);
-  rb_ary_push(fc2params, rb_intern("new"));
-  rb_ary_push(fc2params, 1);
-  rb_ary_push(fc2params, (VALUE)&rbnick);
-
-  real_nick = rb_protect(RB_CALLBACK(rb_singleton_call), fc2params, &status);
-
-  if(ruby_handle_error(status))
+  if(real_nick == Qnil)
   {
     printf("RUBY ERROR: Ruby Failed To Create NickStruct\n");
     return Qnil;
