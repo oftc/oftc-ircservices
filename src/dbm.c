@@ -149,6 +149,7 @@ query_t queries[QUERY_COUNT] = {
   { "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
   { "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=?d",
     NULL, QUERY },
+  { "SELECT nick FROM nickname WHERE user_id=?d", NULL, QUERY},
 };
 
 void
@@ -718,6 +719,11 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = strval;
       brc = Bind("?ps", entry);
       break;
+    case NICKLINK_LIST:
+      query = GET_NICK_LINKS;
+      *entry = strval;
+      brc = Bind("?ps", entry);
+      break;
     case AKILL_LIST:
       query = GET_AKILLS;
 
@@ -793,6 +799,11 @@ db_list_next(void *result, unsigned int type, void **entry)
       res->brc = Bind("?d?ps", &aeval->id, &aeval->value);
       break;
     case ADMIN_LIST:
+      *entry = strval;
+      Free(res->brc);
+      res->brc = Bind("?ps", entry);
+      break;
+    case NICKLINK_LIST:
       *entry = strval;
       Free(res->brc);
       res->brc = Bind("?ps", entry);

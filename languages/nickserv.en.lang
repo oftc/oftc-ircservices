@@ -423,6 +423,8 @@ NS_INFO_ONLINE_NONICK
 	%s is currently online.
 NS_INFO_OPTION
 	%s is %s
+NS_INFO_LINKS
+	The following nicks are linked in to this account: %s
 NS_NICK_IN_USE
 	%s is a registered nickname and you are not on its access list. If this is
 	your nickname, you may authenticate yourself to services with the IDENTIFY

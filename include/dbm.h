@@ -31,7 +31,8 @@ enum db_list_type
   ADMIN_LIST,
   AKILL_LIST,
   CHACCESS_LIST,
-  AKICK_LIST
+  AKICK_LIST,
+  NICKLINK_LIST
 };
 
 enum db_queries
@@ -106,6 +107,7 @@ enum db_queries
   SET_NICK_MASTER,
   DELETE_AKILL,
   GET_CHAN_MASTER_COUNT,
+  GET_NICK_LINKS,
   QUERY_COUNT
 };
 

@@ -1090,6 +1090,9 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   if((IsIdentified(client) && (client->nickname->id == nick->id)) || 
       client->access >= OPER_FLAG)
   {
+    char buf[IRC_BUFSIZE+1] = {0};
+    void *first, *listptr;
+    char *link;
 
     reply_user(service, service, client, NS_INFO_EMAIL, nick->email);
     reply_user(service, service, client, NS_LANGUAGE_SET,
@@ -1103,7 +1106,21 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
         "OFF");
     reply_user(service, service, client, NS_INFO_OPTION, "CLOAK", nick->cloak_on ? "ON" :
         "OFF");
- }
+
+    if((listptr = db_list_first(NICKLINK_LIST, nick->id, (void**)&link)) != NULL)
+    {
+      first = listptr;
+      while(listptr != NULL)
+      {
+        strlcat(buf, link, sizeof(buf));
+        listptr = db_list_next(listptr, NICKLINK_LIST, (void**)&link);
+        if(listptr != NULL)
+          strlcat(buf, ", ", sizeof(buf));
+      }
+      db_list_done(first);
+    }
+    reply_user(service, service, client, NS_INFO_LINKS, buf);
+  }
   else if(!nick->priv)
     reply_user(service, service, client, NS_INFO_EMAIL, nick->email);
  
