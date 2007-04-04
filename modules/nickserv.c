@@ -115,7 +115,7 @@ static struct ServiceMessage set_sub[] = {
     NS_HELP_SET_SECURE_LONG, m_set_secure },
   { NULL, "CLOAK", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_CLOAK_SHORT, 
     NS_HELP_SET_CLOAK_LONG, m_set_cloak },
- { NULL, "MASTER", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
+ { NULL, "MASTER", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
     NS_HELP_SET_MASTER_LONG, m_set_master },
   { NULL, "PRIVATE", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_PRIVATE_SHORT, 
     NS_HELP_SET_PRIVATE_LONG, m_set_private },
@@ -790,6 +790,15 @@ m_set_master(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
+
+  if(parc == 0)
+  {
+    char *prinick = db_get_nickname_from_id(nick->id);
+
+    reply_user(service, service, client, NS_SET_VALUE, "MASTER", prinick);
+    MyFree(prinick);
+    return;
+  }
 
   if(db_get_id_from_name(parv[1], GET_NICKID_FROM_NICK) != nick->id)
   {
