@@ -29,6 +29,9 @@ SERV_NO_ACCESS_CHAN
 	You do not have access to the %s command on %s.
 SERV_NO_ACCESS
 	You do not have access to the %s command.
+SERV_NO_ACCESS_REGFIRST
+	You do not have access to the %s command. Identifying to your nickname
+	 may help. See HELP IDENTIFY for more information.
 SERV_UNKNOWN_OPTION
 	Unknown option %s, /msg %s HELP %s for help.
 SERV_DATETIME_FORMAT

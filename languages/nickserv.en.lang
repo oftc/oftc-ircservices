@@ -31,6 +31,8 @@ NS_HELP_ID_LONG
 	Identify that you the owner of the nick you are currently using.
 	If you specify a nickname to identify against, your IRC nick will
 	automatically be changed to the one you identify for.
+	
+	See also: REGISTER
 NS_HELP_DROP_SHORT
 	%s: Releases your nickname for use.
 NS_HELP_DROP_LONG

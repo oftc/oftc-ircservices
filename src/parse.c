@@ -389,8 +389,16 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   {
     if(from->access < mptr->access)
     {
-      reply_user(service, NULL, from, SERV_NO_ACCESS, mptr->cmd);
-      return;
+      if(from->nickname == NULL)
+      {
+        reply_user(service, NULL, from, SERV_NO_ACCESS_REGFIRST, mptr->cmd);
+        return;
+      }
+      else
+      {
+        reply_user(service, NULL, from, SERV_NO_ACCESS, mptr->cmd);
+        return;
+      } 
     }
   }
 
