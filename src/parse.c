@@ -317,13 +317,22 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   struct ChanAccess *access;
   unsigned int level;
 
-  if (i < mptr->parameters || 
-          ((!(mptr->flags &  SFLG_NOMAXPARAM)) && i > mptr->maxpara))
+  if (i < mptr->parameters)
   {
-    reply_user(service, NULL, from, SERV_INSUFF_PARAM, mptr->parameters, 
-            mptr->maxpara, i, service->name);
+    reply_user(service, NULL, from, SERV_TOOFEW_PARAM, mptr->parameters, i, 
+        service->name);
     reply_user(service, service, from, mptr->help_long, "");
-    ilog(L_DEBUG, "%s sent services a command %s with wrong parameter count",
+    ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
+        from->name, mptr->cmd);
+    return;
+  }
+
+  if(((!(mptr->flags &  SFLG_NOMAXPARAM)) && i > mptr->maxpara))
+  {
+    reply_user(service, NULL, from, SERV_TOOMANY_PARAM, mptr->maxpara, i, 
+        service->name);
+    reply_user(service, service, from, mptr->help_long, "");
+    ilog(L_DEBUG, "%s sent services a command %s with too may parameters",
         from->name, mptr->cmd);
     return;
   }

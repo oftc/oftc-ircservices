@@ -15,9 +15,10 @@ SERV_SUB_HELP_FOOTER
 	*** End of %s %s Help ***
 SERV_UNKNOWN_CMD
 	Unknown command %s, /msg %s HELP for help.
-SERV_INSUFF_PARAM
-	Wrong number of parameters.  Expected at least %d and no more than %d.  
-	Got %d.
+SERV_TOOFEW_PARAM
+	Too few parameters.  Expected at least %d. Got %d.
+SERV_TOOMANY_PARAM
+	Too many parameters.  Expected more more than %d. Got %d.
 SERV_NOT_IDENTIFIED
 	Nickname %s is not identified to nickname services.
 SERV_ACCESS_DENIED
