@@ -199,6 +199,7 @@ m_eob(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   ilog(L_INFO, "Completed server burst");
   sendto_server(client, "EOB");
+  ClearConnecting(me.uplink);
 }
 
 static void
@@ -213,7 +214,6 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
     hash_add_id(client);
     global_notice(NULL, "Completed server connection to %s[%s]", client->name,
         client->id);
-    ClearConnecting(client);
     client->servptr = &me;
     dlinkAdd(client, &client->lnode, &me.server_list);
   }

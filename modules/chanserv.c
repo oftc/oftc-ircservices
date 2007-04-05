@@ -1558,7 +1558,8 @@ cs_on_client_join(va_list args)
         regchptr->channel);
   }
 
-  if(regchptr->entrymsg != NULL && regchptr->entrymsg[0] != '\0')
+  if(regchptr->entrymsg != NULL && regchptr->entrymsg[0] != '\0' &&
+      !IsConnecting(me.uplink))
     reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, regchptr->channel,
         regchptr->entrymsg);
 
