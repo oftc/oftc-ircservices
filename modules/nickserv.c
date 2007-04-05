@@ -1034,6 +1034,10 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Nick *nick;
   struct Client *target;
   char *name;
+  char *link;
+  char buf[IRC_BUFSIZE+1] = {0};
+  void *first, *listptr;
+  int online = 0;
 
   if(parc == 0)
   {
@@ -1060,21 +1064,40 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     name = parv[1];
   }
 
-  if(irccmp(nick->nick, name) != 0)
+  if((listptr = db_list_first(NICKLINK_LIST, nick->id, (void**)&link)) != NULL)
   {
-    if((target = find_client(nick->nick)) != NULL && IsIdentified(target))
-      reply_user(service, service, client, NS_INFO_ONLINE, name, target->name);
-    else if((target = find_client(name)) != NULL && IsIdentified(target))
+    int comma = 0;
+
+    first = listptr;
+    while(listptr != NULL)
     {
-      if(irccmp(target->name, name) == 0)
-        reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
-      else
-        reply_user(service, service, client, NS_INFO_ONLINE, nick->nick, name);
+      if(irccmp(link, name) == 0)
+      {
+        if((target = find_client(name)) != NULL && IsIdentified(target))
+        {
+          reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
+          online = 1;
+        }
+        listptr = db_list_next(listptr, NICKLINK_LIST, (void**)&link);
+        continue;
+      }
+      if((target = find_client(link)) != NULL && IsIdentified(target))
+      {
+        reply_user(service, service, client, NS_INFO_ONLINE, name, link);
+        online = 1;
+      }
+
+      if(comma)
+        strlcat(buf, ", ", sizeof(buf));
+      strlcat(buf, link, sizeof(buf));
+      listptr = db_list_next(listptr, NICKLINK_LIST, (void**)&link);
+      if(!comma)
+        comma = 1;
     }
+    db_list_done(first);
   }
-  else if((target = find_client(name)) != NULL && IsIdentified(target))
-    reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
-  else
+
+  if(!online)
     reply_time(service, client, NS_INFO_SEENTIME_FULL, nick->last_seen);
 
   reply_time(service, client, NS_INFO_REGTIME_FULL, nick->reg_time);
@@ -1088,10 +1111,6 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   if((IsIdentified(client) && (client->nickname->id == nick->id)) || 
       client->access >= OPER_FLAG)
   {
-    char buf[IRC_BUFSIZE+1] = {0};
-    void *first, *listptr;
-    char *link;
-
     reply_user(service, service, client, NS_INFO_EMAIL, nick->email);
     reply_user(service, service, client, NS_LANGUAGE_SET,
         service->languages[nick->language].name, nick->language); 
@@ -1105,19 +1124,8 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, NS_INFO_OPTION, "CLOAK", nick->cloak_on ? "ON" :
         "OFF");
 
-    if((listptr = db_list_first(NICKLINK_LIST, nick->id, (void**)&link)) != NULL)
-    {
-      first = listptr;
-      while(listptr != NULL)
-      {
-        strlcat(buf, link, sizeof(buf));
-        listptr = db_list_next(listptr, NICKLINK_LIST, (void**)&link);
-        if(listptr != NULL)
-          strlcat(buf, ", ", sizeof(buf));
-      }
-      db_list_done(first);
-    }
-    reply_user(service, service, client, NS_INFO_LINKS, buf);
+   if(*buf != '\0')
+     reply_user(service, service, client, NS_INFO_LINKS, buf);
   }
   else if(!nick->priv)
     reply_user(service, service, client, NS_INFO_EMAIL, nick->email);

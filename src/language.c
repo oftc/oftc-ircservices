@@ -61,6 +61,7 @@ load_language(struct LanguageFile *language, const char *langfile)
   while(fbgets(buffer, sizeof(buffer), file) != NULL)
   {
     char *ptr;
+    int addnewline = 0;
 
     if(buffer[0] != '\t')
     {
@@ -73,10 +74,16 @@ load_language(struct LanguageFile *language, const char *langfile)
 
     if(language[lang].entries[i] != NULL)
     {
-      ptr = MyMalloc(strlen(language[lang].entries[i]) + strlen(s) + 1);
-      strcpy(ptr, language[lang].entries[i]);
+      ptr = MyMalloc(strlen(language[lang].entries[i]) + strlen(s) + 2);
+      if(addnewline)
+      {
+        sprintf(ptr, "%s\n%s", language[lang].entries[i], s);
+        addnewline = 0;
+      }
+      else
+        sprintf(ptr, "%s%s", language[lang].entries[i], s);
+
       MyFree(language[lang].entries[i]);
-      strcat(ptr, s);
     }
     else
     {
