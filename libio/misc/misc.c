@@ -84,6 +84,16 @@ date(time_t lclock)
   return buf;
 }
 
+void
+date_diff(time_t end, time_t start, struct tm *result)
+{
+  time_t diff = end - start;
+
+  gmtime_r(&diff, result);
+
+  result->tm_year = result->tm_year - 70;
+}
+
 const char *
 smalldate(time_t lclock)
 {

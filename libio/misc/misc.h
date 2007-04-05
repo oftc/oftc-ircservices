@@ -51,6 +51,7 @@ LIBIO_EXTERN struct timeval SystemTime;
 LIBIO_EXTERN char *date(time_t);
 LIBIO_EXTERN char *small_file_date(time_t);
 LIBIO_EXTERN const char *smalldate(time_t);
+LIBIO_EXTERN void date_diff(time_t, time_t, struct tm *);
 #ifdef HAVE_LIBCRYPTO
 LIBIO_EXTERN char *ssl_get_cipher(SSL *);
 #endif

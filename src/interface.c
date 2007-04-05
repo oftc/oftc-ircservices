@@ -180,6 +180,42 @@ tell_user(struct Service *service, struct Client *client, char *text)
   //execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, text);
 }
 
+#define TIME_BUFFER 256
+
+void reply_time(struct Service *service, struct Client *client, 
+    unsigned int baseid, time_t off)
+{
+  char buf[TIME_BUFFER];
+  char *timestr;
+  struct tm diff;
+
+  if(client->nickname == NULL)
+    timestr = ServicesLanguages[0].entries[SERV_DATETIME_FORMAT];
+  else
+    timestr = ServicesLanguages[client->nickname->language].entries[SERV_DATETIME_FORMAT];
+  
+  if(off <= 0)
+    strlcpy(buf, "Unknown", sizeof(buf));
+  else
+    strftime(buf, TIME_BUFFER-1, timestr, gmtime(&off));
+ 
+  date_diff(CurrentTime, off, &diff);
+
+  if(diff.tm_year > 0)
+    reply_user(service, service, client, baseid, buf,
+      diff.tm_year, diff.tm_mon, diff.tm_mday-1, diff.tm_hour, diff.tm_min, 
+      diff.tm_sec);
+  else if(diff.tm_mon > 0)
+    reply_user(service, service, client, baseid+1, buf,
+      diff.tm_mon, diff.tm_mday-1, diff.tm_hour, diff.tm_min, diff.tm_sec);
+  else if(diff.tm_mday > 1)
+    reply_user(service, service, client, baseid+2, buf,
+      diff.tm_mday-1, diff.tm_hour, diff.tm_min, diff.tm_sec);
+  else
+    reply_user(service, service, client, baseid+3, buf,
+      diff.tm_hour, diff.tm_min, diff.tm_sec);
+}
+
 void
 reply_user(struct Service *source, struct Service *service, 
     struct Client *client, unsigned int langid,

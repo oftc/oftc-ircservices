@@ -73,15 +73,16 @@ load_language(struct LanguageFile *language, const char *langfile)
 
     if(language[lang].entries[i] != NULL)
     {
-      ptr = MyMalloc(strlen(language[lang].entries[i]) + strlen(s)+1);
+      ptr = MyMalloc(strlen(language[lang].entries[i]) + strlen(s) + 1);
       strcpy(ptr, language[lang].entries[i]);
       MyFree(language[lang].entries[i]);
       strcat(ptr, s);
     }
     else
     {
-      ptr = MyMalloc(strlen(s)+1);
-      strcpy(ptr, s);
+      DupString(ptr, s);
+      if(ptr[strlen(ptr)-1] == '\n')
+        ptr[strlen(ptr)-1] = '\0';
     }
     language[lang].entries[i] = ptr;
   }

@@ -410,11 +410,25 @@ NS_UNLINK_NOLINK
 	Nickname %s is not linked. You cannot unlink a nickname which does not
 	contain a link in the first place.
 NS_INFO
-	  Time registered: %s
 	Last quit message: %s
-	   Last quit time: %s
 	              URL: %s
 	     Cloak String: %s
+NS_INFO_REGTIME_FULL
+	  Time Registered: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
+NS_INFO_REGTIME_NOYEAR
+	  Time Registered: %s (%d month(s) %d day(s) %02d:%02d:%02d ago.)
+NS_INFO_REGTIME_NOMONTH
+	  Time Registered: %s (%d day(s) %02d:%02d:%02d ago.)
+NS_INFO_REGTIME_NODAY
+	  Time Registered: %s (%02d:%02d:%02d ago.)
+NS_INFO_QUITTIME_FULL
+	   Last quit time: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
+NS_INFO_QUITTIME_NOYEAR
+	   Last quit time: %s (%d month(s) %d day(s) %02d:%02d:%02d ago.)
+NS_INFO_QUITTIME_NOMONTH
+	   Last quit time: %s (%d day(s) %02d:%02d:%02d ago.)
+NS_INFO_QUITTIME_NODAY
+	   Last quit time: %s (%02d:%02d:%02d ago.)
 NS_INFO_EMAIL
 	    eMail address: %s
 NS_INFO_ONLINE

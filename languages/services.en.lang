@@ -30,3 +30,5 @@ SERV_NO_ACCESS
 	You do not have access to the %s command.
 SERV_UNKNOWN_OPTION
 	Unknown option %s, /msg %s HELP %s for help.
+SERV_DATETIME_FORMAT
+	%a %d %b %Y %H:%M:%S %z

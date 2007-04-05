@@ -467,9 +467,6 @@ m_drop(struct Service *service, struct Client *client,
   }
 }
 
-/**
- * someone wants to identify with services
- */
 static void
 m_identify(struct Service *service, struct Client *client,
     int parc, char *parv[])
@@ -1036,8 +1033,6 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
   struct Client *target;
-  char regtime[IRC_BUFSIZE/2+1];
-  char quittime[IRC_BUFSIZE/2+1];
   char *name;
 
   if(parc == 0)
@@ -1065,14 +1060,6 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     name = parv[1];
   }
 
-  strftime(regtime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
-      gmtime(&nick->reg_time));
-  if(nick->last_quit_time <= 0)
-    snprintf(quittime, IRC_BUFSIZE/2, "Unknown");
-  else
-    strftime(quittime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z", 
-        gmtime(&nick->last_quit_time));
-
   if(irccmp(nick->nick, name) != 0)
   {
     if((target = find_client(nick->nick)) != NULL && IsIdentified(target))
@@ -1091,8 +1078,11 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
   }
 
-  reply_user(service, service, client, NS_INFO, regtime, 
-      (nick->last_quit == NULL) ? "Unknown" : nick->last_quit, quittime, 
+  reply_time(service, client, NS_INFO_REGTIME_FULL, nick->reg_time);
+  reply_time(service, client, NS_INFO_QUITTIME_FULL, nick->last_quit_time);
+ 
+  reply_user(service, service, client, NS_INFO, 
+      (nick->last_quit == NULL) ? "Unknown" : nick->last_quit,  
       (nick->url == NULL) ? "Not set" : nick->url, 
       (nick->cloak[0] == '\0') ? "Not set" : nick->cloak);
 
