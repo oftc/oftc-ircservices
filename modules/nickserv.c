@@ -1080,6 +1080,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
   reply_time(service, client, NS_INFO_REGTIME_FULL, nick->reg_time);
   reply_time(service, client, NS_INFO_QUITTIME_FULL, nick->last_quit_time);
+  reply_time(service, client, NS_INFO_SEENTIME_FULL, nick->last_seen);
  
   reply_user(service, service, client, NS_INFO, 
       (nick->last_quit == NULL) ? "Unknown" : nick->last_quit,  
@@ -1342,6 +1343,7 @@ ns_on_nick_change(va_list args)
     if(user->nickname)
     {
       oldid = user->nickname->id;
+      db_set_number(SET_NICK_LAST_SEEN, user->nickname->nickid, CurrentTime);
       free_nick(user->nickname);
       user->nickname = NULL;
     }
@@ -1485,7 +1487,7 @@ ns_on_quit(va_list args)
     db_set_string(SET_NICK_LAST_HOST, nick->id, user->host);
     db_set_string(SET_NICK_LAST_REALNAME, nick->id, user->info);
     db_set_number(SET_NICK_LAST_QUITTIME, nick->id, CurrentTime);
-    db_set_number(SET_NICK_LAST_SEEN, nick->id, CurrentTime);
+    db_set_number(SET_NICK_LAST_SEEN, nick->nickid, CurrentTime);
   }
 
   dlinkFindDelete(&nick_enforce_list, user);

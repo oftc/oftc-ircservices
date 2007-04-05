@@ -87,7 +87,7 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE account SET last_realname=?v where id=?d", NULL, EXECUTE },
   { "UPDATE account SET language=?d WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET last_quit_time=?d WHERE id=?d", NULL, EXECUTE },
-  { "UPDATE nickname SET last_seen=?d WHERE user_id=?d", NULL, EXECUTE },
+  { "UPDATE nickname SET last_seen=?d WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_cloak_enabled=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_enforce=?B WHERE id=?d", NULL, EXECUTE },

@@ -442,19 +442,27 @@ NS_INFO
 NS_INFO_REGTIME_FULL
 	  Time Registered: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
 NS_INFO_REGTIME_NOYEAR
-	  Time Registered: %s (%d month(s) %d day(s) %02d:%02d:%02d ago.)
+	  Time Registered: %s (%d Month(s) %d day(s) %02d:%02d:%02d ago.)
 NS_INFO_REGTIME_NOMONTH
-	  Time Registered: %s (%d day(s) %02d:%02d:%02d ago.)
+	  Time Registered: %s (%d Day(s) %02d:%02d:%02d ago.)
 NS_INFO_REGTIME_NODAY
 	  Time Registered: %s (%02d:%02d:%02d ago.)
 NS_INFO_QUITTIME_FULL
 	   Last quit time: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
 NS_INFO_QUITTIME_NOYEAR
-	   Last quit time: %s (%d month(s) %d day(s) %02d:%02d:%02d ago.)
+	   Last quit time: %s (%d Month(s) %d day(s) %02d:%02d:%02d ago.)
 NS_INFO_QUITTIME_NOMONTH
-	   Last quit time: %s (%d day(s) %02d:%02d:%02d ago.)
+	   Last quit time: %s (%d Day(s) %02d:%02d:%02d ago.)
 NS_INFO_QUITTIME_NODAY
 	   Last quit time: %s (%02d:%02d:%02d ago.)
+NS_INFO_SEENTIME_FULL
+	        Last seen: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
+NS_INFO_SEENTIME_NOYEAR
+	        Last seen: %s (%d Month(s) %d day(s) %02d:%02d:%02d ago.)
+NS_INFO_SEENTIME_NOMONTH
+	        Last seen: %s (%d Day(s) %02d:%02d:%02d ago.)
+NS_INFO_SEENTIME_NODAY
+	        Last seen: %s (%02d:%02d:%02d ago.)
 NS_INFO_EMAIL
 	    eMail address: %s
 NS_INFO_ONLINE
