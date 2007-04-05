@@ -1072,15 +1072,13 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
         reply_user(service, service, client, NS_INFO_ONLINE, nick->nick, name);
     }
   }
+  else if((target = find_client(name)) != NULL && IsIdentified(target))
+    reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
   else
-  {
-    if((target = find_client(name)) != NULL && IsIdentified(target))
-      reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
-  }
+    reply_time(service, client, NS_INFO_SEENTIME_FULL, nick->last_seen);
 
   reply_time(service, client, NS_INFO_REGTIME_FULL, nick->reg_time);
   reply_time(service, client, NS_INFO_QUITTIME_FULL, nick->last_quit_time);
-  reply_time(service, client, NS_INFO_SEENTIME_FULL, nick->last_seen);
  
   reply_user(service, service, client, NS_INFO, 
       (nick->last_quit == NULL) ? "Unknown" : nick->last_quit,  
