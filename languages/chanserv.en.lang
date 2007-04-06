@@ -11,7 +11,7 @@ CS_HELP_SHORT
 CS_HELP_LONG
 	Shows this help message.  Use HELP <command> for help with a commmand.
 CS_HELP_SET_DESC_SHORT
-	%s: Set the channel description (free form text)
+	%s: Set the channel description (free form text).
 CS_HELP_SET_DESC_LONG
 	Usage: SET channel DESC [text]
 	
@@ -19,21 +19,21 @@ CS_HELP_SET_DESC_LONG
 	the purpose of the channel and is displayed with the channel listing in the
 	INFO command.
 CS_HELP_SET_URL_SHORT
-	%s: Set the channels homepage
+	%s: Set the channels homepage.
 CS_HELP_SET_URL_LONG
 	Usage: SET channel URL [url]
 	
 	Sets a homepage for the channel. This web address is displayed in the
 	listing reported by the INFO command.
 CS_HELP_SET_EMAIL_SHORT
-	%s: Sets the channels e-mail address
+	%s: Sets the channels e-mail address.
 CS_HELP_SET_EMAIL_LONG
 	Usage: SET channel EMAIL [email]
 	
 	Sets a contact e-mail address for the channel. This is displayed in the
 	listing reported by the INFO command.
 CS_HELP_SET_ENTRYMSG_SHORT
-	%s: Sets the channel greeting
+	%s: Sets the channel greeting.
 CS_HELP_SET_ENTRYMSG_LONG
 	Usage: SET channel ENTRYMSG [message|unset]
 	
@@ -41,7 +41,7 @@ CS_HELP_SET_ENTRYMSG_LONG
 	to all users joining the channel in the form of a notice.  Specifying
 	'unset' as the entry message will disable sending a greeting.
 CS_HELP_SET_TOPIC_SHORT
-	%s: Sets the Channels topic
+	%s: Sets the channel topic.
 CS_HELP_SET_TOPIC_LONG
 	Usage: SET channel TOPIC [topic]
 	
@@ -49,7 +49,7 @@ CS_HELP_SET_TOPIC_LONG
 	away and the topic will be stored. The topic will be set when the channel is
 	created and this is the topic that will be used with the TOPICLOCK command.
 CS_HELP_SET_TOPICLOCK_SHORT
-	%s: Lock the channel topic
+	%s: Lock the channel topic.
 CS_HELP_SET_TOPICLOCK_LONG
 	Usage: SET channel TOPICLOCK [ON|OFF]
 	
@@ -57,28 +57,28 @@ CS_HELP_SET_TOPICLOCK_LONG
 	TOPIC setting. If the channel topic is changed via IRC, channel services
 	will override it.
 CS_HELP_SET_PRIVATE_SHORT
-	%s: Control channel privacy
+	%s: Control channel privacy.
 CS_HELP_SET_PRIVATE_LONG
 	Usage: SET channel PRIVATE [ON|OFF]
 	  
 	Channels which have PRIVATE set will not show in any channel listings.
 CS_HELP_SET_RESTRICTED_SHORT
-	%s: Restrict the channel to members only
+	%s: Restrict the channel to members only.
 CS_HELP_SET_RESTRICTED_LONG
 	Usage: SET channel RESTRICTED [ON|OFF]
 	
-	This setting will only allow members of the channel to remain in the
+	This setting will only allow users with access level MEMBER to remain in the
 	channel. All other users will be kicked and banned from the channel upon
 	joining it.
 CS_HELP_SET_VERBOSE_SHORT
-	%s: Control channel verbosity
+	%s: Control channel verbosity.
 CS_HELP_SET_VERBOSE_LONG
 	Usage: SET channel VERBOSE [ON|OFF]
 	
 	When verbose is set, channel operators will have notices sent to them when
 	various actions are performed on the channel.
 CS_HELP_SET_MLOCK_SHORT
-	%s: Set channel mode lock
+	%s: Set channel mode lock.
 CS_HELP_SET_MLOCK_LONG
 	Usage: SET channel MLOCK [modelock]
 	
@@ -86,9 +86,9 @@ CS_HELP_SET_MLOCK_LONG
 	is changed, services may override it depending on the MLOCK setting. '+'
 	modes will always be set on a channel and will be replaced if they are
 	removed. '-' modes will always be unset on a channel and will be removed if
-	they are set.
+	they are set. Setting the mode lock to '+' will disable mode locking.
 CS_HELP_SET_AUTOLIMIT_SHORT
-	%s: Automatic channel limiting
+	%s: Automatic channel limiting.
 CS_HELP_SET_AUTOLIMIT_LONG
 	Usage: SET channel AUTOLIMIT [ON|OFF]
 	
@@ -97,19 +97,19 @@ CS_HELP_SET_AUTOLIMIT_LONG
 	helps prevent against scores of people(or bots) from joining the channel at
 	once.
 CS_HELP_SET_EXPIREBANS_SHORT
-	%s: Set whether bans automatically expire
+	%s: Set whether bans automatically expire.
 CS_HELP_SET_EXPIREBANS_LONG
 	Usage: SET channel EXPIREBANS [interval]
 	
 	If this option is non zero, channel bans will be removed at the interval
 	specified.
 CS_HELP_SET_SHORT
-	%s: Change channel settings
+	%s: Change channel settings.
 CS_HELP_SET_LONG
 	Changes channel settings. Most settings can be viewed if you do not specify
 	a paramter. The settings that can be changed are:
 CS_HELP_AKICK_ADD_SHORT
-	%s: Add a new AKICK on the channel
+	%s: Add a new AKICK on the channel.
 CS_HELP_AKICK_ADD_LONG
 	Usage: AKICK channel ADD mask|nickname [reason]
 	
@@ -119,118 +119,127 @@ CS_HELP_AKICK_ADD_LONG
 	used when the user is kicked from the channel. If it is not specified, a
 	default kick message will be used.
 CS_HELP_AKICK_DEL_SHORT
-	%s: Remove an AKICK from the channel
+	%s: Remove an AKICK from the channel.
 CS_HELP_AKICK_DEL_LONG
 	Usage: AKICK channel DEL mask|nickname
 	
 	Removes the specified mask or nickname from the channel autokick list. This
 	will not remove any bans which are currently set in the channel.
 CS_HELP_AKICK_LIST_SHORT
-	%s: List channel AKICKs
+	%s: List channel AKICKs.
 CS_HELP_AKICK_LIST_LONG
 	Usage: AKICK channel LIST
 	
 	Lists the entries in the channel autokick list.
 CS_HELP_AKICK_ENFORCE_SHORT
-	%s: Enforce the current AKICK list
+	%s: Enforce the current AKICK list.
 CS_HELP_AKICK_ENFORCE_LONG
 	Usage: AKICK channel ENFORCE
 	
 	Enforces the current channel autokick list. This will remove any users which
 	match entries in the list. This command is helpful if unwanted persons have
-	managed to gain access to the channel whilst services was down or during a
-	netsplit.
+	managed to gain access to the channel whilst services was down or during 
+	a netsplit.
 CS_HELP_AKICK_SHORT
-	%s: Channel Auto Kick list
+	%s: Channel Auto Kick list.
 CS_HELP_AKICK_LONG
-	Commands for managing the channel autokick list. Persons on the list will be
-	kicked and banned from the channel should they join the channel. The
+	Commands for managing the channel autokick list. Persons on the list will
+	not be permitted to join the channel and will be removed from it. The 
 	following commands can be used to manipulate the list:
 CS_HELP_DROP_SHORT
-	%s: Unregister the channel
+	%s: Unregister the channel.
 CS_HELP_DROP_LONG
 	Usage: DROP channel
 	
-	Unregisteres the channel and releases it for use. This cannot be undone.
+	Unregisters the channel and releases it for use. This cannot be undone.
 CS_HELP_DEOP_SHORT
-	%s: Remove channel operator status
+	%s: Remove channel operator status.
 CS_HELP_DEOP_LONG
 	Usage: DEOP channel [nickname]
 	
 	Removes your channel operator status on the channel. If a nickname is
 	specified it removes their operator status instead.
 CS_HELP_INFO_SHORT
-	%s: Show channel information
+	%s: Show channel information.
 CS_HELP_INFO_LONG
 	Usage: INFO channel
 	
-	Shows the information relating to this channel
+	Shows the information relating to a channel
 CS_HELP_OP_SHORT
-	%s: Grant channel operator status
+	%s: Grant channel operator status.
 CS_HELP_OP_LONG
 	Usage: OP channel [nickname]
 	
 	Grants channel operator status to you or, if specified, another user.
 CS_HELP_UNBAN_SHORT
-	%s: Unban yourself on a channel
+	%s: Unban yourself on a channel.
 CS_HELP_UNBAN_LONG
 	Usage: UNBAN channel
 	
 	Removes all bans on a channel which match your host and are preventing you
 	from joining a channel.
 CS_HELP_INVITE_SHORT
-	%s: Invite to a channel
+	%s: Invite to a channel.
 CS_HELP_INVITE_LONG
 	Usage: INVITE channel [nickname]
 	
 	Invites you or, if specified, another user to the channel.
 CS_HELP_CLEAR_SHORT
-	%s: Clear groups of settings on the channel
+	%s: Clear groups of settings on the channel.
 CS_HELP_CLEAR_LONG 
 	Clear various settings. The settings that can be cleared are:
 CS_HELP_ACCESS_SHORT
-	%s: Maintains the channel access list
+	%s: Maintains the channel access list.
 CS_HELP_ACCESS_LONG
-	This list specifies which nicknames are allowed access to the channel and at
+	This list specifies which nicknames are allowed access to the channel and at 
 	what level their access is. The commands available are as follows:
 CS_HELP_CLEAR_BANS_SHORT
-	%s: Remove all bans on a channel
+	%s: Remove all bans on a channel.
 CS_HELP_CLEAR_BANS_LONG
 	Usage: CLEAR channel BANS
 	
 	Remove all the bans set on the channel.
 CS_HELP_CLEAR_OPS_SHORT
-	%s: Deop all the channel operators on a channel
+	%s: Deop all the channel operators on a channel.
 CS_HELP_CLEAR_OPS_LONG
 	Usage: CLEAR channel OPS
 	
 	Remove channel operator status from all the channel operators.
 CS_HELP_CLEAR_VOICES_SHORT
-	%s: Devoice all the voices on a channel
+	%s: Devoice all the voices on a channel.
 CS_HELP_CLEAR_VOICES_LONG
 	Usage CLEAR channel VOICES
 	
 	Remove channel voice status from all the channel members who have it.
 CS_HELP_CLEAR_USERS_SHORT
-	%s: Remove all users from the channel
+	%s: Remove all users from the channel.
 CS_HELP_CLEAR_USERS_LONG
 	Usage CLEAR channel USERS
 	
 	Removes all the users from the channel(including you if you are on it!).
 CS_HELP_ACCESS_ADD_SHORT
-	%s: Add a nickname to the channel access list
+	%s: Add a nickname to the channel access list.
 CS_HELP_ACCESS_ADD_LONG
 	Usage: ACCESS channel ADD nickname MEMBER|CHANOP|MASTER
 	
 	Add the specified nickname to the access list at the specified level.
+		
+	MASTER - The highest level of access possible on a channel. Setting this
+	level of access will allow full management of the channel. Be careful who
+	you give this to.
+	CHANOP - Channel operator level access. Enables the user to perform channel
+	operator functions. OP/DEOP, AKICK management etc.
+	MEMBER - Recognises the user as a member of the channel. Gives them access
+	to the channel when it is invite only and allows them to view channel
+	settings.
 CS_HELP_ACCESS_DEL_SHORT
-	%s: Remove a nickname from the channel access list
+	%s: Remove a nickname from the channel access list.
 CS_HELP_ACCESS_DEL_LONG
 	Usage: ACCESS channel DEL nickname
 	
 	Removes a nickname from the channel access list.
 CS_HELP_ACCESS_LIST_SHORT
-	%s: Show the channel access list
+	%s: Show the channel access list.
 CS_HELP_ACCESS_LIST_LONG
 	Usage: ACCESS channel LIST
 	
