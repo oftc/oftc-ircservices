@@ -18,7 +18,7 @@ SERV_UNKNOWN_CMD
 SERV_TOOFEW_PARAM
 	Too few parameters.  Expected at least %d. Got %d.
 SERV_TOOMANY_PARAM
-	Too many parameters.  Expected more more than %d. Got %d.
+	Too many parameters.  Expected no more than %d. Got %d.
 SERV_NOT_IDENTIFIED
 	Nickname %s is not identified to nickname services.
 SERV_ACCESS_DENIED
