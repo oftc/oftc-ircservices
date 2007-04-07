@@ -251,7 +251,8 @@ CS_HELP_SUDO_SHORT
 CS_HELP_SUDO_LONG
 	Execute a command on a channel as channel master.
 CS_REGISTER_NICK
-	Nick %s is not registered with nickname services.
+	Nick %s is not registered. The nickname you specify must be currently 
+	registered with nickname services.
 CS_ALREADY_REG
 	Channel %s is already registered.
 CS_REG_SUCCESS
@@ -324,11 +325,14 @@ CS_ALREADY_ON_CHAN
 CS_INVITED
 	User %s has been invited to %s.
 CS_ACCESS_BADLEVEL
-	Unknown access level %s.
+	Unknown access level %s. The access level you specify must be on of the
+	available access levels. See HELP ACCESS for more information.
 CS_ACCESS_ADDOK
 	%s added to %s access list as %s.
 CS_ACCESS_ADDFAIL
-	Failed to add %s to %s access list as %s.
+	Failed to add %s to %s access list as %s. It is possible that
+	they are already on the access list. If this is not the case and this is not
+	the first time you have seen this message, please contact network support.
 CS_ACCESS_LIST
 	%d: %s %s
 CS_ACCESS_LISTEND
@@ -339,7 +343,7 @@ CS_ACCESS_DELFAIL
 	Failed to remove %s from the access list of %s.
 CS_ACCESS_NOMASTERS
 	You cannot remove %s from the access list of %s becuase it is the 
-	last MASTER entry.
+	last MASTER entry. Add another MASTER to the access list and try again.
 CS_ACCESS_NOTLISTED
 	%s is not on the access list of %s.
 CS_ENTRYMSG
