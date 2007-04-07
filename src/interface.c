@@ -923,11 +923,17 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
         d ? delstr : "",
         l || k ? parabuf : "");
 
-    if(!db_set_string(SET_CHAN_MLOCK, chptr->regchan->id, mlockbuf))
-    {
+    if(!db_set_string(SET_CHAN_MLOCK, chptr->regchan->id, 
+          *mlockbuf == '\0' ? NULL : mlockbuf))
       return FALSE;
+
+    if(*mlockbuf == '\0')
+    {
+      MyFree(*value);
+      *value = NULL;
     }
-    *value = replace_string(*value, mlockbuf);
+    else
+      *value = replace_string(*value, mlockbuf);
   }
 
   /* Now only set the mode that needs to be set */
@@ -991,9 +997,9 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
     memset(parabuf, 0, sizeof(parabuf));
     snprintf(modebuf, MODEBUFLEN, "%s%s%s%s", setstr[0] ? "+" : "", 
         setstr, delstr[0] ? "-" : "", delstr);
-    send_cmode(service, chptr, modebuf, "");
+    if(*modebuf != '\0')
+      send_cmode(service, chptr, modebuf, "");
   }
-
 
   return TRUE;
 }
