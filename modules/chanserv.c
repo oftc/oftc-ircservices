@@ -434,23 +434,37 @@ m_info(struct Service *service, struct Client *client,
   struct Channel *chptr;
   struct RegChannel *regchptr;
   
-  ilog(L_TRACE, "Channel INFO from %s for %s", client->name, parv[1]);
-
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
   
-  reply_user(service, service, client, CS_INFO_CHAN, parv[1], 
-  regchptr->description, regchptr->url, regchptr->email,
-  regchptr->topic, regchptr->entrymsg,
-  regchptr->topic_lock      ? "TOPICLOCK"  : "" ,
-  regchptr->priv            ? "PRIVATE"    : "" ,
-  regchptr->restricted      ? "RESTRICTED" : "" ,
-  regchptr->verbose         ? "VERBOSE"    : "", " ");
+  reply_user(service, service, client, CS_INFO_CHAN_START, regchptr->channel);
+  reply_time(service, client, CS_INFO_REGTIME_FULL, regchptr->regtime);
+  reply_user(service, service, client, CS_INFO_CHAN, regchptr->description, 
+      regchptr->url == NULL ? "Not Set" : regchptr->url, 
+      regchptr->email == NULL ? "Not Set" : regchptr->email, 
+      regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
+      regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg);
+
+  reply_user(service, service, client, CS_INFO_OPTION, "TOPICLOCK",
+      regchptr->topic_lock ? "ON" : "OFF");
+  
+  reply_user(service, service, client, CS_INFO_OPTION, "PRIVATE",
+      regchptr->priv ? "ON" : "OFF");
+
+  reply_user(service, service, client, CS_INFO_OPTION, "RESTRICTED",
+      regchptr->restricted ? "ON" : "OFF");
+
+  reply_user(service, service, client, CS_INFO_OPTION, "VERBOSE",
+      regchptr->verbose ? "ON" : "OFF");
+ 
+  reply_user(service, service, client, CS_INFO_OPTION, "AUTOLIMIT",
+      regchptr->autolimit ? "ON" : "OFF");
+
+  reply_user(service, service, client, CS_INFO_OPTION, "EXPIREBANS",
+      regchptr->expirebans ? "ON" : "OFF");
 
   if (chptr == NULL)
     free_regchan(regchptr);
-
-  ilog(L_TRACE, "T: Leaving CS:m_info (%s:%s)", client->name, parv[1]);
 }
 
 static void

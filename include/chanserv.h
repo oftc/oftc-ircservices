@@ -10,6 +10,7 @@ struct RegChannel
   dlink_node node;
   
   unsigned int id;
+  time_t regtime;
   char channel[CHANNELLEN+1];
   char *description;
   char *entrymsg; 

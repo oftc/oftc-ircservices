@@ -437,6 +437,7 @@ NS_UNLINK_NOLINK
 	contain a link in the first place.
 NS_INFO
 	Last quit message: %s
+	
 	              URL: %s
 	     Cloak String: %s
 NS_INFO_REGTIME_FULL

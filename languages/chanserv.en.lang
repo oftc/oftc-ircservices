@@ -283,15 +283,26 @@ CS_SET_FAILED
 	Setting %s to %s failed on channel %s.
 CS_NOT_EXIST
 	channel does not exist. XXX
+CS_INFO_CHAN_START
+	Channel Information for %s
 CS_INFO_CHAN
-	channel Information about %s
+	    Description: %s
 	
-	Description: %s
-	URL:         %s
-	eMail:       %s
-	Topic:       %s
-	EntryMsg:    %s
-	Flags:       %s %s %s %s %s
+	            URL: %s
+	         e-mail: %s
+	          Topic: %s
+	  Entry Message: %s
+	
+CS_INFO_OPTION
+	%s is %s
+CS_INFO_REGTIME_FULL
+	Time Registered: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
+CS_INFO_REGTIME_NOYEAR
+	Time Registered: %s (%d Month(s) %d day(s) %02d:%02d:%02d ago.)
+CS_INFO_REGTIME_NOMONTH
+	Time Registered: %s (%d Day(s) %02d:%02d:%02d ago.)
+CS_INFO_REGTIME_NODAY
+	Time Registered: %s (%02d:%02d:%02d ago.)
 CS_AKICK_NONICK
 	%s is not a registered nickname. Try a mask instead.
 CS_AKICK_ADDED
