@@ -280,6 +280,7 @@ CS_NOT_EXIST
 	channel does not exist. XXX
 CS_INFO_CHAN
 	channel Information about %s
+	
 	Description: %s
 	URL:         %s
 	eMail:       %s
