@@ -889,10 +889,10 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
 
     k = l = s = d = FALSE;
 
-    if(setstr[0] != '\0')
+    if(*setstr != '\0')
       s = TRUE;
-    if(delstr[0] != '\0');
-      s = TRUE;
+    if(delstr[0] != '\0')
+      d = TRUE;
     if(limit > 0)
     {
       l = TRUE;
@@ -927,7 +927,7 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
     {
       return FALSE;
     }
-    replace_string(*value, mlockbuf);
+    *value = replace_string(*value, mlockbuf);
   }
 
   /* Now only set the mode that needs to be set */

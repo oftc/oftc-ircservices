@@ -776,7 +776,7 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
   {
     m_set_string(service, client, parv[1], "MLOCK", SET_CHAN_MLOCK, value, 
         &regchptr->mlock, parc);
-    if(chptr != NULL)
+    if(chptr == NULL)
       free_regchan(regchptr);
     return;
   }
@@ -1025,8 +1025,8 @@ m_akick_enforce(struct Service *service, struct Client *client,
     numkicks += enforce_matching_serviceban(service, chptr, client);
   }
 
-  reply_user(service, service, client, CS_AKICK_ENFORCE, regchptr->channel,
-      numkicks);
+  reply_user(service, service, client, CS_AKICK_ENFORCE, numkicks, 
+      regchptr->channel);
 
   if(chptr == NULL)
     free_regchan(regchptr);
@@ -1340,7 +1340,7 @@ m_set_string(struct Service *service, struct Client *client,
   {
     reply_user(service, service, client, CS_SET_SUCCESS, field, 
         value == NULL ? "unset" : value, regchptr->channel);
-    ilog(L_NOTICE, "%s (%s@%s) changed %s of %s to %s", 
+    ilog(L_DEBUG, "%s (%s@%s) changed %s of %s to %s", 
       client->name, client->username, client->host, field, regchptr->channel, 
       value);
 
