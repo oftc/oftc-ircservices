@@ -294,7 +294,7 @@ NS_HELP_INFO_SHORT
 	%s: Get information on a nickname.
 NS_HELP_INFO_LONG
 	Usage: INFO [nickname]
-		
+	
 	
 	Displays all the information that services knows about a nickname, or your
 	nickname if no nickname is specified. Settings will only be shown if this

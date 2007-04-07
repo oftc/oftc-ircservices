@@ -317,11 +317,11 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   struct ChanAccess *access;
   unsigned int level;
 
-  if (i < mptr->parameters)
+  if(i < mptr->parameters)
   {
     reply_user(service, NULL, from, SERV_TOOFEW_PARAM, mptr->parameters, i, 
         service->name);
-    reply_user(service, service, from, mptr->help_long, "");
+    do_help(service, from, mptr->cmd, 1, hpara);
     ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
         from->name, mptr->cmd);
     return;
@@ -331,7 +331,7 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   {
     reply_user(service, NULL, from, SERV_TOOMANY_PARAM, mptr->maxpara, i, 
         service->name);
-    reply_user(service, service, from, mptr->help_long, "");
+    do_help(service, from, mptr->cmd, 1, hpara);
     ilog(L_DEBUG, "%s sent services a command %s with too may parameters",
         from->name, mptr->cmd);
     return;

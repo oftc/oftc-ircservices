@@ -141,7 +141,7 @@ static struct ServiceMessage access_sub[6] = {
 };
 
 static struct ServiceMessage access_msgtab = {
-  access_sub, "ACCESS", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
+  access_sub, "ACCESS", 0, 2, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
   CS_HELP_ACCESS_SHORT, CS_HELP_ACCESS_LONG, NULL 
 };
 

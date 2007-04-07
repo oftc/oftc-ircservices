@@ -191,8 +191,10 @@ CS_HELP_CLEAR_LONG
 CS_HELP_ACCESS_SHORT
 	%s: Maintains the channel access list.
 CS_HELP_ACCESS_LONG
-	This list specifies which nicknames are allowed access to the channel and at 
-	what level their access is. The commands available are as follows:
+	The channel access list specifies which nicknames are allowed access to the 
+	channel and at what level their access is. The commands available are 
+	as follows:
+	
 CS_HELP_CLEAR_BANS_SHORT
 	%s: Remove all bans on a channel.
 CS_HELP_CLEAR_BANS_LONG
