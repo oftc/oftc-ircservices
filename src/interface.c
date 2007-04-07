@@ -268,6 +268,75 @@ reply_user(struct Service *source, struct Service *service,
 }
 
 void
+reply_mail(struct Service *service, struct Client *client,
+    unsigned int subjectid, unsigned int langid, ...)
+{
+  char *buf, *bufptr;
+  char *langstr = NULL;
+  char *subjectstr;
+  struct LanguageFile *languages;
+  va_list ap;
+  FILE *ptr;
+  int count = 0;
+
+  if(service == NULL)
+    languages = ServicesLanguages;
+  else
+    languages = service->languages;
+  
+  if(langid != 0)
+  {
+    langstr = languages[client->nickname->language].entries[langid];
+    subjectstr = languages[client->nickname->language].entries[subjectid];
+  }
+  else
+  {
+    langstr = "%s";
+    subjectstr = languages[client->nickname->language].entries[subjectid];
+  }
+
+  va_start(ap, langid);
+  vasprintf(&buf, langstr, ap);
+  va_end(ap);
+
+  if((ptr = popen(Mail.command, "w")) == NULL)
+  {
+    MyFree(buf);
+    return;
+  }
+
+  fprintf(ptr, "To: %s\n", client->nickname->email);
+  fprintf(ptr, "From: %s\n", Mail.from_address);
+  fprintf(ptr, "Subject: %s\n", subjectstr);
+
+  bufptr = buf;
+  while(*bufptr != '\0')
+  {
+    if(*bufptr == '\n')
+    {
+      bufptr++;
+      if(*bufptr == '\n')
+      {
+        fputc('\n', ptr);
+        count = 0;
+      }
+    }
+
+    if(count == 72)
+    {
+      fputc('\n', ptr);
+      count = -1;
+    }
+    fputc(*bufptr++, ptr);
+    count++;
+  }
+
+  fputc('\n', ptr);
+  MyFree(buf);
+  pclose(ptr);
+}
+
+void
 kill_user(struct Service *service, struct Client *client, const char *reason)
 {
   if(ServicesState.debugmode)

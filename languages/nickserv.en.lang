@@ -520,3 +520,22 @@ NS_REGAINED
 	Nickname %s has been released and your nick has been changed.
 NS_REGAIN_FAIL
 	Failed to regain nickname %s.
+NS_SENDPASS_SUBJECT
+	OFTC Nickname password reset request
+NS_SENDPASS_BODY
+	Hi %s,
+	
+	
+	Someone(hopefully you) matching the IRC userhost %s!%s@%s requested that the
+	password on the addressed nickname(%s) be reset. If this was not you, please 
+	do not be concerned, no action has been taken on your nickname. If this is 
+	you, you need to go back to IRC and issue the following command: 
+	'/msg %s SENDPASS %s' (without the quotes) to complete the process.
+	
+	If this means nothing to you, or you think you have received this message in
+	error, please foward this message to support@oftc.net. Do not reply to this
+	mail as it is sent from an unattended address.
+	
+	Kind regards,
+	
+	OFTC IRC Nickname Services

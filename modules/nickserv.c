@@ -59,6 +59,7 @@ static void m_forbid(struct Service *,struct Client *, int, char *[]);
 static void m_unforbid(struct Service *,struct Client *, int, char *[]);
 static void m_regain(struct Service *,struct Client *, int, char *[]);
 static void m_sudo(struct Service *, struct Client *, int, char *[]);
+static void m_sendpass(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -187,6 +188,11 @@ static struct ServiceMessage sudo_msgtab = {
   NS_HELP_SUDO_LONG, m_sudo
 };
 
+static struct ServiceMessage sendpass_msgtab = {
+  NULL, "SENDPASS", 0, 0, 2, 0, ADMIN_FLAG, NS_HELP_SENDPASS_SHORT,
+  NS_HELP_SENDPASS_LONG, m_sendpass
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -212,6 +218,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &id_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &sudo_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &cloakstring_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &sendpass_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -251,7 +258,6 @@ guest_user(struct Client *user)
   }
   send_nick_change(nickserv, user, newname);
 }
-
 
 static void
 process_enforce_list(void *param)
@@ -1276,6 +1282,19 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   free_nick(client->nickname);
   client->nickname = oldnick;
   client->access = oldaccess;
+}
+
+static void 
+m_sendpass(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  if(parc == 0)
+  {
+    reply_mail(service, client, NS_SENDPASS_SUBJECT, NS_SENDPASS_BODY,
+        client->nickname->nick, client->name, client->username, client->host,
+        client->nickname->nick, service->name, "hi");
+    return;
+  }
 }
 
 static void*

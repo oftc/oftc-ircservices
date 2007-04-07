@@ -12,6 +12,8 @@
 #define LPATH       LOGDIR "/services.log"
 #define PPATH       SYSCONFDIR "/services.pid"
 
+#define SENDMAIL_PATH "/usr/sbin/sendmail -t"
+
 #define IRC_BUFSIZE     512
 #define CONNECTTIMEOUT   30
 #define READBUF_SIZE  16384

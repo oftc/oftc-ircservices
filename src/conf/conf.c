@@ -62,6 +62,7 @@ init_conf(void)
 #ifdef USE_SHARED_MODULES
   init_modules();
 #endif
+  init_mail();
 }
 
 /*

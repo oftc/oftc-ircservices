@@ -89,6 +89,8 @@ size_t strtime(struct Client *, time_t, char *);
 void reply_time(struct Service *, struct Client *, unsigned int, time_t);
 void reply_user(struct Service *,struct Service *, struct Client *, 
     unsigned int, ...);
+void reply_mail(struct Service *, struct Client *, unsigned int, 
+    unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
 void cloak_user(struct Client *, char *);
 void do_help(struct Service *, struct Client *, const char *, int, char **);
