@@ -106,7 +106,7 @@ smalldate(time_t lclock)
   gmtime_r(&lclock, &gm);
   localtime_r(&lclock, &lt);
   
-  ircsprintf(buf, "%d-%d-%d %02d:%02d:%02d",
+  ircsprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d",
              lt.tm_year + 1900, lt.tm_mon + 1, lt.tm_mday,
              lt.tm_hour, lt.tm_min, lt.tm_sec);
 
