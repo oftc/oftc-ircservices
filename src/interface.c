@@ -774,6 +774,9 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
   char modebuf[MODEBUFLEN+1], parabuf[MODEBUFLEN+1];
   char setstr[MODEBUFLEN/2+1], delstr[MODEBUFLEN/2+1]; 
   char mlockbuf[MODEBUFLEN+1];
+  int k, l, s, d;
+
+  k = l = s = d = 0;
 
   setmodes = delmodes = dir = limit = 0;
   memset(key, 0, sizeof(key));
@@ -884,7 +887,6 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
   /* If we've been asked to update the db, then we should do so. */
   if(value != NULL)
   {
-    int k, l, s, d;
     char *lk = "";
 
     k = l = s = d = FALSE;
@@ -963,8 +965,10 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
   get_modestring(delmodes, delstr, MODEBUFLEN/2);
   chptr->mode.mode |= setmodes;
   chptr->mode.mode &= ~delmodes;
-  chptr->mode.limit = limit;
-  strcpy(chptr->mode.key, key);
+  if(l)
+    chptr->mode.limit = limit;
+  if(k)
+    strcpy(chptr->mode.key, key);
  
   /* 
    * Set up the modestring and paramter(s) and set them. This could probably
