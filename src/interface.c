@@ -371,8 +371,8 @@ opdeop_user(struct Channel *chptr, struct Client *client, int op)
 
   if(op)
   {
-  AddMemberFlag(member, CHFL_CHANOP);
-  DelMemberFlag(member, CHFL_DEOPPED | CHFL_HALFOP);
+    AddMemberFlag(member, CHFL_CHANOP);
+    DelMemberFlag(member, CHFL_DEOPPED | CHFL_HALFOP);
   }
   else
     DelMemberFlag(member, CHFL_CHANOP);

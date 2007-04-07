@@ -201,13 +201,16 @@ CS_HELP_CLEAR_BANS_SHORT
 CS_HELP_CLEAR_BANS_LONG
 	Usage: CLEAR channel BANS
 	
-	Remove all the bans set on the channel.
+	This command will remove all of the bans set on a channel. It will not
+	remove any akicks which may be set. This command may be useful if you have a
+	large number of bans which need to be removed.
 CS_HELP_CLEAR_OPS_SHORT
 	%s: Deop all the channel operators on a channel.
 CS_HELP_CLEAR_OPS_LONG
 	Usage: CLEAR channel OPS
 	
-	Remove channel operator status from all the channel operators.
+	Remove channel operator status from all the channel operators currently on
+	the channel.
 CS_HELP_CLEAR_VOICES_SHORT
 	%s: Devoice all the voices on a channel.
 CS_HELP_CLEAR_VOICES_LONG
