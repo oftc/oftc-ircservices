@@ -309,8 +309,9 @@ handle_command(struct Message *mptr, struct Client *client,
 }
 
 static void
-handle_services_command(struct ServiceMessage *mptr, struct Service *service,
-     struct Client *from, unsigned int i, char *hpara[])
+handle_services_command(struct ServiceMessage *pmptr, 
+    struct ServiceMessage *mptr, struct Service *service, struct Client *from, 
+    unsigned int i, char *hpara[])
 {
   struct Channel *chptr;
   struct RegChannel *regchptr = NULL;
@@ -321,7 +322,20 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   {
     reply_user(service, NULL, from, SERV_TOOFEW_PARAM, mptr->parameters, i, 
         service->name);
-    do_help(service, from, mptr->cmd, 1, hpara);
+    
+    if(pmptr != NULL)
+    {
+      char **parv = MyMalloc(sizeof(char*)*(i+1));
+
+      parv[0] = from->name;
+      parv[1] = (char*)mptr->cmd;
+      parv[2] = (char*)mptr->cmd;
+
+      do_help(service, from, pmptr->cmd, i+1, parv);
+    }
+    else
+      do_help(service, from, mptr->cmd, i, hpara);
+
     ilog(L_DEBUG, "%s sent services a command %s with too few parameters",
         from->name, mptr->cmd);
     return;
@@ -331,7 +345,20 @@ handle_services_command(struct ServiceMessage *mptr, struct Service *service,
   {
     reply_user(service, NULL, from, SERV_TOOMANY_PARAM, mptr->maxpara, i, 
         service->name);
-    do_help(service, from, mptr->cmd, 1, hpara);
+    
+    if(pmptr != NULL)
+    {
+      char **parv = MyMalloc(sizeof(char*)*(i+1));
+
+      parv[0] = from->name;
+      parv[1] = (char*)mptr->cmd;
+      parv[2] = (char*)mptr->cmd;
+
+      do_help(service, from, pmptr->cmd, i+1, parv);
+    }
+    else
+      do_help(service, from, mptr->cmd, 1, hpara);
+
     ilog(L_DEBUG, "%s sent services a command %s with too may parameters",
         from->name, mptr->cmd);
     return;
@@ -929,7 +956,7 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
     int parc, char *parv[])
 {
   struct Service *service;
-  struct ServiceMessage *mptr;
+  struct ServiceMessage *mptr, *parent = NULL;
   struct Channel *channel;
   char *s, *ch, *ch2;
   int i = 0;
@@ -1025,6 +1052,7 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
           {
             int j;
 
+            parent = mptr;
             mptr = sub;
             /* Replace the sub command name with the command arguments */
             for(j = 2; j <= i; j++)
@@ -1058,7 +1086,8 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
 
   servpara[0] = source->name;
 
-  handle_services_command(mptr, service, source, (i == 0) ? i : i-1, servpara);
+  handle_services_command(parent, mptr, service, source, (i == 0) ? i : i-1, 
+      servpara);
 }
 
 size_t
