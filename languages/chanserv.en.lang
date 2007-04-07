@@ -225,7 +225,7 @@ CS_HELP_ACCESS_ADD_LONG
 	Usage: ACCESS channel ADD nickname MEMBER|CHANOP|MASTER
 	
 	Add the specified nickname to the access list at the specified level.
-		
+	
 	MASTER - The highest level of access possible on a channel. Setting this
 	level of access will allow full management of the channel. Be careful who
 	you give this to.
