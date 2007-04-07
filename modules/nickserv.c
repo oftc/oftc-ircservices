@@ -1104,9 +1104,9 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   reply_time(service, client, NS_INFO_QUITTIME_FULL, nick->last_quit_time);
  
   reply_user(service, service, client, NS_INFO, 
-      (nick->last_quit == NULL) ? "Unknown" : nick->last_quit,  
-      (nick->url == NULL) ? "Not set" : nick->url, 
-      (nick->cloak[0] == '\0') ? "Not set" : nick->cloak);
+      (nick->last_quit == NULL) ? "Unknown" : nick->last_quit,  
+      (nick->url == NULL) ? "Not set" : nick->url, 
+      (nick->cloak[0] == '\0') ? "Not set" : nick->cloak);
 
   if((IsIdentified(client) && (client->nickname->id == nick->id)) || 
       client->access >= OPER_FLAG)

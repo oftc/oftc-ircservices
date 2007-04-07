@@ -330,7 +330,6 @@ m_register(struct Service *service, struct Client *client,
   struct Channel    *chptr;
   struct RegChannel *regchptr;
 
-  ilog(L_TRACE, "T: %s wishes to reg %s", client->name, parv[1]);
   assert(parv[1]);
 
   /* Bail out if channelname does not start with a hash */
@@ -387,7 +386,6 @@ m_register(struct Service *service, struct Client *client,
     reply_user(service, service, client, CS_REG_FAIL, parv[1]);
     ilog(L_DEBUG, "Channel REG failed for %s on %s", client->name, parv[1]);
   }
-  ilog(L_TRACE, "T: Leaving CS:m_register (%s:%s)", client->name, parv[1]);
 }
 
 static void 
@@ -397,7 +395,6 @@ m_drop(struct Service *service, struct Client *client,
   struct Channel *chptr;
   struct RegChannel *regchptr;
 
-  ilog(L_TRACE, "T: %s wishes to drop %s", client->name, parv[1]);
   assert(parv[1]);
 
   chptr = hash_find_channel(parv[1]);
@@ -422,9 +419,6 @@ m_drop(struct Service *service, struct Client *client,
 
   if (chptr == NULL && regchptr != NULL)
     free_regchan(regchptr);
-
-  ilog(L_TRACE, "T: Leaving CS:m_drop (%s:%s)", client->name, parv[1]);
-  return;
 }
 
 static void
@@ -440,10 +434,10 @@ m_info(struct Service *service, struct Client *client,
   reply_user(service, service, client, CS_INFO_CHAN_START, regchptr->channel);
   reply_time(service, client, CS_INFO_REGTIME_FULL, regchptr->regtime);
   reply_user(service, service, client, CS_INFO_CHAN, regchptr->description, 
-      regchptr->url == NULL ? "Not Set" : regchptr->url, 
-      regchptr->email == NULL ? "Not Set" : regchptr->email, 
-      regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
-      regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg);
+      regchptr->url == NULL ? "Not Set" : regchptr->url, 
+      regchptr->email == NULL ? "Not Set" : regchptr->email, 
+      regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
+      regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg);
 
   reply_user(service, service, client, CS_INFO_OPTION, "TOPICLOCK",
       regchptr->topic_lock ? "ON" : "OFF");
@@ -1323,8 +1317,6 @@ m_set_string(struct Service *service, struct Client *client,
   struct Channel *chptr;
   struct RegChannel *regchptr;
 
-  ilog(L_TRACE, "Channel SET %s from %s for %s", field, client->name, channel);
-
   chptr = hash_find_channel(channel);
   regchptr = chptr == NULL ? db_find_chan(channel) : chptr->regchan;
 
@@ -1333,7 +1325,7 @@ m_set_string(struct Service *service, struct Client *client,
     char *response = *param;
 
     if(response == NULL)
-      response = "unset";
+      response = "unset";
     reply_user(service, service, client, CS_SET_VALUE, field, response, 
         regchptr->channel);
     if(chptr == NULL)
@@ -1347,7 +1339,7 @@ m_set_string(struct Service *service, struct Client *client,
   if(db_set_string(query, regchptr->id, value))
   {
     reply_user(service, service, client, CS_SET_SUCCESS, field, 
-        value == NULL ? "unset" : value, regchptr->channel);
+        value == NULL ? "unset" : value, regchptr->channel);
     ilog(L_NOTICE, "%s (%s@%s) changed %s of %s to %s", 
       client->name, client->username, client->host, field, regchptr->channel, 
       value);
@@ -1366,7 +1358,7 @@ m_set_string(struct Service *service, struct Client *client,
   }
   else
     reply_user(service, service, client, CS_SET_FAILED, field,
-        value == NULL ? "unset" : value, regchptr->channel);
+        value == NULL ? "unset" : value, regchptr->channel);
   
   if(chptr == NULL)
     free_regchan(regchptr);
@@ -1381,8 +1373,6 @@ m_set_flag(struct Service *service, struct Client *client,
   struct Channel *chptr;
   struct RegChannel *regchptr;
   int on;
-
-  ilog(L_TRACE, "Channel SET FLAG from %s for %s", client->name, channel);
 
   chptr = hash_find_channel(channel);
   regchptr = chptr == NULL ? db_find_chan(channel) : chptr->regchan;
@@ -1462,7 +1452,6 @@ m_set_flag(struct Service *service, struct Client *client,
       free_regchan(regchptr);
   }
 
-  ilog(L_TRACE, "T: Leaving CS:m_set_flag(%s:%s)", client->name, channel);
   return 0;
 }
 
