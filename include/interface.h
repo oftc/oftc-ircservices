@@ -85,6 +85,7 @@ struct Service *make_service(char *);
 void introduce_client(const char *);
 struct Client *introduce_server(const char*, const char*);
 struct Channel *join_channel(struct Client *, const char*);
+size_t strtime(struct Client *, time_t, char *);
 void reply_time(struct Service *, struct Client *, unsigned int, time_t);
 void reply_user(struct Service *,struct Service *, struct Client *, 
     unsigned int, ...);

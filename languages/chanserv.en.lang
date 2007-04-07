@@ -146,6 +146,7 @@ CS_HELP_AKICK_LONG
 	Commands for managing the channel autokick list. Persons on the list will
 	not be permitted to join the channel and will be removed from it. The 
 	following commands can be used to manipulate the list:
+	
 CS_HELP_DROP_SHORT
 	%s: Unregister the channel.
 CS_HELP_DROP_LONG
@@ -295,13 +296,13 @@ CS_AKICK_ADDED
 CS_AKICK_ADDFAIL
 	AKICK %s failed to be added.
 CS_AKICK_LIST
-	%d: %s (%s) Set by %s Set at: %s Expires: %s
+	%d: %s (%s) Set by %s at: %s.
 CS_AKICK_LISTEND
 	End of AKICK list for %s.
 CS_AKICK_DEL
 	%d AKICK entries deleted.
 CS_AKICK_ENFORCE
-	On channel %s, %d users affected by AKICK enforcement.
+	%d users affected by AKICK enforcement on channel %s.
 CS_CHAN_NOT_USED
 	Unable to execute command because %s is not in use.
 CS_CLEAR_BANS

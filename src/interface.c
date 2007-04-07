@@ -180,25 +180,31 @@ tell_user(struct Service *service, struct Client *client, char *text)
   //execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, text);
 }
 
-#define TIME_BUFFER 256
-
-void reply_time(struct Service *service, struct Client *client, 
-    unsigned int baseid, time_t off)
+/* Ensure the result buffer is TIME_BUFFER+1 in size */
+size_t
+strtime(struct Client *client, time_t tm, char *result)
 {
-  char buf[TIME_BUFFER];
   char *timestr;
-  struct tm diff;
-
+  
   if(client->nickname == NULL)
     timestr = ServicesLanguages[0].entries[SERV_DATETIME_FORMAT];
   else
     timestr = ServicesLanguages[client->nickname->language].entries[SERV_DATETIME_FORMAT];
-  
-  if(off <= 0)
-    strlcpy(buf, "Unknown", sizeof(buf));
+
+  if(tm <= 0)
+    return strlcpy(result, "Unknown", TIME_BUFFER + 1);
   else
-    strftime(buf, TIME_BUFFER-1, timestr, gmtime(&off));
- 
+    return strftime(result, TIME_BUFFER, timestr, gmtime(&tm));
+}
+
+void reply_time(struct Service *service, struct Client *client, 
+    unsigned int baseid, time_t off)
+{
+  char buf[TIME_BUFFER + 1];
+  struct tm diff;
+
+  strtime(client, off, buf);
+  
   date_diff(CurrentTime, off, &diff);
 
   if(diff.tm_year > 0)

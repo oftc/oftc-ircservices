@@ -146,7 +146,7 @@ static struct ServiceMessage access_msgtab = {
 };
 
 static struct ServiceMessage akick_sub[] = {
-  { NULL, "ADD", 0, 2, 3, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
+  { NULL, "ADD", 0, 2, 3, SFLG_NOMAXPARAM|SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
     CS_HELP_AKICK_ADD_SHORT, CS_HELP_AKICK_ADD_LONG, m_akick_add }, 
   { NULL, "DEL", 0, 2, 2, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
     CS_HELP_AKICK_DEL_SHORT, CS_HELP_AKICK_DEL_LONG, m_akick_del },
@@ -469,8 +469,7 @@ m_access_add(struct Service *service, struct Client *client,
   struct RegChannel *regchptr;
   struct ChanAccess *access;
   unsigned int account, level;
-
-  ilog(L_TRACE, "CS ACCESS ADD from %s for %s", client->name, parv[1]);
+  char *level_added = "MEMBER";
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
@@ -483,11 +482,17 @@ m_access_add(struct Service *service, struct Client *client,
     return;
   }
 
-  if(strcasecmp(parv[3], "MASTER") == 0)
+  if(irccmp(parv[3], "MASTER") == 0)
+  {
     level = MASTER_FLAG;
-  else if(strcasecmp(parv[3], "CHANOP") == 0)
+    level_added = "MASTER";
+  }
+  else if(irccmp(parv[3], "CHANOP") == 0)
+  {
     level = CHANOP_FLAG;
-  else if(strcasecmp(parv[3], "MEMBER") == 0)
+    level_added = "CHANOP";
+  }
+  else if(irccmp(parv[3], "MEMBER") == 0)
     level = MEMBER_FLAG;
   else
   {
@@ -505,7 +510,7 @@ m_access_add(struct Service *service, struct Client *client,
   if(db_list_add(CHACCESS_LIST, access))
   {
     reply_user(service, service, client, CS_ACCESS_ADDOK, parv[2], parv[1],
-        parv[3]);
+        level_added);
     ilog(L_DEBUG, "%s (%s@%s) added AE %s(%d) to %s", client->name, 
         client->username, client->host, parv[2], access->level, parv[1]);
   }
@@ -517,7 +522,6 @@ m_access_add(struct Service *service, struct Client *client,
     free_regchan(regchptr);
 
   free_chanaccess(access);
-  ilog(L_TRACE, "T: Leaving CS:m_access_add");
 }
 
 
@@ -530,14 +534,12 @@ m_access_del(struct Service *service, struct Client *client,
   struct ChanAccess *access;
   unsigned int nickid;
 
-  ilog(L_TRACE, "CS ACCESS DEL from %s for %s", client->name, parv[1]);
-
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
   if((nickid = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK)) <= 0)
   {
-    reply_user(service, service, client, CS_REGISTER_NICK, parv[2]);
+    reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
     if(chptr == NULL)
       free_regchan(regchptr);
     return;
@@ -558,8 +560,10 @@ m_access_del(struct Service *service, struct Client *client,
         regchptr->channel);
     if(chptr == NULL)
       free_regchan(regchptr);
+    free_chanaccess(access);
     return;
   }
+  free_chanaccess(access);
 
   if(db_list_del_index(DELETE_CHAN_ACCESS, nickid, regchptr->id))
   {
@@ -572,7 +576,6 @@ m_access_del(struct Service *service, struct Client *client,
 
   if (chptr == NULL)
     free_regchan(regchptr);
-  ilog(L_TRACE, "T: Leaving CS:m_access_del");
 }
 
 static void
@@ -935,6 +938,7 @@ m_akick_list(struct Service *service, struct Client *client,
   int i = 1;
   struct Channel *chptr;
   struct RegChannel *regchptr;
+  char setbuf[TIME_BUFFER + 1];
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
@@ -951,8 +955,10 @@ m_akick_list(struct Service *service, struct Client *client,
 
     whoset = db_get_nickname_from_id(akick->setter);
 
+    strtime(client, akick->time_set, setbuf);
+
     reply_user(service, service, client, CS_AKICK_LIST, i++, who, akick->reason,
-        whoset, "sometime", "sometime");
+        whoset, setbuf);
     if(akick->target != 0)
       MyFree(who);
     free_serviceban(akick);
