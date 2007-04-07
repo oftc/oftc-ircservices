@@ -19,14 +19,14 @@ CS_HELP_SET_DESC_LONG
 	the purpose of the channel and is displayed with the channel listing in the
 	INFO command.
 CS_HELP_SET_URL_SHORT
-	%s: Set the channels homepage.
+	%s: Set the channel's homepage.
 CS_HELP_SET_URL_LONG
 	Usage: SET channel URL [url]
 	
 	Sets a homepage for the channel. This web address is displayed in the
 	listing reported by the INFO command.
 CS_HELP_SET_EMAIL_SHORT
-	%s: Sets the channels e-mail address.
+	%s: Sets the channel's e-mail address.
 CS_HELP_SET_EMAIL_LONG
 	Usage: SET channel EMAIL [email]
 	
@@ -106,7 +106,7 @@ CS_HELP_SET_EXPIREBANS_LONG
 CS_HELP_SET_SHORT
 	%s: Change channel settings.
 CS_HELP_SET_LONG
-	Changes channel settings. Most settings can be viewed if you do not specify
+	Changes channel settings. Most settings can be viewed if you do not specify 
 	a paramter. The settings that can be changed are:
 CS_HELP_AKICK_ADD_SHORT
 	%s: Add a new AKICK on the channel.
