@@ -49,7 +49,7 @@ static void m_akill_list(struct Service *, struct Client *, int, char *[]);
 static void m_akill_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage help_msgtab = {
-  NULL, "HELP", 0, 0, 0, 2, ADMIN_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
+  NULL, "HELP", 0, 0, 2, 0, ADMIN_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
 };
 
 static struct ServiceMessage mod_subs[] = {
@@ -313,6 +313,8 @@ m_admin_list(struct Service *service, struct Client *client,
   }
   if(first != NULL)
   db_list_done(first);
+
+  reply_user(service, service, client, OS_ADMIN_LIST_END);
 }
 
 static void
@@ -386,6 +388,7 @@ m_akill_list(struct Service *service, struct Client *client,
 {
   struct ServiceBan *akill;
   void *handle, *first;
+  char setbuf[TIME_BUFFER + 1];
   int i = 1;
 
   first = handle = db_list_first(AKILL_LIST, 0, (void**)&akill);
@@ -393,14 +396,18 @@ m_akill_list(struct Service *service, struct Client *client,
   {
     char *setter = db_get_nickname_from_id(akill->setter);
 
+    strtime(client, akill->time_set, setbuf);
+
     reply_user(service, service, client, OS_AKILL_LIST, i++, akill->mask, 
-        akill->reason, setter, "sometime", "sometime");
+        akill->reason, setter, setbuf, "N/A");
     free_serviceban(akill);
     MyFree(setter);
     handle = db_list_next(handle, AKILL_LIST, (void**)&akill);
   }
   if(first)
     db_list_done(first);
+
+  reply_user(service, service, client, OS_AKILL_LIST_END);
 }
 
 static void

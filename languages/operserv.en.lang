@@ -114,6 +114,8 @@ OS_SET_HELP_LONG
 	
 OS_ADMIN_LIST
 	%d: %s
+OS_ADMIN_LIST_END
+	End of Services Admin list.
 OS_ADMIN_ADDED
 	%s added to the services admin list.
 OS_NICK_NOTREG
@@ -135,7 +137,9 @@ OS_MOD_RELOADING
 OS_MOD_UNLOAD
 	Module %s unloaded.
 OS_AKILL_LIST
-	%d: %s(%s) - Set by %s at %s(Expires: %s).
+	%d: %s(%s) - Set by %s at %s (Expires: %s).
+OS_AKILL_LIST_END
+	End of services AKILL list.
 OS_AKILL_ADDOK
 	AKILL %s added.
 OS_AKILL_ADDFAIL
