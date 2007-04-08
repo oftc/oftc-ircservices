@@ -2,80 +2,116 @@
 OS_HELP_SHORT
 	%s: Shows this help.
 OS_HELP_LONG
-	Use HELP to get help on commands.  /msg OperServ HELP command
+	Use HELP to get help on commands. Use HELP COMMAND for help with a
+	command.
 OS_MOD_LIST_HELP_SHORT
-	%s: List the currently running modules
+	%s: List the currently running modules.
 OS_MOD_LIST_HELP_LONG
-	moo
+	Usage: MOD LIST
+	
+	Shows a list of all the modules currently loaded and what type of module
+	they are.
 OS_MOD_LOAD_HELP_SHORT
 	%s: Load a module by name.
 OS_MOD_LOAD_HELP_LONG
-	moo
+	Usage: MOD LOAD modulename.(so|rb)
+	
+	Loads a dynamic module into services. This currently can either be a .so
+	file(or .la) or a ruby script(.rb). Modules typically provide their own
+	services to the services package.
 OS_MOD_UNLOAD_HELP_SHORT
 	%s: Unload a module by name.
 OS_MOD_UNLOAD_HELP_LONG
-	moo
+	Usage: MOD UNLOAD modulename
+	
+	Unloads a currently loaded and running module from memory and removes the
+	service it provides.
 OS_MOD_RELOAD_HELP_SHORT
 	%s: Reload a module by name.
 OS_MOD_RELOAD_HELP_LONG
-	moo
+	Usage: MOD RELOAD modulename
+	
+	Combines the UNLOAD and LOAD steps to provide a method to restart a
+	currently loaded module.
 OS_MOD_HELP_SHORT
 	%s: Manage modules.
 OS_MOD_HELP_LONG
-	moo
+	Usage: MOD command [args]
+	
+	Provides commands for the managing of dynamically loaded modules and
+	scripts. The commands available are shown below:
+	
 OS_RAW_HELP_SHORT
 	%s: Execute a RAW server command(USE WITH CAUTION).
 OS_RAW_HELP_LONG
-	Sends a command to the server directly.  Abuse this and cdlu will bite off
-	your hand.
-OS_GLOBAL_HELP_SHORT
-	%s: Send a global notice.
-OS_GLOBAL_HELP_LONG
-	moo
+	Sends a command to the server directly.  This command can cause damage to
+	the IRC network, do not use it if you do not know what you are doing, and
+	even if you do, BE CAREFUL.
 OS_ADMIN_HELP_SHORT
 	%s: Manage services admins.
 OS_ADMIN_HELP_LONG
-	moo
+	Usage: ADMIN command [args]
+	
+	Provides commands for managing the services admin list. Services admins have
+	full access to services and can do administrative tasks such as load modules
+	and operate on other people's nicknames and channels. The commands for
+	managing the admin list are:
+	
 OS_ADMIN_ADD_HELP_SHORT
 	%s: Add a service admin.
 OS_ADMIN_ADD_HELP_LONG
-	moo
+	Usage: ADMIN ADD nickname
+	
+	Adds the specified nickname to the services admin list. The nickname
+	specified must be a registered nickname.
 OS_ADMIN_LIST_HELP_SHORT
 	%s: List services admins.
 OS_ADMIN_LIST_HELP_LONG
-	moo
+	Usage: ADMIN LIST
+	
+	Shows a list of the current services admins.
 OS_ADMIN_DEL_HELP_SHORT
 	%s: Delete a services admin.
 OS_ADMIN_DEL_HELP_LONG
-	moo
+	Usage: ADMIN DEL nickname
+	
+	Removes a nickname from the services admin list. The nickname must be a
+	registered nickname and must be on the admin list.
 OS_AKILL_ADD_HELP_SHORT
 	%s: Add an akill.
 OS_AKILL_ADD_HELP_LONG
-	moo
+	Usage: AKILL ADD user@host [duration] reason
+	
+	Adds an AKILL on the specified user@host for the specified duration with the
+	specified reason. If a duration is not specified, the default is used.
 OS_AKILL_LIST_HELP_SHORT
 	%s: List akills.
 OS_AKILL_LIST_HELP_LONG
-	moo
+	Usage: AKILL LIST
+	
+	Lists the current akills.
 OS_AKILL_DEL_HELP_SHORT
 	%s: Delete an akill.
 OS_AKILL_DEL_HELP_LONG
-	moo
+	Usage: AKILL DEL user@host
+	
+	Removes the specified user@host from the akill list.
 OS_AKILL_HELP_SHORT
 	%s: Manage the akill list.
 OS_AKILL_HELP_LONG
-	moo
+	Provides commands for managing the services AKILL list. AKILLs are network
+	wide bans that are enforced by services. If the network does not know about
+	a ban and allows a user to connect, services will re-issue it. The commands
+	available are:
+	
 OS_SET_HELP_SHORT
 	%s: Set services options.
 OS_SET_HELP_LONG
-	moo
-OS_SHUTDOWN_HELP_SHORT
-	%s: Shutdown services.
-OS_SHUTDOWN_HELP_LONG
-	moo
-OS_QUARENTINE_HELP_SHORT
-	%s: Quarentine a nickname.
-OS_QUARENTINE_HELP_LONG
-	moo
+	Usage: SET option [args]
+	
+	Allows the setting of various services options are runtime. The options
+	available are:
+	
 OS_ADMIN_LIST
 	%d: %s
 OS_ADMIN_ADDED

@@ -108,16 +108,6 @@ static struct ServiceMessage set_msgtab = {
   m_operserv_notimp
 };
 
-static struct ServiceMessage shutdown_msgtab = {
-  NULL, "SHUTDOWN", 1, 1, 1, 0, ADMIN_FLAG, OS_SHUTDOWN_HELP_SHORT, 
-  OS_SHUTDOWN_HELP_LONG, m_operserv_notimp
-};
-
-static struct ServiceMessage quarentine_msgtab = {
-  NULL, "QUARENTINE", 1, 1, 1, 0, ADMIN_FLAG, OS_QUARENTINE_HELP_SHORT, 
-  OS_QUARENTINE_HELP_LONG, m_operserv_notimp
-};
-
 INIT_MODULE(operserv, "$Revision$")
 {
   operserv = make_service("OperServ");
@@ -137,8 +127,6 @@ INIT_MODULE(operserv, "$Revision$")
   mod_add_servcmd(&operserv->msg_tree, &akill_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
-  mod_add_servcmd(&operserv->msg_tree, &shutdown_msgtab);
-  mod_add_servcmd(&operserv->msg_tree, &quarentine_msgtab);
 }
 
 CLEANUP_MODULE
