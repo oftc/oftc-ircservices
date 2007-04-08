@@ -303,7 +303,7 @@ NS_HELP_INFO_LONG
 NS_HELP_SENDPASS_SHORT
 	%s: Send a password reset request.
 NS_HELP_SENDPASS_LONG
-	Usage: SENDPASS [auth code] [newpassword]
+	Usage: SENDPASS nickname [auth code] [newpassword]
 	
 	
 	Sends a password reset request to the e-mail address registered on this
@@ -520,20 +520,29 @@ NS_REGAINED
 	Nickname %s has been released and your nick has been changed.
 NS_REGAIN_FAIL
 	Failed to regain nickname %s.
+NS_SENDPASS_SENT
+	This is a two stage process; instructions on the second stage have been 
+	e-mailed to the e-mail address listed on the account.
+NS_SENDPASS_NEED_PASS
+	You must specify a new password to be set on the account.
+NS_SENDPASS_AUTH_FAIL
+	The auth code you provided is either invalid or has expired. Password has 
+	not been reset.
 NS_SENDPASS_SUBJECT
 	OFTC Nickname password reset request
 NS_SENDPASS_BODY
 	Hi %s,
 	
 	
-	Someone(hopefully you) matching the IRC userhost %s!%s@%s requested that the
+	Someone(hopefully you) matching the IRC userhost %s!%s@%s requested that the 
 	password on the addressed nickname(%s) be reset. If this was not you, please 
 	do not be concerned, no action has been taken on your nickname. If this is 
 	you, you need to go back to IRC and issue the following command: 
-	'/msg %s SENDPASS %s' (without the quotes) to complete the process.
+	'/msg %s SENDPASS %s %ld:%s <yournewpassword>' (without the quotes) to 
+	complete the process.
 	
-	If this means nothing to you, or you think you have received this message in
-	error, please foward this message to support@oftc.net. Do not reply to this
+	If this means nothing to you, or you think you have received this message in 
+	error, please foward this message to support@oftc.net. Do not reply to this 
 	mail as it is sent from an unattended address.
 	
 	Kind regards,

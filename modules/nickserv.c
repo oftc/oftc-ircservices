@@ -189,7 +189,7 @@ static struct ServiceMessage sudo_msgtab = {
 };
 
 static struct ServiceMessage sendpass_msgtab = {
-  NULL, "SENDPASS", 0, 0, 2, 0, ADMIN_FLAG, NS_HELP_SENDPASS_SHORT,
+  NULL, "SENDPASS", 0, 1, 3, 0, ADMIN_FLAG, NS_HELP_SENDPASS_SHORT,
   NS_HELP_SENDPASS_LONG, m_sendpass
 };
 
@@ -1288,13 +1288,92 @@ static void
 m_sendpass(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  if(parc == 0)
+  struct Nick *nick, *temp;
+  char buf[IRC_BUFSIZE+1] = {0};
+  char password[PASSLEN+1] = {0};
+  char *hmac;
+  char *auth;
+  char *pass;
+  int timestamp;
+
+  if((nick = db_find_nick(parv[1])) == NULL)
   {
-    reply_mail(service, client, NS_SENDPASS_SUBJECT, NS_SENDPASS_BODY,
-        client->nickname->nick, client->name, client->username, client->host,
-        client->nickname->nick, service->name, "hi");
+    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
     return;
   }
+
+  if(parc == 1)
+  {
+    temp = client->nickname;
+    client->nickname = nick;
+
+    snprintf(buf, IRC_BUFSIZE, "SENDPASS %ld %d %s", CurrentTime, 
+        nick->id, nick->nick);
+    hmac = generate_hmac(buf);
+
+    reply_user(service, service, client, NS_SENDPASS_SENT);
+
+    reply_mail(service, client, NS_SENDPASS_SUBJECT, NS_SENDPASS_BODY,
+        nick->nick, client->name, client->username, client->host, nick->nick, 
+        service->name, nick->nick, CurrentTime, hmac);
+
+    client->nickname = temp;
+    free_nick(nick);
+    
+    MyFree(hmac);
+    return;
+  }
+  else if(parc == 2)
+  {
+    reply_user(service, service, client, NS_SENDPASS_NEED_PASS);
+    free_nick(nick);
+    return;
+  }
+    
+  if((auth = strchr(parv[2], ':')) == NULL)
+  {
+    reply_user(service, service, client, NS_SENDPASS_AUTH_FAIL, nick->nick);
+    return;
+  }
+
+  *auth = '\0';
+  auth++;
+
+  snprintf(buf, IRC_BUFSIZE, "SENDPASS %s %d %s", parv[2], nick->id, 
+      nick->nick);
+  hmac = generate_hmac(buf);
+
+  if(strncmp(hmac, auth, strlen(hmac)) != 0)
+  {
+    MyFree(hmac);
+    reply_user(service, service, client, NS_SENDPASS_AUTH_FAIL, nick->nick);
+    return;
+  }
+
+  MyFree(hmac);
+  timestamp = atoi(parv[2]);
+  if((CurrentTime - timestamp) > 86400)
+  {
+    reply_user(service, service, client, NS_SENDPASS_AUTH_FAIL, nick->nick);
+    return;
+  }
+
+  snprintf(password, sizeof(password), "%s%s", parv[3], nick->salt);
+  
+  pass = crypt_pass(password, 1);
+  /* XXX: what about the salt?  shouldn't we make a new one and store that too? -- weasel */
+  if(db_set_string(SET_NICK_PASSWORD, nick->id, pass))
+    reply_user(service, service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
+  else
+  {
+    reply_user(service, service, client, NS_SET_FAILED, "PASSWORD", "hidden");
+    MyFree(pass);
+    return;
+  }
+  strlcpy(nick->pass, pass, sizeof(nick->pass));
+  MyFree(pass);
+
+  free_nick(nick);
 }
 
 static void*
