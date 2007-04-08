@@ -25,6 +25,12 @@ struct DBResult
   yada_rc_t *brc;
 };
 
+struct InfoChanList
+{
+  char *channel;
+  char *level;
+};
+
 enum db_list_type
 {
   ACCESS_LIST = 0,
@@ -32,7 +38,8 @@ enum db_list_type
   AKILL_LIST,
   CHACCESS_LIST,
   AKICK_LIST,
-  NICKLINK_LIST
+  NICKLINK_LIST,
+  NICKCHAN_LIST
 };
 
 enum db_queries
@@ -108,6 +115,7 @@ enum db_queries
   DELETE_AKILL,
   GET_CHAN_MASTER_COUNT,
   GET_NICK_LINKS,
+  GET_NICK_CHAN_INFO,
   QUERY_COUNT
 };
 

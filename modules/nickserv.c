@@ -1039,6 +1039,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
   struct Client *target;
+  struct InfoChanList *chan;
   char *name;
   char *link;
   char buf[IRC_BUFSIZE+1] = {0};
@@ -1130,8 +1131,22 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, NS_INFO_OPTION, "CLOAK", nick->cloak_on ? "ON" :
         "OFF");
 
-   if(*buf != '\0')
-     reply_user(service, service, client, NS_INFO_LINKS, buf);
+    if(*buf != '\0')
+      reply_user(service, service, client, NS_INFO_LINKS, buf);
+
+    if((listptr = db_list_first(NICKCHAN_LIST, nick->id, (void**)&chan)) != NULL)
+    {
+      first = listptr;
+      reply_user(service, service, client, NS_INFO_CHANS);
+      while(listptr != NULL)
+      {
+        reply_user(service, service, client, NS_INFO_CHAN, chan->channel,
+            chan->level);
+        MyFree(chan);
+        listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
+      }
+      db_list_done(first);
+    }
   }
   else if(!nick->priv)
     reply_user(service, service, client, NS_INFO_EMAIL, nick->email);

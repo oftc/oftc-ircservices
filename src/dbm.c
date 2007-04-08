@@ -149,7 +149,9 @@ query_t queries[QUERY_COUNT] = {
   { "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
   { "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=?d",
     NULL, QUERY },
-  { "SELECT nick FROM nickname WHERE user_id=?d", NULL, QUERY},
+  { "SELECT nick FROM nickname WHERE user_id=?d", NULL, QUERY },
+  { "SELECT channel, level FROM channel, channel_access WHERE channel.id="
+    "channel_access.channel_id AND channel_access.account_id=?d", NULL, QUERY },
 };
 
 void
@@ -704,7 +706,8 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   struct ChanAccess *caval;
   struct ServiceBan *banval;
   struct DBResult *result;
-  unsigned int query;
+  struct InfoChanList *info;
+  unsigned int query, level;
   
   switch(type)
   {
@@ -749,6 +752,13 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       brc = Bind("?d?d?d?d", &caval->id, &caval->channel, &caval->account,
           &caval->level);
       break;
+    case NICKCHAN_LIST:
+      query = GET_NICK_CHAN_INFO;
+
+      info = MyMalloc(sizeof(struct InfoChanList));
+      *entry = info;
+      brc = Bind("?ps?d", &info->channel, &level);
+      break;
   }
 
   db_query(rc, query, param);
@@ -777,6 +787,21 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     DupString(banval->channel, banval->channel);
     banval->type = AKICK_BAN;
   }
+  else if(type == NICKCHAN_LIST)
+  {
+    switch(level)
+    {
+      case MASTER_FLAG:
+        info->level = "MASTER";
+        break;
+      case CHANOP_FLAG:
+        info->level = "CHANOP";
+        break;
+      case MEMBER_FLAG:
+        info->level = "MEMBER";
+        break;
+    }
+  }
 
   return (void*)result;
 }
@@ -788,7 +813,9 @@ db_list_next(void *result, unsigned int type, void **entry)
   struct AccessEntry *aeval;
   struct ChanAccess *caval;
   struct ServiceBan *banval;
+  struct InfoChanList *info;
   char *strval = (char*)*entry; 
+  unsigned int level;
  
   switch(type)
   {
@@ -822,13 +849,19 @@ db_list_next(void *result, unsigned int type, void **entry)
       res->brc = Bind("?d?ps?d?d?ps?ps?d?d", &banval->id, &banval->channel,
           &banval->target, &banval->setter, &banval->mask, 
           &banval->reason, &banval->time_set, &banval->duration);
-   break;
+      break;
     case CHACCESS_LIST:
       caval = MyMalloc(sizeof(struct ChanAccess));
       *entry = caval;
       Free(res->brc);
       res->brc = Bind("?d?d?d?d", &caval->id, &caval->channel, &caval->account,
           &caval->level);
+      break;
+    case NICKCHAN_LIST:
+      info = MyMalloc(sizeof(struct InfoChanList));
+      *entry = info;
+      Free(res->brc);
+      res->brc = Bind("?ps?d", &info->channel, &level);
       break;
     default:
       assert(0 == 1);
@@ -849,6 +882,21 @@ db_list_next(void *result, unsigned int type, void **entry)
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
     DupString(banval->channel, banval->channel);
+  }
+  else if(type == NICKCHAN_LIST)
+  {
+    switch(level)
+    {
+      case MASTER_FLAG:
+        info->level = "MASTER";
+        break;
+      case CHANOP_FLAG:
+        info->level = "CHANOP";
+        break;
+      case MEMBER_FLAG:
+        info->level = "MEMBER";
+        break;
+    }
   }
 
   return result;
