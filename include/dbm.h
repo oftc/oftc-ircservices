@@ -39,7 +39,8 @@ enum db_list_type
   CHACCESS_LIST,
   AKICK_LIST,
   NICKLINK_LIST,
-  NICKCHAN_LIST
+  NICKCHAN_LIST,
+  CHMASTER_LIST
 };
 
 enum db_queries
@@ -116,6 +117,7 @@ enum db_queries
   GET_CHAN_MASTER_COUNT,
   GET_NICK_LINKS,
   GET_NICK_CHAN_INFO,
+  GET_CHAN_MASTERS,
   QUERY_COUNT
 };
 

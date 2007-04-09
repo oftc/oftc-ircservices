@@ -427,6 +427,9 @@ m_info(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
+  void *first, *listptr;  
+  char buf[IRC_BUFSIZE+1] = {0};
+  char *nick;
   
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
@@ -438,6 +441,27 @@ m_info(struct Service *service, struct Client *client,
       regchptr->email == NULL ? "Not Set" : regchptr->email, 
       regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
       regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg);
+
+
+  if((listptr = db_list_first(CHMASTER_LIST, regchptr->id, 
+          (void**)&nick)) != NULL)
+  {
+    int comma = 0;
+
+    first = listptr;
+    while(listptr != NULL)
+    {
+      if(comma)
+        strlcat(buf, ", ", sizeof(buf));
+      strlcat(buf, nick, sizeof(buf));
+      listptr = db_list_next(listptr, CHMASTER_LIST, (void**)&nick);
+      if(!comma)
+        comma = 1;
+    }
+    db_list_done(first);
+  }
+
+  reply_user(service, service, client, CS_INFO_MASTERS, buf);
 
   reply_user(service, service, client, CS_INFO_OPTION, "TOPICLOCK",
       regchptr->topic_lock ? "ON" : "OFF");

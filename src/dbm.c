@@ -152,6 +152,9 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT nick FROM nickname WHERE user_id=?d", NULL, QUERY },
   { "SELECT channel, level FROM channel, channel_access WHERE channel.id="
     "channel_access.channel_id AND channel_access.account_id=?d", NULL, QUERY },
+  { "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
+    "AND level=4 AND channel_access.account_id=account.id AND "
+      "account.primary_nick=nickname.id", NULL, QUERY},
 };
 
 void
@@ -759,6 +762,12 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = info;
       brc = Bind("?ps?d", &info->channel, &level);
       break;
+    case CHMASTER_LIST:
+      query = GET_CHAN_MASTERS;
+
+      *entry = strval;
+      brc = Bind("?ps", entry);
+      break;
   }
 
   db_query(rc, query, param);
@@ -862,6 +871,11 @@ db_list_next(void *result, unsigned int type, void **entry)
       *entry = info;
       Free(res->brc);
       res->brc = Bind("?ps?d", &info->channel, &level);
+      break;
+    case CHMASTER_LIST:
+      *entry = strval;
+      Free(res->brc);
+      res->brc = Bind("?ps", entry);
       break;
     default:
       assert(0 == 1);
