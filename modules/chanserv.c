@@ -927,8 +927,8 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
     int numkicks = 0;
 
     numkicks = enforce_akick(service, chptr, akick);
-    reply_user(service, service, client, CS_AKICK_ENFORCE, regchptr->channel,
-      numkicks);
+    reply_user(service, service, client, CS_AKICK_ENFORCE, numkicks, 
+        regchptr->channel);
   }
 
   free_serviceban(akick);

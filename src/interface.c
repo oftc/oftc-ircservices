@@ -836,9 +836,9 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
 {
   const char *parv[3] = { NULL, NULL, NULL };
   char *p;
-  unsigned int setmodes, delmodes, currmode;
+  unsigned int setmodes, delmodes, currmode, mode;
   int i, dir, para = 1, limit;
-  char mode, *c;
+  char *c;
   char key[KEYLEN+1];
   char modebuf[MODEBUFLEN+1], parabuf[MODEBUFLEN+1];
   char setstr[MODEBUFLEN/2+1], delstr[MODEBUFLEN/2+1]; 
