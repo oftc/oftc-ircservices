@@ -5,11 +5,10 @@ static VALUE cServiceModule = Qnil;
 
 /* Core Functions */
 static VALUE ServiceModule_register(VALUE, VALUE);
-static VALUE ServiceModule_reply_user(VALUE, VALUE);
+static VALUE ServiceModule_reply_user(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_service_name(VALUE, VALUE);
 static VALUE ServiceModule_add_hook(VALUE, VALUE);
 static VALUE ServiceModule_log(VALUE, VALUE, VALUE);
-static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_do_help(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_introduce_server(VALUE, VALUE, VALUE);
@@ -136,29 +135,12 @@ ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource,
 }
 
 static VALUE
-ServiceModule_reply_user(VALUE self, VALUE params)
+ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE message)
 {
-  struct Client *client;
-  struct Service *service;
-  VALUE nextparm;
+  struct Client *client = rb_rbclient2cclient(rbclient);
+  struct Service *service = get_service(self);
 
-  service = get_service(self);
-
-  client = rb_rbclient2cclient(rb_ary_shift(params));
-
-  nextparm = rb_ary_shift(params);
-
-  if(FIXNUM_P(nextparm))
-  {
-    int lang = NUM2INT(nextparm);
-    VALUE tmp = rb_ary_shift(params);
-    char *message = StringValueCStr(tmp);
-    reply_user(service, service, client, lang, message);
-  }
-  else
-  {
-    reply_user(service, service, client, 0, StringValueCStr(nextparm));
-  }
+  reply_user(service, service, client, 0, StringValueCStr(message));
 
   return self;
 }
@@ -205,14 +187,6 @@ static VALUE
 ServiceModule_log(VALUE self, VALUE level, VALUE message)
 {
   ilog(NUM2INT(level), StringValueCStr(message));
-  return self;
-}
-
-static VALUE
-ServiceModule_load_language(VALUE self, VALUE lang)
-{
-  struct Service *service = get_service(self);
-  load_language(service->languages, StringValueCStr(lang));
   return self;
 }
 
@@ -377,7 +351,8 @@ ServiceModule_db_list_del_index(VALUE self, VALUE type, VALUE id, VALUE index)
 void
 Init_ServiceModule(void)
 {
-  cServiceModule = rb_define_class("ServiceModule", rb_cObject);
+  VALUE cServiceBase = rb_path2class("ServiceBase");
+  cServiceModule = rb_define_class("ServiceModule", cServiceBase);
 
   rb_define_class_variable(cServiceModule, "@@ServiceName", rb_str_new2(""));
 
@@ -413,13 +388,12 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "SUDO_FLAG", INT2NUM(SUDO_FLAG));
 
   rb_define_method(cServiceModule, "register", ServiceModule_register, 1);
-  rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, -2);
+  rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, 2);
   rb_define_method(cServiceModule, "service_name", ServiceModule_service_name, 1);
   rb_define_method(cServiceModule, "add_hook", ServiceModule_add_hook, 1);
   rb_define_method(cServiceModule, "log", ServiceModule_log, 2);
   rb_define_method(cServiceModule, "introduce_server", ServiceModule_introduce_server, 2);
   rb_define_method(cServiceModule, "exit_client", ServiceModule_exit_client, 3);
-  rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
   rb_define_method(cServiceModule, "do_help", ServiceModule_do_help, 3);
   rb_define_method(cServiceModule, "unload", ServiceModule_unload, 0);
   rb_define_method(cServiceModule, "join_channel", ServiceModule_join_channel, 1);

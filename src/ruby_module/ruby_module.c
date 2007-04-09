@@ -504,11 +504,30 @@ unload_ruby_module(const char* name)
 void
 init_ruby(void)
 {
-  int i;
+  int i, status;
+  char path[PATH_MAX];
 
   ruby_init();
   ruby_show_version();
   ruby_init_loadpath();
+
+  snprintf(path, sizeof(path), "%s/%s", MODPATH, "ServiceBase.rb");
+  status = 0;
+  rb_protect(RB_CALLBACK(rb_load_file), (VALUE)path, &status);
+  if(ruby_handle_error(status))
+  {
+    ilog(L_CRIT, "Failed to load ruby module Service aborting");
+    return;
+  }
+
+  rb_protect(RB_CALLBACK(ruby_exec), (VALUE)NULL, &status);
+
+  if(ruby_handle_error(status))
+  {
+    ilog(L_CRIT, "Failed to exec after loading module Service");
+    return;
+  }
+
   Init_ServiceModule();
   Init_ClientStruct();
   Init_ChannelStruct();

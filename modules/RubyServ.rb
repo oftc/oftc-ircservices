@@ -21,7 +21,6 @@ class RubyServ < ServiceModule
   end
   def HELP(client, parv = [])
     log(LOG_DEBUG, "RubyServ::Help")
-    do_help(client, parv[1], parv)
   end
   def SAY(client, parv = [])
     parv.shift

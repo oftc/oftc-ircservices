@@ -205,6 +205,11 @@ int main(int argc, char *argv[])
   check_pidfile(ServicesState.pidfile);
   init_log(ServicesState.logfile);
 
+#ifdef HAVE_RUBY
+  init_ruby();
+  signal(SIGSEGV, SIG_DFL);
+#endif
+
   init_channel();
   init_conf();
   init_client();
@@ -229,11 +234,6 @@ int main(int argc, char *argv[])
     ilog(L_DEBUG, "Could not load core modules. Terminating!");
     exit(EXIT_FAILURE);
   }
-
-#ifdef HAVE_RUBY
-  init_ruby();
-  signal(SIGSEGV, SIG_DFL);
-#endif
 
   /* Go back to DPATH after checking to see if we can chdir to MODPATH */
   chdir(DPATH);
