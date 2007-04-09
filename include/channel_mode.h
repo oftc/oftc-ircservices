@@ -55,6 +55,7 @@
 #define MODE_REGONLYTALK  0x0040
 #define MODE_REGONLY      0x0080
 #define MODE_SSLONLY      0x0100
+#define MODE_NOCOLOR      0x0200
 
 /* cache flags for silence on ban */
 #define CHFL_BAN_CHECKED  0x0080

@@ -1013,7 +1013,10 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
   {
     mode = get_mode_from_letter(*c);
     if(mode <= 0)
+    {
+      c++;
       continue;
+    }
     if(chptr->mode.mode & mode)
       setmodes &= ~mode;
     c++;
@@ -1024,8 +1027,11 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
   {
     mode = get_mode_from_letter(*c);
     if(mode <= 0)
+    {
+      c++;
       continue;
-    if(!(chptr->mode.mode & mode))
+    }
+    if(!((chptr->mode.mode & mode)))
       delmodes &= ~mode;
     c++;
   }

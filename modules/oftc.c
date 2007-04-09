@@ -105,6 +105,7 @@ struct ModeList ModeList[] = {
   { MODE_MODERATED,   'm' },
   { MODE_INVITEONLY,  'i' },
   { MODE_PARANOID,    'p' },
+  { MODE_NOCOLOR,     'c' },
   { MODE_REGONLYTALK, 'M' },
   { MODE_REGONLY,     'R' },
   { MODE_SSLONLY,     'S' },
