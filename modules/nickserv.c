@@ -1167,7 +1167,10 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
   }
 
   if((target = find_client(parv[1])) == NULL)
+  {
+    reply_user(service, service, client, NS_FORBID_OK, parv[1]);
     return;
+  }
 
   reply_user(service, service, target, NS_NICK_FORBID_IWILLCHANGE, 
       target->name);
