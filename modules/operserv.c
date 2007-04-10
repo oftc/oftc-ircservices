@@ -401,7 +401,7 @@ m_akill_add(struct Service *service, struct Client *client,
   int para_start = 2;
   char *mask = parv[1];
   char duration_char = '\0';
-  int duration = 0;
+  int duration = -1;
 
   /* XXX Check that they arent going to akill the entire world */
   akill = MyMalloc(sizeof(struct ServiceBan));
@@ -430,18 +430,18 @@ m_akill_add(struct Service *service, struct Client *client,
     }
   }
 
-  if(duration != 0)
+  if(duration != -1)
   {
     switch(duration_char)
     {
       case 'm':
         break;
       case 'h':
-        duration *= 60;
+        duration *= 3600;
         break;
       case 'd':
       case '\0': /* default is days */
-        duration *= 1440; /* 60*24 */
+        duration *= 86400; 
         break;
       default:
         reply_user(service, service, client, OS_AKILL_BAD_DURATIONCHAR, 
@@ -450,8 +450,10 @@ m_akill_add(struct Service *service, struct Client *client,
         return;
     }
   }
+  else if(duration == 0)
+    duration = ServicesInfo.def_akill_dur;
   else
-    duration = ServicesInfo.def_akill_dur / 60;
+    duration = 0;
 
   if(!valid_wild_card(mask))
   {
@@ -497,7 +499,7 @@ m_akill_list(struct Service *service, struct Client *client,
     char *setter = db_get_nickname_from_id(akill->setter);
 
     strtime(client, akill->time_set, setbuf);
-    strtime(client, akill->time_set + (akill->duration * 60), durbuf);
+    strtime(client, akill->time_set + akill->duration, durbuf);
 
     reply_user(service, service, client, OS_AKILL_LIST, i++, akill->mask, 
         akill->reason, setter, setbuf, akill->duration == 0 ? "N/A" : durbuf);
