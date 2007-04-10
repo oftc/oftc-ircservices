@@ -28,8 +28,8 @@ NS_HELP_ID_LONG
 	Usage: IDENTIFY password [nick]
 	
 	
-	Identify that you the owner of the nick you are currently using.
-	If you specify a nickname to identify against, your IRC nick will
+	Identify that you the owner of the nick you are currently using. 
+	If you specify a nickname to identify against, your IRC nick will 
 	automatically be changed to the one you identify for.
 	
 	See also: REGISTER
@@ -70,7 +70,7 @@ NS_HELP_ACCESS_ADD_LONG
 	
 	
 	Add an access entry to your access list. If your IRC userhost maches this
-	entry, and SECURE is off, you will be automatically identified to your 
+	entry, and SECURE is off, you will be automatically identified to your
 	nickname without having to use the IDENTIFY command. If SECURE is on, you
 	will not be automatically identified, but ENFORCE will not apply.
 	
@@ -326,28 +326,33 @@ NS_HELP_SUDO_LONG
 	admins.
 NS_ALREADY_REG
 	Nickname %s is already registered. If this is your nickname you may try
+	
 	IDENTIFY instead. If this is not your nickname then it may have been
 	registered by someone else first. Please choose another nickname and try
 	again, or if you believe this nickname to be unused, contact network
 	support.
 NS_REG_COMPLETE
 	Nickname %s has been registered successfully and is now yours to use.
+	
 	See HELP SET for information on settings that you can set on your new
 	nickname. If you change nickname or reconnect to the IRC network you will be
 	required to identify using the password you chose when you registered. See
 	HELP IDENTIFY for more information on identifying your nickname.
 NS_REG_FAIL
 	Nickname %s failed to register. This is usually caused by an internal
+	
 	problem within services or a database problem. Please try again in a short
 	while. If this is not the first time you have received this message, please
 	contact network support.
 NS_REG_FIRST
 	Nickname %s is not registered. The nickname you specify must be a
+	
 	registered nickname. See HELP REGISTER for more information.
 NS_IDENTIFIED
 	You are sucessfully identified as %s.
 NS_IDENT_FAIL
 	Identify failed as %s. You may have entered an incorrect password. If
+	
 	you believe you have entered the correct password and are still getting this
 	message, please contact network support.
 NS_CURR_LANGUAGE
@@ -362,12 +367,14 @@ NS_SET_SUCCESS
 	SET %s to %s.
 NS_SET_FAILED
 	Failed to SET %s to %s. This may be an internal problem, please try
+	
 	again later. If this is not the first time you have seen this message please
 	contact network support.
 NS_SET_VALUE
 	%s is SET to: %s.
 NS_NEED_IDENTIFY
 	You need to identify to nickname services before you can execute this
+	
 	command. See HELP IDENTIFY for more information.
 NS_NICK_DROPPED
 	Nickname %s has been dropped. It is now free to be registered by other
@@ -376,21 +383,25 @@ NS_DROP_AUTH
 	If you are sure you wish to drop this nickname then type /msg %s DROP %d:%s
 NS_DROP_AUTH_FAIL
 	The auth code you supplied is invalid or has expired.  Nickname %s NOT
+	
 	dropped. This may be an internal error, please try again later. If this is
 	not the first time you have seen this message, please contact network
 	support.
 NS_NICK_DROPFAIL
 	DROP failed on Nickname %s. This may have been an internal error, please
+	
 	try again shortly. If this is not the first time you have seen this message
 	please contact network support.
 NS_ACCESS_ADD
 	ACCESS list entry %s added.
 NS_ACCESS_ADDFAIL
 	Failed to add ACCESS list entry %s. This may have been an internal error, 
+	
 	please try again shortly. If this is not the first time you have seen this
 	message please contact network support.
 NS_ACCESS_INVALID
 	ACCESS list entry %s is not a userhost(user@host). Please try again with
+	
 	a valid user@host address.
 NS_ACCESS_START
 	ACCESS list:
@@ -402,28 +413,35 @@ NS_GHOST_SUCCESS
 	GHOST succeed on nickname %s. The nickname is now available for use.
 NS_GHOST_FAILED
 	GHOST failed on nickname %s. You may have given an incorrect password. 
+	
 	If you believe this to be incorrect please contact network support.
 NS_GHOST_FAILED_SECURITY
 	Access Denied. Either you are not on the access list for this nickname, or
+	
 	it has SECURE set on it. If you believe this to be incorrect please contact
 	network support.
 NS_GHOST_NOSELF
 	You cannot GHOST yourself, %s.
 NS_GHOST_NOTONLINE
 	%s is not online to GHOST. The nickname may be freely used and does not
+	
 	require ghosting.
 NS_LINK_NOMASTER
 	Master nickname %s not registered. The nickname you want to link to must
+	
 	be registered with nickname services.
 NS_LINK_BADPASS
 	Incorrect password for master nickname %s. You must supply the correct
+	
 	password for the master nickname in order to link to it.
 NS_LINK_NOSELF
 	This nickname is already linked to that master. You may not link a nickname 
+	
 	which is already linked to a master. If you wish to do this, you will need 
 	to UNLINK one of the nicknames first.
 NS_LINK_FAIL
 	LINK failed to master %s. This may have been an internal error, please
+	
 	try again shortly. If this is not the first time you have seen this 
 	message please contact network support.
 NS_LINK_OK
@@ -448,6 +466,8 @@ NS_INFO_REGTIME_NOMONTH
 	  Time Registered: %s (%d Day(s) %02d:%02d:%02d ago.)
 NS_INFO_REGTIME_NODAY
 	  Time Registered: %s (%02d:%02d:%02d ago.)
+NS_INFO_REGTIME_UNKNOWN
+		Time Registered: Unknown
 NS_INFO_QUITTIME_FULL
 	   Last quit time: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
 NS_INFO_QUITTIME_NOYEAR
@@ -456,6 +476,8 @@ NS_INFO_QUITTIME_NOMONTH
 	   Last quit time: %s (%d Day(s) %02d:%02d:%02d ago.)
 NS_INFO_QUITTIME_NODAY
 	   Last quit time: %s (%02d:%02d:%02d ago.)
+NS_INF_QUITTIME_UNKNOWN
+	   Last quit time: Unknown
 NS_INFO_SEENTIME_FULL
 	        Last seen: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
 NS_INFO_SEENTIME_NOYEAR
@@ -464,6 +486,8 @@ NS_INFO_SEENTIME_NOMONTH
 	        Last seen: %s (%d Day(s) %02d:%02d:%02d ago.)
 NS_INFO_SEENTIME_NODAY
 	        Last seen: %s (%02d:%02d:%02d ago.)
+NS_INFO_SEENTIME_UNKNOWN
+					Last seen: Unknown
 NS_INFO_EMAIL
 	    eMail address: %s
 NS_INFO_ONLINE
@@ -480,14 +504,17 @@ NS_INFO_CHAN
 	%s : %s
 NS_NICK_IN_USE
 	%s is a registered nickname and you are not on its access list. If this is
+	
 	your nickname, you may authenticate yourself to services with the IDENTIFY
 	command.
 NS_NICK_IN_USE_IWILLCHANGE
 	%s is a registered nickname and you are not on its access list.  Change your
+	
 	nickname now or I will change it for you.  If this is your nickname,
 	authenticate yourself to services now with the IDENTIFY command.
 NS_NICK_FORBID_IWILLCHANGE
 	This nickname, %s, may not be used. Choose another or I will forcefully
+	
 	change your nickname.
 NS_FORBID_OK
 	%s has been forbidden and may now not be used.
@@ -495,12 +522,15 @@ NS_FORBID_FAIL
 	%s failed to be forbidden.
 NS_NOREG_GUEST
 	Guest nicknames are reserved for services use and may not be registered.
+	
 	Please change your nickname and try again.
 NS_NOREG_FORBID
 	%s is forbidden and may not be registered or used. Please change your
+	
 	nickname and try again.
 NS_INVALID_EMAIL
 	%s is not a valid e-mail address. Please use a valid e-mail address so
+	
 	that you may recover your password should you forget it. Your e-mail will
 	only be used to confirm limited services actions(such as requesting a new
 	password if you forget your current one).
@@ -508,9 +538,11 @@ NS_LANG_LIST
 	%d : %s
 NS_MASTER_NOT_LINKED
 	%s is not linked to your nickname. You may not set a master nickname
+	
 	which is not linked to this one.
 NS_MASTER_SET_OK
 	Master nickname set to %s. This nickname will now show in services lists
+	
 	such as access lists.
 NS_MASTER_SET_FAIL
 	Failed to set master nickname to %s.
@@ -526,11 +558,13 @@ NS_REGAIN_FAIL
 	Failed to regain nickname %s.
 NS_SENDPASS_SENT
 	This is a two stage process; instructions on the second stage have been 
+	
 	e-mailed to the e-mail address listed on the account.
 NS_SENDPASS_NEED_PASS
 	You must specify a new password to be set on the account.
 NS_SENDPASS_AUTH_FAIL
 	The auth code you provided is either invalid or has expired. Password has 
+	
 	not been reset.
 NS_SENDPASS_SUBJECT
 	OFTC Nickname password reset request

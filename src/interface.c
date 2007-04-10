@@ -192,7 +192,7 @@ strtime(struct Client *client, time_t tm, char *result)
     timestr = ServicesLanguages[client->nickname->language].entries[SERV_DATETIME_FORMAT];
 
   if(tm <= 0)
-    return strlcpy(result, "Unknown", TIME_BUFFER + 1);
+    return 0;
   else
     return strftime(result, TIME_BUFFER, timestr, gmtime(&tm));
 }
@@ -207,7 +207,9 @@ void reply_time(struct Service *service, struct Client *client,
   
   date_diff(CurrentTime, off, &diff);
 
-  if(diff.tm_year > 0)
+  if(off == 0)
+    reply_user(service, service, client, baseid+4);
+  else if(diff.tm_year > 0)
     reply_user(service, service, client, baseid, buf,
       diff.tm_year, diff.tm_mon, diff.tm_mday-1, diff.tm_hour, diff.tm_min, 
       diff.tm_sec);

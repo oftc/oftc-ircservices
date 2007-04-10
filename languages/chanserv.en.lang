@@ -305,6 +305,8 @@ CS_INFO_REGTIME_NOMONTH
 	Time Registered: %s (%d Day(s) %02d:%02d:%02d ago.)
 CS_INFO_REGTIME_NODAY
 	Time Registered: %s (%02d:%02d:%02d ago.)
+CS_INFO_REGTIME_UNKNOWN
+	Time Registered: Unknown
 CS_AKICK_NONICK
 	%s is not a registered nickname. Try a mask instead.
 CS_AKICK_ADDED
