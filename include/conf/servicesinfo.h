@@ -37,6 +37,7 @@ struct ServicesInfoConf
 #endif
   char logfile[PATH_MAX+1];
   char *hmac_secret;
+  time_t def_akill_dur;
 };
 
 EXTERN struct ServicesInfoConf ServicesInfo;

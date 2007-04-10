@@ -400,6 +400,10 @@ irc_sendmsg_akill(va_list args)
   char            *setter   = va_arg(args, char *);
   char            *mask     = va_arg(args, char *);
   char            *reason   = va_arg(args, char *);
+  time_t          duration  = va_arg(args, time_t);
+
+  setter = setter;
+
   char name[NICKLEN];
   char user[USERLEN + 1];
   char host[HOSTLEN + 1];
@@ -416,8 +420,8 @@ irc_sendmsg_akill(va_list args)
 
   split_nuh(&nuh);
 
-  sendto_server(uplink, ":%s KLINE * 0 %s %s :autokilled: %s(Set by %s)", 
-      (source != NULL) ? source->name : me.name, user, host, reason, setter);
+  sendto_server(uplink, ":%s KLINE * %ld %s %s :autokilled: %s", 
+      (source != NULL) ? source->name : me.name, duration, user, host, reason);
 
   return NULL;
 }

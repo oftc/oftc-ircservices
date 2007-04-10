@@ -80,10 +80,13 @@ OS_ADMIN_DEL_HELP_LONG
 OS_AKILL_ADD_HELP_SHORT
 	%s: Add an akill.
 OS_AKILL_ADD_HELP_LONG
-	Usage: AKILL ADD user@host [duration] reason
+	Usage: AKILL ADD [+duration] user@host reason
 	
 	Adds an AKILL on the specified user@host for the specified duration with the
-	specified reason. If a duration is not specified, the default is used.
+	specified reason. If a duration is not specified, the default is used. The
+	duration paramter takes the form +duration[suffix], where suffix can be one
+	of 'm', 'h', 'd', meaning minutes, hours and days respectively. If no suffix
+	is specified, days is used.
 OS_AKILL_LIST_HELP_SHORT
 	%s: List akills.
 OS_AKILL_LIST_HELP_LONG
@@ -146,3 +149,5 @@ OS_AKILL_ADDFAIL
 	AKILL %s failed to be added.
 OS_AKILL_DEL
 	%d AKILL(s) deleted.
+OS_AKILL_BAD_DURATIONCHAR
+	Invalid duration character: '%c'.

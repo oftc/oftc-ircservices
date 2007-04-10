@@ -89,7 +89,7 @@ static struct ServiceMessage admin_msgtab = {
 };
 
 static struct ServiceMessage akill_subs[] = {
-  { NULL, "ADD", 0, 3, 3, SFLG_NOMAXPARAM, OPER_FLAG, OS_AKILL_ADD_HELP_SHORT, 
+  { NULL, "ADD", 0, 2, 3, SFLG_NOMAXPARAM, OPER_FLAG, OS_AKILL_ADD_HELP_SHORT, 
     OS_AKILL_ADD_HELP_LONG, m_akill_add },
   { NULL, "LIST", 0, 0, 0, 0, OPER_FLAG, OS_AKILL_LIST_HELP_SHORT, 
     OS_AKILL_LIST_HELP_LONG, m_akill_list },
@@ -351,33 +351,83 @@ m_admin_del(struct Service *service, struct Client *client,
   }
 }
 
-/* AKILL ADD user@host reason [duration] */
+/* AKILL ADD [+duration] user@host reason */
 static void
 m_akill_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct ServiceBan *akill;
   char reason[IRC_BUFSIZE+1];
+  int para_start = 2;
+  char *mask = parv[1];
+  char duration_char = '\0';
+  int duration = 0;
 
   /* XXX Check that they arent going to akill the entire world */
   akill = MyMalloc(sizeof(struct ServiceBan));
 
   akill->type = AKILL_BAN;
-  DupString(akill->mask, parv[1]);
 
-  join_params(reason, parc-1, &parv[2]);
+  if(*parv[1] == '+')
+  {
+    char *ptr = parv[1];
+
+    para_start = 3;
+    mask = parv[2];
+    parc--;
+
+    ptr++;
+    while(*ptr != '\0')
+    {
+      if(!IsDigit(*ptr))
+      {
+        duration_char = *ptr;
+        *ptr = '\0';
+        duration = atoi(parv[1]);
+        break;
+      }
+      ptr++;
+    }
+  }
+
+  if(duration != 0)
+  {
+    switch(duration_char)
+    {
+      case 'm':
+        break;
+      case 'h':
+        duration *= 60;
+        break;
+      case 'd':
+      case '\0': /* default is days */
+        duration *= 1440; /* 60*24 */
+        break;
+      default:
+        reply_user(service, service, client, OS_AKILL_BAD_DURATIONCHAR, 
+            duration_char);
+        return;
+    }
+  }
+  else
+    duration = ServicesInfo.def_akill_dur / 60;
+
+  DupString(akill->mask, mask);
+
+  join_params(reason, parc-1, &parv[para_start]);
 
   DupString(akill->reason, reason);
   akill->setter = client->nickname->id;
   akill->time_set = CurrentTime;
+  akill->duration = duration;
 
   if(!db_list_add(AKILL_LIST, akill))
   {
-    reply_user(service, service, client, OS_AKILL_ADDFAIL, parv[1]);
+    reply_user(service, service, client, OS_AKILL_ADDFAIL, mask);
     return;
   }
   
-  reply_user(service, service, client, OS_AKILL_ADDOK, parv[1]);
+  reply_user(service, service, client, OS_AKILL_ADDOK, mask);
   send_akill(service, client->name, akill);
   free_serviceban(akill);
 }
@@ -389,6 +439,7 @@ m_akill_list(struct Service *service, struct Client *client,
   struct ServiceBan *akill;
   void *handle, *first;
   char setbuf[TIME_BUFFER + 1];
+  char durbuf[TIME_BUFFER + 1];
   int i = 1;
 
   first = handle = db_list_first(AKILL_LIST, 0, (void**)&akill);
@@ -397,9 +448,10 @@ m_akill_list(struct Service *service, struct Client *client,
     char *setter = db_get_nickname_from_id(akill->setter);
 
     strtime(client, akill->time_set, setbuf);
+    strtime(client, akill->time_set + (akill->duration * 60), durbuf);
 
     reply_user(service, service, client, OS_AKILL_LIST, i++, akill->mask, 
-        akill->reason, setter, setbuf, "N/A");
+        akill->reason, setter, setbuf, akill->duration == 0 ? "N/A" : durbuf);
     free_serviceban(akill);
     MyFree(setter);
     handle = db_list_next(handle, AKILL_LIST, (void**)&akill);

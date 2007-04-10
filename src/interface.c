@@ -372,7 +372,7 @@ send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
 {
   if(!ServicesState.debugmode)
     execute_callback(send_akill_cb, me.uplink, service, setter, akill->mask,
-        akill->reason);
+        akill->reason, akill->duration);
 }
 
 void

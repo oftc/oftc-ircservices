@@ -196,6 +196,8 @@ init_servicesinfo(void)
     NULL);
 #endif
   add_conf_field(s, "hmac_secret", CT_STRING, NULL, &ServicesInfo.hmac_secret);
+  add_conf_field(s, "default_akill_duration", CT_TIME,  NULL,
+      &ServicesInfo.def_akill_dur);
 
   s->after = after_servicesinfo;
 }
