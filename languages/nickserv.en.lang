@@ -348,6 +348,10 @@ NS_REG_FIRST
 	Nickname %s is not registered. The nickname you specify must be a
 	
 	registered nickname. See HELP REGISTER for more information.
+NS_NICKFORBID
+	This nickname(%s) is on the forbidden list and may not be registered or 
+	
+	used in any services commands.
 NS_IDENTIFIED
 	You are sucessfully identified as %s.
 NS_IDENT_FAIL

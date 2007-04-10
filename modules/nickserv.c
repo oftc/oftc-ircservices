@@ -1052,16 +1052,27 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       nick = client->nickname;
     else
     {
+      if(db_is_forbid(client->name))
+      {
+        reply_user(service, service, client, NS_NICKFORBID, client->name);
+        return;
+      }
       if((nick = db_find_nick(client->name)) == NULL)
       {
         reply_user(service, service, client, NS_REG_FIRST, client->name);
         return;
       }
-    }
+   }
     name = client->name;
   }
   else
   {
+    if(db_is_forbid(parv[1]))
+    {
+      reply_user(service, service, client, NS_NICKFORBID, parv[1]);
+      return;
+    }
+
     if((nick = db_find_nick(parv[1])) == NULL)
     {
       reply_user(service, service, client, NS_REG_FIRST,
