@@ -154,7 +154,8 @@ query_t queries[QUERY_COUNT] = {
     "channel_access.channel_id AND channel_access.account_id=?d", NULL, QUERY },
   { "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
     "AND level=4 AND channel_access.account_id=account.id AND "
-      "account.primary_nick=nickname.id", NULL, QUERY},
+      "account.primary_nick=nickname.id", NULL, QUERY },
+  { "DELETE FROM channel_access WHERE accout_id=?d", NULL, EXECUTE },
 };
 
 void
@@ -588,7 +589,11 @@ db_delete_nick(unsigned int accid, unsigned int nickid, const char *nick)
   {
     db_exec(ret, DELETE_NICK, nick);
     if(ret != -1)
-      db_exec(ret, DELETE_ACCOUNT, accid);
+    {
+      db_exec(ret, DELETE_ACCOUNT_CHACCESS, accid);
+      if(ret != -1)
+        db_exec(ret, DELETE_ACCOUNT, accid);
+    }
   }
   else
   {
