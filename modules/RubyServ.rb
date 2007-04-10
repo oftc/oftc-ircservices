@@ -1,11 +1,12 @@
 class RubyServ < ServiceModule
   def initialize()
     service_name("RubyServ")
+    load_language("rubyserv.en")
     register([
       #["COMMAND", PARAM_MIN, PARAM_MAX, FLAGS, ACCESS, HLP_SHORT, HELP_LONG]
-      ["HELP", 0, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, 0, 0, 0],
-      ["SAY", 1, 0, SFLG_NOMAXPARAM, 0, 1, 2],
-      ["COLLECT", 0, 0, 0, ADMIN_FLAG, 0, 0],
+      ["HELP", 0, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, 0, lm('RS_HELP_SHORT'), lm('RS_HELP_LONG')],
+      ["SAY", 1, 0, SFLG_NOMAXPARAM, 0, lm('RS_HELP_SAY_SHORT'), lm('RS_HELP_SAY_LONG')],
+      ["COLLECT", 0, 0, 0, ADMIN_FLAG, lm('RS_HELP_COLLECT_SHORT'), lm('RS_HELP_COLLECT_LONG')],
       ])
     add_hook([
       [CMODE_HOOK, 'cmode'],
@@ -16,11 +17,11 @@ class RubyServ < ServiceModule
       [NICK_HOOK, 'nick'],
       [NOTICE_HOOK, 'notice'],
     ])
-    load_language("rubyserv.en")
-    join_channel("#test")
+    #join_channel("#test")
   end
   def HELP(client, parv = [])
     log(LOG_DEBUG, "RubyServ::Help")
+		do_help(client, parv[1], parv)
   end
   def SAY(client, parv = [])
     parv.shift

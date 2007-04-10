@@ -1,8 +1,18 @@
 0 English
+RS_HELP_SHORT
+	%s: shows this help
+RS_HELP_LONG
+	Shows this help message
 RS_HELP_SAY_SHORT
-	Say something back to the user
+	%s: Say something back to the user
 RS_HELP_SAY_LONG
 	Say something back to the user
 	
 	Usage: SAY stuff
 	Example: SAY Hello World!
+RS_HELP_COLLECT_SHORT
+	%s: Execute a ruby gc collection
+RS_HELP_COLLECT_LONG
+	Execute a ruby gc collection
+	
+	Use only if you expect something evil in ruby has happened.

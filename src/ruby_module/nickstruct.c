@@ -398,8 +398,6 @@ Init_NickStruct(void)
 {
   cNickStruct = rb_define_class("NickStruct", rb_cObject);
 
-  rb_define_class_variable(cNickStruct, "@@realptr", Qnil);
-
   rb_define_method(cNickStruct, "initialize", NickStruct_Initialize, 1);
   rb_define_method(cNickStruct, "nick", NickStruct_Nick, 0);
   rb_define_method(cNickStruct, "nick=", NickStruct_NickSet, 1);

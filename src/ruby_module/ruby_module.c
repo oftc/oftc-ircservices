@@ -201,24 +201,6 @@ rb_carray2rbarray(int parc, char **parv)
     return rb_ary_new();
 }
 
-char **
-rb_rbarray2carray(VALUE parv)
-{
-  /*int argc = RARRAY(parv)->len;
-  char **argv = (char *)MyMalloc(argc * sizeof(char *));
-  int i;
-  VALUE tmp;
-
-  for(i = 0; i < argc; i++)
-  {
-    tmp = rb_ary_shift(parv);
-    argv[i] = StringValueCStr(tmp);
-  }
-
-  return argv;*/
-  return NULL;
-}
-
 static void
 do_hook(VALUE hooks, int parc, ...)
 {
@@ -228,7 +210,7 @@ do_hook(VALUE hooks, int parc, ...)
   va_list args;
 
   va_start(args, parc);
-  
+
   if(parc > 0)
     params = ALLOCA_N(VALUE, parc);
 

@@ -172,8 +172,6 @@ Init_ClientStruct(void)
 {
   cClientStruct = rb_define_class("ClientStruct", rb_cObject);
 
-  rb_define_class_variable(cClientStruct, "@@realptr", Qnil);
-
   rb_define_method(cClientStruct, "initialize", ClientStruct_Initialize, 1);
   rb_define_method(cClientStruct, "name", ClientStruct_Name, 0);
   rb_define_method(cClientStruct, "name=", ClientStruct_NameSet, 1);

@@ -110,8 +110,6 @@ Init_ChannelStruct(void)
 {
   cChannelStruct = rb_define_class("ChannelStruct", rb_cObject);
 
-  rb_define_class_variable(cChannelStruct, "@@realptr", Qnil);
-
   rb_define_method(cChannelStruct, "initialize", ChannelStruct_Initialize, 1);
   rb_define_method(cChannelStruct, "name", ChannelStruct_Name, 0);
   rb_define_method(cChannelStruct, "name=", ChannelStruct_NameSet, 1);

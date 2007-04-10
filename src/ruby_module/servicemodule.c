@@ -14,6 +14,7 @@ static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_introduce_server(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_unload(VALUE);
 static VALUE ServiceModule_join_channel(VALUE, VALUE);
+static VALUE ServiceModule_chain_language(VALUE, VALUE);
 /* Core Functions */
 /* DB Prototypes */
 static VALUE ServiceModule_db_set_string(VALUE, VALUE, VALUE, VALUE);
@@ -62,24 +63,10 @@ set_service(VALUE self, struct Service *service)
 static VALUE
 ServiceModule_register(VALUE self, VALUE commands)
 {
-  struct Service *ruby_service;
+  struct Service *ruby_service = get_service(self);
   struct ServiceMessage *generic_msgtab;
-  VALUE command, service_name;
+  VALUE command;
   long i;
-
-  service_name = rb_iv_get(self, "@ServiceName");
-
-  ruby_service = make_service(StringValueCStr(service_name));
-
-  set_service(self, ruby_service);
-
-  if(ircncmp(ruby_service->name, StringValueCStr(service_name), NICKLEN) != 0)
-    rb_iv_set(self, "@ServiceName", rb_str_new2(ruby_service->name));
-
-  clear_serv_tree_parse(&ruby_service->msg_tree);
-  dlinkAdd(ruby_service, &ruby_service->node, &services_list);
-  hash_add_service(ruby_service);
-  introduce_client(ruby_service->name);
 
   Check_Type(commands, T_ARRAY);
 
@@ -148,7 +135,25 @@ ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE message)
 static VALUE
 ServiceModule_service_name(VALUE self, VALUE name)
 {
-  return rb_iv_set(self, "@ServiceName", name);
+  struct Service *ruby_service;
+
+  rb_iv_set(self, "@ServiceName", name);
+
+  ruby_service = make_service(StringValueCStr(name));
+
+  set_service(self, ruby_service);
+
+  if(ircncmp(ruby_service->name, StringValueCStr(name), NICKLEN) != 0)
+    rb_iv_set(self, "@ServiceName", rb_str_new2(ruby_service->name));
+
+  clear_serv_tree_parse(&ruby_service->msg_tree);
+  dlinkAdd(ruby_service, &ruby_service->node, &services_list);
+  hash_add_service(ruby_service);
+  introduce_client(ruby_service->name);
+
+  rb_iv_set(self, "@langpath", rb_str_new2(LANGPATH));
+
+  return name;
 }
 
 static VALUE
@@ -195,11 +200,32 @@ ServiceModule_do_help(VALUE self, VALUE client, VALUE value, VALUE parv)
 {
   struct Service *service = get_service(self);
   struct Client *cclient = rb_rbclient2cclient(client);
-  char *cvalue = StringValueCStr(value);
-  int argc = RARRAY(parv)->len;
-  char **argv = rb_rbarray2carray(parv);
+  int argc = 0;
+  int i;
+  char *cvalue = 0;
+  char **argv = 0;
+  VALUE tmp;
+
+  if(!NIL_P(value))
+  {
+    DupString(cvalue, StringValueCStr(value));
+    argc = RARRAY(parv)->len - 1;
+    argv = ALLOCA_N(char *, argc);
+
+    for(i = 0; i < argc; ++i)
+    {
+      tmp = rb_ary_entry(parv, i);
+      DupString(argv[i], StringValueCStr(tmp));
+    }
+  }
 
   do_help(service, cclient, cvalue, argc, argv);
+
+  if(argc > 0)
+  {
+    for(i = 0; i < argc; ++i)
+      MyFree(argv[i]);
+  }
 
   return self;
 }
@@ -219,6 +245,15 @@ ServiceModule_join_channel(VALUE self, VALUE channame)
   const char* chname = StringValueCStr(channame);
   struct Channel *channel = join_channel(client, chname);
   return rb_cchannel2rbchannel(channel);
+}
+
+static VALUE
+ServiceModule_chain_language(VALUE self, VALUE langfile)
+{
+  struct Service *service = get_service(self);
+  load_language(service->languages, StringValueCStr(langfile));
+
+  return self;
 }
 
 static VALUE
@@ -354,8 +389,6 @@ Init_ServiceModule(void)
   VALUE cServiceBase = rb_path2class("ServiceBase");
   cServiceModule = rb_define_class("ServiceModule", cServiceBase);
 
-  rb_define_class_variable(cServiceModule, "@@ServiceName", rb_str_new2(""));
-
   rb_define_const(cServiceModule, "UMODE_HOOK",  INT2NUM(RB_HOOKS_UMODE));
   rb_define_const(cServiceModule, "CMODE_HOOK",  INT2NUM(RB_HOOKS_CMODE));
   rb_define_const(cServiceModule, "NEWUSR_HOOK", INT2NUM(RB_HOOKS_NEWUSR));
@@ -397,6 +430,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "do_help", ServiceModule_do_help, 3);
   rb_define_method(cServiceModule, "unload", ServiceModule_unload, 0);
   rb_define_method(cServiceModule, "join_channel", ServiceModule_join_channel, 1);
+  rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
 
   rb_define_method(cServiceModule, "string", ServiceModule_db_set_string, 3);
   rb_define_method(cServiceModule, "string?", ServiceModule_db_get_string, 3);

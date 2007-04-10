@@ -38,7 +38,7 @@ static VALUE RegChannel_ExpireBansSet(VALUE, VALUE);
 static VALUE
 RegChannel_Initialize(VALUE self, VALUE channel)
 {
-  rb_iv_set(self, "#realptr", channel);
+  rb_iv_set(self, "@realptr", channel);
   return self;
 }
 
@@ -272,8 +272,6 @@ void
 Init_RegChannel(void)
 {
   cRegChannel = rb_define_class("RegChannel", rb_cObject);
-
-  rb_define_class_variable(cRegChannel, "@@realptr", Qnil);
 
   rb_define_method(cRegChannel, "initialize", RegChannel_Initialize, 1);
   rb_define_method(cRegChannel, "id", RegChannel_Id, 0);
