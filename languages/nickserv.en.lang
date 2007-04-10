@@ -429,7 +429,7 @@ NS_LINK_FAIL
 NS_LINK_OK
 	Nickname %s is now linked to master %s.
 NS_UNLINK_FAILED
-	Nickname %s is failed to unlink.
+	Nickname %s failed to unlink.
 NS_UNLINK_OK
 	Nickname %s is now unlinked.
 NS_UNLINK_NOLINK

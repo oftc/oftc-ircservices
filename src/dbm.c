@@ -991,7 +991,8 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
   if(ret != -1)
   {
     new_accid = InsertID("account", "id");
-    db_exec(ret, SET_NICK_LINK_EXCLUDE, new_accid, accid, nickid);
+    if(priid != nickid)
+      db_exec(ret, SET_NICK_LINK_EXCLUDE, new_accid, accid, nickid);
   }
 
   if(ret != -1)
@@ -999,8 +1000,9 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
     new_nickid = db_fix_link(accid, priid);
     if(nickid == priid)
     {
-      db_exec(ret, SET_NICK_MASTER, new_nickid, accid);
-      db_exec(ret, SET_NICK_MASTER, priid, new_accid);
+      db_exec(ret, SET_NICK_MASTER, priid, accid);
+      db_exec(ret, SET_NICK_MASTER, new_nickid, new_accid);
+      db_exec(ret, SET_NICK_LINK_EXCLUDE, new_accid, accid, new_nickid);
     }
     else
       db_exec(ret, SET_NICK_MASTER, nickid, new_accid);
