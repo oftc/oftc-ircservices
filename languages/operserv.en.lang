@@ -151,3 +151,5 @@ OS_AKILL_DEL
 	%d AKILL(s) deleted.
 OS_AKILL_BAD_DURATIONCHAR
 	Invalid duration character: '%c'.
+OS_AKILL_TOO_WILD
+	AKILLs must contain at least %d non wild characters.

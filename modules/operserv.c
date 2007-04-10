@@ -351,6 +351,46 @@ m_admin_del(struct Service *service, struct Client *client,
   }
 }
 
+static int
+valid_wild_card(const char *arg) 
+{
+  char tmpch;
+  int nonwild = 0;
+  int anywild = 0;
+
+  /*
+   * Now we must check the user and host to make sure there
+   * are at least NONWILDCHARS non-wildcard characters in
+   * them, otherwise assume they are attempting to kline
+   * *@* or some variant of that. This code will also catch
+   * people attempting to kline *@*.tld, as long as NONWILDCHARS
+   * is greater than 3. In that case, there are only 3 non-wild
+   * characters (tld), so if NONWILDCHARS is 4, the kline will
+   * be disallowed.
+   * -wnder
+   */
+  while ((tmpch = *arg++))
+  {
+    if (!IsKWildChar(tmpch))
+    {
+      /*
+       * If we find enough non-wild characters, we can
+       * break - no point in searching further.
+       */
+      if (++nonwild >= ServicesInfo.min_nonwildcard)
+        return 1;
+    }
+    else
+      anywild = 1;
+  }
+
+  /* There are no wild characters in the ban, allow it */
+  if(!anywild)
+    return 1;
+
+  return 0;
+}
+
 /* AKILL ADD [+duration] user@host reason */
 static void
 m_akill_add(struct Service *service, struct Client *client,
@@ -406,11 +446,20 @@ m_akill_add(struct Service *service, struct Client *client,
       default:
         reply_user(service, service, client, OS_AKILL_BAD_DURATIONCHAR, 
             duration_char);
+        MyFree(akill);
         return;
     }
   }
   else
     duration = ServicesInfo.def_akill_dur / 60;
+
+  if(!valid_wild_card(mask))
+  {
+    reply_user(service, service, client, OS_AKILL_TOO_WILD, 
+        ServicesInfo.min_nonwildcard);
+    MyFree(akill);
+    return;
+  }
 
   DupString(akill->mask, mask);
 
