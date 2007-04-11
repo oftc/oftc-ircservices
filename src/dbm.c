@@ -239,6 +239,8 @@ db_load_driver()
   else
     db_log("db: Database connection succeeded.\n");
 
+  Database.yada->execute(Database.yada, "SET CLIENT_ENCODING TO 'UTF8'", 0);
+
   for(i = 0; i < QUERY_COUNT; i++)
   {
     query_t *query = &queries[i];
@@ -267,6 +269,7 @@ db_try_reconnect()
     {
       ilog(L_NOTICE, "Database connection restored after %d seconds",
           num_attempts * 5);
+      Database.yada->execute(Database.yada, "SET CLIENT_ENCODING TO 'UTF8'", 0);
       return;
     }
     sleep(5);
