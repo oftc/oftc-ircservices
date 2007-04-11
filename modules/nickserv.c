@@ -60,6 +60,7 @@ static void m_unforbid(struct Service *,struct Client *, int, char *[]);
 static void m_regain(struct Service *,struct Client *, int, char *[]);
 static void m_sudo(struct Service *, struct Client *, int, char *[]);
 static void m_sendpass(struct Service *, struct Client *, int, char *[]);
+static void m_list(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -193,6 +194,11 @@ static struct ServiceMessage sendpass_msgtab = {
   NS_HELP_SENDPASS_LONG, m_sendpass
 };
 
+static struct ServiceMessage list_msgtab = {
+  NULL, "LIST", 0, 1, 2, 0, USER_FLAG, NS_HELP_LIST_SHORT,
+  NS_HELP_LIST_LONG, m_list
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -219,6 +225,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &sudo_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &cloakstring_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &sendpass_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &list_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -1412,6 +1419,53 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
   MyFree(pass);
 
   free_nick(nick);
+}
+
+static void
+m_list(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  char *nick;
+  void *listptr, *first;
+  int count = 0;
+  int query = NICK_LIST;
+
+  if(parc == 2 && client->access >= OPER_FLAG)
+  {
+    if(irccmp(parv[2], "FORBID") == 0)
+      query = NICK_FORBID_LIST;
+    else
+    {
+      reply_user(service, service, client, NS_LIST_INVALID_OPTION, parv[2]);
+      return;
+    }
+  }
+
+  if(query == NICK_LIST && client->access >= OPER_FLAG)
+    query = NICK_LIST_OPER;
+
+  if((listptr = db_list_first(query, 0, (void**)&nick)) == NULL)
+  {
+    reply_user(service, service, client, NS_LIST_NO_MATCHES, parv[1]);
+    return;
+  }
+
+  first = listptr;
+
+  while(listptr != NULL)
+  {
+    if(match(parv[1], nick))
+    {
+      count++;
+      reply_user(service, service, client, NS_LIST_ENTRY, nick);
+    }
+    if(count == 50)
+      break;
+    listptr = db_list_next(listptr, query, (void**)&nick);
+  }
+
+  db_list_done(first);
+
+  reply_user(service, service, client, NS_LIST_END, count);
 }
 
 static void*

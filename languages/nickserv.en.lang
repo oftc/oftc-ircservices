@@ -324,6 +324,15 @@ NS_HELP_SUDO_LONG
 	to your own nickname if you execute it on a command that does not make
 	sense(REGISTER, IDENTIFY etc). This command is restricted to services
 	admins.
+NS_HELP_LIST_SHORT
+	%s: Shows a list of nicknames matching a specified pattern.
+NS_HELP_LIST_LONG
+	Usage: LIST pattern [FORBID]
+	
+	Shows a list of nicknames which are registered and match the pattern
+	specified. If you specify FORBID, only forbidden nicknames will be shown.
+	The forbid option is restricted to IRC Operators. Results will be limited to
+	50 matches, so try to be specified with your pattern.
 NS_ALREADY_REG
 	Nickname %s is already registered. If this is your nickname you may try
 	
@@ -595,3 +604,11 @@ NS_SENDPASS_BODY
 	Kind regards,
 	
 	OFTC IRC Nickname Services
+NS_LIST_INVALID_OPTION
+	Invalid LIST option %s.
+NS_LIST_NO_MATCHES
+	No matches were found which matched the pattern %s.
+NS_LIST_ENTRY
+	%s
+NS_LIST_END
+	End of LIST. %d matches found.

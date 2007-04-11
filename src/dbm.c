@@ -174,6 +174,11 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
     QUERY },
   { "DELETE FROM sent_mail WHERE sent + ?d < ?d", NULL, EXECUTE },
+  { "SELECT nick FROM nickname WHERE flag_private='f'", NULL, QUERY },
+  { "SELECT nick FROM nickname", NULL, QUERY },
+  { "SELECT nick FROM forbidden_nickname", NULL, QUERY },
+  { "SELECT channel FROM channel WHERE flag_private='f'", NULL, QUERY },
+  { "SELECT channel FROM channel", NULL, QUERY },
 };
 
 void
@@ -798,6 +803,36 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = strval;
       brc = Bind("?ps", entry);
       break;
+    case NICK_LIST:
+      query = GET_NICKS;
+
+      *entry = strval;
+      brc = Bind("?ps", entry);
+      break;
+    case NICK_LIST_OPER:
+      query = GET_NICKS_OPER;
+
+      *entry = strval;
+      brc = Bind("?ps", entry);
+      break;
+    case NICK_FORBID_LIST:
+      query = GET_FORBIDS;
+
+      *entry = strval;
+      brc = Bind("?ps", entry);
+      break;
+    case CHAN_LIST:
+      query = GET_CHANNELS;
+
+      *entry = strval;
+      brc = Bind("?ps", entry);
+      break;
+    case CHAN_LIST_OPER:
+      query = GET_CHANNELS_OPER;
+
+      *entry = strval;
+      brc = Bind("?ps", entry);
+      break;
   }
 
   db_query(rc, query, param);
@@ -865,11 +900,13 @@ db_list_next(void *result, unsigned int type, void **entry)
       res->brc = Bind("?d?ps", &aeval->id, &aeval->value);
       break;
     case ADMIN_LIST:
-      *entry = strval;
-      Free(res->brc);
-      res->brc = Bind("?ps", entry);
-      break;
     case NICKLINK_LIST:
+    case CHMASTER_LIST:
+    case NICK_LIST:
+    case NICK_LIST_OPER:
+    case NICK_FORBID_LIST:
+    case CHAN_LIST:
+    case CHAN_LIST_OPER:
       *entry = strval;
       Free(res->brc);
       res->brc = Bind("?ps", entry);
@@ -901,11 +938,6 @@ db_list_next(void *result, unsigned int type, void **entry)
       *entry = info;
       Free(res->brc);
       res->brc = Bind("?ps?d", &info->channel, &level);
-      break;
-    case CHMASTER_LIST:
-      *entry = strval;
-      Free(res->brc);
-      res->brc = Bind("?ps", entry);
       break;
     default:
       assert(0 == 1);

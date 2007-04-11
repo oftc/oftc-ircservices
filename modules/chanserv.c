@@ -49,6 +49,7 @@ static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *, struct Client *, int, char *[]);
 static void m_sudo(struct Service *, struct Client *, int, char *[]);
+static void m_list(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
@@ -77,6 +78,7 @@ static void m_op(struct Service *, struct Client *, int, char *[]);
 static void m_deop(struct Service *, struct Client *, int, char *[]);
 static void m_invite(struct Service *, struct Client *, int, char *[]);
 static void m_unban(struct Service *, struct Client *, int, char *[]);
+static void m_list(struct Service *, struct Client *, int, char *[]);
 
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
@@ -214,11 +216,10 @@ static struct ServiceMessage sudo_msgtab = {
   CS_HELP_SUDO_SHORT, CS_HELP_SUDO_LONG, m_sudo
 };
 
-/*
-LIST
-SYNC
-SENDPASS
-*/
+static struct ServiceMessage list_msgtab = {
+  NULL, "LIST", 0, 1, 2, 0, USER_FLAG,
+  CS_HELP_LIST_SHORT, CS_HELP_LIST_LONG, m_list
+};
 
 INIT_MODULE(chanserv, "$Revision$")
 {
@@ -245,6 +246,8 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &unban_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &sudo_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &list_msgtab);
+
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
   cs_channel_destroy_hook = 
@@ -1501,6 +1504,53 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   MyFree(newparv);
 
   client->access = MASTER_FLAG;
+}
+
+static void
+m_list(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  char *chan;
+  void *listptr, *first;
+  int count = 0;
+  int query = CHAN_LIST;
+
+  if(parc == 2 && client->access >= OPER_FLAG)
+  {
+    if(irccmp(parv[2], "FORBID") == 0)
+      query = CHAN_FORBID_LIST;
+    else
+    {
+      reply_user(service, service, client, CS_LIST_INVALID_OPTION, parv[2]);
+      return;
+    }
+  }
+
+  if(query == CHAN_LIST && client->access >= OPER_FLAG)
+    query = CHAN_LIST_OPER;
+
+  if((listptr = db_list_first(query, 0, (void**)&chan)) == NULL)
+  {
+    reply_user(service, service, client, CS_LIST_NO_MATCHES, parv[1]);
+    return;
+  }
+
+  first = listptr;
+
+  while(listptr != NULL)
+  {
+    if(match(parv[1], chan))
+    {
+      count++;
+      reply_user(service, service, client, CS_LIST_ENTRY, chan);
+    }
+    if(count == 50)
+      break;
+    listptr = db_list_next(listptr, query, (void**)&chan);
+  }
+
+  db_list_done(first);
+
+  reply_user(service, service, client, CS_LIST_END, count);
 }
 
 /**
