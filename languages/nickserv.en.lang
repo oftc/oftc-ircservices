@@ -570,6 +570,11 @@ NS_SENDPASS_AUTH_FAIL
 	The auth code you provided is either invalid or has expired. Password has 
 	
 	not been reset.
+NS_NO_SENDPASS_YET
+	This account or the email address on this account has already had a mail 
+	
+	sent to it. Please respond to that mail. If you feel this is incorrect,
+	contact network support.
 NS_SENDPASS_SUBJECT
 	OFTC Nickname password reset request
 NS_SENDPASS_BODY

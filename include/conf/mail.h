@@ -30,6 +30,7 @@ struct MailConf
 {
   char *command;
   char *from_address;
+  time_t expire_time;
 };
 
 EXTERN struct MailConf Mail;

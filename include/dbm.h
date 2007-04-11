@@ -121,6 +121,10 @@ enum db_queries
   DELETE_ACCOUNT_CHACCESS,
   DELETE_DUPLICATE_CHACCESS,
   MERGE_CHACCESS,
+  DELETE_EXPIRED_AKILL,
+  INSERT_SENT_MAIL,
+  GET_SENT_MAIL,
+  DELETE_EXPIRED_SENT_MAIL,
   QUERY_COUNT
 };
 
@@ -185,5 +189,8 @@ int   db_list_del(unsigned int, unsigned int, const char *);
 int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 
 int db_get_num_masters(unsigned int);
+
+int db_add_sentmail(unsigned int, const char *);
+int db_is_mailsent(unsigned int, const char *);
 
 #endif /* INCLUDED_dbm_h */

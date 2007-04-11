@@ -1333,6 +1333,13 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
 
   if(parc == 1)
   {
+    if(db_is_mailsent(nick->id, nick->email))
+    {
+      reply_user(service, service, client, NS_NO_SENDPASS_YET);
+      free_nick(nick);
+      return;      
+    }
+
     temp = client->nickname;
     client->nickname = nick;
 
@@ -1347,6 +1354,8 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
         service->name, nick->nick, CurrentTime, hmac);
 
     client->nickname = temp;
+
+    db_add_sentmail(nick->id, nick->email);
     free_nick(nick);
     
     MyFree(hmac);

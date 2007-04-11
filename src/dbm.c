@@ -31,6 +31,9 @@
 struct Callback *on_nick_drop_cb;
 static FBFILE *db_log_fb;
 
+static void expire_sentmail(void *);
+static void expire_akills(void *);
+
 query_t queries[QUERY_COUNT] = { 
   { "SELECT account.id, primary_nick, nickname.id, nickname.nick, "
     "(SELECT nick FROM nickname WHERE nickname.id=account.primary_nick), "
@@ -164,6 +167,13 @@ query_t queries[QUERY_COUNT] = {
       NULL, EXECUTE },
   { "UPDATE channel_access SET account_id=?d WHERE account_id=?d", NULL, 
     EXECUTE },
+  { "DELETE FROM akill WHERE NOT duration = 0 AND time + duration < ?d", 
+    NULL, EXECUTE },
+  { "INSERT INTO sent_mail (account_id, email, sent) VALUES "
+      "(?d, ?v, ?d)", NULL, EXECUTE },
+  { "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
+    QUERY },
+  { "DELETE FROM sent_mail WHERE start + ?d > ?d", NULL, EXECUTE },
 };
 
 void
@@ -232,10 +242,14 @@ db_load_driver()
   for(i = 0; i < QUERY_COUNT; i++)
   {
     query_t *query = &queries[i];
+    db_log("%d: %s\n", i, query->name);
     if(query->name == NULL)
       continue;
     query->rc = Prepare((char*)query->name, 0);
   }
+
+  eventAdd("Expire sent mail", expire_sentmail, NULL, 60); 
+  eventAdd("Expire akills", expire_akills, NULL, 60); 
 }
 
 void
@@ -1224,4 +1238,55 @@ db_get_num_masters(unsigned int chanid)
   Free(rc);
 
   return count;
+}
+
+int
+db_add_sentmail(unsigned int accid, const char *email)
+{
+  int ret;
+
+  db_exec(ret, INSERT_SENT_MAIL, accid, email, CurrentTime);
+  if(ret == -1)
+    return 0;
+  else
+    return 1;
+}
+
+int
+db_is_mailsent(unsigned int accid, const char *email)
+{
+  yada_rc_t *rc, *brc;
+  int temp, ret = 0;
+
+  db_query(rc, GET_SENT_MAIL, accid, email);
+
+  if(rc == NULL)
+    return 0;
+
+  brc = Bind("?d", &temp);
+
+  if(Fetch(rc, brc) == 0)
+    ret = 0;
+  else
+    ret = 1;
+  
+  Free(brc);
+  Free(rc);
+  return ret;
+}
+
+static void
+expire_sentmail(void *param)
+{
+  int ret;
+
+  db_exec(ret, DELETE_EXPIRED_SENT_MAIL, Mail.expire_time, CurrentTime);
+}
+
+static void
+expire_akills(void *param)
+{
+  int ret;
+
+  db_exec(ret, DELETE_EXPIRED_AKILL, CurrentTime);
 }

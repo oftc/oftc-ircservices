@@ -80,4 +80,5 @@ init_mail(void)
 
   add_conf_field(s, "command", CT_STRING, NULL, &Mail.command);
   add_conf_field(s, "from_address", CT_STRING, NULL, &Mail.from_address);
+  add_conf_field(s, "expire_time", CT_TIME, NULL, &Mail.expire_time);
 }
