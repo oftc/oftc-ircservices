@@ -174,11 +174,13 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
     QUERY },
   { "DELETE FROM sent_mail WHERE sent + ?d < ?d", NULL, EXECUTE },
-  { "SELECT nick FROM nickname WHERE flag_private='f'", NULL, QUERY },
+  { "SELECT nick FROM account, nickname WHERE account.id=nickname.user_id AND "
+       "account.flag_private='f'", NULL, QUERY },
   { "SELECT nick FROM nickname", NULL, QUERY },
   { "SELECT nick FROM forbidden_nickname", NULL, QUERY },
   { "SELECT channel FROM channel WHERE flag_private='f'", NULL, QUERY },
   { "SELECT channel FROM channel", NULL, QUERY },
+  { "SELECT channel FROM forbidden_channel", NULL, QUERY },
 };
 
 void
@@ -833,6 +835,13 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = strval;
       brc = Bind("?ps", entry);
       break;
+
+    case CHAN_FORBID_LIST:
+      query = GET_CHANNEL_FORBID_LIST;
+
+      *entry = strval;
+      brc = Bind("?ps", entry);
+      break;
   }
 
   db_query(rc, query, param);
@@ -907,6 +916,7 @@ db_list_next(void *result, unsigned int type, void **entry)
     case NICK_FORBID_LIST:
     case CHAN_LIST:
     case CHAN_LIST_OPER:
+    case CHAN_FORBID_LIST:
       *entry = strval;
       Free(res->brc);
       res->brc = Bind("?ps", entry);
