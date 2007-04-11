@@ -173,7 +173,7 @@ query_t queries[QUERY_COUNT] = {
       "(?d, ?v, ?d)", NULL, EXECUTE },
   { "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
     QUERY },
-  { "DELETE FROM sent_mail WHERE start + ?d > ?d", NULL, EXECUTE },
+  { "DELETE FROM sent_mail WHERE sent + ?d > ?d", NULL, EXECUTE },
 };
 
 void
