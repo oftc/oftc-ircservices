@@ -435,6 +435,7 @@ m_akill_add(struct Service *service, struct Client *client,
     switch(duration_char)
     {
       case 'm':
+        duration *= 60;
         break;
       case 'h':
         duration *= 3600;
