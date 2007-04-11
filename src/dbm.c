@@ -156,6 +156,14 @@ query_t queries[QUERY_COUNT] = {
     "AND level=4 AND channel_access.account_id=account.id AND "
       "account.primary_nick=nickname.id", NULL, QUERY },
   { "DELETE FROM channel_access WHERE accout_id=?d", NULL, EXECUTE },
+  { "DELETE FROM channel_access WHERE "
+      "(account_id=?d AND level <= (SELECT level FROM channel_access AS x WHERE"
+      " x.account_id=?d AND x.channel_id = channel_access.channel_id)) OR "
+      "(account_id=?d AND level  < (SELECT level FROM channel_access AS x WHERE"
+      " x.account_id=?d AND x.channel_id = channel_access.channel_id))", 
+      NULL, EXECUTE },
+  { "UPDATE channel_access SET account_id=?d WHERE account_id=?d", NULL, 
+    EXECUTE },
 };
 
 void
@@ -970,7 +978,15 @@ db_link_nicks(unsigned int master, unsigned int child)
 
   db_exec(ret, SET_NICK_LINK, master, child);
   if(ret != -1)
-    db_exec(ret, DELETE_ACCOUNT, child);
+  {
+    db_exec(ret, DELETE_DUPLICATE_CHACCESS, child, master, master, child);
+    if(ret != -1)
+    {
+      db_exec(ret, MERGE_CHACCESS, master, child);
+      if(ret != -1)
+        db_exec(ret, DELETE_ACCOUNT, child);
+    }
+  }
 
   if(ret == -1)
   {
