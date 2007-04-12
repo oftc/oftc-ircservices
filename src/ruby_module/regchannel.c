@@ -20,8 +20,6 @@ static VALUE RegChannel_Topic(VALUE);
 static VALUE RegChannel_TopicSet(VALUE, VALUE);
 static VALUE RegChannel_Mlock(VALUE);
 static VALUE RegChannel_MlockSet(VALUE, VALUE);
-static VALUE RegChannel_Forbidden(VALUE);
-static VALUE RegChannel_ForbiddenSet(VALUE, VALUE);
 static VALUE RegChannel_Priv(VALUE);
 static VALUE RegChannel_PrivSet(VALUE, VALUE);
 static VALUE RegChannel_Restricted(VALUE);
@@ -164,21 +162,6 @@ RegChannel_MlockSet(VALUE self, VALUE value)
 }
 
 static VALUE
-RegChannel_Forbidden(VALUE self)
-{
-  struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  return channel->forbidden ? Qtrue : Qfalse;
-}
-
-static VALUE
-RegChannel_ForbiddenSet(VALUE self, VALUE value)
-{
-  struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  channel->forbidden = value == Qtrue ? 1 : 0;
-  return value;
-}
-
-static VALUE
 RegChannel_Priv(VALUE self)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
@@ -290,8 +273,6 @@ Init_RegChannel(void)
   rb_define_method(cRegChannel, "topic=", RegChannel_TopicSet, 1);
   rb_define_method(cRegChannel, "mlock", RegChannel_Mlock, 0);
   rb_define_method(cRegChannel, "mlock=", RegChannel_MlockSet, 1);
-  rb_define_method(cRegChannel, "forbidden?", RegChannel_Forbidden, 0);
-  rb_define_method(cRegChannel, "forbidden=", RegChannel_ForbiddenSet, 1);
   rb_define_method(cRegChannel, "private?", RegChannel_Priv, 0);
   rb_define_method(cRegChannel, "private=", RegChannel_PrivSet, 1);
   rb_define_method(cRegChannel, "restricted?", RegChannel_Restricted, 0);

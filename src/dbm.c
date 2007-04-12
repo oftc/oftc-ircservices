@@ -1171,12 +1171,12 @@ db_find_chan(const char *channel)
  
   channel_p = MyMalloc(sizeof(struct RegChannel));
  
-  brc = Bind("?d?ps?ps?ps?d?B?B?B?B?B?B?B?ps?ps?ps?ps",
+  brc = Bind("?d?ps?ps?ps?d?B?B?B?B?B?B?ps?ps?ps?ps",
       &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
-      &channel_p->regtime, &channel_p->forbidden, &channel_p->priv, 
-      &channel_p->restricted, &channel_p->topic_lock, &channel_p->verbose, 
-      &channel_p->autolimit, &channel_p->expirebans, &channel_p->url, 
-      &channel_p->email, &channel_p->topic, &channel_p->mlock); 
+      &channel_p->regtime, &channel_p->priv, &channel_p->restricted,
+      &channel_p->topic_lock, &channel_p->verbose, &channel_p->autolimit, 
+      &channel_p->expirebans, &channel_p->url, &channel_p->email, 
+      &channel_p->topic, &channel_p->mlock); 
 
   if(Fetch(rc, brc) == 0)
   {
