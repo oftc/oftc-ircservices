@@ -8,7 +8,7 @@ require 'yaml'
 NI_ENFORCE      = 0x1
 NI_SECURE       = 0x2
 NI_PRIVATE      = 0x40
-NI_CLOAK        = 0x100000
+NI_CLOAK        = 0x10000
 
 CI_PRIVATE      = 0x4
 CI_TOPICLOCK    = 0x8
