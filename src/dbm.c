@@ -57,13 +57,13 @@ query_t queries[QUERY_COUNT] = {
     NULL, EXECUTE },
   { "SELECT id, entry FROM account_access WHERE parent_id=?d", NULL, QUERY },
   { "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
-    "account.primary_nick = nickname.id", NULL, QUERY },
+    "account.primary_nick = nickname.id ORDER BY nick", NULL, QUERY },
   { "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
     NULL, QUERY },
   { "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
     "channel_id=?d", NULL, QUERY },
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
-  { "SELECT id, channel, description, entrymsg, reg_time, flag_forbidden, "
+  { "SELECT id, channel, description, entrymsg, reg_time, "
       "flag_private, flag_restricted, flag_topic_lock, flag_verbose, "
       "flag_autolimit, flag_expirebans, url, email, topic, mlock FROM channel "
       "WHERE lower(channel)=lower(?v)", NULL, QUERY },
@@ -121,7 +121,6 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE channel SET entrymsg=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET topic=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET mlock=?v WHERE id=?d", NULL, EXECUTE },
-  { "UPDATE channel SET flag_forbidden=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_private=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_restricted=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_topic_lock=?B WHERE id=?d", NULL, EXECUTE },
@@ -133,6 +132,11 @@ query_t queries[QUERY_COUNT] = {
     NULL, QUERY },
   { "DELETE FROM forbidden_nickname WHERE lower(nick)=lower(?v)", 
     NULL, EXECUTE },
+  { "INSERT INTO forbidden_channel (channel) VALUES (?v)", NULL, EXECUTE },
+  { "SELECT channel FROM forbidden_channel WHERE lower(channel)=lower(?v)",
+      NULL, QUERY },
+  { "DELETE FROM forbidden_channel WHERE lower(channel)=lower(?v)", NULL,
+    EXECUTE },
   { "INSERT INTO channel_akick (channel_id, target, setter, reason, "
     "time, duration) VALUES (?d, ?d, ?d, ?v, ?d, ?d)", NULL, EXECUTE },
   { "INSERT INTO channel_akick (channel_id, setter, reason, mask, "
@@ -485,6 +489,55 @@ db_register_nick(struct Nick *nick)
     TransRollback();
     return FALSE;
   }
+}
+
+int 
+db_forbid_chan(const char *c)
+{
+  int ret;
+  struct RegChannel *chan;
+
+  TransBegin();
+
+  if((chan = db_find_chan(c)) != NULL)
+  {
+    db_delete_chan(c);
+    free_regchan(chan);
+  }
+
+  db_exec(ret, INSERT_CHAN_FORBID, c);
+
+  if(ret == -1)
+  {
+    TransRollback();
+    return FALSE;
+  }
+
+  if(TransCommit() != 0)
+    return FALSE;
+
+  return TRUE;
+}
+
+int 
+db_is_chan_forbid(const char *chan)
+{
+  yada_rc_t *rc, *brc;
+  char *c;
+  int ret;
+
+  brc = Bind("?ps", &c);
+  db_query(rc, GET_CHAN_FORBID, chan);
+
+  if(rc == NULL)
+    return FALSE;
+
+  ret = Fetch(rc, brc);
+  
+  Free(rc);
+  Free(brc);
+
+  return ret;
 }
 
 int 

@@ -449,9 +449,10 @@ m_akill_add(struct Service *service, struct Client *client,
         return;
     }
   }
-  else if(duration == 0)
+  else 
     duration = ServicesInfo.def_akill_dur;
-  else
+
+  if(duration == -1)
     duration = 0;
 
   if(!valid_wild_card(mask))

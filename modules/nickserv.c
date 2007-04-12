@@ -170,7 +170,7 @@ static struct ServiceMessage info_msgtab = {
 };
 
 static struct ServiceMessage forbid_msgtab = {
-  NULL, "FORBID", 0, 1, 1, 0, ADMIN_FLAG, NS_HELP_FORBID_SHORT, 
+  NULL, "FORBID", 0, 1, 2, 0, ADMIN_FLAG, NS_HELP_FORBID_SHORT, 
   NS_HELP_FORBID_LONG, m_forbid
 };
 

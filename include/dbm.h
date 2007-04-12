@@ -102,7 +102,6 @@ enum db_queries
   SET_CHAN_ENTRYMSG,
   SET_CHAN_TOPIC,
   SET_CHAN_MLOCK,
-  SET_CHAN_FORBIDDEN,
   SET_CHAN_PRIVATE,
   SET_CHAN_RESTRICTED,
   SET_CHAN_TOPICLOCK,
@@ -112,6 +111,9 @@ enum db_queries
   INSERT_FORBID,
   GET_FORBID,
   DELETE_FORBID,
+  INSERT_CHAN_FORBID,
+  GET_CHAN_FORBID,
+  DELETE_CHAN_FORBID,
   INSERT_AKICK_ACCOUNT,
   INSERT_AKICK_MASK,
   GET_AKICKS,
@@ -181,6 +183,8 @@ int db_set_nick_master(unsigned int, const char *);
 int db_forbid_nick(const char *);
 int db_is_forbid(const char *);
 int db_delete_forbid(const char *);
+int db_forbid_chan(const char *);
+int db_is_chan_forbid(const char *);
 
 int db_link_nicks(unsigned int, unsigned int);
 unsigned int db_unlink_nick(unsigned int, unsigned int, unsigned int);

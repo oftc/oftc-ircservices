@@ -40,3 +40,8 @@ CREATE TABLE channel_akick(
   time                INTEGER NOT NULL,
   duration            INTEGER NOT NULL
 );
+
+DROP TABLE forbidden_channel;
+CREATE TABLE forbidden_channel (
+  channel             VARCHAR(255) PRIMARY KEY
+);

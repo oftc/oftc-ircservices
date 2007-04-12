@@ -263,6 +263,17 @@ CS_HELP_LIST_LONG
 	specified. If you specify FORBID, only forbidden channels will be shown.
 	The forbid option is restricted to IRC Operators. Results will be limited to
 	50 matches, so try to be specified with your pattern.
+CS_HELP_FORBID_SHORT
+	%s: Forbid a channel from being used.
+CS_HELP_FORBID_LONG
+	Usage: BFORBID channel
+	
+	
+	Adds the channel specified to the forbidden channel list, preventing
+	it to be used. Forbidden channels may not be registered and anyone
+	attempting to use them will be removed from the channel.
+	
+	See also: UNFORBID
 CS_REGISTER_NICK
 	Nick %s is not registered. The nickname you specify must be currently 
 	registered with nickname services.
@@ -393,3 +404,11 @@ CS_LIST_ENTRY
 	%s
 CS_LIST_END
 	End of LIST. %d matches found.
+CS_FORBID_BAD_DURATIONCHAR
+	Invalid duration charater, '%c'.
+CS_FORBID_FAIL
+	%s failed to be forbidden.
+CS_NOREG_FORBID
+	%s is forbidden and may not be registered or used. Please choose another
+	
+	channel.

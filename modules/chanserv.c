@@ -50,6 +50,7 @@ static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *, struct Client *, int, char *[]);
 static void m_sudo(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
+static void m_forbid(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
@@ -221,6 +222,11 @@ static struct ServiceMessage list_msgtab = {
   CS_HELP_LIST_SHORT, CS_HELP_LIST_LONG, m_list
 };
 
+static struct ServiceMessage forbid_msgtab = {
+  NULL, "FORBID", 0, 1, 2, 0, ADMIN_FLAG,
+  CS_HELP_FORBID_SHORT, CS_HELP_FORBID_LONG, m_forbid
+};
+
 INIT_MODULE(chanserv, "$Revision$")
 {
   chanserv = make_service("ChanServ");
@@ -247,6 +253,7 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &sudo_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &list_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &forbid_msgtab);
 
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
@@ -364,11 +371,20 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  /* finally, bail out if channel is already registered */
+  /* bail out if channel is already registered */
   if (chptr->regchan != NULL)
   {
     reply_user(service, service, client, CS_ALREADY_REG, parv[1]);
     ilog(L_DEBUG, "Channel REG failed for %s on %s (exists)", client->name, 
+        parv[1]);
+    return;
+  }
+
+  /* finally, bail if this is a forbidden channel */
+  if(db_is_chan_forbid(parv[1]))
+  {
+    reply_user(service, service, client, CS_NOREG_FORBID, parv[1]);
+    ilog(L_DEBUG, "Channel REG failed for %s on %s (forbidden)", client->name, 
         parv[1]);
     return;
   }
@@ -433,6 +449,12 @@ m_info(struct Service *service, struct Client *client,
   void *first, *listptr;  
   char buf[IRC_BUFSIZE+1] = {0};
   char *nick;
+
+  if(db_is_chan_forbid(parv[1]))
+  {
+    reply_user(service, service, client, CS_NOREG_FORBID, parv[1]);
+    return;
+  }
   
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
@@ -444,7 +466,6 @@ m_info(struct Service *service, struct Client *client,
       regchptr->email == NULL ? "Not Set" : regchptr->email, 
       regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
       regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg);
-
 
   if((listptr = db_list_first(CHMASTER_LIST, regchptr->id, 
           (void**)&nick)) != NULL)
@@ -1553,11 +1574,93 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
   reply_user(service, service, client, CS_LIST_END, count);
 }
 
+static void
+m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Channel *target;
+  char *resv = parv[1];
+  char duration_char;
+  time_t duration = -1;
+  dlink_node *ptr, *nptr;
+
+  if(*parv[1] == '+')
+  {
+    char *ptr = parv[1];
+
+    resv = parv[2];
+    ptr++;
+
+    while(*ptr != '\0')
+    {
+      if(!IsDigit(*ptr))
+      {
+        duration_char = *ptr;
+        *ptr = '\0';
+        duration = atoi(parv[1]);
+        break;
+      }
+      ptr++;
+    }
+  }
+
+  if(*resv != '#')
+  {
+    reply_user(service, service, client, CS_NAMESTART_HASH, resv);
+    return;
+  }
+
+  if(duration != -1)
+  {
+    switch(duration_char)
+    {
+      case 'm':
+        duration *= 60;
+        break;
+      case 'h':
+        duration *= 3600;
+        break;
+      case 'd':
+      case '\0': /* default is days */
+        duration *= 86400;
+        break;
+      default:
+        reply_user(service, service, client, CS_FORBID_BAD_DURATIONCHAR,
+            duration_char);
+        return;
+    }
+  }
+  else
+    duration = ServicesInfo.def_forbid_dur;
+
+  if(duration == -1)
+    duration = 0;
+
+  if(!db_forbid_chan(resv))
+  {
+    reply_user(service, service, client, CS_FORBID_FAIL, parv[1]);
+    return;
+  }
+
+  send_resv(service, resv, "Forbidden channel", duration);
+
+  if((target = hash_find_channel(resv)) != NULL)
+  {
+    DLINK_FOREACH_SAFE(ptr, nptr, target->members.head)
+    {
+      struct Membership *ms = ptr->data;
+      struct Client *user = ms->client_p;
+
+      kick_user(service, target, user->name, 
+          "This channel is forbidden and may not be used");
+    }
+  }
+  reply_user(service, service, client, NS_FORBID_OK, parv[1]);
+}
+
 /**
  * @brief CS Callback when a ModeChange is received for a Channel
  * @param args 
  * @return pass_callback()
- * We dont do anything yet :-)
  */
 static void *
 cs_on_cmode_change(va_list args) 
@@ -1600,6 +1703,13 @@ cs_on_client_join(va_list args)
   {
     ilog(L_ERROR, "badbad. Client %s joined non-existing Channel %s\n", 
         source_p->name, chptr->chname);
+    return pass_callback(cs_join_hook, source_p, name);
+  }
+
+  if(db_is_chan_forbid(name))
+  {
+    kick_user(chanserv, chptr, source_p->name, 
+        "This channel is forbidden and may not be used");
     return pass_callback(cs_join_hook, source_p, name);
   }
 
