@@ -1380,13 +1380,30 @@ db_save_nick(struct Nick *nick)
 {
   int ret;
 
+  TransBegin();
+
+  ret = db_set_number(SET_NICK_LAST_SEEN, nick->nickid, CurrentTime);
+  if(!ret)
+  {
+    TransRollback();
+    return 0;
+  }
+
   db_exec(ret, SAVE_NICK, nick->url, nick->email, nick->cloak,
       nick->enforce, nick->secure, nick->verified, nick->cloak_on,
       nick->admin, nick->email_verified, nick->priv, nick->language,
       nick->last_host, nick->last_realname, nick->last_quit, 
       nick->last_quit_time, nick->id);
-
-  return (ret != -1);
+  if(ret == -1)
+  {
+    TransRollback();
+    return 0;
+  }
+  else
+  {
+    TransCommit();
+    return 1;
+  }
 }
 
 static void
