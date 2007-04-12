@@ -44,7 +44,7 @@ def process_nicks()
         insert_handle.execute(row["nick"],
                               $nicks[linkid],
                               row["time_registered"],
-                              row["last_seen"])
+                              row["last_seen"] == "" ? nil : row["last_seen"])
 
         $nicks[row["nick_id"].to_i] = $nicks[linkid]
 
@@ -55,11 +55,13 @@ def process_nicks()
 	skipped[linkid] << row
       end
     else
-      insert_handle = $dest.prepare("INSERT INTO account(password, salt, url, 
+      nickid = $dest.select_one("SELECT nextval('nickname_id_seq')")
+      insert_handle = $dest.prepare("INSERT INTO account(primary_nick, 
+      password, salt, url, 
         email, cloak, last_host, last_realname, last_quit_msg, 
         last_quit_time, reg_time, flag_cloak_enabled, flag_secure,
         flag_enforce, flag_private) 
-        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
       flags = row["flags"].to_i
       flag_enforce = bit_check(flags, NI_ENFORCE)
@@ -67,17 +69,23 @@ def process_nicks()
       flag_cloak   = bit_check(flags, NI_CLOAK)
       flag_private = bit_check(flags, NI_PRIVATE)
 
-      insert_handle.execute(row["pass"], row["salt"], row["url"], row["email"],
-        row["cloak_string"], row["last_usermask"], row["last_realname"],
-        row["last_quit"], row["last_quit_time"], row["time_registered"],
-        flag_cloak, flag_secure, flag_enforce, flag_private)
+      url = row["url"] == "" ? nil : row["url"]
+      cloak = row["cloak_string"] == "" ? nil : row["cloak_string"]
+      lastuser = row["last_usermask"] == "" ? nil : row["last_usermask"]
+      lastreal = row["last_realname"] == "" ? nil : row["last_realname"]
+      lastquit = row["last_quit"] == "" ? nil : row["last_quit"]
+      lastquittime = row["last_quit_time"] == "" ? nil : row["last_quit_time"]
+
+      insert_handle.execute(nickid[0], row["pass"], row["salt"], url, row["email"],
+        cloak, lastuser, lastreal, lastquit, lastquittime, 
+	row["time_registered"], flag_cloak, flag_secure, flag_enforce, 
+	flag_private)
 
       insert_handle.finish
 
+      accid = $dest.select_one("SELECT currval('account_id_seq')")
       insert_handle = $dest.prepare("INSERT INTO nickname(nick, user_id,
         reg_time, last_seen) VALUES(?, ?, ?, ?)")
-
-      accid = $dest.select_one("SELECT currval('account_id_seq')")
 
       $oftcid = row["nick_id"] if row["nick"] == "OFTC"
 
@@ -147,10 +155,15 @@ def process_channels()
     flag_expirebans = if row["bantime"].to_i != 0 then true else false end
     flag_forbidden = bit_check(flags, CI_VERBOTEN)
 
-    insert_handle.execute(row["name"], row["description"], row["url"], row["email"],
-      row["last_topic"], row["entry_message"], row["time_registered"], row["last_used"],
-      flag_private, flag_restricted, flag_topiclock, flag_verbose, flag_autolimit,
-      flag_expirebans, flag_forbidden)
+    url = row["url"] == "" ? nil : row["url"]
+    email = row["email"] == "" ? nil : row["email"]
+    topic = row["last_topic"] == "" ? nil : row["last_topic"]
+    entrymsg = row["entry_message"] == "" ? nil : row["entry_message"]
+
+    insert_handle.execute(row["name"], row["description"], url, email,
+      topic, entrymsg, row["time_registered"], row["last_used"],
+      flag_private, flag_restricted, flag_topiclock, flag_verbose, 
+      flag_autolimit, flag_expirebans, flag_forbidden)
 
     insert_handle.finish
 
