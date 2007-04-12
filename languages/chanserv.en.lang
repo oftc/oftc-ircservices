@@ -21,33 +21,36 @@ CS_HELP_SET_DESC_LONG
 CS_HELP_SET_URL_SHORT
 	%s: Set the channel's homepage.
 CS_HELP_SET_URL_LONG
-	Usage: SET channel URL [url]
+	Usage: SET channel URL [url|-]
 	
 	Sets a homepage for the channel. This web address is displayed in the
-	listing reported by the INFO command.
+	listing reported by the INFO command. Specify '-'(without the quotes) to
+	remove the channel URL.
 CS_HELP_SET_EMAIL_SHORT
 	%s: Sets the channel's e-mail address.
 CS_HELP_SET_EMAIL_LONG
-	Usage: SET channel EMAIL [email]
+	Usage: SET channel EMAIL [email|-]
 	
 	Sets a contact e-mail address for the channel. This is displayed in the
-	listing reported by the INFO command.
+	listing reported by the INFO command. Specify '-'(without the quotes) to
+	remove the channel e-mail.
 CS_HELP_SET_ENTRYMSG_SHORT
 	%s: Sets the channel greeting.
 CS_HELP_SET_ENTRYMSG_LONG
-	Usage: SET channel ENTRYMSG [message|unset]
+	Usage: SET channel ENTRYMSG [message|-]
 	
 	Sets the greeting message for the channel. This greeting will be displayed
 	to all users joining the channel in the form of a notice.  Specifying
-	'unset' as the entry message will disable sending a greeting.
+	'-'(without the quotes) as the entry message will disable sending a greeting.
 CS_HELP_SET_TOPIC_SHORT
 	%s: Sets the channel topic.
 CS_HELP_SET_TOPIC_LONG
-	Usage: SET channel TOPIC [topic]
+	Usage: SET channel TOPIC [topic|-]
 	
 	Sets the channel topic. The change in topic will be reflected on IRC right
 	away and the topic will be stored. The topic will be set when the channel is
 	created and this is the topic that will be used with the TOPICLOCK command.
+	Specifying '-'(without the quotes) will remove the channel topic.
 CS_HELP_SET_TOPICLOCK_SHORT
 	%s: Lock the channel topic.
 CS_HELP_SET_TOPICLOCK_LONG

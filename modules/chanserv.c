@@ -832,7 +832,7 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
   if(set_mode_lock(service, chptr, client, value, &regchptr->mlock))
   {
     reply_user(service, service, client, CS_SET_SUCCESS, "MLOCK",
-        regchptr->mlock == NULL ? "unset" : regchptr->mlock, 
+        regchptr->mlock == NULL ? "Not set" : regchptr->mlock, 
         regchptr->channel);
   }
   else
@@ -1370,7 +1370,7 @@ m_set_string(struct Service *service, struct Client *client,
     char *response = *param;
 
     if(response == NULL)
-      response = "unset";
+      response = "Not set";
     reply_user(service, service, client, CS_SET_VALUE, field, response, 
         regchptr->channel);
     if(chptr == NULL)
@@ -1378,13 +1378,13 @@ m_set_string(struct Service *service, struct Client *client,
     return TRUE;
   }
 
-  if(ircncmp(value, "unset", strlen(value)) == 0)
+  if(ircncmp(value, "-", strlen(value)) == 0)
     value = NULL;
 
   if(db_set_string(query, regchptr->id, value))
   {
     reply_user(service, service, client, CS_SET_SUCCESS, field, 
-        value == NULL ? "unset" : value, regchptr->channel);
+        value == NULL ? "Not set" : value, regchptr->channel);
     ilog(L_DEBUG, "%s (%s@%s) changed %s of %s to %s", 
       client->name, client->username, client->host, field, regchptr->channel, 
       value);
@@ -1403,7 +1403,7 @@ m_set_string(struct Service *service, struct Client *client,
   }
   else
     reply_user(service, service, client, CS_SET_FAILED, field,
-        value == NULL ? "unset" : value, regchptr->channel);
+        value == NULL ? "Not set" : value, regchptr->channel);
   
   if(chptr == NULL)
     free_regchan(regchptr);
