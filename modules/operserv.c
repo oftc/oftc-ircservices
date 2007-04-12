@@ -233,15 +233,12 @@ m_mod_unload(struct Service *service, struct Client *client,
   module = find_module(mbn, 0);
   if (module == NULL)
   {
-    global_notice(service,
-        "Module %s unload requested by %s, but failed because not loaded",
-        parm, client->name);
-    reply_user(service, service, client, 0, 
-        "Module %s unload requested by %s, but failed because not loaded",
-        parm, client->name);
+    ilog(L_NOTICE, "Module %s unload requested by %s, but failed because not "
+        "loaded", parm, client->name);
+    reply_user(service, service, client, OS_MOD_UNLOAD_NOTLOADED, parm); 
     return;
   }
-  global_notice(service, "Unloading %s by request of %s", parm, client->name);
+  ilog(L_NOTICE, "Unloading %s by request of %s", parm, client->name);
   reply_user(service, service, client, OS_MOD_UNLOAD, parm, client->name);
   unload_module(module);
 }

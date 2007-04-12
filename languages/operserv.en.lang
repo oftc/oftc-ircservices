@@ -133,6 +133,8 @@ OS_MOD_LOADED
 	Module %s loaded.
 OS_MOD_LOADFAIL
 	Module %s failed to load.
+OS_MOD_UNLOAD_NOTLOADED
+	Module %s is not loaded so cannot be unloaded.
 OS_MOD_NOTLOADED
 	Module %s is not loaded.
 OS_MOD_RELOADING
