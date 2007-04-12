@@ -157,5 +157,6 @@ void nick_from_server(struct Client *, struct Client *, int,
                      char *[], time_t, char *, char *);
 void register_remote_user(struct Client *, struct Client *,
                          const char *, const char *, const char *, const char *);
+int valid_hostname(const char *);
 
 #endif /* INCLUDED_client_h */

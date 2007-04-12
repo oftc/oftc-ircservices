@@ -403,9 +403,7 @@ m_akill_add(struct Service *service, struct Client *client,
   char duration_char = '\0';
   int duration = -1;
 
-  /* XXX Check that they arent going to akill the entire world */
   akill = MyMalloc(sizeof(struct ServiceBan));
-
   akill->type = AKILL_BAN;
 
   if(*parv[1] == '+')

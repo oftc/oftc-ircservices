@@ -40,6 +40,7 @@ struct Callback *send_cmode_cb;
 struct Callback *send_invite_cb;
 struct Callback *send_topic_cb;
 struct Callback *send_kill_cb;
+struct Callback *send_resv_cb;
 struct Callback *send_newserver_cb;
 struct Callback *send_join_cb;
 static BlockHeap *services_heap  = NULL;
@@ -80,6 +81,7 @@ init_interface()
   send_invite_cb      = register_callback("Send INVITE", NULL);
   send_topic_cb       = register_callback("Send TOPIC", NULL);
   send_kill_cb        = register_callback("Send KILL", NULL);
+  send_resv_cb        = register_callback("Send RESV", NULL);
   send_newserver_cb   = register_callback("Introduce new server", NULL);
   send_join_cb        = register_callback("Send JOIN", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
@@ -376,6 +378,12 @@ send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
 }
 
 void
+send_resv(struct Service *service, char *resv, char *reason, time_t duration)
+{
+  execute_callback(send_resv_cb, me.uplink, service, resv, reason, duration);
+}
+
+void
 remove_akill(struct Service *service, struct ServiceBan *akill)
 {
   execute_callback(send_unakill_cb, me.uplink, service, akill->mask);
@@ -576,16 +584,14 @@ do_help(struct Service *service, struct Client *client,
 
     if(!(msg->flags & SFLG_CHANARG))
     {
-      if(client->access < msg->access)
+      if((msg->access >= OPER_FLAG) && (client->access < msg->access))
       {
         reply_user(service, NULL, client, SERV_HELP_NOT_AVAIL, command);
         return;
       }
     }
 
-
     sub = msg->sub;
-    
     if(parc > 1)
     { 
       while(sub != NULL && sub->cmd != NULL)

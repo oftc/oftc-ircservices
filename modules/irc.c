@@ -53,6 +53,7 @@ static void *irc_sendmsg_akill(va_list);
 static void *irc_sendmsg_unakill(va_list);
 static void *irc_sendmsg_topic(va_list);
 static void *irc_sendmsg_kill(va_list);
+static void *irc_sendmsg_resv(va_list);
 static void *irc_sendmsg_server(va_list);
 static void *irc_sendmsg_join(va_list);
 static void *irc_server_connected(va_list);
@@ -199,6 +200,7 @@ static dlink_node *akill_hook;
 static dlink_node *unakill_hook;
 static dlink_node *topic_hook;
 static dlink_node *kill_hook;
+static dlink_node *resv_hook;
 static dlink_node *newserver_hook;
 static dlink_node *join_hook;
 
@@ -225,6 +227,7 @@ INIT_MODULE(irc, "$Revision$")
   unakill_hook    = install_hook(send_unakill_cb, irc_sendmsg_unakill);
   topic_hook      = install_hook(send_topic_cb, irc_sendmsg_topic);
   kill_hook       = install_hook(send_kill_cb, irc_sendmsg_kill);
+  resv_hook       = install_hook(send_resv_cb, irc_sendmsg_resv);
   newserver_hook  = install_hook(send_newserver_cb, irc_sendmsg_server);
   join_hook       = install_hook(send_join_cb, irc_sendmsg_join);
   mod_add_cmd(&ping_msgtab);
@@ -484,6 +487,30 @@ irc_sendmsg_kill(va_list args)
 
   return NULL;
 }
+
+static void *
+irc_sendmsg_resv(va_list args)
+{
+  struct Client   *uplink   = va_arg(args, struct Client *);
+  struct Service  *source   = va_arg(args, struct Service *);
+  char            *resv     = va_arg(args, char *);
+  char            *reason   = va_arg(args, char *);
+  time_t          duration  = va_arg(args, time_t);
+
+  if(duration == 0)
+  {
+    sendto_server(uplink, ":%s RESV * %s :%s", 
+        (source != NULL) ? source->name : me.name, resv, reason);
+  }
+  else
+  {
+    sendto_server(uplink, ":%s ENCAP * RESV %ld %s :%s", 
+        (source != NULL) ? source->name : me.name, duration, resv, reason);
+  }
+ 
+  return NULL;
+}
+
 
 #if 0
 

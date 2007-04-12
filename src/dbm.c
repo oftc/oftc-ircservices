@@ -158,7 +158,7 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
     "AND level=4 AND channel_access.account_id=account.id AND "
       "account.primary_nick=nickname.id", NULL, QUERY },
-  { "DELETE FROM channel_access WHERE accout_id=?d", NULL, EXECUTE },
+  { "DELETE FROM channel_access WHERE account_id=?d", NULL, EXECUTE },
   { "DELETE FROM channel_access WHERE "
       "(account_id=?d AND level <= (SELECT level FROM channel_access AS x WHERE"
       " x.account_id=?d AND x.channel_id = channel_access.channel_id)) OR "
@@ -246,8 +246,6 @@ db_load_driver()
   else
     db_log("db: Database connection succeeded.\n");
 
-  Database.yada->execute(Database.yada, "SET CLIENT_ENCODING TO 'UTF8'", 0);
-
   for(i = 0; i < QUERY_COUNT; i++)
   {
     query_t *query = &queries[i];
@@ -276,7 +274,6 @@ db_try_reconnect()
     {
       ilog(L_NOTICE, "Database connection restored after %d seconds",
           num_attempts * 5);
-      Database.yada->execute(Database.yada, "SET CLIENT_ENCODING TO 'UTF8'", 0);
       return;
     }
     sleep(5);

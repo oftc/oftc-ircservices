@@ -198,6 +198,8 @@ init_servicesinfo(void)
   add_conf_field(s, "hmac_secret", CT_STRING, NULL, &ServicesInfo.hmac_secret);
   add_conf_field(s, "default_akill_duration", CT_TIME,  NULL,
       &ServicesInfo.def_akill_dur);
+  add_conf_field(s, "default_forbid_duration", CT_TIME, NULL, 
+      &ServicesInfo.def_forbid_dur);
   add_conf_field(s, "min_nonwildcard", CT_NUMBER, NULL, 
       &ServicesInfo.min_nonwildcard);
 

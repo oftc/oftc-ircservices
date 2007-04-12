@@ -119,7 +119,7 @@ static struct ServiceMessage set_sub[] = {
     NS_HELP_SET_CLOAK_LONG, m_set_cloak },
  { NULL, "MASTER", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
     NS_HELP_SET_MASTER_LONG, m_set_master },
-  { NULL, "PRIVATE", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_PRIVATE_SHORT, 
+  { NULL, "PRIVATE", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_PRIVATE_SHORT, 
     NS_HELP_SET_PRIVATE_LONG, m_set_private },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
 };
@@ -190,7 +190,7 @@ static struct ServiceMessage sudo_msgtab = {
 };
 
 static struct ServiceMessage sendpass_msgtab = {
-  NULL, "SENDPASS", 0, 1, 3, 0, ADMIN_FLAG, NS_HELP_SENDPASS_SHORT,
+  NULL, "SENDPASS", 0, 1, 3, 0, USER_FLAG, NS_HELP_SENDPASS_SHORT,
   NS_HELP_SENDPASS_LONG, m_sendpass
 };
 
@@ -629,13 +629,17 @@ m_set_url(struct Service *service, struct Client *client,
   if(parc == 0)
   {
     reply_user(service, service, client, NS_SET_VALUE, 
-        "URL", nick->url);
+        "URL", (nick->url == NULL) ? "Not set" : nick->url);
     return;
   }
   
+  if(irccmp(parv[1], "-") == 0)
+    parv[1] = NULL;
+  
   if(db_set_string(SET_NICK_URL, nick->id, parv[1]))
   {
-    nick->url = replace_string(nick->url, parv[1]);
+    nick->url = replace_string(nick->url, 
+        (parv[1] == NULL) ? "Not set" : parv[1]);
     reply_user(service, service, client, NS_SET_SUCCESS, "URL", nick->url);
   }
   else
@@ -711,15 +715,44 @@ m_cloakstring(struct Service *service, struct Client *client,
  
   if(parc == 1)
   {
-    reply_user(service, service, client, NS_SET_VALUE, "CLOAKSTRING", nick->cloak);
+    char *reply;
+
+    reply = (nick->cloak[0] == '\0') ? "Not set" : nick->cloak;
+    reply_user(service, service, client, NS_SET_VALUE, "CLOAKSTRING", reply);
+    free_nick(nick);
     return;
+  }
+
+  if(irccmp(parv[2], "-") == 0)
+    parv[2] = NULL;
+  else
+  {
+    if(!valid_hostname(parv[2]))
+    {
+      free_nick(nick);
+      reply_user(service, service, client, NS_INVALID_CLOAK, parv[2]);
+      return;
+    }
   }
     
   if(db_set_string(SET_NICK_CLOAK, nick->id, parv[2]))
   {
-    strlcpy(nick->cloak, parv[2], sizeof(nick->cloak));
+    char *reply = parv[2] == NULL ? "Not set" : parv[2];
+
+    if(parv[2] == NULL)
+    {
+      reply = "Not set";
+      memset(nick->cloak, 0, sizeof(nick->cloak));
+    }
+    else
+    {
+      reply = parv[2];
+      strlcpy(nick->cloak, parv[2], sizeof(nick->cloak));
+    }
     reply_user(service, service, client, NS_SET_SUCCESS, "CLOAKSTRING", 
-        nick->cloak);
+        reply);
+    ilog(L_NOTICE, "%s set CLOAKSTRING of %s to %s", client->name, nick->nick,
+        reply);
   }
   else
     reply_user(service, service, client, NS_SET_FAILED, "CLOAKSTRING", parv[2]);
@@ -1177,24 +1210,71 @@ static void
 m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Client *target;
+  char *resv = parv[1];
+  char duration_char;
+  time_t duration = -1;
 
-  if(!db_forbid_nick(parv[1]))
+  if(*parv[1] == '+')
+  {
+    char *ptr = parv[1];
+
+    resv = parv[2];
+    ptr++;
+
+    while(*ptr != '\0')
+    {
+      if(!IsDigit(*ptr))
+      {
+        duration_char = *ptr;
+        *ptr = '\0';
+        duration = atoi(parv[1]);
+        break;
+      }
+      ptr++;
+    }
+  }
+
+  if(duration != -1)
+  {
+    switch(duration_char)
+    {
+      case 'm':
+        duration *= 60;
+        break;
+      case 'h':
+        duration *= 3600;
+        break;
+      case 'd':
+      case '\0': /* default is days */
+        duration *= 86400;
+        break;
+      default:
+        reply_user(service, service, client, NS_FORBID_BAD_DURATIONCHAR,
+            duration_char);
+        return;
+    }
+  }
+  else
+    duration = ServicesInfo.def_forbid_dur;
+  
+  if(duration == -1)
+    duration = 0;
+
+  if(!db_forbid_nick(resv))
   {
     reply_user(service, service, client, NS_FORBID_FAIL, parv[1]);
     return;
   }
 
-  if((target = find_client(parv[1])) == NULL)
+  send_resv(service, resv, "Forbidden nickname", duration);
+
+  if((target = find_client(parv[1])) != NULL)
   {
-    reply_user(service, service, client, NS_FORBID_OK, parv[1]);
-    return;
+    reply_user(service, service, target, NS_NICK_FORBID_IWILLCHANGE, 
+        target->name);
+    target->enforce_time = CurrentTime + 10; /* XXX configurable? */
+    dlinkAdd(target, make_dlink_node(), &nick_enforce_list);
   }
-
-  reply_user(service, service, target, NS_NICK_FORBID_IWILLCHANGE, 
-      target->name);
-  target->enforce_time = CurrentTime + 10; /* XXX configurable? */
-  dlinkAdd(target, make_dlink_node(), &nick_enforce_list);
-
   reply_user(service, service, client, NS_FORBID_OK, parv[1]);
 }
 
@@ -1308,8 +1388,8 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 
   DupString(newparv[2], buf);
 
-  ilog(L_INFO, "%s executed %s SUDO: %s", client->name, service->name, 
-      newparv[2]);
+  ilog(L_INFO, "%s executed %s SUDO on %s: %s", client->name, service->name, 
+      nick->nick, newparv[2]);
 
   process_privmsg(1, me.uplink, client, 3, newparv);
   MyFree(newparv[2]);

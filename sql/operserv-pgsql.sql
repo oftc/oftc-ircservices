@@ -9,7 +9,7 @@ CREATE TABLE akill (
   UNIQUE (mask)
 );
 
-DROP TABLE sent_mail 
+DROP TABLE sent_mail;
 CREATE TABLE sent_mail (
   id              SERIAL PRIMARY KEY,
   account_id      INTEGER NOT NULL REFERENCES account(id),

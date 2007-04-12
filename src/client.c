@@ -778,3 +778,29 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
   if(!samenick)
     execute_callback(on_nick_change_cb, source_p, oldnick);
 }
+
+/* valid_hostname()
+ *
+ * Inputs       - pointer to hostname
+ * Output       - 1 if valid, 0 if not
+ * Side effects - check hostname for validity
+ *
+ * NOTE: this doesn't allow a hostname to begin with a dot and
+ * will not allow more dots than chars.
+ */
+int
+valid_hostname(const char *hostname)
+{
+  const char *p = hostname;
+
+  assert(p != NULL);
+
+  if ('.' == *p || ':' == *p)
+    return 0;
+
+  for (; *p != '\0'; ++p)
+    if (!IsHostChar(*p))
+      return 0;
+  return 1;
+}
+

@@ -38,6 +38,7 @@ struct ServicesInfoConf
   char logfile[PATH_MAX+1];
   char *hmac_secret;
   time_t def_akill_dur;
+  time_t def_forbid_dur;
   int min_nonwildcard;
 };
 
