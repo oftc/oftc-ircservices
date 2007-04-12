@@ -36,7 +36,7 @@ CREATE TABLE channel_akick(
   setter              INTEGER REFERENCES account(id) ON DELETE SET NULL,
   target              INTEGER REFERENCES account(id), -- If a nickname akick
   mask                VARCHAR(255), -- If a mask akick
-  reason              VARCHAR(512),
+  reason              VARCHAR(512) NOT NULL,
   time                INTEGER NOT NULL,
   duration            INTEGER NOT NULL
 );
