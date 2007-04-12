@@ -132,13 +132,15 @@ NS_HELP_SET_PASS_LONG
 NS_HELP_SET_URL_SHORT
 	%s
 NS_HELP_SET_URL_LONG
-	Usage: SET URL [url]
+	Usage: SET URL [url|-]
 	
 	
-	SET url field to be shown in the INFO command.
+	SET url field to be shown in the INFO command. Specify '-'(without the
+	quotes) to remove your URL.
 	
 	Example:
 	     SET URL http://example.com
+	     SET URL -
 NS_HELP_SET_EMAIL_SHORT
 	%s
 NS_HELP_SET_EMAIL_LONG
@@ -202,14 +204,16 @@ NS_HELP_SET_CLOAK_LONG
 NS_HELP_CLOAKSTRING_SHORT
 	%s: Sets the cloakstring for a nickname.
 NS_HELP_CLOAKSTRING_LONG
-	Usage: CLOAKSTRING nick [cloakstring]
+	Usage: CLOAKSTRING nick [cloakstring|-]
 	
 	
 	Sets or displays the cloak on the account of the specified nickname.
-	This command is restricted to services admins.
+	This command is restricted to services admins. Specify '-'(without the
+	quotes) to unset the cloakstring.
 	
 	Example:
 	    CLOAKSTRING example_user user.example.org
+	    CLOAKSTRING example_user -
 	
 	See Also:
 	    HELP SET CLOAK
