@@ -185,6 +185,11 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT channel FROM channel WHERE flag_private='f'", NULL, QUERY },
   { "SELECT channel FROM channel", NULL, QUERY },
   { "SELECT channel FROM forbidden_channel", NULL, QUERY },
+  { "UPDATE account SET url=?v, email=?v, cloak=?v, flag_enforce=?B, "
+    "flag_secure=?B, flag_verified=?B, flag_cloak_enabled=?B, "
+      "flag_admin=?B, flag_email_verified=?B, flag_private=?B, language=?d, "
+      "last_host=?v, last_realname=?v, last_quit_msg=?v, last_quit_time=?d "
+      "WHERE id=?d", NULL, EXECUTE },
 };
 
 void
@@ -1368,6 +1373,20 @@ db_is_mailsent(unsigned int accid, const char *email)
   Free(brc);
   Free(rc);
   return ret;
+}
+
+int
+db_save_nick(struct Nick *nick)
+{
+  int ret;
+
+  db_exec(ret, SAVE_NICK, nick->url, nick->email, nick->cloak,
+      nick->enforce, nick->secure, nick->verified, nick->cloak_on,
+      nick->admin, nick->email_verified, nick->priv, nick->language,
+      nick->last_host, nick->last_realname, nick->last_quit, 
+      nick->last_quit_time, nick->id);
+
+  return (ret != -1);
 }
 
 static void
