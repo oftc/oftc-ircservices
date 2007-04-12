@@ -399,6 +399,7 @@ m_akill_add(struct Service *service, struct Client *client,
   char *mask = parv[1];
   char duration_char = '\0';
   int duration = -1;
+  int input_dur;
 
   akill = MyMalloc(sizeof(struct ServiceBan));
   akill->type = AKILL_BAN;
@@ -419,6 +420,7 @@ m_akill_add(struct Service *service, struct Client *client,
         duration_char = *ptr;
         *ptr = '\0';
         duration = atoi(parv[1]);
+        input_dur = duration;
         break;
       }
       ptr++;
@@ -438,6 +440,7 @@ m_akill_add(struct Service *service, struct Client *client,
       case 'd':
       case '\0': /* default is days */
         duration *= 86400; 
+        duration_char = 'd';
         break;
       default:
         reply_user(service, service, client, OS_AKILL_BAD_DURATIONCHAR, 
@@ -447,7 +450,11 @@ m_akill_add(struct Service *service, struct Client *client,
     }
   }
   else 
-    duration = ServicesInfo.def_akill_dur;
+  {
+    duration_char = 'd';
+    input_dur = duration = ServicesInfo.def_akill_dur;
+    input_dur /= 86400;
+  }
 
   if(duration == -1)
     duration = 0;
@@ -475,6 +482,9 @@ m_akill_add(struct Service *service, struct Client *client,
     return;
   }
   
+  ilog(L_NOTICE, "%s Added an akill on %s. Expires %d%c [%s]", client->name,
+      akill->mask, input_dur, duration_char, reason);
+      
   reply_user(service, service, client, OS_AKILL_ADDOK, mask);
   send_akill(service, client->name, akill);
   free_serviceban(akill);
