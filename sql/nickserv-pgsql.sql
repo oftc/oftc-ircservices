@@ -5,7 +5,7 @@ CREATE TABLE account (
   password            CHAR(40) NOT NULL,      -- base16 encoded sha1(salt+<userpassword>).  lower case
   salt                CHAR(16) NOT NULL,
   url                 VARCHAR(255),
-  email               VARCHAR(255),
+  email               VARCHAR(255) NOT NULL,
   cloak               VARCHAR(255),
   flag_enforce        BOOLEAN NOT NULL DEFAULT 'False',
   flag_secure         BOOLEAN NOT NULL DEFAULT 'False',
