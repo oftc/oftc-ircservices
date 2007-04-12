@@ -46,6 +46,6 @@ end
 dbh.execute("COMMIT")
 dbh.disconnect
 
-end = Time.now
+tend = Time.now
 
-puts "Finished in #{end - start}"
+puts "Finished in #{tend - start}"
