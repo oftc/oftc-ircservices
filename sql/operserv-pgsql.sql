@@ -12,7 +12,7 @@ CREATE TABLE akill (
 DROP TABLE sent_mail;
 CREATE TABLE sent_mail (
   id              SERIAL PRIMARY KEY,
-  account_id      INTEGER NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+  account_id      INTEGER REFERENCES account(id) ON DELETE SET NULL,
   email           VARCHAR(255) NOT NULL,
   sent            INTEGER NOT NULL
 );

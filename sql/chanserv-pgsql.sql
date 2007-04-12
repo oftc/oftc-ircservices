@@ -39,6 +39,8 @@ CREATE TABLE channel_akick(
   reason              VARCHAR(512) NOT NULL,
   time                INTEGER NOT NULL,
   duration            INTEGER NOT NULL
+	CHECK (((target IS NULL) OR (mask IS NULL)) AND NOT ((target IS NULL) AND 
+	(mask IS NULL)))
 );
 
 DROP TABLE forbidden_channel;
