@@ -1,7 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
-static VALUE cChannelStruct = Qnil;
+VALUE cChannelStruct = Qnil;
+VALUE cRegChannel;
 
 static VALUE ChannelStruct_Initialize(VALUE, VALUE);
 static VALUE ChannelStruct_Name(VALUE);
@@ -33,8 +34,16 @@ static VALUE
 ChannelStruct_NameSet(VALUE self, VALUE name)
 {
   struct Channel *channel = rb_rbchannel2cchannel(self);
-  /* TODO check against CHANNELLEN and throw exception */
-  strlcpy(channel->chname, StringValueCStr(name), sizeof(channel->chname));
+  const char* cvalue;
+
+  Check_Type(name, T_STRING);
+
+  cvalue = StringValueCStr(name);
+
+  if(strlen(cvalue) > CHANNELLEN)
+    rb_raise(rb_eArgError, "Failed Setting Channel.chname %s too long", cvalue);
+
+  strlcpy(channel->chname, cvalue, sizeof(channel->chname));
   return name;
 }
 
@@ -49,6 +58,9 @@ static VALUE
 ChannelStruct_TopicSet(VALUE self, VALUE value)
 {
   struct Channel *channel = rb_rbchannel2cchannel(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(channel->topic, StringValueCStr(value));
   return value;
 }
@@ -64,6 +76,9 @@ static VALUE
 ChannelStruct_TopicInfoSet(VALUE self, VALUE value)
 {
   struct Channel *channel = rb_rbchannel2cchannel(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(channel->topic_info, StringValueCStr(value));
   return value;
 }
@@ -101,6 +116,9 @@ static VALUE
 ChannelStruct_RegChanSet(VALUE self, VALUE value)
 {
   struct Channel *channel = rb_rbchannel2cchannel(self);
+
+  Check_OurType(value, cRegChannel);
+
   channel->regchan = rb_rbregchan2cregchan(value);
   return value;
 }

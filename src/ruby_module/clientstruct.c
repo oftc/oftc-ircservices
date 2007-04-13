@@ -1,7 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
-static VALUE cClientStruct = Qnil;
+VALUE cClientStruct = Qnil;
+VALUE cNickStruct;
 
 static VALUE ClientStruct_Initialize(VALUE, VALUE);
 static VALUE ClientStruct_Name(VALUE);
@@ -41,8 +42,14 @@ static VALUE
 ClientStruct_NameSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  /*TODO check length < HOSTLEN */
-  strlcpy(client->name, StringValueCStr(value), sizeof(client->name));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  if(strlen(cvalue) > HOSTLEN)
+    rb_raise(rb_eArgError, "Failed setting Client.name %s too long", cvalue);
+
+  strlcpy(client->name, cvalue, sizeof(client->name));
   return value;
 }
 
@@ -57,8 +64,14 @@ static VALUE
 ClientStruct_HostSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  /* TODO check length < HOSTLEN */
-  strlcpy(client->host, StringValueCStr(value), sizeof(client->host));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  if(strlen(cvalue) > HOSTLEN)
+    rb_raise(rb_eArgError, "Failed setting Client.host %s too long", cvalue);
+
+  strlcpy(client->host, cvalue, sizeof(client->host));
   return value;
 }
 
@@ -73,8 +86,14 @@ static VALUE
 ClientStruct_IDSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  /* TODO check length < IDLEN */
-  strlcpy(client->id, StringValueCStr(value), sizeof(client->id));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  if(strlen(cvalue) > IDLEN)
+    rb_raise(rb_eArgError, "Failed setting Client.id %s too long", cvalue);
+
+  strlcpy(client->id, cvalue, sizeof(client->id));
   return value;
 }
 
@@ -89,8 +108,14 @@ static VALUE
 ClientStruct_InfoSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  /* TODO check length < REALLEN */
-  strlcpy(client->info, StringValueCStr(value), sizeof(client->info));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  if(strlen(cvalue) > REALLEN)
+    rb_raise(rb_eArgError, "Failed setting Client.info %s too long", cvalue);
+
+  strlcpy(client->info, cvalue, sizeof(client->info));
   return value;
 }
 
@@ -105,8 +130,14 @@ static VALUE
 ClientStruct_UsernameSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  /* TODO check length < USERLEN */
-  strlcpy(client->username, StringValueCStr(value), sizeof(client->username));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  if(strlen(cvalue) > USERLEN)
+    rb_raise(rb_eArgError, "Failed setting Client.username %s too long", cvalue);
+
+  strlcpy(client->username, cvalue, sizeof(client->username));
   return value;
 }
 
@@ -122,6 +153,9 @@ static VALUE
 ClientStruct_NickSet(VALUE self, VALUE value)
 {
   struct Client *client = rb_rbclient2cclient(self);
+
+  Check_OurType(value, cNickStruct);
+
   client->nickname = rb_rbnick2cnick(value);
   return value;
 }
@@ -130,41 +164,41 @@ static VALUE
 ClientStruct_IsOper(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  return (IsOper(client));
+  return IsOper(client) ? Qtrue : Qfalse;
 }
 
 static VALUE
 ClientStruct_IsAdmin(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  return (IsAdmin(client));
+  return IsAdmin(client) ? Qtrue : Qfalse;
 }
 
 static VALUE
 ClientStruct_IsIdentified(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  return (IsIdentified(client));
+  return IsIdentified(client) ? Qtrue : Qfalse;
 }
 
 static VALUE
 ClientStruct_IsServer(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  return (IsServer(client));
+  return IsServer(client) ? Qtrue : Qfalse;
 }
 
 static VALUE
 ClientStruct_IsClient(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  return (IsClient(client));
+  return IsClient(client) ? Qtrue : Qfalse;
 }
 
 static VALUE ClientStruct_IsMe(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
-  return (IsMe(client));
+  return IsMe(client) ? Qtrue : Qfalse;
 }
 
 void

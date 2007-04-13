@@ -40,9 +40,8 @@ enum Ruby_Hooks
   RB_HOOKS_JOIN,
   RB_HOOKS_NICK,
   RB_HOOKS_NOTICE,
+  RB_HOOKS_COUNT
 };
-/* Update this when new hooks are added */
-#define RB_HOOKS_COUNT 7
 
 #define RB_CALLBACK(x) (VALUE (*)())(x)
 
@@ -70,5 +69,15 @@ struct rhook_args
   int parc;
   VALUE *parv;
 };
+
+void check_our_type(VALUE obj, VALUE type);
+
+extern VALUE cServiceModule;
+extern VALUE cNickStruct;
+extern VALUE cClientStruct;
+extern VALUE cRegChannel;
+extern VALUE cChannelStruct;
+
+#define Check_OurType(x, v) check_our_type((VALUE)(x), (VALUE)(v))
 
 #endif /* INCLUDED_ruby_module_h */

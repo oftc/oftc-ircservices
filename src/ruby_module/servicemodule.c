@@ -1,7 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
-static VALUE cServiceModule = Qnil;
+VALUE cServiceModule = Qnil;
+VALUE cClientStruct;
 
 /* Core Functions */
 static VALUE ServiceModule_register(VALUE, VALUE);
@@ -16,26 +17,6 @@ static VALUE ServiceModule_unload(VALUE);
 static VALUE ServiceModule_join_channel(VALUE, VALUE);
 static VALUE ServiceModule_chain_language(VALUE, VALUE);
 /* Core Functions */
-/* DB Prototypes */
-static VALUE ServiceModule_db_set_string(VALUE, VALUE, VALUE, VALUE);
-static VALUE ServiceModule_db_get_string(VALUE, VALUE, VALUE, VALUE);
-static VALUE ServiceModule_db_set_number(VALUE, VALUE, VALUE, VALUE);
-static VALUE ServiceModule_db_set_bool(VALUE, VALUE, VALUE, VALUE);
-
-static VALUE ServiceModule_db_get_nickname_from_id(VALUE, VALUE);
-static VALUE ServiceModule_db_get_id_from_name(VALUE, VALUE, VALUE);
-
-static VALUE ServiceModule_db_find_nick(VALUE, VALUE);
-static VALUE ServiceModule_db_find_chan(VALUE, VALUE);
-static VALUE ServiceModule_db_find_chanaccess(VALUE, VALUE, VALUE);
-
-static VALUE ServiceModule_db_list_add(VALUE, VALUE, VALUE);
-static VALUE ServiceModule_db_list_first(VALUE, VALUE, VALUE, VALUE);
-static VALUE ServiceModule_db_list_next(VALUE, VALUE, VALUE, VALUE);
-static VALUE ServiceModule_db_list_done(VALUE, VALUE);
-static VALUE ServiceModule_db_list_del(VALUE, VALUE, VALUE, VALUE);
-static VALUE ServiceModule_db_list_del_index(VALUE, VALUE, VALUE, VALUE);
-/* DB Prototypes */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
 
@@ -112,6 +93,10 @@ ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource,
   struct Client *client, *source;
   char *reason;
 
+  Check_OurType(rbclient, cClientStruct);
+  Check_OurType(rbsource, cClientStruct);
+  Check_Type(rbreason, T_STRING);
+
   client = rb_rbclient2cclient(rbclient);
   source = rb_rbclient2cclient(rbsource);
 
@@ -124,8 +109,13 @@ ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource,
 static VALUE
 ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE message)
 {
-  struct Client *client = rb_rbclient2cclient(rbclient);
+  struct Client *client;
   struct Service *service = get_service(self);
+
+  Check_OurType(rbclient, cClientStruct);
+  Check_Type(message, T_STRING);
+
+  client = rb_rbclient2cclient(rbclient);
 
   reply_user(service, service, client, 0, StringValueCStr(message));
 
@@ -136,6 +126,8 @@ static VALUE
 ServiceModule_service_name(VALUE self, VALUE name)
 {
   struct Service *ruby_service;
+
+  Check_Type(name, T_STRING);
 
   rb_iv_set(self, "@ServiceName", name);
 
@@ -159,6 +151,8 @@ ServiceModule_service_name(VALUE self, VALUE name)
 static VALUE
 ServiceModule_add_hook(VALUE self, VALUE hooks)
 {
+  Check_Type(hooks, T_ARRAY);
+
   if(RARRAY(hooks)->len > 0)
   {
     int i;
@@ -166,6 +160,9 @@ ServiceModule_add_hook(VALUE self, VALUE hooks)
     for(i=0; i < RARRAY(hooks)->len; ++i)
     {
       current = rb_ary_entry(hooks, i);
+
+      Check_Type(current, T_ARRAY);
+
       type = rb_ary_entry(current, 0);
       hook = rb_ary_entry(current, 1);
       rb_add_hook(self, hook, NUM2INT(type));
@@ -179,8 +176,14 @@ ServiceModule_introduce_server(VALUE self, VALUE server, VALUE gecos)
 {
   struct Client *serv;
   VALUE rbserver;
-  const char* name = StringValueCStr(server);
-  const char* cgecos = StringValueCStr(gecos);
+  const char* name;
+  const char* cgecos;
+
+  Check_Type(server, T_STRING);
+  Check_Type(gecos, T_STRING);
+
+  name = StringValueCStr(server);
+  cgecos = StringValueCStr(gecos);
 
   serv = introduce_server(name, cgecos);
 
@@ -191,6 +194,7 @@ ServiceModule_introduce_server(VALUE self, VALUE server, VALUE gecos)
 static VALUE
 ServiceModule_log(VALUE self, VALUE level, VALUE message)
 {
+  Check_Type(message, T_STRING);
   ilog(NUM2INT(level), StringValueCStr(message));
   return self;
 }
@@ -199,16 +203,23 @@ static VALUE
 ServiceModule_do_help(VALUE self, VALUE client, VALUE value, VALUE parv)
 {
   struct Service *service = get_service(self);
-  struct Client *cclient = rb_rbclient2cclient(client);
+  struct Client *cclient;
   int argc = 0;
   int i;
   char *cvalue = 0;
   char **argv = 0;
   VALUE tmp;
 
+  Check_OurType(client, cClientStruct);
+  cclient = rb_rbclient2cclient(client);
+
   if(!NIL_P(value))
   {
+    Check_Type(value, T_STRING);
+    Check_Type(parv, T_ARRAY);
+
     DupString(cvalue, StringValueCStr(value));
+
     argc = RARRAY(parv)->len - 1;
     argv = ALLOCA_N(char *, argc);
 
@@ -242,8 +253,14 @@ ServiceModule_join_channel(VALUE self, VALUE channame)
 {
   struct Service *service = get_service(self);
   struct Client *client = find_client(service->name);
-  const char* chname = StringValueCStr(channame);
-  struct Channel *channel = join_channel(client, chname);
+  const char* chname;
+  struct Channel *channel;
+
+  Check_Type(channame, T_STRING);
+  chname = StringValueCStr(channame);
+
+  channel = join_channel(client, chname);
+
   return rb_cchannel2rbchannel(channel);
 }
 
@@ -251,135 +268,11 @@ static VALUE
 ServiceModule_chain_language(VALUE self, VALUE langfile)
 {
   struct Service *service = get_service(self);
+
+  Check_Type(langfile, T_STRING);
+
   load_language(service->languages, StringValueCStr(langfile));
 
-  return self;
-}
-
-static VALUE
-ServiceModule_db_set_string(VALUE self, VALUE key, VALUE id, VALUE value)
-{
-  int ret = db_set_string(NUM2INT(key), NUM2INT(id), StringValueCStr(value));
-
-  if(ret != -1)
-    return value;
-  else /* FIXME We need a way to raise exceptions */
-    return Qnil;
-}
-
-static VALUE
-ServiceModule_db_get_string(VALUE self, VALUE key, VALUE id, VALUE value)
-{
-  return rb_str_new2("");
-}
-
-static VALUE
-ServiceModule_db_set_number(VALUE self, VALUE key, VALUE id, VALUE value)
-{
-  int ret = db_set_number(NUM2INT(key), NUM2INT(id), NUM2INT(value));
-  if(ret != -1)
-    return value;
-  else /* FIXME Exception needed */
-    return Qnil;
-}
-
-static VALUE
-ServiceModule_db_set_bool(VALUE self, VALUE key, VALUE id, VALUE value)
-{
-  int ret = db_set_bool(NUM2INT(key), NUM2INT(id), value == Qtrue ? TRUE : FALSE);
-  if(ret != -1)
-    return value;
-  else /* FIXME Exception Needed */
-    return Qnil;
-}
-
-static VALUE
-ServiceModule_db_get_nickname_from_id(VALUE self, VALUE id)
-{
-  char *ret = db_get_nickname_from_id(NUM2INT(id));
-  if(ret != NULL)
-  {
-    VALUE nick = rb_str_new2(ret);
-    MyFree(ret);
-    return nick;
-  }
-  else
-    return Qnil;
-}
-
-static VALUE
-ServiceModule_db_get_id_from_name(VALUE self, VALUE name, VALUE type)
-{
-  int ret = db_get_id_from_name(StringValueCStr(name), NUM2INT(type));
-
-  return INT2NUM(ret);
-}
-
-static VALUE
-ServiceModule_db_find_nick(VALUE self, VALUE name)
-{
-  struct Nick *ret = db_find_nick(StringValueCStr(name));
-  if(ret == NULL) /* FIXME Exception Needed */
-    return Qnil;
-  else
-  {
-    VALUE nick = rb_cnick2rbnick(ret);
-    return nick;
-  }
-}
-
-static VALUE
-ServiceModule_db_find_chan(VALUE self, VALUE name)
-{
-  struct RegChannel *ret = db_find_chan(StringValueCStr(name));
-  if(ret == NULL) /* FIXME Exception Needed */
-    return Qnil;
-  else
-  {
-    VALUE channel = rb_cregchan2rbregchan(ret);
-    return channel;
-  }
-}
-
-static VALUE
-ServiceModule_db_find_chanaccess(VALUE self, VALUE channel, VALUE account)
-{
-  return self;
-}
-
-static VALUE
-ServiceModule_db_list_add(VALUE self, VALUE type, VALUE value)
-{
-  return self;
-}
-
-static VALUE
-ServiceModule_db_list_first(VALUE self, VALUE type, VALUE param, VALUE entry)
-{
-  return self;
-}
-
-static VALUE
-ServiceModule_db_list_next(VALUE self, VALUE result, VALUE type, VALUE entry)
-{
-  return self;
-}
-
-static VALUE
-ServiceModule_db_list_done(VALUE self, VALUE result)
-{
-  return self;
-}
-
-static VALUE
-ServiceModule_db_list_del(VALUE self, VALUE type, VALUE id, VALUE param)
-{
-  return self;
-}
-
-static VALUE
-ServiceModule_db_list_del_index(VALUE self, VALUE type, VALUE id, VALUE index)
-{
   return self;
 }
 
@@ -431,25 +324,6 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "unload", ServiceModule_unload, 0);
   rb_define_method(cServiceModule, "join_channel", ServiceModule_join_channel, 1);
   rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
-
-  rb_define_method(cServiceModule, "string", ServiceModule_db_set_string, 3);
-  rb_define_method(cServiceModule, "string?", ServiceModule_db_get_string, 3);
-  rb_define_method(cServiceModule, "number", ServiceModule_db_set_number, 3);
-  rb_define_method(cServiceModule, "bool", ServiceModule_db_set_bool, 3);
-
-  rb_define_method(cServiceModule, "nickname_from_id?", ServiceModule_db_get_nickname_from_id, 1);
-  rb_define_method(cServiceModule, "id_from_nickname?", ServiceModule_db_get_id_from_name, 2);
-
-  rb_define_method(cServiceModule, "find_nick?", ServiceModule_db_find_nick, 1);
-  rb_define_method(cServiceModule, "find_chan?", ServiceModule_db_find_chan, 1);
-  rb_define_method(cServiceModule, "find_chanaccess?", ServiceModule_db_find_chanaccess, 2);
-
-  rb_define_method(cServiceModule, "list_add", ServiceModule_db_list_add, 2);
-  rb_define_method(cServiceModule, "list_first", ServiceModule_db_list_first, 3);
-  rb_define_method(cServiceModule, "list_next", ServiceModule_db_list_next, 3);
-  rb_define_method(cServiceModule, "list_done", ServiceModule_db_list_done, 1);
-  rb_define_method(cServiceModule, "list_del", ServiceModule_db_list_del, 3);
-  rb_define_method(cServiceModule, "list_del_index", ServiceModule_db_list_del_index, 3);
 }
 
 static void

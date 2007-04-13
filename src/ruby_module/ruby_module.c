@@ -201,6 +201,22 @@ rb_carray2rbarray(int parc, char **parv)
     return rb_ary_new();
 }
 
+void
+check_our_type(VALUE obj, VALUE type)
+{
+  char *objname;
+  char *typename;
+
+  if(CLASS_OF(obj) != type)
+  {
+    DupString(objname, rb_obj_classname(obj));
+    DupString(typename, rb_class2name(type));
+    rb_raise(rb_eTypeError, "Argument Exception: Expected type %s got %s", typename, objname);
+    MyFree(objname);
+    MyFree(typename);
+  }
+}
+
 static void
 do_hook(VALUE hooks, int parc, ...)
 {

@@ -1,7 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
+#include "dbm.h"
 
-static VALUE cRegChannel = Qnil;
+VALUE cRegChannel = Qnil;
 
 static VALUE RegChannel_Initialize(VALUE, VALUE);
 static VALUE RegChannel_Id(VALUE);
@@ -32,6 +33,9 @@ static VALUE RegChannel_AutoLimit(VALUE);
 static VALUE RegChannel_AutoLimitSet(VALUE, VALUE);
 static VALUE RegChannel_ExpireBans(VALUE);
 static VALUE RegChannel_ExpireBansSet(VALUE, VALUE);
+/* DB */
+static VALUE RegChannel_Save(VALUE);
+static VALUE RegChannel_ByName(VALUE, VALUE);
 
 static VALUE
 RegChannel_Initialize(VALUE self, VALUE channel)
@@ -66,8 +70,17 @@ static VALUE
 RegChannel_NameSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
-  /* TODO check legnth < CHANNELLEN */
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  cvalue = StringValueCStr(value);
+
+  if(strlen(cvalue) > CHANNELLEN)
+    rb_raise(rb_eArgError, "Failed setting RegChannel.channel %s too long", cvalue);
+
   strlcpy(channel->channel, StringValueCStr(value), sizeof(channel->channel));
+
   return value;
 }
 
@@ -82,6 +95,9 @@ static VALUE
 RegChannel_DescriptionSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(channel->description, StringValueCStr(value));
   return value;
 }
@@ -97,6 +113,9 @@ static VALUE
 RegChannel_EntryMsgSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(channel->entrymsg, StringValueCStr(value));
   return value;
 }
@@ -112,6 +131,9 @@ static VALUE
 RegChannel_UrlSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(channel->url, StringValueCStr(value));
   return value;
 }
@@ -127,6 +149,9 @@ static VALUE
 RegChannel_EmailSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(channel->email, StringValueCStr(value));
   return value;
 }
@@ -142,6 +167,9 @@ static VALUE
 RegChannel_TopicSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(channel->topic, StringValueCStr(value));
   return value;
 }
@@ -157,6 +185,9 @@ static VALUE
 RegChannel_MlockSet(VALUE self, VALUE value)
 {
   struct RegChannel *channel = rb_rbregchan2cregchan(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(channel->mlock, StringValueCStr(value));
   return value;
 }
@@ -251,6 +282,28 @@ RegChannel_ExpireBansSet(VALUE self, VALUE value)
   return value;
 }
 
+static VALUE
+RegChannel_Save(VALUE self)
+{
+  //struct RegChannel *channel = rb_rbregchan2cregchan(self);
+  //int ret = db_save_channel(channel);
+  //return ret ? Qtrue : Qfalse;
+  return Qnil;
+}
+
+static VALUE
+RegChannel_ByName(VALUE self, VALUE name)
+{
+  struct RegChannel *channel = db_find_chan(StringValueCStr(name));
+
+  Check_Type(name, T_STRING);
+
+  if(channel)
+    return rb_cregchan2rbregchan(channel);
+  else
+    return Qnil;
+}
+
 void
 Init_RegChannel(void)
 {
@@ -285,6 +338,11 @@ Init_RegChannel(void)
   rb_define_method(cRegChannel, "autolimit=", RegChannel_AutoLimitSet, 1);
   rb_define_method(cRegChannel, "expirebans?", RegChannel_ExpireBans, 0);
   rb_define_method(cRegChannel, "expirebans=", RegChannel_ExpireBansSet, 1);
+
+  /* DB Methods */
+  rb_define_method(cRegChannel, "save!", RegChannel_Save, 0);
+  /* Class method */
+  rb_define_method(cRegChannel, "RegChannel.by_name?", RegChannel_ByName, 1);
 }
 
 struct RegChannel*

@@ -1,7 +1,8 @@
 #include <ruby.h>
 #include "libruby_module.h"
+#include "dbm.h"
 
-static VALUE cNickStruct = Qnil;
+VALUE cNickStruct = Qnil;
 
 static VALUE NickStruct_Initialize(VALUE, VALUE);
 static VALUE NickStruct_Nick(VALUE);
@@ -48,6 +49,12 @@ static VALUE NickStruct_LastQuitTime(VALUE);
 static VALUE NickStruct_LastQuitTimeSet(VALUE, VALUE);
 static VALUE NickStruct_NickRegTime(VALUE);
 static VALUE NickStruct_NickRegTimeSet(VALUE, VALUE);
+/* DB */
+static VALUE NickStruct_Save(VALUE);
+static VALUE NickStruct_ByName(VALUE, VALUE);
+static VALUE NickStruct_NameFromID(VALUE, VALUE);
+static VALUE NickStruct_AccountID(VALUE, VALUE);
+static VALUE NickStruct_NickID(VALUE, VALUE);
 
 static VALUE
 NickStruct_Initialize(VALUE self, VALUE nick)
@@ -63,15 +70,24 @@ NickStruct_Nick(VALUE self)
   if(nick)
     return rb_str_new2(nick->nick);
   else
-    return rb_str_new2("");
+    return Qnil;
 }
 
 static VALUE
 NickStruct_NickSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  /* TODO check length < NICKLEN */
-  strlcpy(nick->nick, StringValueCStr(value), sizeof(nick->nick));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  cvalue = StringValueCStr(value);
+
+  if(strlen(cvalue) > NICKLEN)
+    rb_raise(rb_eArgError, "Failed Setting Nick.nick %s too long", cvalue);
+
+  strlcpy(nick->nick, cvalue, sizeof(nick->nick));
+
   return value;
 }
 
@@ -86,8 +102,17 @@ static VALUE
 NickStruct_PassSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  /* TODO check length < PASSLEN */
-  strlcpy(nick->pass, StringValueCStr(value), sizeof(nick->pass));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  cvalue = StringValueCStr(value);
+
+  if(strlen(cvalue) > PASSLEN)
+    rb_raise(rb_eArgError, "Failed setting Nick.pass %s too long", cvalue);
+
+  strlcpy(nick->pass, cvalue, sizeof(nick->pass));
+
   return value;
 }
 
@@ -102,8 +127,17 @@ static VALUE
 NickStruct_SaltSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  /* TODO check < SALTLEN */
-  strlcpy(nick->salt, StringValueCStr(value), sizeof(nick->salt));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  cvalue = StringValueCStr(value);
+
+  if(strlen(cvalue) > SALTLEN)
+    rb_raise(rb_eArgError, "Failed setting Nick.salt %s too long", cvalue);
+
+  strlcpy(nick->salt, cvalue, sizeof(nick->salt));
+
   return value;
 }
 
@@ -118,8 +152,17 @@ static VALUE
 NickStruct_CloakSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
-  /* TODO check < HOSTLEN */
-  strlcpy(nick->cloak, StringValueCStr(value), sizeof(nick->cloak));
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  cvalue = StringValueCStr(value);
+
+  if(strlen(cvalue) > HOSTLEN)
+    rb_raise(rb_eArgError, "Failed setting Nick.cloak %s too long", cvalue);
+
+  strlcpy(nick->cloak, cvalue, sizeof(nick->cloak));
+
   return value;
 }
 
@@ -134,6 +177,9 @@ static VALUE
 NickStruct_EmailSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(nick->email, StringValueCStr(value));
   return value;
 }
@@ -149,6 +195,9 @@ static VALUE
 NickStruct_UrlSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(nick->url, StringValueCStr(value));
   return value;
 }
@@ -164,6 +213,9 @@ static VALUE
 NickStruct_LastRealNameSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(nick->last_realname, StringValueCStr(value));
   return value;
 }
@@ -179,6 +231,9 @@ static VALUE
 NickStruct_LastHostSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(nick->last_host, StringValueCStr(value));
   return value;
 }
@@ -194,6 +249,9 @@ static VALUE
 NickStruct_LastQuitSet(VALUE self, VALUE value)
 {
   struct Nick *nick = rb_rbnick2cnick(self);
+
+  Check_Type(value, T_STRING);
+
   DupString(nick->last_quit, StringValueCStr(value));
   return value;
 }
@@ -393,6 +451,77 @@ NickStruct_NickRegTimeSet(VALUE self, VALUE value)
   return value;
 }
 
+static VALUE
+NickStruct_Save(VALUE self)
+{
+  struct Nick *nick = rb_rbnick2cnick(self);
+  int ret = db_save_nick(nick);
+  return ret ? Qtrue : Qfalse;
+}
+
+static VALUE
+NickStruct_ByName(VALUE self, VALUE name)
+{
+  char *cname;
+  struct Nick *nick;
+
+  Check_Type(name, T_STRING);
+
+  DupString(cname, StringValueCStr(name));
+  nick = db_find_nick(cname);
+  MyFree(cname);
+
+  if(nick)
+    return rb_cnick2rbnick(nick);
+  else
+    return Qnil;
+}
+
+static VALUE
+NickStruct_NameFromID(VALUE self, VALUE id)
+{
+  VALUE ret;
+  char *nick = db_get_nickname_from_id(NUM2UINT(id));
+  if(nick)
+  {
+    ret = rb_str_new2(nick);
+    MyFree(nick);
+    return ret;
+  }
+  else
+    return Qnil;
+}
+
+static VALUE
+NickStruct_AccountID(VALUE self, VALUE name)
+{
+  unsigned int ret;
+
+  Check_Type(name, T_STRING);
+
+  ret = db_get_id_from_name(StringValueCStr(name), GET_ACCID_FROM_NICK);
+
+  if(ret != 0)
+    return UINT2NUM(ret);
+  else
+    return Qnil;
+}
+
+static VALUE
+NickStruct_NickID(VALUE self, VALUE name)
+{
+  unsigned int ret;
+
+  Check_Type(name, T_STRING);
+
+  ret = db_get_id_from_name(StringValueCStr(name), GET_NICKID_FROM_NICK);
+
+  if(ret != 0)
+    return UINT2NUM(ret);
+  else
+    return Qnil;
+}
+
  void
 Init_NickStruct(void)
 {
@@ -443,6 +572,11 @@ Init_NickStruct(void)
   rb_define_method(cNickStruct, "last_quit_time=", NickStruct_LastQuitTimeSet, 1);
   rb_define_method(cNickStruct, "nick_reg_time", NickStruct_NickRegTime, 0);
   rb_define_method(cNickStruct, "nick_reg_time=", NickStruct_NickRegTimeSet, 1);
+  rb_define_method(cNickStruct, "save!", NickStruct_Save, 0);
+  rb_define_method(cNickStruct, "NickStruct.by_name?", NickStruct_ByName, 1);
+  rb_define_method(cNickStruct, "NickStruct.by_id?", NickStruct_NameFromID, 1);
+  rb_define_method(cNickStruct, "NickStruct.get_account_id?", NickStruct_AccountID, 1);
+  rb_define_method(cNickStruct, "NickStruct.get_nick_id?", NickStruct_NickID, 1);
 }
 
 struct Nick* rb_rbnick2cnick(VALUE self)
