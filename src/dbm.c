@@ -41,21 +41,21 @@ query_t queries[QUERY_COUNT] = {
     "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
     "flag_private, language, last_host, last_realname, "
     "last_quit_msg, last_quit_time, account.reg_time, nickname.reg_time, "
-    "last_seen FROM account, nickname WHERE account.id = nickname.user_id AND "
+    "last_seen FROM account, nickname WHERE account.id = nickname.account_id AND "
     "lower(nick) = lower(?v)", NULL, QUERY },
   { "SELECT nick from account, nickname WHERE account.id=?d AND "
     "account.primary_nick=nickname.id", NULL, QUERY },
-  { "SELECT user_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
+  { "SELECT account_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
   { "SELECT id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
   { "INSERT INTO account (primary_nick, password, salt, email, reg_time) VALUES "
     "(?d, ?v, ?v, ?v, ?d)", NULL, EXECUTE },
-  { "INSERT INTO nickname (id, nick, user_id, reg_time, last_seen) VALUES "
+  { "INSERT INTO nickname (id, nick, account_id, reg_time, last_seen) VALUES "
     "(?d, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
   { "DELETE FROM nickname WHERE lower(nick)=lower(?v)", NULL, EXECUTE },
   { "DELETE FROM account WHERE id=?d", NULL, EXECUTE },
-  { "INSERT INTO account_access (parent_id, entry) VALUES(?d, ?v)", 
+  { "INSERT INTO account_access (account_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
-  { "SELECT id, entry FROM account_access WHERE parent_id=?d", NULL, QUERY },
+  { "SELECT id, entry FROM account_access WHERE account_id=?d", NULL, QUERY },
   { "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
     "account.primary_nick = nickname.id ORDER BY nick", NULL, QUERY },
   { "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
@@ -96,15 +96,15 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE account SET flag_enforce=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_admin=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET flag_private=?B WHERE id=?d", NULL, EXECUTE },
-  { "DELETE FROM account_access WHERE parent_id=?d AND entry=?v", NULL,
+  { "DELETE FROM account_access WHERE account_id=?d AND entry=?v", NULL,
     EXECUTE },
-  { "DELETE FROM account_access WHERE parent_id=?d", NULL, EXECUTE },
+  { "DELETE FROM account_access WHERE account_id=?d", NULL, EXECUTE },
   { "DELETE FROM account_access WHERE id = "
           "(SELECT id FROM account_access AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM account_access AS b WHERE b.id < a.id AND "
-          "b.parent_id = ?d) AND parent_id = ?d)", NULL, EXECUTE },
-  { "UPDATE nickname SET user_id=?d WHERE user_id=?d", NULL, EXECUTE },
-  { "UPDATE nickname SET user_id=?d WHERE user_id=?d AND id=?d", NULL, EXECUTE },
+          "b.account_id = ?d) AND account_id = ?d)", NULL, EXECUTE },
+  { "UPDATE nickname SET account_id=?d WHERE account_id=?d", NULL, EXECUTE },
+  { "UPDATE nickname SET account_id=?d WHERE account_id=?d AND id=?d", NULL, EXECUTE },
   { "INSERT INTO account (primary_nick, password, salt, url, email, cloak, " 
     "flag_enforce, flag_secure, flag_verified, flag_cloak_enabled, "
     "flag_admin, flag_email_verified, flag_private, language, last_host, "
@@ -114,7 +114,7 @@ query_t queries[QUERY_COUNT] = {
     "flag_email_verified, flag_private, language, last_host, last_realname, "
     "last_quit_msg, last_quit_time, reg_time FROM account WHERE id=?d", 
     NULL, EXECUTE },
-  { "SELECT id FROM nickname WHERE user_id=?d AND NOT id=?d", NULL, QUERY },
+  { "SELECT id FROM nickname WHERE account_id=?d AND NOT id=?d", NULL, QUERY },
   { "UPDATE channel SET description=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET url=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET email=?v WHERE id=?d", NULL, EXECUTE },
@@ -150,13 +150,13 @@ query_t queries[QUERY_COUNT] = {
           "b.channel_id = ?d) AND channel_id = ?d)", NULL, EXECUTE },
   { "DELETE FROM channel_akick WHERE channel_id=?d AND mask=?v", NULL, 
     EXECUTE },
-  { "DELETE FROM channel_akick WHERE channel_id=?d AND target IN (SELECT user_id "
+  { "DELETE FROM channel_akick WHERE channel_id=?d AND target IN (SELECT account_id "
     "FROM nickname WHERE lower(nick)=lower(?v))", NULL, EXECUTE },
   { "UPDATE account SET primary_nick=?d WHERE id=?d", NULL, EXECUTE },
   { "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
   { "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=?d",
     NULL, QUERY },
-  { "SELECT nick FROM nickname WHERE user_id=?d", NULL, QUERY },
+  { "SELECT nick FROM nickname WHERE account_id=?d", NULL, QUERY },
   { "SELECT channel, level FROM channel, channel_access WHERE channel.id="
     "channel_access.channel_id AND channel_access.account_id=?d", NULL, QUERY },
   { "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
@@ -181,7 +181,7 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
     QUERY },
   { "DELETE FROM sent_mail WHERE sent + ?d < ?d", NULL, EXECUTE },
-  { "SELECT nick FROM account, nickname WHERE account.id=nickname.user_id AND "
+  { "SELECT nick FROM account, nickname WHERE account.id=nickname.account_id AND "
        "account.flag_private='f'", NULL, QUERY },
   { "SELECT nick FROM nickname", NULL, QUERY },
   { "SELECT nick FROM forbidden_nickname", NULL, QUERY },

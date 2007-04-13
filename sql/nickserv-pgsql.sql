@@ -26,7 +26,7 @@ DROP TABLE nickname CASCADE;
 CREATE TABLE nickname (
   id                  SERIAL PRIMARY KEY,
   nick                VARCHAR(255) NOT NULL,
-  user_id             INTEGER REFERENCES account(id) NOT NULL,
+  account_id          INTEGER REFERENCES account(id) NOT NULL,
   reg_time            INTEGER NOT NULL, -- This nickname
   last_seen           INTEGER
 );
@@ -44,7 +44,7 @@ CREATE TABLE forbidden_nickname (
 DROP TABLE account_access;
 CREATE TABLE account_access (
   id                  SERIAL PRIMARY KEY,
-  parent_id           INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
+  account_id          INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
   entry               VARCHAR(255) NOT NULL,
   UNIQUE (id, entry)
 );
