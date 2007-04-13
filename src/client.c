@@ -377,9 +377,11 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
   {
     remove_dependents(source_p, from->from, comment);
   }
-    
-  if(!IsMe(source_p) && !IsMe(source_p->from))
-    execute_callback(on_quit_cb, source_p, comment);
+  else
+  {
+    if(!IsMe(source_p) && source_p->from != NULL && !IsMe(source_p->from))
+      execute_callback(on_quit_cb, source_p, comment);
+  }
   if(!IsMe(source_p))
     exit_one_client(source_p);
 }

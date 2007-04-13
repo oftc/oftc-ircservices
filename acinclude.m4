@@ -27,13 +27,13 @@ AC_DEFUN([AX_CHECK_LIB_RUBY],[
         ruby_ldflags=$($RUBY -r mkmf -e 'print "-L" + Config::CONFIG[["libdir"]] + " " + Config::CONFIG[["LIBS"]]')
         AC_SUBST([RUBY_CFLAGS],["$ruby_cflags"])
         AC_SUBST([RUBY_LDFLAGS],["$ruby_ldflags"])
+				AC_DEFINE_UNQUOTED([HAVE_RUBY], [$have_ruby], [Is ruby enabled])
       else
         AC_MSG_WARN([Ruby 1.8 not found, disabling])
       fi
     fi
   fi
   AM_CONDITIONAL([USE_RUBY], [test "$have_ruby" = "yes"])
-  AC_DEFINE_UNQUOTED([HAVE_RUBY], [$have_ruby], [Is ruby enabled])
 ])dnl }}}
 dnl {{{ ax_check_lib_openssl
 AC_DEFUN([AX_CHECK_LIB_OPENSSL],[

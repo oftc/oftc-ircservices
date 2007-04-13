@@ -393,7 +393,7 @@ static void
 m_akill_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ServiceBan *akill;
+  struct ServiceBan *akill, *tmp;
   char reason[IRC_BUFSIZE+1];
   int para_start = 2;
   char *mask = parv[1];
@@ -458,6 +458,14 @@ m_akill_add(struct Service *service, struct Client *client,
 
   if(duration == -1)
     duration = 0;
+
+  if((tmp = db_find_akill(mask)) != NULL)
+  {
+    reply_user(service, service, client, OS_AKILL_ALREADY, mask);
+    free_serviceban(tmp);
+    MyFree(akill);
+    return;
+  }
 
   if(!valid_wild_card(mask))
   {

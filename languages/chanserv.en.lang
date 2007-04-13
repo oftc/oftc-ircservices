@@ -317,7 +317,7 @@ CS_INFO_CHAN
 	  Entry Message: %s
 	
 CS_INFO_OPTION
-	%s is %s
+	    %s is %s
 CS_INFO_MASTERS
 	Channel masters are: %s
 CS_INFO_REGTIME_FULL

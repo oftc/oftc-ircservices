@@ -139,6 +139,9 @@ struct Client
   unsigned int  hopcount;
   unsigned char handler;        /* Handler index */
   int flags;
+
+  struct irc_ssaddr ip;
+  int           aftype; 
 } Client;
 
 void init_client();

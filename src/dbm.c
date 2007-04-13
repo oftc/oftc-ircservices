@@ -171,8 +171,11 @@ query_t queries[QUERY_COUNT] = {
       NULL, EXECUTE },
   { "UPDATE channel_access SET account_id=?d WHERE account_id=?d", NULL, 
     EXECUTE },
-  { "DELETE FROM akill WHERE NOT duration = 0 AND time + duration < ?d", 
-    NULL, EXECUTE },
+  { "SELECT akill.id, nickname.nick, mask, reason, time, duration FROM "
+    "account JOIN nickname ON "
+    "account.primary_nick=nickname.id RIGHT OUTER JOIN akill ON "
+    "akill.setter=account.id WHERE "
+    "NOT duration = 0 AND time + duration < ?d", NULL, QUERY },
   { "INSERT INTO sent_mail (account_id, email, sent) VALUES "
       "(?d, ?v, ?d)", NULL, EXECUTE },
   { "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
@@ -406,7 +409,7 @@ db_get_nickname_from_id(unsigned int id)
   yada_rc_t *rc, *brc; 
   char *retnick; 
 
-  db_query(rc, GET_NICK_FROM_ID, id);
+  db_query(rc, GET_NICK_FROM_ACCID, id);
 
   if(rc == NULL)
     return NULL;
@@ -640,7 +643,7 @@ db_set_nick_master(unsigned int accid, const char *newnick)
   yada_rc_t *rc, *brc;
 
   brc = Bind("?d", &newnickid);
-  db_query(rc, GET_ID_FROM_NICK, newnick);
+  db_query(rc, GET_NICKID_FROM_NICK, newnick);
 
   if(rc == NULL)
     return FALSE;
@@ -1317,7 +1320,6 @@ db_find_akill(const char *mask)
   return akill;
 }
 
-
 int
 db_get_num_masters(unsigned int chanid)
 {
@@ -1382,7 +1384,7 @@ db_save_nick(struct Nick *nick)
 
   TransBegin();
 
-  ret = db_set_number(SET_NICK_LAST_SEEN, nick->nickid, CurrentTime);
+  ret = db_set_number(SET_NICK_LAST_SEEN, nick->nickid, nick->last_seen);
   if(!ret)
   {
     TransRollback();
@@ -1417,7 +1419,25 @@ expire_sentmail(void *param)
 static void
 expire_akills(void *param)
 {
+  yada_rc_t *rc, *brc;
+  struct ServiceBan akill;
+  char *setter;
   int ret;
 
-  db_exec(ret, DELETE_EXPIRED_AKILL, CurrentTime);
+  db_query(rc, GET_EXPIRED_AKILL, CurrentTime);
+  if(rc == NULL)
+    return;
+
+  brc = Bind("?d?ps?ps?ps?d?d", &akill.id, &setter, &akill.mask,
+      &akill.reason, &akill.time_set, &akill.duration);
+
+  while(Fetch(rc, brc) != 0)
+  {
+    ilog(L_NOTICE, "AKill on %s set by %s on %s(%s) has expired",
+        akill.mask, setter, smalldate(akill.time_set), akill.reason);
+    db_exec(ret, DELETE_AKILL, akill.mask);
+  }
+
+  Free(brc);
+  Free(rc);
 }

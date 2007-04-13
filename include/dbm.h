@@ -46,15 +46,16 @@ enum db_list_type
   NICK_FORBID_LIST,
   CHAN_LIST,
   CHAN_LIST_OPER,
-  CHAN_FORBID_LIST
+  CHAN_FORBID_LIST,
+  EXPIRING_AKILL_LIST
 };
 
 enum db_queries
 {
   GET_FULL_NICK = 0,
-  GET_NICK_FROM_ID,
+  GET_NICK_FROM_ACCID,
+  GET_ACCID_FROM_NICK,
   GET_NICKID_FROM_NICK,
-  GET_ID_FROM_NICK,
   INSERT_ACCOUNT,
   INSERT_NICK,
   DELETE_NICK,
@@ -129,7 +130,7 @@ enum db_queries
   DELETE_ACCOUNT_CHACCESS,
   DELETE_DUPLICATE_CHACCESS,
   MERGE_CHACCESS,
-  DELETE_EXPIRED_AKILL,
+  GET_EXPIRED_AKILL,
   INSERT_SENT_MAIL,
   GET_SENT_MAIL,
   DELETE_EXPIRED_SENT_MAIL,
@@ -209,5 +210,7 @@ int db_get_num_masters(unsigned int);
 
 int db_add_sentmail(unsigned int, const char *);
 int db_is_mailsent(unsigned int, const char *);
+
+int db_save_nick(struct Nick *);
 
 #endif /* INCLUDED_dbm_h */

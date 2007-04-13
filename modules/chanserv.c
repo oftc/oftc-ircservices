@@ -530,7 +530,7 @@ m_access_add(struct Service *service, struct Client *client,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if((account = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK)) <= 0)
+  if((account = db_get_id_from_name(parv[2], GET_ACCID_FROM_NICK)) <= 0)
   {
     reply_user(service, service, client, CS_REGISTER_NICK, parv[2]);
     if(chptr == NULL)
@@ -593,7 +593,7 @@ m_access_del(struct Service *service, struct Client *client,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if((nickid = db_get_id_from_name(parv[2], GET_NICKID_FROM_NICK)) <= 0)
+  if((nickid = db_get_id_from_name(parv[2], GET_ACCID_FROM_NICK)) <= 0)
   {
     reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
     if(chptr == NULL)

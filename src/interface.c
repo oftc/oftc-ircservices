@@ -782,6 +782,18 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
         if(match(host, client->host))
           found = 1;
         break;
+      case HM_IPV4:
+        if (client->aftype == AF_INET)
+          if (match_ipv4(&client->ip, &addr, bits))
+            found = 1;
+        break;
+#ifdef IPV6
+      case HM_IPV6:
+        if (client->aftype == AF_INET6)
+          if (match_ipv6(&client->ip, &addr, bits))
+            found = 1;
+        break;
+#endif
     }
     if(found)
     {

@@ -843,7 +843,7 @@ m_set_master(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_get_id_from_name(parv[1], GET_NICKID_FROM_NICK) != nick->id)
+  if(db_get_id_from_name(parv[1], GET_ACCID_FROM_NICK) != nick->id)
   {
     reply_user(service, service, client, NS_MASTER_NOT_LINKED, parv[1]);
     return;

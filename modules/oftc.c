@@ -163,6 +163,7 @@ client_from_server(struct Client *client_p, struct Client *source_p, int parc,
   const char *m = NULL;
   const char *servername = source_p->name;
   unsigned int flag = 0;
+  struct addrinfo hints, *res;
 
   source_p = make_client(client_p);
   dlinkAdd(source_p, &source_p->node, &global_client_list);
@@ -174,6 +175,21 @@ client_from_server(struct Client *client_p, struct Client *source_p, int parc,
   strcpy(source_p->name, nick);
   strlcpy(source_p->id, parv[8], sizeof(source_p->id));
   strlcpy(source_p->sockhost, parv[7], sizeof(source_p->sockhost));
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
+
+  irc_getaddrinfo(parv[7], 0, &hints, &res);
+
+  if(res != NULL)
+  {
+    memcpy(&source_p->ip, res->ai_addr, res->ai_addrlen);
+    source_p->ip.ss_len = res->ai_addrlen;
+    irc_freeaddrinfo(res);
+  }
+
+  source_p->aftype = res->ai_family;
 
   hash_add_client(source_p);
   hash_add_id(source_p);
