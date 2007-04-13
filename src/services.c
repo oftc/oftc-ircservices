@@ -313,9 +313,10 @@ services_die(const char *msg, int rboot)
 
   EVP_cleanup();
 
-  exit_client(&me, &me, "Services shutting down");
-
   send_queued_all();
+  exit_client(&me, &me, "Services shutting down");
+  send_queued_all();
+
   exit(rboot);
 }
 
