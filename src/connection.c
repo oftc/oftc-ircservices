@@ -30,6 +30,7 @@
 
 static CNCB serv_connect_callback;
 struct Callback *connected_cb;
+static void try_reconnect(void *);
 
 static void
 serv_connect_callback(fde_t *fd, int status, void *data)
@@ -94,10 +95,22 @@ connect_server()
 
   comm_connect_tcp(&server->fd, Connect.host, Connect.port,
       NULL, 0, serv_connect_callback, client, AF_INET, CONNECTTIMEOUT);
+
+  eventAdd("Server connection check", try_reconnect, NULL, 60);
 }
 
 void *
 server_connected(va_list args)
 {
   return NULL;
+}
+
+static void
+try_reconnect(void *param)
+{
+  if(me.uplink == NULL)
+  {
+    ilog(L_DEBUG, "Uplink went away, trying to reconnect");
+    connect_server();
+  }
 }

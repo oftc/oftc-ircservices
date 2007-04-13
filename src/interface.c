@@ -1216,7 +1216,7 @@ generate_hmac(const char *data)
 void 
 chain_squit(struct Client *client, struct Client *source, char *comment)
 {
-  execute_callback(on_quit_cb, client, source, comment);
+//  execute_callback(on_quit_cb, client, source, comment);
 }
 
 void

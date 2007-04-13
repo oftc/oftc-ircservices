@@ -1454,9 +1454,7 @@ m_squit(struct Client *client, struct Client *source, int parc, char *parv[])
   chain_squit(client, source, comment);
 
   if(target == me.uplink)
-  {
-    connect_server();
-  }
+    me.uplink = NULL;
 }
 
 /*
