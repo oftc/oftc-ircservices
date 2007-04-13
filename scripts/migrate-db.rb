@@ -38,7 +38,7 @@ def process_nicks()
     if row["link_id"].to_i != 0
       linkid = row["link_id"].to_i
       if $nicks.include?(linkid)
-        insert_handle = $dest.prepare("INSERT INTO nickname(nick, user_id,
+        insert_handle = $dest.prepare("INSERT INTO nickname(nick, account_id,
           reg_time, last_seen) VALUES(?, ?, ?, ?)")
 
         insert_handle.execute(row["nick"],
@@ -84,7 +84,7 @@ def process_nicks()
       insert_handle.finish
 
       accid = $dest.select_one("SELECT currval('account_id_seq')")
-      insert_handle = $dest.prepare("INSERT INTO nickname(nick, user_id,
+      insert_handle = $dest.prepare("INSERT INTO nickname(nick, account_id,
         reg_time, last_seen) VALUES(?, ?, ?, ?)")
 
       $oftcid = row["nick_id"] if row["nick"] == "OFTC"
@@ -125,7 +125,7 @@ def process_nickaccess()
   handle.execute
 
   while row = handle.fetch do
-    $dest.execute("INSERT INTO account_access (parent_id, entry) VALUES(?, ?)",
+    $dest.execute("INSERT INTO account_access (account_id, entry) VALUES(?, ?)",
       $nicks[row["nick_id"]], row["userhost"])
   end
 
