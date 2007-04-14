@@ -36,6 +36,8 @@ static BlockHeap *topic_heap = NULL;
 BlockHeap *ban_heap            = NULL;
 dlink_list global_channel_list = { NULL, NULL, 0 };
 
+struct Callback *on_channel_created_cb;
+
 void
 init_channel(void)
 {
@@ -63,6 +65,8 @@ make_channel(const char *chname)
   chptr->regchan = db_find_chan(chname);
 
   hash_add_channel(chptr);
+
+  execute_callback(on_channel_created_cb, chptr);
 
   return chptr;
 }

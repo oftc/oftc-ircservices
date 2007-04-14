@@ -15,6 +15,7 @@ static VALUE ChannelStruct_Mode(VALUE);
 static VALUE ChannelStruct_ModeSet(VALUE, VALUE);
 static VALUE ChannelStruct_RegChan(VALUE);
 static VALUE ChannelStruct_RegChanSet(VALUE, VALUE);
+static VALUE ChannelStruct_MembersLength(VALUE);
 
 static VALUE
 ChannelStruct_Initialize(VALUE self, VALUE channel)
@@ -123,6 +124,13 @@ ChannelStruct_RegChanSet(VALUE self, VALUE value)
   return value;
 }
 
+static VALUE
+ChannelStruct_MembersLength(VALUE self)
+{
+  struct Channel *channel = rb_rbchannel2cchannel(self);
+  return ULONG2NUM(channel->members.length);
+}
+
 void
 Init_ChannelStruct(void)
 {
@@ -139,6 +147,7 @@ Init_ChannelStruct(void)
   rb_define_method(cChannelStruct, "mode=", ChannelStruct_ModeSet, 1);
   rb_define_method(cChannelStruct, "regchan", ChannelStruct_RegChan, 0);
   rb_define_method(cChannelStruct, "regchan=", ChannelStruct_RegChanSet, 1);
+  rb_define_method(cChannelStruct, "members_length", ChannelStruct_MembersLength, 0);
 
   /*TODO members, invites, bans, excepts, invex */
 }

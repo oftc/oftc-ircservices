@@ -32,8 +32,11 @@ static dlink_node *ruby_umode_hook;
 static dlink_node *ruby_newusr_hook;
 static dlink_node *ruby_privmsg_hook;
 static dlink_node *ruby_join_hook;
+static dlink_node *ruby_part_hook;
 static dlink_node *ruby_nick_hook;
 static dlink_node *ruby_notice_hook;
+static dlink_node *ruby_chan_create_hook;
+static dlink_node *ruby_chan_delete_hook;
 
 static VALUE ruby_server_hooks = Qnil;
 
@@ -42,8 +45,11 @@ static void *rb_umode_hdlr(va_list);
 static void *rb_newusr_hdlr(va_list);
 static void *rb_privmsg_hdlr(va_list);
 static void *rb_join_hdlr(va_list);
+static void *rb_part_hdlr(va_list);
 static void *rb_nick_hdlr(va_list);
 static void *rb_notice_hdlr(va_list);
+static void *rb_chan_create_hdlr(va_list);
+static void *rb_chan_delete_hdlr(va_list);
 
 static void ruby_script_error();
 
@@ -318,6 +324,22 @@ rb_join_hdlr(va_list args)
 }
 
 static void *
+rb_part_hdlr(va_list args)
+{
+  struct Client* client = va_arg(args, struct Client *);
+  struct Client* source = va_arg(args, struct Client *);
+  struct Channel* channel = va_arg(args, struct Channel *);
+  char *reason = va_arg(args, char *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_PART);
+
+  do_hook(hooks, 4, rb_cclient2rbclient(client), rb_cclient2rbclient(source),
+    rb_cchannel2rbchannel(channel), rb_str_new2(reason));
+
+  return pass_callback(ruby_part_hook, client, source, channel, reason);
+}
+
+static void *
 rb_nick_hdlr(va_list args)
 {
   struct Client *source = va_arg(args, struct Client *);
@@ -343,6 +365,30 @@ rb_notice_hdlr(va_list args)
       rb_str_new2(message));
 
   return pass_callback(ruby_notice_hook, source, channel, message);
+}
+
+static void *
+rb_chan_create_hdlr(va_list args)
+{
+  struct Channel *channel = va_arg(args, struct Channel *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_CREATED);
+
+  do_hook(hooks, 1, rb_cchannel2rbchannel(channel));
+
+  return pass_callback(ruby_chan_create_hook, channel);
+}
+
+static void *
+rb_chan_delete_hdlr(va_list args)
+{
+  struct Channel *channel = va_arg(args, struct Channel *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_DELETED);
+
+  do_hook(hooks, 1, rb_cchannel2rbchannel(channel));
+
+  return pass_callback(ruby_chan_delete_hook, channel);
 }
 
 void
@@ -542,8 +588,11 @@ init_ruby(void)
   ruby_newusr_hook = install_hook(on_newuser_cb, rb_newusr_hdlr);
   ruby_privmsg_hook = install_hook(on_privmsg_cb, rb_privmsg_hdlr);
   ruby_join_hook = install_hook(on_join_cb, rb_join_hdlr);
+  ruby_part_hook = install_hook(on_part_cb, rb_part_hdlr);
   ruby_nick_hook = install_hook(on_nick_change_cb, rb_nick_hdlr);
   ruby_notice_hook = install_hook(on_notice_cb, rb_notice_hdlr);
+  ruby_chan_create_hook = install_hook(on_channel_created_cb, rb_chan_create_hdlr);
+  ruby_chan_delete_hook = install_hook(on_channel_destroy_cb, rb_chan_delete_hdlr);
 
   /* pin any ruby address we keep on the C side */
   rb_gc_register_address(&ruby_server_hooks);

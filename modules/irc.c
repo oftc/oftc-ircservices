@@ -57,6 +57,7 @@ static void *irc_sendmsg_resv(va_list);
 static void *irc_sendmsg_server(va_list);
 static void *irc_sendmsg_join(va_list);
 static void *irc_server_connected(va_list);
+static void *part_one_client(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
 static char sendbuf[MODEBUFLEN];
@@ -203,6 +204,7 @@ static dlink_node *kill_hook;
 static dlink_node *resv_hook;
 static dlink_node *newserver_hook;
 static dlink_node *join_hook;
+static dlink_node *part_hook;
 
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
@@ -230,6 +232,7 @@ INIT_MODULE(irc, "$Revision$")
   resv_hook       = install_hook(send_resv_cb, irc_sendmsg_resv);
   newserver_hook  = install_hook(send_newserver_cb, irc_sendmsg_server);
   join_hook       = install_hook(send_join_cb, irc_sendmsg_join);
+  part_hook       = install_hook(send_part_cb, part_one_client);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -376,7 +379,6 @@ irc_sendmsg_cmode(va_list args)
   char          *mode     = va_arg(args, char *);
   char          *param    = va_arg(args, char *);
   
-  ilog(L_DEBUG, "MODE %s %s %s going out.", channel, mode, param);
   sendto_server(client, ":%s MODE %s %s %s", 
       (source != NULL) ? source : me.name, channel, mode, param);
   return NULL;
@@ -584,8 +586,6 @@ irc_sendmsg_join(va_list args)
     mode = "0";
   }
 
-  ilog(L_DEBUG, "sending :%s SJOIN %lu %s %s :%s", source,
-    (unsigned long)ts, target, mode, para);
   sendto_server(client, ":%s SJOIN %1u %s %s :%s", source,
     (unsigned long)ts, target, mode, para);
 
@@ -803,30 +803,44 @@ remove_a_mode(struct Channel *chptr, struct Client *source,
  * output - none
  * side effects - remove ONE client given the channel name
  */
-static void
-part_one_client(struct Client *client, struct Client *source, char *name)
+static void *
+part_one_client(va_list args)
 {
+  struct Client *client = va_arg(args, struct Client *);
+  struct Client *source = va_arg(args, struct Client *);
+  char *name = va_arg(args, char *);
+  char *reason = va_arg(args, char *);
   struct Channel *chptr = NULL;
   struct Membership *ms = NULL;
 
   if ((chptr = hash_find_channel(name)) == NULL)
   {
-    global_notice(NULL, "Trying to part %s from %s which doesnt exist", source->name,
+    ilog(L_CRIT, "Trying to part %s from %s which doesnt exist", source->name,
         name);
-    return;
+    return NULL;
   }
 
   if ((ms = find_channel_link(source, chptr)) == NULL)
   {
-    global_notice(NULL, "Trying to part %s from %s which they aren't on", source->name,
+    ilog(L_CRIT, "Trying to part %s from %s which they aren't on", source->name,
         chptr->chname);
-    return;
+    return NULL;
+  }
+
+  if(MyConnect(source))
+  {
+    if (reason[0] != '\0')
+      sendto_server(client, ":%s PART %s :%s", source->name, chptr->chname, reason);
+    else
+      sendto_server(client, ":%s PART %s", source->name, chptr->chname);
   }
 
   remove_user_from_channel(ms);
+
+  return NULL;
 }
 
-static void 
+static void
 m_ping(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   sendto_server(source, ":%s PONG %s :%s", me.name, me.name, source->name);
@@ -1384,13 +1398,19 @@ static void
 m_part(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   char *p, *name;
+  char reason[KICKLEN + 1];
+
+  reason[0] = '\0';
+
+  if(parc > 2)
+    strlcpy(reason, parv[2], sizeof(reason));
 
   name = strtoken(&p, parv[1], ",");
-    
+
   while (name)
   {
-    part_one_client(client, source, name);
-    chain_part(client, source, name);
+    execute_callback(send_part_cb, client, source, name, reason);
+    chain_part(client, source, name, reason);
     name = strtoken(&p, NULL, ",");
   }
 }
@@ -1399,12 +1419,15 @@ static void
 m_kick(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   struct Client *target;
+  char *reason;
+
+  reason = (EmptyString(parv[3])) ? parv[2] : parv[3];
 
   target = find_client(parv[2]);
   if(target == NULL)
     return;
 
-  part_one_client(client, target, parv[1]);
+  execute_callback(send_part_cb, client, target, parv[1], reason);
 }
 
 static void

@@ -61,6 +61,7 @@ extern struct Callback *send_kill_cb;
 extern struct Callback *send_resv_cb;
 extern struct Callback *send_newserver_cb;
 extern struct Callback *send_join_cb;
+extern struct Callback *send_part_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -71,6 +72,7 @@ extern struct Callback *on_join_cb;
 extern struct Callback *on_nick_change_cb;
 extern struct Callback *on_identify_cb;
 extern struct Callback *on_newuser_cb;
+extern struct Callback *on_channel_created_cb;
 extern struct Callback *on_channel_destroy_cb;
 extern struct Callback *on_nick_drop_cb;
 extern struct Callback *on_topic_change_cb;
@@ -86,6 +88,7 @@ struct Service *make_service(char *);
 void introduce_client(const char *);
 struct Client *introduce_server(const char*, const char*);
 struct Channel *join_channel(struct Client *, const char*);
+void part_channel(struct Client *, const char*, const char*);
 size_t strtime(struct Client *, time_t, char *);
 void reply_time(struct Service *, struct Client *, unsigned int, time_t);
 void reply_user(struct Service *,struct Service *, struct Client *, 
@@ -111,7 +114,7 @@ int set_mode_lock(struct Service *, struct Channel *, struct Client *,
 void chain_cmode(struct Client *, struct Client *, struct Channel *, int, char **);
 void chain_squit(struct Client *, struct Client *, char *);
 void chain_quit(struct Client *, char *);
-void chain_part(struct Client *, struct Client *, char *);
+void chain_part(struct Client *, struct Client *, char *, char *);
 void chain_nick(struct Client *, struct Client *, int, char **, int, char *, char *);
 void chain_join(struct Client *, char *);
 

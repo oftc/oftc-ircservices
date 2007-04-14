@@ -15,6 +15,7 @@ static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_introduce_server(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_unload(VALUE);
 static VALUE ServiceModule_join_channel(VALUE, VALUE);
+static VALUE ServiceModule_part_channel(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_chain_language(VALUE, VALUE);
 /* Core Functions */
 
@@ -265,6 +266,31 @@ ServiceModule_join_channel(VALUE self, VALUE channame)
 }
 
 static VALUE
+ServiceModule_part_channel(VALUE self, VALUE channame, VALUE reason)
+{
+  struct Service *service = get_service(self);
+  struct Client *client = find_client(service->name);
+  const char* chname;
+  char creason[KICKLEN+1];
+
+  Check_Type(channame, T_STRING);
+
+  chname = StringValueCStr(channame);
+
+  creason[0] = '\0';
+
+  if(!NIL_P(reason))
+  {
+    Check_Type(reason, T_STRING);
+    strlcpy(creason, StringValueCStr(reason), sizeof(creason));
+  }
+
+  part_channel(client, chname, creason);
+
+  return self;
+}
+
+static VALUE
 ServiceModule_chain_language(VALUE self, VALUE langfile)
 {
   struct Service *service = get_service(self);
@@ -287,8 +313,11 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "NEWUSR_HOOK", INT2NUM(RB_HOOKS_NEWUSR));
   rb_define_const(cServiceModule, "PRIVMSG_HOOK", INT2NUM(RB_HOOKS_PRIVMSG));
   rb_define_const(cServiceModule, "JOIN_HOOK", INT2NUM(RB_HOOKS_JOIN));
+  rb_define_const(cServiceModule, "PART_HOOK", INT2NUM(RB_HOOKS_PART));
   rb_define_const(cServiceModule, "NICK_HOOK", INT2NUM(RB_HOOKS_NICK));
   rb_define_const(cServiceModule, "NOTICE_HOOK", INT2NUM(RB_HOOKS_NOTICE));
+  rb_define_const(cServiceModule, "CHAN_CREATED_HOOK", INT2NUM(RB_HOOKS_CHAN_CREATED));
+  rb_define_const(cServiceModule, "CHAN_DELETED_HOOK", INT2NUM(RB_HOOKS_CHAN_DELETED));
 
   rb_define_const(cServiceModule, "LOG_CRIT",   INT2NUM(L_CRIT));
   rb_define_const(cServiceModule, "LOG_ERROR",  INT2NUM(L_ERROR));
@@ -323,6 +352,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "do_help", ServiceModule_do_help, 3);
   rb_define_method(cServiceModule, "unload", ServiceModule_unload, 0);
   rb_define_method(cServiceModule, "join_channel", ServiceModule_join_channel, 1);
+  rb_define_method(cServiceModule, "part_channel", ServiceModule_part_channel, 2);
   rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
 }
 

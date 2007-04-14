@@ -16,3 +16,15 @@ RS_HELP_COLLECT_LONG
 	Execute a ruby gc collection
 	
 	Use only if you expect something evil in ruby has happened.
+RS_HELP_JOIN_SHORT
+	%s: Cause serv to join a specific channel
+RS_HELP_JOIN_LONG
+	Cause serv to join a specific channel
+	
+	Usage: JOIN #foo
+RS_HELP_PART_SHORT
+	%s: Cause serv to part a specific channel
+RS_HELP_PART_LONG
+	Cause serv to part a specific channel
+	
+	Usage: PART #foo

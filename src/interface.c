@@ -43,6 +43,7 @@ struct Callback *send_kill_cb;
 struct Callback *send_resv_cb;
 struct Callback *send_newserver_cb;
 struct Callback *send_join_cb;
+struct Callback *send_part_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -54,6 +55,7 @@ struct Callback *on_cmode_change_cb;
 struct Callback *on_squit_cb;
 struct Callback *on_newuser_cb;
 struct Callback *on_identify_cb;
+struct Callback *on_channel_created_cb;
 struct Callback *on_channel_destroy_cb;
 struct Callback *on_topic_change_cb;
 struct Callback *on_privmsg_cb;
@@ -84,6 +86,7 @@ init_interface()
   send_resv_cb        = register_callback("Send RESV", NULL);
   send_newserver_cb   = register_callback("Introduce new server", NULL);
   send_join_cb        = register_callback("Send JOIN", NULL);
+  send_part_cb        = register_callback("Send PART", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
@@ -93,6 +96,7 @@ init_interface()
   on_quit_cb          = register_callback("Propagate SQUIT", NULL);
   on_identify_cb      = register_callback("Identify Callback", NULL);
   on_newuser_cb       = register_callback("New user coming to us", NULL);
+  on_channel_created_cb = register_callback("Channel is being created", NULL);
   on_channel_destroy_cb = register_callback("Channel is being destroyed", NULL);
   on_topic_change_cb  = register_callback("Topic changed", NULL);
   on_privmsg_cb       = register_callback("Privmsg for channel received", NULL);
@@ -174,6 +178,12 @@ join_channel(struct Client *service, const char *chname)
   chain_join(service, channel->chname);
 
   return channel;
+}
+
+void
+part_channel(struct Client *service, const char *chname, const char *reason)
+{
+  execute_callback(send_part_cb, me.uplink, service, chname, reason);
 }
 
 void
@@ -1220,9 +1230,11 @@ chain_squit(struct Client *client, struct Client *source, char *comment)
 }
 
 void
-chain_part(struct Client *client, struct Client *source, char *name)
+chain_part(struct Client *client, struct Client *source, char *name, char *reason)
 {
-  execute_callback(on_part_cb, client, source, name);
+  struct Channel *channel = hash_find_channel(name);
+
+  execute_callback(on_part_cb, client, source, channel, reason);
 }
 
 void
