@@ -166,6 +166,13 @@ rb_cchannel2rbchannel(struct Channel *channel)
 {
   VALUE rbchannel, real_channel;
 
+  if(channel == NULL)
+  {
+    ilog(L_CRIT, "Evil channel pointer is NULL");
+    rb_raise(rb_eArgError, "Failed to create ChannelStruct: NULL Pointer");
+    return 0;
+  }
+
   rbchannel = Data_Wrap_Struct(rb_cObject, 0, 0, channel);
   real_channel = do_ruby_ret(cChannelStruct, rb_intern("new"), 1, rbchannel);
 

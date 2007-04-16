@@ -1234,6 +1234,12 @@ chain_part(struct Client *client, struct Client *source, char *name, char *reaso
 {
   struct Channel *channel = hash_find_channel(name);
 
+  if(channel == NULL)
+  {
+    ilog(L_CRIT, "Evil race condition, %s left channel %s but doesn't exist", source->name, name);
+    return;
+  }
+
   execute_callback(on_part_cb, client, source, channel, reason);
 }
 
