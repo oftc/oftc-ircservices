@@ -51,4 +51,6 @@ struct Membership
 #define AddMemberFlag(x, y) ((x)->flags |=  (y))
 #define DelMemberFlag(x, y) ((x)->flags &= ~(y))
 
+extern dlink_list global_channel_list;
+
 #endif /* INCLUDED_channel_h */

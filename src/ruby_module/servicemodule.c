@@ -17,6 +17,7 @@ static VALUE ServiceModule_unload(VALUE);
 static VALUE ServiceModule_join_channel(VALUE, VALUE);
 static VALUE ServiceModule_part_channel(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_chain_language(VALUE, VALUE);
+static VALUE ServiceModule_channels_each(VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -302,6 +303,21 @@ ServiceModule_chain_language(VALUE self, VALUE langfile)
   return self;
 }
 
+static VALUE
+ServiceModule_channels_each(VALUE self)
+{
+  dlink_node *ptr = NULL, *next_ptr = NULL;
+
+  if(rb_block_given_p())
+  {
+    /* TODO wrap in protect/ensure */
+    DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
+      rb_yield(rb_cchannel2rbchannel(ptr->data));
+  }
+
+  return self;
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -354,6 +370,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "join_channel", ServiceModule_join_channel, 1);
   rb_define_method(cServiceModule, "part_channel", ServiceModule_part_channel, 2);
   rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
+  rb_define_method(cServiceModule, "channels_each", ServiceModule_channels_each, 0);
 }
 
 static void

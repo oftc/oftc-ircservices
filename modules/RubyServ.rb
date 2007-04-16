@@ -23,6 +23,7 @@ class RubyServ < ServiceModule
       [CHAN_DELETED_HOOK, 'chan_deleted'],
     ])
     #join_channel("#test")
+    self.channels_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
   end
   def HELP(client, parv = [])
     log(LOG_DEBUG, "RubyServ::Help")
