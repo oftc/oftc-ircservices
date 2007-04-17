@@ -306,7 +306,9 @@ services_die(const char *msg, int rboot)
   cleanup_parser();
   cleanup_channel_modes();
   cleanup_log();*/
+#ifdef HAVE_RUBY
   cleanup_ruby();
+#endif
   cleanup_db();
   cleanup_modules();
   cleanup_interface();
