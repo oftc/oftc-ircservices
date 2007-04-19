@@ -118,9 +118,16 @@ ChannelStruct_RegChanSet(VALUE self, VALUE value)
 {
   struct Channel *channel = rb_rbchannel2cchannel(self);
 
-  Check_OurType(value, cRegChannel);
-
-  channel->regchan = rb_rbregchan2cregchan(value);
+  if(!NIL_P(value))
+  {
+    Check_OurType(value, cRegChannel);
+    channel->regchan = rb_rbregchan2cregchan(value);
+  }
+  else
+  {
+    if(channel->regchan)
+      ilog(L_CRIT, "ChannelStruct trying to set regchan to NIL but regchan exists, possible memory leak, ignoring request");
+  }
   return value;
 }
 

@@ -106,6 +106,13 @@ CS_HELP_SET_EXPIREBANS_LONG
 	
 	If this option is non zero, channel bans will be removed at the interval
 	specified.
+CS_HELP_SET_FLOODSERV_SHORT
+	%s: Set whether FloodServ monitors channel.
+CS_HELP_SET_FLOODSERV_LONG
+	Usage: SET channel FLOODSERV
+	
+	If this option is non zero, FloodServ will join the channel and attempt to
+	detect floods and take action against them.
 CS_HELP_SET_SHORT
 	%s: Change channel settings.
 CS_HELP_SET_LONG
@@ -415,3 +422,5 @@ CS_NOREG_FORBID
 	%s is forbidden and may not be registered or used. Please choose another
 	
 	channel.
+CS_FS_NOT_LOADED
+  FloodServ is not currently connected, when it returns it will join %s

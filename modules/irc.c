@@ -833,6 +833,8 @@ part_one_client(va_list args)
       sendto_server(client, ":%s PART %s :%s", source->name, chptr->chname, reason);
     else
       sendto_server(client, ":%s PART %s", source->name, chptr->chname);
+
+    execute_callback(on_part_cb, client, source, chptr, reason);
   }
 
   remove_user_from_channel(ms);
@@ -1158,7 +1160,7 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
     if (!IsMember(target, chptr))
     {
       add_user_to_channel(chptr, target, fl, !have_many_nicks);
-      chain_join(target, chptr->chname);
+      execute_callback(on_join_cb, target, chptr->chname);
       ilog(L_DEBUG, "Added %s!%s@%s to %s", target->name, target->username,
           target->host, chptr->chname);
     }

@@ -18,6 +18,7 @@ static VALUE ServiceModule_join_channel(VALUE, VALUE);
 static VALUE ServiceModule_part_channel(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_chain_language(VALUE, VALUE);
 static VALUE ServiceModule_channels_each(VALUE);
+static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -318,6 +319,20 @@ ServiceModule_channels_each(VALUE self)
   return self;
 }
 
+static VALUE
+ServiceModule_regchan_by_name(VALUE self, VALUE name)
+{
+  struct RegChannel *channel = NULL;
+  Check_Type(name, T_STRING);
+
+  channel = db_find_chan(StringValueCStr(name));
+
+  if(channel)
+    return rb_cregchan2rbregchan(channel);
+  else
+    return Qnil;
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -371,6 +386,8 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "part_channel", ServiceModule_part_channel, 2);
   rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
   rb_define_method(cServiceModule, "channels_each", ServiceModule_channels_each, 0);
+
+  rb_define_method(cServiceModule, "regchan_by_name?", ServiceModule_regchan_by_name, 1);
 }
 
 static void

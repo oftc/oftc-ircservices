@@ -44,4 +44,8 @@ class ServiceBase
 
   def reply_user(client, message)
   end
+
+  def is_me?(client)
+    client.name.downcase == @ServiceName.downcase
+  end
 end

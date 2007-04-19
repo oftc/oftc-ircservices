@@ -116,7 +116,6 @@ void chain_squit(struct Client *, struct Client *, char *);
 void chain_quit(struct Client *, char *);
 void chain_part(struct Client *, struct Client *, char *, char *);
 void chain_nick(struct Client *, struct Client *, int, char **, int, char *, char *);
-void chain_join(struct Client *, char *);
 
 char *replace_string(char *, const char *);
 int check_list_entry(unsigned int, unsigned int, const char *);

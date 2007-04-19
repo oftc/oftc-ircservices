@@ -8,7 +8,10 @@ class FloodServ < ServiceModule
       [PRIVMSG_HOOK, 'msg'],
       [NOTICE_HOOK, 'msg'],
       [JOIN_HOOK, 'join'],
+      [PART_HOOK, 'part'],
       [NICK_HOOK, 'nick'],
+      [CHAN_CREATED_HOOK, 'created'],
+      [CHAN_DELETED_HOOK, 'deleted'],
     ])
 
     setup
@@ -22,16 +25,24 @@ class FloodServ < ServiceModule
     @msg_global_time = 60
 
     @msg = {}
-    @msg['#floodtest'] = {}
-    @msg['#test'] = {}
     @msg['global'] = {}
 
-    join_channel("#floodtest")
-    join_channel("#test")
+    @joined = {}
+
+    channels_each do |channel|
+      channel.regchan = regchan_by_name?(channel.name) unless channel.regchan
+      name = channel.name.downcase
+      if channel.regchan and channel.regchan.floodserv?
+        @joined[name] = false unless @joined.include?(name)
+        join_channel(name) unless @joined[name]
+        log(LOG_CRIT, "FloodServ: WTF in setup and I'm already in channel #{name}") if @joined[name]
+        @joined[name] = true
+        @msg[name] = {}
+      end
+    end
   end
 
   def unload
-    #part_channel("#text")
     @msg.clear
   end
   
@@ -63,6 +74,38 @@ class FloodServ < ServiceModule
   end
   
   def join(source, channel)
+    if is_me?(source)
+      name = channel.downcase
+      @joined[name] = true
+      @msg[name] = {} unless @msg.include?(name)
+      log(LOG_DEBUG, "Something joined FloodServ to #{name}")
+    end
+  end
+
+  def part(source, client, channel, reason)
+    if is_me?(client)
+      name = channel.name.downcase
+      @joined[name] = false
+      @msg.delete(name)
+      log(LOG_DEBUG, "Something parted FloodServ from #{name} #{reason}")
+    end
+  end
+
+  def created(channel)
+    name = channel.name.downcase
+    channel.regchan = regchan_by_name?(name) unless channel.regchan
+    if channel.regchan and channel.regchan.floodserv?
+      @joined[name] = false unless @joined.include?(name)
+      join_channel(name) unless @joined[name]
+      log(LOG_DEBUG, "FloodServ: WTF Channel created and I'm already in it?") if @joined[name]
+      @joined[name] = true
+    end
+  end
+
+  def deleted(channel)
+    name = channel.name.downcase
+    @joined[name] = false if @joined.include?(name)
+    @msg.delete(name) if @msg.include?(name)
   end
   
   def nick(source, oldnick)

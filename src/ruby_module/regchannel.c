@@ -33,6 +33,8 @@ static VALUE RegChannel_AutoLimit(VALUE);
 static VALUE RegChannel_AutoLimitSet(VALUE, VALUE);
 static VALUE RegChannel_ExpireBans(VALUE);
 static VALUE RegChannel_ExpireBansSet(VALUE, VALUE);
+static VALUE RegChannel_FloodServ(VALUE);
+static VALUE RegChannel_FloodServSet(VALUE, VALUE);
 /* DB */
 static VALUE RegChannel_Save(VALUE);
 static VALUE RegChannel_ByName(VALUE, VALUE);
@@ -283,6 +285,21 @@ RegChannel_ExpireBansSet(VALUE self, VALUE value)
 }
 
 static VALUE
+RegChannel_FloodServ(VALUE self)
+{
+  struct RegChannel *channel = rb_rbregchan2cregchan(self);
+  return channel->floodserv ? Qtrue : Qfalse;
+}
+
+static VALUE
+RegChannel_FloodServSet(VALUE self, VALUE value)
+{
+  struct RegChannel *channel = rb_rbregchan2cregchan(self);
+  channel->floodserv = value == Qtrue ? 1 : 0;
+  return value;
+}
+
+static VALUE
 RegChannel_Save(VALUE self)
 {
   //struct RegChannel *channel = rb_rbregchan2cregchan(self);
@@ -294,9 +311,11 @@ RegChannel_Save(VALUE self)
 static VALUE
 RegChannel_ByName(VALUE self, VALUE name)
 {
-  struct RegChannel *channel = db_find_chan(StringValueCStr(name));
+  struct RegChannel *channel = NULL;
 
   Check_Type(name, T_STRING);
+
+  channel = db_find_chan(StringValueCStr(name));
 
   if(channel)
     return rb_cregchan2rbregchan(channel);
@@ -338,6 +357,8 @@ Init_RegChannel(void)
   rb_define_method(cRegChannel, "autolimit=", RegChannel_AutoLimitSet, 1);
   rb_define_method(cRegChannel, "expirebans?", RegChannel_ExpireBans, 0);
   rb_define_method(cRegChannel, "expirebans=", RegChannel_ExpireBansSet, 1);
+  rb_define_method(cRegChannel, "floodserv?", RegChannel_FloodServ, 0);
+  rb_define_method(cRegChannel, "floodserv=", RegChannel_FloodServSet, 1);
 
   /* DB Methods */
   rb_define_method(cRegChannel, "save!", RegChannel_Save, 0);

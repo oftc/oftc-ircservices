@@ -63,6 +63,7 @@ static void m_set_restricted(struct Service *, struct Client *, int, char *[]);
 static void m_set_verbose(struct Service *, struct Client *, int, char *[]);
 static void m_set_autolimit(struct Service *, struct Client *, int, char *[]);
 static void m_set_expirebans(struct Service *, struct Client *, int, char *[]);
+static void m_set_floodserv(struct Service *, struct Client *, int, char *[]);
 static void m_set_mlock(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
@@ -125,6 +126,8 @@ static struct ServiceMessage set_sub[] = {
     CS_HELP_SET_AUTOLIMIT_SHORT, CS_HELP_SET_AUTOLIMIT_LONG, m_set_autolimit },
   { NULL, "EXPIREBANS", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_SET_EXPIREBANS_SHORT, CS_HELP_SET_EXPIREBANS_LONG, m_set_expirebans },
+  { NULL, "FLOODSERV", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
+    CS_HELP_SET_FLOODSERV_SHORT, CS_HELP_SET_FLOODSERV_LONG, m_set_floodserv },
   { NULL, NULL, 0, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, NULL } 
 };
 
@@ -912,6 +915,51 @@ m_set_expirebans(struct Service *service, struct Client *client,
   }
 }
 
+static void
+m_set_floodserv(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct Channel *chptr = hash_find_channel(parv[1]);
+  struct Client *floodserv;
+  char fsname[NICKLEN+1] = "FloodServ";
+
+  m_set_flag(service, client, parv[1], parv[2], SET_CHAN_FLOODSERV,
+      "FLOODSERV");
+
+  if(chptr != NULL && chptr->regchan != NULL && chptr->regchan->floodserv)
+  {
+    if(ServicesState.namesuffix)
+      strlcat(fsname, ServicesState.namesuffix, sizeof(fsname));
+
+    floodserv = find_client(fsname);
+
+    if(floodserv != NULL)
+      join_channel(floodserv, chptr->chname);
+    else
+    {
+      reply_user(service, service, client, CS_FS_NOT_LOADED, chptr->chname);
+      ilog(L_INFO, "%s SET %s ON for %s, FloodServ isn't loaded",
+        client->name, fsname, chptr->chname);
+    }
+  }
+  else if(chptr != NULL && chptr->regchan != NULL)
+  {
+
+    if(ServicesState.namesuffix)
+      strlcat(fsname, ServicesState.namesuffix, sizeof(fsname));
+
+    floodserv = find_client(fsname);
+
+    if(floodserv != NULL)
+      part_channel(floodserv, chptr->chname, "Unset");
+    else
+    {
+      ilog(L_INFO, "%s SET %s OFF for %s but FloodServ isn't loaded",
+        client->name, fsname, chptr->chname);
+    }
+  }
+}
+
 /* AKICK ADD (nick|mask) reason */
 static void
 m_akick_add(struct Service *service, struct Client *client, int parc, 
@@ -1441,6 +1489,8 @@ m_set_flag(struct Service *service, struct Client *client,
       case SET_CHAN_AUTOLIMIT:
         on = regchptr->autolimit;
         break;
+      case SET_CHAN_FLOODSERV:
+        on = regchptr->floodserv;
       default:
         on = FALSE;
         break;
@@ -1485,6 +1535,9 @@ m_set_flag(struct Service *service, struct Client *client,
         break;
       case SET_CHAN_AUTOLIMIT:
         regchptr->autolimit = on;
+        break;
+      case SET_CHAN_FLOODSERV:
+        regchptr->floodserv = on;
         break;
     }
     if (chptr == NULL)

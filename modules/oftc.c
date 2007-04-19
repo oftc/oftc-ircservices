@@ -332,7 +332,7 @@ m_join(struct Client *client_p, struct Client *source_p,
   if (!IsMember(source_p, chptr))
   {
     add_user_to_channel(chptr, source_p, 0, 0);
-    chain_join(source_p, chptr->chname);
+    execute_callback(on_join_cb, source_p, chptr->chname);
     ilog(L_DEBUG, "Added %s!%s@%s to %s", source_p->name, source_p->username,
         source_p->host, chptr->chname);
   }

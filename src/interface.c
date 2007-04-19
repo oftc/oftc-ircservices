@@ -175,7 +175,7 @@ join_channel(struct Client *service, const char *chname)
     channel->channelts, 0, service->name);
 
   add_user_to_channel(channel, service, 0, 0);
-  chain_join(service, channel->chname);
+  execute_callback(on_join_cb, service, channel->chname);
 
   return channel;
 }
@@ -1241,10 +1241,4 @@ chain_part(struct Client *client, struct Client *source, char *name, char *reaso
   }
 
   execute_callback(on_part_cb, client, source, channel, reason);
-}
-
-void
-chain_join(struct Client *source, char *channel)
-{
-  execute_callback(on_join_cb, source, channel);
 }
