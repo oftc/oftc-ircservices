@@ -19,6 +19,7 @@ static VALUE ServiceModule_part_channel(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_chain_language(VALUE, VALUE);
 static VALUE ServiceModule_channels_each(VALUE);
 static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
+static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -320,6 +321,50 @@ ServiceModule_channels_each(VALUE self)
 }
 
 static VALUE
+ServiceModule_akill_add(VALUE self, VALUE mask, VALUE reason, VALUE duration)
+{
+  struct Service *service = get_service(self);
+  struct Client *client = find_client(service->name);
+  const char *creason;
+  const char *cmask;
+  struct ServiceBan *akill;
+
+  Check_Type(mask, T_STRING);
+  cmask = StringValueCStr(mask);
+
+  if((akill = db_find_akill(cmask)) != NULL)
+  {
+    free_serviceban(akill);
+    return Qfalse;
+  }
+
+  if(!valid_wild_card(cmask))
+    return Qfalse;
+
+  Check_Type(reason, T_STRING);
+  creason = StringValueCStr(reason);
+
+  if(client->nickname == NULL)
+    client->nickname = db_find_nick(client->name);
+
+  if(client->nickname == NULL)
+  {
+    ilog(L_CRIT, "%s Trying to akill but doesn't have a NickStruct", client->name);
+    return Qfalse;
+  }
+
+  akill = akill_add(service, client, cmask, creason, NUM2INT(duration));
+
+  if(akill == NULL)
+    return Qfalse;
+  else
+  {
+    free_serviceban(akill);
+    return Qtrue;
+  }
+}
+
+static VALUE
 ServiceModule_regchan_by_name(VALUE self, VALUE name)
 {
   struct RegChannel *channel = NULL;
@@ -386,6 +431,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "part_channel", ServiceModule_part_channel, 2);
   rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
   rb_define_method(cServiceModule, "channels_each", ServiceModule_channels_each, 0);
+  rb_define_method(cServiceModule, "akill_add", ServiceModule_akill_add, 3);
 
   rb_define_method(cServiceModule, "regchan_by_name?", ServiceModule_regchan_by_name, 1);
 }

@@ -133,8 +133,11 @@ void deop_user(struct Service *, struct Channel *, struct Client *);
 void devoice_user(struct Service *, struct Channel *, struct Client *);
 void invite_user(struct Service *, struct Channel *, struct Client *);
 void kill_user(struct Service *, struct Client *, const char *);
+struct ServiceBan *akill_add(struct Service *, struct Client *, const char *,
+  const char *, int);
 void ban_mask(struct Service *, struct Channel *, const char *);
 void unban_mask(struct Service *, struct Channel *, const char *);
+int valid_wild_card(const char *);
 
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);

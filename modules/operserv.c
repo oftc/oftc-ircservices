@@ -348,46 +348,6 @@ m_admin_del(struct Service *service, struct Client *client,
   }
 }
 
-static int
-valid_wild_card(const char *arg) 
-{
-  char tmpch;
-  int nonwild = 0;
-  int anywild = 0;
-
-  /*
-   * Now we must check the user and host to make sure there
-   * are at least NONWILDCHARS non-wildcard characters in
-   * them, otherwise assume they are attempting to kline
-   * *@* or some variant of that. This code will also catch
-   * people attempting to kline *@*.tld, as long as NONWILDCHARS
-   * is greater than 3. In that case, there are only 3 non-wild
-   * characters (tld), so if NONWILDCHARS is 4, the kline will
-   * be disallowed.
-   * -wnder
-   */
-  while ((tmpch = *arg++))
-  {
-    if (!IsKWildChar(tmpch))
-    {
-      /*
-       * If we find enough non-wild characters, we can
-       * break - no point in searching further.
-       */
-      if (++nonwild >= ServicesInfo.min_nonwildcard)
-        return 1;
-    }
-    else
-      anywild = 1;
-  }
-
-  /* There are no wild characters in the ban, allow it */
-  if(!anywild)
-    return 1;
-
-  return 0;
-}
-
 /* AKILL ADD [+duration] user@host reason */
 static void
 m_akill_add(struct Service *service, struct Client *client,
@@ -400,9 +360,6 @@ m_akill_add(struct Service *service, struct Client *client,
   char duration_char = '\0';
   int duration = -1;
   int input_dur;
-
-  akill = MyMalloc(sizeof(struct ServiceBan));
-  akill->type = AKILL_BAN;
 
   if(*parv[1] == '+')
   {
@@ -445,7 +402,6 @@ m_akill_add(struct Service *service, struct Client *client,
       default:
         reply_user(service, service, client, OS_AKILL_BAD_DURATIONCHAR, 
             duration_char);
-        MyFree(akill);
         return;
     }
   }
@@ -463,7 +419,6 @@ m_akill_add(struct Service *service, struct Client *client,
   {
     reply_user(service, service, client, OS_AKILL_ALREADY, mask);
     free_serviceban(tmp);
-    MyFree(akill);
     return;
   }
 
@@ -471,30 +426,20 @@ m_akill_add(struct Service *service, struct Client *client,
   {
     reply_user(service, service, client, OS_AKILL_TOO_WILD, 
         ServicesInfo.min_nonwildcard);
-    MyFree(akill);
     return;
   }
 
-  DupString(akill->mask, mask);
-
   join_params(reason, parc-1, &parv[para_start]);
 
-  DupString(akill->reason, reason);
-  akill->setter = client->nickname->id;
-  akill->time_set = CurrentTime;
-  akill->duration = duration;
+  akill = akill_add(service, client, mask, reason, duration);
 
-  if(!db_list_add(AKILL_LIST, akill))
+  if(akill == NULL)
   {
     reply_user(service, service, client, OS_AKILL_ADDFAIL, mask);
     return;
   }
-  
-  ilog(L_NOTICE, "%s Added an akill on %s. Expires %d%c [%s]", client->name,
-      akill->mask, input_dur, duration_char, reason);
-      
+
   reply_user(service, service, client, OS_AKILL_ADDOK, mask);
-  send_akill(service, client->name, akill);
   free_serviceban(akill);
 }
 

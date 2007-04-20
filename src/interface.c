@@ -362,6 +362,36 @@ kill_user(struct Service *service, struct Client *client, const char *reason)
   }
 }
 
+struct ServiceBan*
+akill_add(struct Service *service, struct Client *client, const char* mask,
+  const char *reason, int duration)
+{
+  struct ServiceBan *akill;
+
+  akill = MyMalloc(sizeof(struct ServiceBan));
+
+  akill->type = AKILL_BAN;
+  akill->setter = client->nickname->id;
+  akill->time_set = CurrentTime;
+  akill->duration = duration;
+  DupString(akill->mask, mask);
+  DupString(akill->reason, reason);
+
+  if(!db_list_add(AKILL_LIST, akill))
+  {
+    ilog(L_NOTICE, "Failed to insert akill %s into database", mask);
+    free_serviceban(akill);
+    return NULL;
+  }
+
+  ilog(L_NOTICE, "%s Added an akill on %s. Expires %d [%s]", client->name,
+      akill->mask, duration, reason);
+
+  send_akill(service, client->name, akill);
+
+  return akill;
+}
+
 void
 send_umode(struct Service *service, struct Client *client, const char *mode)
 {
@@ -526,7 +556,7 @@ unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
   send_cmode(service, chptr, "-b", mask);
   del_id(chptr, (char*)mask, CHFL_BAN);
 }
-  
+
 void
 identify_user(struct Client *client)
 {
@@ -1241,4 +1271,44 @@ chain_part(struct Client *client, struct Client *source, char *name, char *reaso
   }
 
   execute_callback(on_part_cb, client, source, channel, reason);
+}
+
+int
+valid_wild_card(const char *arg) 
+{
+  char tmpch;
+  int nonwild = 0;
+  int anywild = 0;
+
+  /*
+   * Now we must check the user and host to make sure there
+   * are at least NONWILDCHARS non-wildcard characters in
+   * them, otherwise assume they are attempting to kline
+   * *@* or some variant of that. This code will also catch
+   * people attempting to kline *@*.tld, as long as NONWILDCHARS
+   * is greater than 3. In that case, there are only 3 non-wild
+   * characters (tld), so if NONWILDCHARS is 4, the kline will
+   * be disallowed.
+   * -wnder
+   */
+  while ((tmpch = *arg++))
+  {
+    if (!IsKWildChar(tmpch))
+    {
+      /*
+       * If we find enough non-wild characters, we can
+       * break - no point in searching further.
+       */
+      if (++nonwild >= ServicesInfo.min_nonwildcard)
+        return 1;
+    }
+    else
+      anywild = 1;
+  }
+
+  /* There are no wild characters in the ban, allow it */
+  if(!anywild)
+    return 1;
+
+  return 0;
 }
