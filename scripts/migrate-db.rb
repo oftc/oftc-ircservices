@@ -136,15 +136,15 @@ def process_channels()
   handle = $source.prepare("SELECT name, description, url, email, last_topic,
     entry_message, time_registered, last_used, flags, channel_id, mlock_on,
     mlock_off, mlock_limit, mlock_key, limit_offset, bantime, founder,
-    successor FROM channel")
+    successor, floodserv_protected FROM channel")
   handle.execute
 
   while row = handle.fetch do
     insert_handle = $dest.prepare("INSERT INTO channel(channel, description,
       url, email, topic, entrymsg, reg_time, last_used, flag_private,
       flag_restricted, flag_topic_lock, flag_verbose, flag_autolimit,
-      flag_expirebans, flag_forbidden)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      flag_expirebans, flag_forbidden, flag_floodserv)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
     flags = row["flags"].to_i
     flag_private = bit_check(flags, CI_PRIVATE)
@@ -154,6 +154,8 @@ def process_channels()
     flag_autolimit = if row["limit_offset"].to_i != 0 then true else false end
     flag_expirebans = if row["bantime"].to_i != 0 then true else false end
     flag_forbidden = bit_check(flags, CI_VERBOTEN)
+		flag_floodserv = if row["floodserv_protected"].to_i != 0 then 
+			true else false end
 
     url = row["url"] == "" ? nil : row["url"]
     email = row["email"] == "" ? nil : row["email"]
@@ -163,7 +165,7 @@ def process_channels()
     insert_handle.execute(row["name"], row["description"], url, email,
       topic, entrymsg, row["time_registered"], row["last_used"],
       flag_private, flag_restricted, flag_topiclock, flag_verbose, 
-      flag_autolimit, flag_expirebans, flag_forbidden)
+      flag_autolimit, flag_expirebans, flag_forbidden, flag_floodserv)
 
     insert_handle.finish
 
