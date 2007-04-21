@@ -1291,26 +1291,6 @@ generate_hmac(const char *data)
   return hexdata;
 }
 
-void 
-chain_squit(struct Client *client, struct Client *source, char *comment)
-{
-//  execute_callback(on_quit_cb, client, source, comment);
-}
-
-void
-chain_part(struct Client *client, struct Client *source, char *name, char *reason)
-{
-  struct Channel *channel = hash_find_channel(name);
-
-  if(channel == NULL)
-  {
-    ilog(L_CRIT, "Evil race condition, %s left channel %s but doesn't exist", source->name, name);
-    return;
-  }
-
-  execute_callback(on_part_cb, client, source, channel, reason);
-}
-
 int
 valid_wild_card(const char *arg) 
 {

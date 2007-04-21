@@ -1429,8 +1429,9 @@ m_part(struct Client *client, struct Client *source, int parc, char *parv[])
 
   while (name)
   {
+    execute_callback(on_part_cb, client, source, hash_find_channel(name), 
+        reason);
     execute_callback(send_part_cb, client, source, name, reason);
-    chain_part(client, source, name, reason);
     name = strtoken(&p, NULL, ",");
   }
 }
@@ -1494,7 +1495,7 @@ m_squit(struct Client *client, struct Client *source, int parc, char *parv[])
     comment[REASONLEN] = '\0';
 
   exit_client(target, source, comment);
-  chain_squit(client, source, comment);
+//  chain_squit(client, source, comment);
 
   if(target == me.uplink)
     me.uplink = NULL;
