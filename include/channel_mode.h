@@ -133,5 +133,7 @@ EXTERN int has_member_flags(struct Membership *, unsigned int);
 
 #define IsChanop(who, chan)      \
     has_member_flags(find_channel_link(who, chan), CHFL_CHANOP)
+#define IsVoice(who, chan)       \
+    has_member_flags(find_channel_link(who, chan), CHFL_VOICE)
 
 #endif /* INCLUDED_channel_mode_h */

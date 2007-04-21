@@ -59,6 +59,7 @@ extern struct Callback *send_invite_cb;
 extern struct Callback *send_topic_cb;
 extern struct Callback *send_kill_cb;
 extern struct Callback *send_resv_cb;
+extern struct Callback *send_unresv_cb;
 extern struct Callback *send_newserver_cb;
 extern struct Callback *send_join_cb;
 extern struct Callback *send_part_cb;
@@ -103,6 +104,7 @@ void send_nick_change(struct Service *, struct Client *, const char *);
 void send_umode(struct Service *, struct Client *, const char *);
 void send_akill(struct Service *, char *, struct ServiceBan *);
 void send_resv(struct Service *, char *, char *, time_t);
+void send_unresv(struct Service *, char *);
 void remove_akill(struct Service *, struct ServiceBan *);
 void send_cmode(struct Service *, struct Channel *, const char *, const char *);
 void send_topic(struct Service *, struct Channel *, struct Client *, 
@@ -130,6 +132,7 @@ int enforce_client_serviceban(struct Service *, struct Channel *, struct Client 
 void kick_user(struct Service *, struct Channel *, const char *, const char *);
 void op_user(struct Service *, struct Channel *, struct Client *);
 void deop_user(struct Service *, struct Channel *, struct Client *);
+void voice_user(struct Service *, struct Channel *, struct Client *);
 void devoice_user(struct Service *, struct Channel *, struct Client *);
 void invite_user(struct Service *, struct Channel *, struct Client *);
 void kill_user(struct Service *, struct Client *, const char *);

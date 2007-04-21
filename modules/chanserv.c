@@ -51,6 +51,7 @@ static void m_info(struct Service *, struct Client *, int, char *[]);
 static void m_sudo(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
 static void m_forbid(struct Service *, struct Client *, int, char *[]);
+static void m_unforbid(struct Service *, struct Client *, int, char *[]);
 
 static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
@@ -65,6 +66,8 @@ static void m_set_autolimit(struct Service *, struct Client *, int, char *[]);
 static void m_set_expirebans(struct Service *, struct Client *, int, char *[]);
 static void m_set_floodserv(struct Service *, struct Client *, int, char *[]);
 static void m_set_mlock(struct Service *, struct Client *, int, char *[]);
+static void m_set_autoop(struct Service *, struct Client *, int, char *[]);
+static void m_set_autovoice(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
@@ -128,7 +131,12 @@ static struct ServiceMessage set_sub[] = {
     CS_HELP_SET_EXPIREBANS_SHORT, CS_HELP_SET_EXPIREBANS_LONG, m_set_expirebans },
   { NULL, "FLOODSERV", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
     CS_HELP_SET_FLOODSERV_SHORT, CS_HELP_SET_FLOODSERV_LONG, m_set_floodserv },
-  { NULL, NULL, 0, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, NULL } 
+  { NULL, "AUTOOP", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
+    CS_HELP_SET_AUTOOP_SHORT, CS_HELP_SET_AUTOOP_LONG, m_set_autoop },
+  { NULL, "AUTOVOICE", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
+    CS_HELP_SET_AUTOVOICE_SHORT, CS_HELP_SET_AUTOVOICE_LONG, m_set_autovoice },
+  { NULL, NULL, 0, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, 0, 0, 
+    SFLG_KEEPARG|SFLG_CHANARG, NULL } 
 };
 
 static struct ServiceMessage set_msgtab = {
@@ -230,6 +238,11 @@ static struct ServiceMessage forbid_msgtab = {
   CS_HELP_FORBID_SHORT, CS_HELP_FORBID_LONG, m_forbid
 };
 
+static struct ServiceMessage unforbid_msgtab = {
+  NULL, "UNFORBID", 0, 1, 1, 0, ADMIN_FLAG,
+  CS_HELP_UNFORBID_SHORT, CS_HELP_UNFORBID_LONG, m_unforbid
+};
+
 INIT_MODULE(chanserv, "$Revision$")
 {
   chanserv = make_service("ChanServ");
@@ -257,6 +270,7 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &sudo_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &list_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &forbid_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &unforbid_msgtab);
 
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
@@ -507,6 +521,15 @@ m_info(struct Service *service, struct Client *client,
 
   reply_user(service, service, client, CS_INFO_OPTION, "EXPIREBANS",
       regchptr->expirebans ? "ON" : "OFF");
+
+  reply_user(service, service, client, CS_INFO_OPTION, "EXPIREBANS",
+      regchptr->expirebans ? "ON" : "OFF");
+
+  reply_user(service, service, client, CS_INFO_OPTION, "AUTOOP",
+      regchptr->autoop ? "ON" : "OFF");
+
+  reply_user(service, service, client, CS_INFO_OPTION, "AUTOVOICE",
+      regchptr->autovoice ? "ON" : "OFF");
 
   if (chptr == NULL)
     free_regchan(regchptr);
@@ -873,6 +896,21 @@ m_set_verbose(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   m_set_flag(service, client, parv[1], parv[2], SET_CHAN_VERBOSE, "VERBOSE");
+}
+
+static void
+m_set_autoop(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], SET_CHAN_AUTOOP, "AUTOOP");
+}
+
+static void
+m_set_autovoice(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], SET_CHAN_AUTOVOICE, 
+     "AUTOVOICE");
 }
 
 static void
@@ -1707,7 +1745,27 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
           "This channel is forbidden and may not be used");
     }
   }
-  reply_user(service, service, client, NS_FORBID_OK, parv[1]);
+  reply_user(service, service, client, CS_FORBID_OK, parv[1]);
+}
+
+static void
+m_unforbid(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  if(!db_is_chan_forbid(parv[1]))
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_FORBID, parv[1]);
+    return;
+  }
+
+  if(!db_delete_chan_forbid(parv[1]))
+  {
+    reply_user(service, service, client, CS_UNFORBID_FAIL, parv[1]);
+    return;
+  }
+
+  send_unresv(service, parv[1]);
+
+  reply_user(service, service, client, CS_UNFORBID_OK, parv[1]);
 }
 
 /**
@@ -1801,6 +1859,16 @@ cs_on_client_join(va_list args)
         regchptr->channel);
   }
 
+  if((!IsChanop(source_p, chptr)) && level >= CHANOP_FLAG && regchptr->autoop)
+  {
+    op_user(chanserv, chptr, source_p);
+  }
+  else if((!IsVoice(source_p, chptr)) && level >= MEMBER_FLAG && 
+      regchptr->autovoice)
+  {
+    voice_user(chanserv, chptr, source_p);
+  }
+ 
   if(regchptr->entrymsg != NULL && regchptr->entrymsg[0] != '\0' &&
       !IsConnecting(me.uplink))
     reply_user(chanserv, chanserv, source_p, CS_ENTRYMSG, regchptr->channel,

@@ -10,6 +10,8 @@ CREATE TABLE channel(
   flag_autolimit        BOOLEAN NOT NULL DEFAULT 'False', -- sets limit just above the current user count
   flag_expirebans       BOOLEAN NOT NULL DEFAULT 'False', -- Expire old bans
   flag_floodserv        BOOLEAN NOT NULL DEFAULT 'False', -- floodserv should monitor channel
+  flag_autoop						BOOLEAN NOT NULL DEFAULT 'False', -- CHANOP or above get op on join
+  flag_autovoice        BOOLEAN NOT NULL DEFAULT 'False', -- MEMBER or above get voice on join
   description           VARCHAR(512) NOT NULL,
   url                   VARCHAR(255),
   email                 VARCHAR(255),

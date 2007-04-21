@@ -41,6 +41,7 @@ struct Callback *send_invite_cb;
 struct Callback *send_topic_cb;
 struct Callback *send_kill_cb;
 struct Callback *send_resv_cb;
+struct Callback *send_unresv_cb;
 struct Callback *send_newserver_cb;
 struct Callback *send_join_cb;
 struct Callback *send_part_cb;
@@ -84,6 +85,7 @@ init_interface()
   send_topic_cb       = register_callback("Send TOPIC", NULL);
   send_kill_cb        = register_callback("Send KILL", NULL);
   send_resv_cb        = register_callback("Send RESV", NULL);
+  send_unresv_cb      = register_callback("Send UNRESV", NULL);
   send_newserver_cb   = register_callback("Introduce new server", NULL);
   send_join_cb        = register_callback("Send JOIN", NULL);
   send_part_cb        = register_callback("Send PART", NULL);
@@ -424,6 +426,12 @@ send_resv(struct Service *service, char *resv, char *reason, time_t duration)
 }
 
 void
+send_unresv(struct Service *service, char *resv)
+{
+  execute_callback(send_unresv_cb, me.uplink, service, resv);
+}
+
+void
 remove_akill(struct Service *service, struct ServiceBan *akill)
 {
   execute_callback(send_unakill_cb, me.uplink, service, akill->mask);
@@ -497,6 +505,24 @@ opdeop_user(struct Channel *chptr, struct Client *client, int op)
     DelMemberFlag(member, CHFL_CHANOP);
 }
 
+static void 
+voicedevoice_user(struct Channel *chptr, struct Client *client, int voice)
+{
+  struct Membership *member;
+
+  if ((member = find_channel_link(client, chptr)) == NULL)
+    return;
+
+  if((voice && has_member_flags(member, CHFL_VOICE)) || (!voice && 
+      !has_member_flags(member, CHFL_VOICE)))
+    return;
+
+  if(voice)
+    AddMemberFlag(member, CHFL_VOICE);
+  else
+    DelMemberFlag(member, CHFL_VOICE);
+}
+
 void
 op_user(struct Service *service, struct Channel *chptr, struct Client *client)
 {
@@ -518,6 +544,17 @@ deop_user(struct Service *service, struct Channel *chptr, struct Client *client)
 }
 
 void
+voice_user(struct Service *service, struct Channel *chptr,
+    struct Client *client)
+{
+  if(ServicesState.debugmode)
+    return;
+
+  send_cmode(service, chptr, "+v", client->name);
+  voicedevoice_user(chptr, client, 1);
+}
+
+void
 devoice_user(struct Service *service, struct Channel *chptr, 
     struct Client *client)
 {
@@ -525,6 +562,7 @@ devoice_user(struct Service *service, struct Channel *chptr,
     return;
 
   send_cmode(service, chptr, "-v", client->name);
+  voicedevoice_user(chptr, client, 0);
 }
 
 void

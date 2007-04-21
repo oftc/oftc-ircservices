@@ -25,6 +25,8 @@ struct RegChannel
   char autolimit;
   char expirebans;
   char floodserv;
+  char autoop;
+  char autovoice;
 };
 
 #endif /* INCLUDED_chanserv_h */

@@ -65,8 +65,9 @@ query_t queries[QUERY_COUNT] = {
   { "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
   { "SELECT id, channel, description, entrymsg, reg_time, "
       "flag_private, flag_restricted, flag_topic_lock, flag_verbose, "
-      "flag_autolimit, flag_expirebans, flag_floodserv, url, email, topic, mlock FROM channel "
-      "WHERE lower(channel)=lower(?v)", NULL, QUERY },
+      "flag_autolimit, flag_expirebans, flag_floodserv, flag_autoop, "
+      "flag_autovoice, url, email, topic, mlock FROM channel WHERE "
+      "lower(channel)=lower(?v)", NULL, QUERY },
   { "INSERT INTO channel (channel, description, reg_time, last_used) "
     "VALUES(?v, ?v, ?d, ?d)", NULL, EXECUTE },
   { "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
@@ -128,6 +129,8 @@ query_t queries[QUERY_COUNT] = {
   { "UPDATE channel SET flag_autolimit=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_expirebans=?B WHERE id=?d", NULL, EXECUTE },
   { "UPDATE channel SET flag_floodserv=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_autoop=?B WHERE id=?d", NULL, EXECUTE },
+  { "UPDATE channel SET flag_autovoice=?B WHERE id=?d", NULL, EXECUTE },
   { "INSERT INTO forbidden_nickname (nick) VALUES (?v)", NULL, EXECUTE },
   { "SELECT nick FROM forbidden_nickname WHERE lower(nick)=lower(?v)",
     NULL, QUERY },
@@ -547,6 +550,19 @@ db_is_chan_forbid(const char *chan)
   Free(brc);
 
   return ret;
+}
+
+int 
+db_delete_chan_forbid(const char *chan)
+{
+  int ret;
+
+  db_exec(ret, DELETE_CHAN_FORBID, chan);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
 }
 
 int 
@@ -1179,8 +1195,9 @@ db_find_chan(const char *channel)
       &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
       &channel_p->regtime, &channel_p->priv, &channel_p->restricted,
       &channel_p->topic_lock, &channel_p->verbose, &channel_p->autolimit,
-      &channel_p->expirebans, &channel_p->floodserv, &channel_p->url,
-      &channel_p->email, &channel_p->topic, &channel_p->mlock);
+      &channel_p->expirebans, &channel_p->floodserv, &channel_p->autoop,
+      &channel_p->autovoice, &channel_p->url, &channel_p->email, 
+      &channel_p->topic, &channel_p->mlock);
 
   if(Fetch(rc, brc) == 0)
   {

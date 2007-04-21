@@ -110,6 +110,8 @@ enum db_queries
   SET_CHAN_AUTOLIMIT,
   SET_CHAN_EXPIREBANS,
   SET_CHAN_FLOODSERV,
+  SET_CHAN_AUTOOP,
+  SET_CHAN_AUTOVOICE,
   INSERT_FORBID,
   GET_FORBID,
   DELETE_FORBID,
@@ -188,6 +190,7 @@ int db_is_forbid(const char *);
 int db_delete_forbid(const char *);
 int db_forbid_chan(const char *);
 int db_is_chan_forbid(const char *);
+int db_delete_chan_forbid(const char *);
 
 int db_link_nicks(unsigned int, unsigned int);
 unsigned int db_unlink_nick(unsigned int, unsigned int, unsigned int);

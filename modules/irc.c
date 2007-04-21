@@ -54,6 +54,7 @@ static void *irc_sendmsg_unakill(va_list);
 static void *irc_sendmsg_topic(va_list);
 static void *irc_sendmsg_kill(va_list);
 static void *irc_sendmsg_resv(va_list);
+static void *irc_sendmsg_unresv(va_list);
 static void *irc_sendmsg_server(va_list);
 static void *irc_sendmsg_join(va_list);
 static void *irc_server_connected(va_list);
@@ -202,6 +203,7 @@ static dlink_node *unakill_hook;
 static dlink_node *topic_hook;
 static dlink_node *kill_hook;
 static dlink_node *resv_hook;
+static dlink_node *unresv_hook;
 static dlink_node *newserver_hook;
 static dlink_node *join_hook;
 static dlink_node *part_hook;
@@ -230,6 +232,7 @@ INIT_MODULE(irc, "$Revision$")
   topic_hook      = install_hook(send_topic_cb, irc_sendmsg_topic);
   kill_hook       = install_hook(send_kill_cb, irc_sendmsg_kill);
   resv_hook       = install_hook(send_resv_cb, irc_sendmsg_resv);
+  unresv_hook     = install_hook(send_unresv_cb, irc_sendmsg_unresv);
   newserver_hook  = install_hook(send_newserver_cb, irc_sendmsg_server);
   join_hook       = install_hook(send_join_cb, irc_sendmsg_join);
   part_hook       = install_hook(send_part_cb, part_one_client);
@@ -513,8 +516,23 @@ irc_sendmsg_resv(va_list args)
   return NULL;
 }
 
+static void *
+irc_sendmsg_unresv(va_list args)
+{
+  struct Client   *uplink   = va_arg(args, struct Client *);
+  struct Service  *source   = va_arg(args, struct Service *);
+  char            *resv     = va_arg(args, char *);
+
+  sendto_server(uplink, ":%s UNRESV * %s", 
+      (source != NULL) ? source->name : me.name, resv);
+ 
+  return NULL;
+}
+
+
 
 #if 0
+
 
 XXX Unused as yet
 /** Change nick of one of our introduced fake clients

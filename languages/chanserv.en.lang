@@ -113,6 +113,22 @@ CS_HELP_SET_FLOODSERV_LONG
 	
 	If this option is non zero, FloodServ will join the channel and attempt to
 	detect floods and take action against them.
+CS_HELP_SET_AUTOOP_SHORT
+	%s: Set whether elegible users are auto-opped on joining the channel.
+CS_HELP_SET_AUTOOP_LONG
+	Usage: SET channel AUTOOP [ON|OFF]
+	
+	If this option is set, when users join the channel, if they are on the
+	access list at level CHANOP or above, they will automatically be given
+	operator status on the channel.
+CS_HELP_SET_AUTOVOICE_SHORT
+	%s: Set whether elegible users are auto-voiced on joining the channel.
+CS_HELP_SET_AUTOVOICE_LONG
+	Usage: SET channel AUTOVOICE [ON|OFF]
+	
+	If this option is set, when users join the channel, if they are on the
+	access list at level MEMBER or above, they will automatically be given voice
+	status on the channel.
 CS_HELP_SET_SHORT
 	%s: Change channel settings.
 CS_HELP_SET_LONG
@@ -203,6 +219,7 @@ CS_HELP_ACCESS_SHORT
 	%s: Maintains the channel access list.
 CS_HELP_ACCESS_LONG
 	The channel access list specifies which nicknames are allowed access to the 
+	
 	channel and at what level their access is. The commands available are 
 	as follows:
 	
@@ -267,7 +284,7 @@ CS_HELP_SUDO_LONG
 CS_HELP_LIST_SHORT
 	%s: Shows a list of channels matching a specified pattern.
 CS_HELP_LIST_LONG
-	Usage: LIST pattern [FORBID]
+	Usage: LIST pattern [FORBID]
 	
 	Shows a list of channels which are registered and match the pattern
 	specified. If you specify FORBID, only forbidden channels will be shown.
@@ -276,16 +293,27 @@ CS_HELP_LIST_LONG
 CS_HELP_FORBID_SHORT
 	%s: Forbid a channel from being used.
 CS_HELP_FORBID_LONG
-	Usage: BFORBID channel
+	Usage: FORBID channel
 	
 	
 	Adds the channel specified to the forbidden channel list, preventing
 	it to be used. Forbidden channels may not be registered and anyone
-	attempting to use them will be removed from the channel.
+	attempting to use them will be removed from the channel. This option is only
+	available to services admins.
 	
 	See also: UNFORBID
+CS_HELP_UNFORBID_SHORT
+	%s: Remove a channel from the forbidden list
+CS_HELP_UNFORBID_LONG
+	Usage: UNFORBID channel
+	
+	Removes the channel from the forbidden list and allows it to be used again.
+	This option is only available to services admins.
+	
+	See also: FORBID
 CS_REGISTER_NICK
 	Nick %s is not registered. The nickname you specify must be currently 
+	
 	registered with nickname services.
 CS_ALREADY_REG
 	Channel %s is already registered.
@@ -375,11 +403,13 @@ CS_INVITED
 	User %s has been invited to %s.
 CS_ACCESS_BADLEVEL
 	Unknown access level %s. The access level you specify must be on of the
+	
 	available access levels. See HELP ACCESS for more information.
 CS_ACCESS_ADDOK
 	%s added to %s access list as %s.
 CS_ACCESS_ADDFAIL
 	Failed to add %s to %s access list as %s. It is possible that
+	
 	they are already on the access list. If this is not the case and this is not
 	the first time you have seen this message, please contact network support.
 CS_ACCESS_LIST
@@ -392,6 +422,7 @@ CS_ACCESS_DELFAIL
 	Failed to remove %s from the access list of %s.
 CS_ACCESS_NOMASTERS
 	You cannot remove %s from the access list of %s becuase it is the 
+	
 	last MASTER entry. Add another MASTER to the access list and try again.
 CS_ACCESS_NOTLISTED
 	%s is not on the access list of %s.
@@ -399,6 +430,7 @@ CS_ENTRYMSG
 	[%s] %s
 CS_DEOP_REGISTERED
 	Deopped you on channel %s because it is registered with channel services 
+	
 	and you are not a CHANOP on its access list.
 CS_BAD_MLOCK
 	'%c' is not a valid mode letter.
@@ -416,11 +448,23 @@ CS_LIST_END
 	End of LIST. %d matches found.
 CS_FORBID_BAD_DURATIONCHAR
 	Invalid duration charater, '%c'.
+CS_FORBID_OK
+	%s Added to forbidden channel list.
 CS_FORBID_FAIL
 	%s failed to be forbidden.
 CS_NOREG_FORBID
 	%s is forbidden and may not be registered or used. Please choose another
 	
 	channel.
+CS_CHAN_NOT_FORBID
+	Channel %s cannot be removed from the forbidden channel list because it
+	
+	is not on it.
+CS_UNFORBID_OK
+	Channel %s is now forbidden and may not be used.
+CS_UNFORBID_FAIL
+	Channel %s failed to be removed from the forbidden list. Likely cause is an
+	
+	internal database error.
 CS_FS_NOT_LOADED
   FloodServ is not currently connected, when it returns it will join %s
