@@ -1577,6 +1577,12 @@ m_set_flag(struct Service *service, struct Client *client,
       case SET_CHAN_FLOODSERV:
         regchptr->floodserv = on;
         break;
+      case SET_CHAN_AUTOOP:
+        regchptr->autoop = on;
+        break;
+      case SET_CHAN_AUTOVOICE:
+        regchptr->autovoice = on;
+        break;
     }
     if (chptr == NULL)
       free_regchan(regchptr);
