@@ -1,3 +1,7 @@
 0 English
 FS_HELP_NOHELP
 	%s: There is no help for FloodServ
+FS_HELP_SHORT
+	%s: There is no help for FloodServ, see /msg ChanServ HELP SET FloodServ
+FS_HELP_LONG
+	There is no help available for FloodServ, see /msg ChanServ HELP SET FloodServ

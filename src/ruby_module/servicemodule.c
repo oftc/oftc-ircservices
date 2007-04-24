@@ -263,7 +263,12 @@ ServiceModule_join_channel(VALUE self, VALUE channame)
   Check_Type(channame, T_STRING);
   chname = StringValueCStr(channame);
 
-  channel = join_channel(client, chname);
+  channel = hash_find_channel(chname);
+
+  if(channel == NULL)
+    channel = make_channel(chname);
+
+  join_channel(client, channel);
 
   return rb_cchannel2rbchannel(channel);
 }

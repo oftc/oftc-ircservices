@@ -125,7 +125,7 @@ make_service(char *name)
   return service;
 }
 
-void
+struct Client *
 introduce_client(const char *name)
 {
   struct Client *client = make_client(&me);
@@ -145,6 +145,8 @@ introduce_client(const char *name)
     execute_callback(send_newuser_cb, me.uplink, name, "services", me.name,
       name, "o");
   }
+
+  return client;
 }
 
 struct Client*
@@ -166,18 +168,17 @@ introduce_server(const char *name, const char *gecos)
 }
 
 struct Channel*
-join_channel(struct Client *service, const char *chname)
+join_channel(struct Client *service, struct Channel *channel)
 {
-  struct Channel *channel = hash_find_channel(chname);
-
-  if(channel == NULL)
-    channel = make_channel(chname);
-
-  execute_callback(send_join_cb, me.uplink, me.name, chname,
-    channel->channelts, 0, service->name);
-
-  add_user_to_channel(channel, service, 0, 0);
-  execute_callback(on_join_cb, service, channel->chname);
+  if(channel != NULL)
+  {
+    add_user_to_channel(channel, service, 0, 0);
+    execute_callback(send_join_cb, me.uplink, me.name, channel->chname,
+      channel->channelts, 0, service->name);
+    execute_callback(on_join_cb, service, channel->chname);
+  }
+  else
+    ilog(L_DEBUG, "Trying to join to a null channel pointer");
 
   return channel;
 }

@@ -972,7 +972,7 @@ m_set_floodserv(struct Service *service, struct Client *client,
     floodserv = find_client(fsname);
 
     if(floodserv != NULL)
-      join_channel(floodserv, chptr->chname);
+      join_channel(floodserv, chptr);
     else
     {
       reply_user(service, service, client, CS_FS_NOT_LOADED, chptr->chname);

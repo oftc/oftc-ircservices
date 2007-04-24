@@ -27,6 +27,8 @@ struct RegChannel
   char floodserv;
   char autoop;
   char autovoice;
+  struct MessageQueue **flood_hash;
+  dlink_list flood_list;
 };
 
 #endif /* INCLUDED_chanserv_h */

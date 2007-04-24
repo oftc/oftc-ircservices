@@ -571,3 +571,80 @@ hash_find_service(const char *host)
 
   return service;
 }
+
+struct MessageQueue *
+hash_find_mqueue_host(struct MessageQueue **hash, const char *host)
+{
+  unsigned int hashv = strhash(host);
+  struct MessageQueue *queue;
+  if((queue = hash[hashv]))
+  {
+    if(irccmp(host, queue->name))
+    {
+      struct MessageQueue *prev;
+
+      while(prev = queue, (queue = prev->hnext) != NULL)
+      {
+        if(!irccmp(host, queue->name))
+        {
+          prev->hnext = queue->next;
+          queue->next = hash[hashv];
+          hash[hashv] = queue;
+          break;
+        }
+      }
+    }
+  }
+
+  return queue;
+}
+
+void
+hash_del_mqueue(struct MessageQueue **hash, struct MessageQueue *queue)
+{
+  unsigned int hashv = strhash(queue->name);
+  struct MessageQueue *tmp = hash[hashv];
+
+  if (tmp != NULL)
+  {
+    if (tmp == queue)
+    {
+      hash[hashv] = queue->hnext;
+      queue->hnext = queue;
+    }
+    else
+    {
+      while (tmp->hnext != queue)
+      {
+        if ((tmp = tmp->hnext) == NULL)
+          return;
+      }
+
+      tmp->hnext = tmp->hnext->hnext;
+      queue->hnext = queue;
+    }
+  }
+}
+
+void
+hash_add_mqueue(struct MessageQueue **hash, struct MessageQueue *queue)
+{
+  unsigned int hashv = strhash(queue->name);
+
+  queue->hnext = hash[hashv];
+  hash[hashv] = queue;
+}
+
+struct MessageQueue **
+new_mqueue_hash()
+{
+  struct MessageQueue **tmp;
+  unsigned int i;
+
+  tmp = MyMalloc(sizeof(struct MessageQueue *) * HASHSIZE);
+
+  for(i = 0; i < HASHSIZE; ++i)
+    tmp[i] = NULL;
+
+  return tmp;
+}

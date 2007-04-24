@@ -58,5 +58,11 @@ struct Service *find_service(const char *);
 struct Channel *hash_find_channel(const char *);
 void *hash_get_bucket(int, unsigned int);
 
+struct MessageQueue *hash_find_mqueue_host(struct MessageQueue **,
+  const char *);
+void hash_add_mqueue(struct MessageQueue **, struct MessageQueue *);
+void hash_del_mqueue(struct MessageQueue **, struct MessageQueue *);
+struct MessageQueue **new_mqueue_hash();
+
 unsigned int strhash(const char *);
 #endif  /* INCLUDED_hash_h */
