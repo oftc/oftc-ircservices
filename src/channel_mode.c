@@ -120,6 +120,9 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
     case CHFL_INVEX:
       list = &chptr->invexlist;
       break;
+    case CHFL_QUIET:
+      list = &chptr->quietlist;
+      break;
     default:
       assert(0);
       return 0;
@@ -210,6 +213,9 @@ del_id(struct Channel *chptr, char *banid, int type)
       break;
     case CHFL_INVEX:
       list = &chptr->invexlist;
+      break;
+    case CHFL_QUIET:
+      list = &chptr->quietlist;
       break;
     default:
       assert(0);
@@ -549,6 +555,59 @@ chm_invex(struct Client *client_p, struct Client *source_p,
 
   mode_changes[mode_count].letter = c;
   mode_changes[mode_count].dir = dir;
+
+  mode_changes[mode_count].mems = ONLY_CHANOPS;
+
+  mode_changes[mode_count].id = NULL;
+  mode_changes[mode_count++].arg = mask;
+}
+
+static void
+chm_quiet(struct Client *client_p, struct Client *source_p,
+          struct Channel *chptr, int parc, int *parn,
+          char **parv, int *errors, int alev, int dir, char c, void *d,
+          const char *chname)
+{
+  char *mask = NULL;
+
+  if (alev < CHACCESS_HALFOP)
+  {
+    *errors |= SM_ERR_NOOPS;
+    return;
+  }
+
+  if (dir == MODE_QUERY || parc <= *parn)
+    return;
+
+  if (MyClient(source_p) && (++mode_limit > MAXMODEPARAMS))
+    return;
+
+  mask = nuh_mask[*parn];
+  memcpy(mask, parv[*parn], sizeof(nuh_mask[*parn]));
+  ++*parn;
+
+  if (IsServer(client_p))
+    if (strchr(mask, ' '))
+      return;
+
+  switch (dir)
+  {
+    case MODE_ADD:
+      if (!add_id(source_p, chptr, mask, CHFL_QUIET))
+        return;
+      break;
+    case MODE_DEL:
+      if (!del_id(chptr, mask, CHFL_QUIET))
+        return;
+      break;
+    default:
+      assert(0);
+  }
+
+  mode_changes[mode_count].letter = c;
+  mode_changes[mode_count].dir = dir;
+  //mode_changes[mode_count].caps = CAP_QUIET;
+  mode_changes[mode_count].nocaps = 0;
 
   mode_changes[mode_count].mems = ONLY_CHANOPS;
 
@@ -968,7 +1027,7 @@ static struct ChannelMode ModeTable[255] =
   {chm_simple, (void *) MODE_NOPRIVMSGS},         /* n */
   {chm_op, NULL},                                 /* o */
   {chm_simple, (void *) MODE_PARANOID},            /* p */
-  {chm_nosuch, NULL},                             /* q */
+  {chm_quiet, NULL},                              /* q */
   {chm_nosuch, NULL},                             /* r */
   {chm_simple, (void *) MODE_SECRET},             /* s */
   {chm_simple, (void *) MODE_TOPICLIMIT},         /* t */

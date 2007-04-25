@@ -44,6 +44,7 @@
 #define CHFL_BAN        0x0010 /* ban channel flag */
 #define CHFL_EXCEPTION  0x0020 /* exception to ban channel flag */
 #define CHFL_INVEX      0x0040
+#define CHFL_QUIET      0x0080 /* quiet mask +q */
 
 /* channel modes ONLY */
 #define MODE_PARANOID     0x0001

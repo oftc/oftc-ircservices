@@ -597,6 +597,17 @@ unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 }
 
 void
+quiet_mask(struct Service *service, struct Channel *chptr, const char *mask)
+{
+  struct Client *client = find_client(service->name);
+  if(ServicesState.debugmode)
+    return;
+
+  send_cmode(service, chptr, "+q", mask);
+  add_id(client, chptr, (char *)mask, CHFL_QUIET);
+}
+
+void
 identify_user(struct Client *client)
 {
   struct Nick *nick = client->nickname;

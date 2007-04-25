@@ -354,6 +354,7 @@ fs_on_privmsg(va_list args)
   char *message = va_arg(args, char *);
   struct MessageQueue *queue;
   int enforce = MQUEUE_NONE;
+  char mask[IRC_BUFSIZE+1];
 
   if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
   {
@@ -373,10 +374,14 @@ fs_on_privmsg(va_list args)
       case MQUEUE_LINE:
         ilog(L_NOTICE, "%s@%s TRIGGERED LINE FLOOD in %s", source->name,
           source->host, channel->chname);
+        snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
+        quiet_mask(floodserv,  channel, mask);
         break;
       case MQUEUE_MESG:
         ilog(L_NOTICE, "%s@%s TRIGGERED MESSAGE FLOOD in %s", source->name,
           source->host, channel->chname);
+        snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
+        quiet_mask(floodserv,  channel, mask);
         break;
     }
   }

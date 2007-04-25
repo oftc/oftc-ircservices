@@ -29,6 +29,7 @@ struct Channel
   dlink_list banlist;
   dlink_list exceptlist;
   dlink_list invexlist;
+  dlink_list quietlist;
   
   time_t channelts;
   time_t limit_time;

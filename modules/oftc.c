@@ -417,6 +417,10 @@ m_bmask(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
       mode_type = CHFL_INVEX;
       break;
 
+    case 'q':
+      mode_type = CHFL_QUIET;
+      break;
+
     /* maybe we should just blindly propagate this? */
     default:
       return; 
@@ -474,7 +478,7 @@ oftc_server_connected(va_list args)
   dlink_node *ptr;
   
   sendto_server(client, "PASS %s TS 6 %s", client->server->pass, me.id);
-  sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX");
+  sendto_server(client, "CAPAB :KLN PARA EOB QS UNKLN GLN ENCAP TBURST CHW IE EX QUIET");
   sendto_server(client, "SERVER %s 1 :%s", me.name, me.info);
   send_queued_write(client);
 
