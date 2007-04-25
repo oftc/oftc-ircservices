@@ -45,15 +45,21 @@ static void m_help(struct Service *, struct Client *, int, char *[]);
 
 static void setup_channel(struct Channel *);
 
-static struct MessageQueue *mqueue_new(struct MessageQueue **, const char *,
-  unsigned int);
+static struct MessageQueue *mqueue_new(const char *, unsigned int, int, int,
+  int);
 static void mqueue_add_message(struct MessageQueue *, const char *);
 static int mqueue_enforce(struct MessageQueue *);
-static void mqueue_hash_free(struct Channel *);
+static void mqueue_hash_free(struct MessageQueue **, dlink_list);
 static void mqueue_free(struct MessageQueue *);
 
 static void floodmsg_free(struct FloodMsg *);
 static struct FloodMsg *floodmsg_new(const char *);
+
+static void floodserv_free_channels();
+static void floodserv_free_channel(struct RegChannel *);
+
+static struct MessageQueue **global_msg_queue;
+static dlink_list global_msg_list;
 
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, 2, SFLG_UNREGOK, CHUSER_FLAG, FS_HELP_SHORT,
@@ -63,6 +69,7 @@ static struct ServiceMessage help_msgtab = {
 INIT_MODULE(floodserv, "$Revision: 864 $")
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
+  int i;
 
   floodserv = make_service("FloodServ");
   clear_serv_tree_parse(&floodserv->msg_tree);
@@ -82,12 +89,14 @@ INIT_MODULE(floodserv, "$Revision: 864 $")
 
   DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
     setup_channel(ptr->data);
+
+  global_msg_queue = new_mqueue_hash();
+  for(i = 0; i < HASHSIZE; ++i)
+    global_msg_queue[i] = NULL;
 }
 
 CLEANUP_MODULE
 {
-  dlink_node *ptr = NULL, *next_ptr = NULL;
-
   uninstall_hook(on_join_cb, fs_on_client_join);
   uninstall_hook(on_part_cb, fs_on_client_part);
   uninstall_hook(on_channel_created_cb, fs_on_channel_created);
@@ -97,8 +106,8 @@ CLEANUP_MODULE
 
   serv_clear_messages(floodserv);
 
-  DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
-    mqueue_hash_free(ptr->data);
+  mqueue_hash_free(global_msg_queue, global_msg_list);
+  floodserv_free_channels();
 
   unload_languages(floodserv->languages);
 
@@ -106,6 +115,28 @@ CLEANUP_MODULE
   hash_del_service(floodserv);
   dlinkDelete(&floodserv->node, &services_list);
   ilog(L_DEBUG, "Unloaded floodserv");
+}
+
+static void
+floodserv_free_channels()
+{
+  dlink_node *ptr = NULL, *next_ptr = NULL;
+  struct Channel *chptr = NULL;
+
+  DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
+  {
+    chptr = ptr->data;
+    if(chptr->regchan != NULL && chptr->regchan->flood_hash != NULL)
+      floodserv_free_channel(chptr->regchan);
+  }
+}
+
+static void
+floodserv_free_channel(struct RegChannel *chptr)
+{
+  mqueue_hash_free(chptr->flood_hash, chptr->flood_list);
+  chptr->flood_hash = NULL;
+  mqueue_free(chptr->gqueue);
 }
 
 static void
@@ -120,36 +151,33 @@ setup_channel(struct Channel *chptr)
 
     if(!IsMember(fsclient, chptr))
       join_channel(fsclient, chptr);
+
+    if(regchan->gqueue == NULL)
+      regchan->gqueue = mqueue_new(chptr->chname, MQUEUE_GLOB, FS_GMSG_COUNT,
+        FS_GMSG_TIME, 0);
   }
 }
 
 static struct MessageQueue *
-mqueue_new(struct MessageQueue **hash, const char *name, unsigned int type)
+mqueue_new(const char *name, unsigned int type, int max, int msg_time,
+int lne_time)
 {
   struct MessageQueue *queue;
   int i;
   queue = MyMalloc(sizeof(struct MessageQueue));
   DupString(queue->name, name);
 
-  if(type == MQUEUE_CHAN)
-  {
-    queue->last = FS_MSG_COUNT - 1;
-    queue->max  = FS_MSG_COUNT;
-    queue->msg_enforce_time = FS_MSG_TIME;
-    queue->lne_enforce_time = FS_LNE_TIME;
-  }
-  else
-  {
-    queue->last = FS_GMSG_COUNT - 1;
-    queue->max  = FS_GMSG_COUNT;
-    queue->msg_enforce_time = FS_GMSG_TIME;
-    queue->lne_enforce_time = FS_GMSG_TIME * 2;
-  }
+  queue->last = max - 1;
+  queue->max  = max;
+  queue->msg_enforce_time = msg_time;
+  queue->lne_enforce_time = lne_time;
+  queue->type = type;
+
+  queue->entries = MyMalloc(sizeof(struct FloodMsg *) * queue->max);
 
   for(i = 0; i < queue->max; ++i)
     queue->entries[i] = NULL;
 
-  hash_add_mqueue(hash, queue);
   return queue;
 }
 
@@ -191,7 +219,7 @@ mqueue_enforce(struct MessageQueue *queue)
 
   age = fentry->time - lentry->time;
 
-  if(age <= queue->lne_enforce_time)
+  if(queue->type != MQUEUE_GLOB && age <= queue->lne_enforce_time)
     return MQUEUE_LINE;
 
   if(age <= queue->msg_enforce_time)
@@ -216,19 +244,18 @@ mqueue_enforce(struct MessageQueue *queue)
 }
 
 static void
-mqueue_hash_free(struct Channel *chptr)
+mqueue_hash_free(struct MessageQueue **hash, dlink_list list)
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
-  if(chptr->regchan != NULL && chptr->regchan->flood_hash != NULL)
+  if(hash != NULL)
   {
-    DLINK_FOREACH_SAFE(ptr, next_ptr, chptr->regchan->flood_list.head)
+    DLINK_FOREACH_SAFE(ptr, next_ptr, list.head)
     {
-      hash_del_mqueue(chptr->regchan->flood_hash, ptr->data);
+      hash_del_mqueue(hash, ptr->data);
       mqueue_free(ptr->data);
-      dlinkDelete(ptr, &chptr->regchan->flood_list);
+      dlinkDelete(ptr, &list);
     }
-    MyFree(chptr->regchan->flood_hash);
-    chptr->regchan->flood_hash = NULL;
+    MyFree(hash);
   }
 }
 
@@ -307,9 +334,10 @@ fs_on_client_part(va_list args)
 
   if(ircncmp(client->name, fsclient->name, NICKLEN) == 0)
   {
-    mqueue_hash_free(channel);
     ilog(L_DEBUG, "FloodServ removed from %s by %s", channel->chname,
       source->name);
+    if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
+      floodserv_free_channel(channel->regchan);
   }
   else
   {
@@ -341,7 +369,7 @@ fs_on_channel_destroy(va_list args)
   struct Channel *chan = va_arg(args, struct Channel *);
 
   if(chan->regchan != NULL && chan->regchan->flood_hash != NULL)
-    mqueue_hash_free(chan);
+    floodserv_free_channel(chan->regchan);
 
   return pass_callback(fs_channel_destroy_hook, chan);
 }
@@ -352,19 +380,57 @@ fs_on_privmsg(va_list args)
   struct Client *source = va_arg(args, struct Client *);
   struct Channel *channel = va_arg(args, struct Channel *);
   char *message = va_arg(args, char *);
-  struct MessageQueue *queue;
+  struct MessageQueue *queue = NULL, *gqueue = NULL;
   int enforce = MQUEUE_NONE;
   char mask[IRC_BUFSIZE+1];
 
   if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
   {
     queue = hash_find_mqueue_host(channel->regchan->flood_hash, source->host);
+    gqueue = hash_find_mqueue_host(global_msg_queue, source->host);
 
     if(queue == NULL)
     {
-      queue = mqueue_new(channel->regchan->flood_hash, source->host,
-        MQUEUE_CHAN);
+      queue = mqueue_new(source->host,MQUEUE_CHAN, FS_MSG_COUNT, FS_MSG_TIME,
+        FS_LNE_TIME);
+      hash_add_mqueue(channel->regchan->flood_hash, queue);
       dlinkAdd(queue, &queue->node, &channel->regchan->flood_list);
+    }
+
+    if(gqueue == NULL)
+    {
+      gqueue = mqueue_new(source->host, MQUEUE_GLOB, FS_GMSG_COUNT,
+        FS_GMSG_TIME, 0);
+      hash_add_mqueue(global_msg_queue, gqueue);
+      dlinkAdd(gqueue, &queue->node, &global_msg_list);
+    }
+
+    mqueue_add_message(gqueue, message);
+    enforce = mqueue_enforce(gqueue);
+
+    switch(enforce)
+    {
+      case MQUEUE_MESG:
+        ilog(L_NOTICE, "%s@%s TRIGGERED NETWORK MSG FLOOD Message: %s",
+          source->name, source->host, message);
+        snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
+        akill_add(floodserv, fsclient, mask, FS_KILL_MSG, FS_KILL_DUR);
+        goto pass_cb;
+        break;
+    }
+
+    mqueue_add_message(channel->regchan->gqueue, message);
+    enforce = mqueue_enforce(channel->regchan->gqueue);
+
+    switch(enforce)
+    {
+      case MQUEUE_MESG:
+        ilog(L_NOTICE, "%s@%s TRIGGERED CHANNEL MSG FLOOD Message: %s",
+          source->name, source->host, message);
+        snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
+        quiet_mask(floodserv, channel, mask);
+        goto pass_cb;
+        break;
     }
 
     mqueue_add_message(queue, message);
@@ -375,17 +441,18 @@ fs_on_privmsg(va_list args)
         ilog(L_NOTICE, "%s@%s TRIGGERED LINE FLOOD in %s", source->name,
           source->host, channel->chname);
         snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
-        quiet_mask(floodserv,  channel, mask);
+        quiet_mask(floodserv, channel, mask);
         break;
       case MQUEUE_MESG:
-        ilog(L_NOTICE, "%s@%s TRIGGERED MESSAGE FLOOD in %s", source->name,
-          source->host, channel->chname);
+        ilog(L_NOTICE, "%s@%s TRIGGERED MESSAGE FLOOD in %s Message: %s",
+          source->name, source->host, channel->chname, message);
         snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
-        quiet_mask(floodserv,  channel, mask);
+        quiet_mask(floodserv, channel, mask);
         break;
     }
   }
 
+  pass_cb:
   return pass_callback(fs_privmsg_hook, source, channel, message);
 }
 

@@ -8,12 +8,12 @@
 struct RegChannel
 {
   dlink_node node;
-  
+
   unsigned int id;
   time_t regtime;
   char channel[CHANNELLEN+1];
   char *description;
-  char *entrymsg; 
+  char *entrymsg;
   char *url;
   char *email;
   char *topic;
@@ -27,8 +27,11 @@ struct RegChannel
   char floodserv;
   char autoop;
   char autovoice;
+  /* Per Host */
   struct MessageQueue **flood_hash;
   dlink_list flood_list;
+  /* Per Channel */
+  struct MessageQueue *gqueue;
 };
 
 #endif /* INCLUDED_chanserv_h */

@@ -12,6 +12,8 @@
 #define FS_GMSG_COUNT 10
 #define FS_GMSG_TIME  60
 
+#define FS_KILL_MSG "This Host Triggered Network Flood Protection, please mail support@oftc.net" 
+#define FS_KILL_DUR 2592000 /* 30 Days */
 struct FloodMsg
 {
   time_t time;
@@ -25,7 +27,8 @@ struct MessageQueue
   int max;
   int msg_enforce_time;
   int lne_enforce_time;
-  struct FloodMsg *entries[FS_MSG_COUNT];
+  struct FloodMsg **entries;
+  unsigned int type;
   struct MessageQueue *hnext;
   struct MessageQueue *next;
   dlink_node node;
