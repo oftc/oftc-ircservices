@@ -156,18 +156,18 @@ mqueue_new(struct MessageQueue **hash, const char *name, unsigned int type)
 static void
 mqueue_add_message(struct MessageQueue *queue, const char *message)
 {
-  struct FloodMsg *entry;
+  struct FloodMsg *entry = NULL;
   int i;
 
-  if(queue->last == 0 && (entry = queue->entries[queue->last]))
+  if(queue->last == 0 && queue->entries[0] != NULL)
   {
+    entry = queue->entries[queue->max-1];
     for(i = queue->max - 1; i > 0; --i)
       queue->entries[i] = queue->entries[i - 1];
     floodmsg_free(entry);
   }
 
-  entry = floodmsg_new(message);
-  queue->entries[queue->last] = entry;
+  queue->entries[queue->last] = floodmsg_new(message);
 
   if(queue->last > 0)
     --queue->last;
@@ -176,7 +176,7 @@ mqueue_add_message(struct MessageQueue *queue, const char *message)
 static int
 mqueue_enforce(struct MessageQueue *queue)
 {
-  struct FloodMsg *lentry, *fentry, *tmp;
+  struct FloodMsg *lentry = NULL, *fentry = NULL, *tmp = NULL;
   time_t age = 0;
   int i = 0;
   int enforce = 1;
@@ -186,6 +186,8 @@ mqueue_enforce(struct MessageQueue *queue)
 
   if(queue->last != 0 || lentry == NULL || fentry == NULL)
     return MQUEUE_NONE;
+
+  assert(fentry != lentry);
 
   age = fentry->time - lentry->time;
 
@@ -204,6 +206,8 @@ mqueue_enforce(struct MessageQueue *queue)
       }
     }
   }
+  else
+    return MQUEUE_NONE;
 
   if(enforce)
     return MQUEUE_MESG;
@@ -277,7 +281,7 @@ fs_on_client_join(va_list args)
   char          *name   = va_arg(args, char *);
   struct Channel *channel = hash_find_channel(name);
 
-  if(ircncmp(client->name, fsclient->name, NICKLEN) != 0)
+  if(ircncmp(client->name, fsclient->name, NICKLEN) == 0)
   {
     if(channel != NULL)
     {
@@ -301,15 +305,20 @@ fs_on_client_part(va_list args)
   struct Channel* channel = va_arg(args, struct Channel *);
   char *reason = va_arg(args, char *);
 
-  if(ircncmp(client->name, fsclient->name, NICKLEN) != 0)
+  if(ircncmp(client->name, fsclient->name, NICKLEN) == 0)
   {
     mqueue_hash_free(channel);
     ilog(L_DEBUG, "FloodServ removed from %s by %s", channel->chname,
       source->name);
   }
-
-  if(channel->members.length == 1)
-    part_channel(client, channel->chname, "");
+  else
+  {
+    if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
+    {
+      if(channel->members.length == 1 && IsMember(fsclient, channel))
+        part_channel(fsclient, channel->chname, "");
+    }
+  }
 
   /* TODO Join/Part flood metrics */
 
@@ -344,7 +353,7 @@ fs_on_privmsg(va_list args)
   struct Channel *channel = va_arg(args, struct Channel *);
   char *message = va_arg(args, char *);
   struct MessageQueue *queue;
-  int enforce;
+  int enforce = MQUEUE_NONE;
 
   if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
   {
