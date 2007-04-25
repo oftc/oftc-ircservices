@@ -315,7 +315,7 @@ fs_on_client_part(va_list args)
   {
     if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
     {
-      if(channel->members.length == 1 && IsMember(fsclient, channel))
+      if(channel->members.length == 2 && IsMember(fsclient, channel))
         part_channel(fsclient, channel->chname, "");
     }
   }

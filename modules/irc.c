@@ -845,6 +845,8 @@ part_one_client(va_list args)
     return NULL;
   }
 
+  remove_user_from_channel(ms);
+
   if(MyConnect(source))
   {
     if (reason[0] != '\0')
@@ -854,8 +856,6 @@ part_one_client(va_list args)
 
     execute_callback(on_part_cb, client, source, chptr, reason);
   }
-
-  remove_user_from_channel(ms);
 
   return NULL;
 }
