@@ -356,11 +356,11 @@ CS_INFO_OPTION
 CS_INFO_MASTERS
 	Channel masters are: %s
 CS_INFO_REGTIME_FULL
-	Time Registered: %s (%d Year(s) %d month(s) %d day(s) %02d:%02d:%02d ago.)
+	Time Registered: %s (%dy %dm %dd %02d:%02d:%02d ago.)
 CS_INFO_REGTIME_NOYEAR
-	Time Registered: %s (%d Month(s) %d day(s) %02d:%02d:%02d ago.)
+	Time Registered: %s (%dm %dd %02d:%02d:%02d ago.)
 CS_INFO_REGTIME_NOMONTH
-	Time Registered: %s (%d Day(s) %02d:%02d:%02d ago.)
+	Time Registered: %s (%dd %02d:%02d:%02d ago.)
 CS_INFO_REGTIME_NODAY
 	Time Registered: %s (%02d:%02d:%02d ago.)
 CS_INFO_REGTIME_UNKNOWN
