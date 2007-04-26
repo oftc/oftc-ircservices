@@ -41,6 +41,8 @@ static void *fs_on_channel_destroy(va_list);
 static void *fs_on_privmsg(va_list);
 static void *fs_on_notice(va_list);
 
+static void floodserv_gc_routine(void *);
+
 static void m_help(struct Service *, struct Client *, int, char *[]);
 
 static void setup_channel(struct Channel *);
@@ -93,6 +95,8 @@ INIT_MODULE(floodserv, "$Revision: 864 $")
   global_msg_queue = new_mqueue_hash();
   for(i = 0; i < HASHSIZE; ++i)
     global_msg_queue[i] = NULL;
+
+  eventAdd("floodserv gc routine", floodserv_gc_routine, NULL, 3600);
 }
 
 CLEANUP_MODULE
@@ -108,13 +112,52 @@ CLEANUP_MODULE
 
   mqueue_hash_free(global_msg_queue, global_msg_list);
   floodserv_free_channels();
+  global_msg_queue = NULL;
 
   unload_languages(floodserv->languages);
+
+  eventDelete(floodserv_gc_routine, NULL);
 
   exit_client(find_client(floodserv->name), &me, "Service unloaded");
   hash_del_service(floodserv);
   dlinkDelete(&floodserv->node, &services_list);
   ilog(L_DEBUG, "Unloaded floodserv");
+}
+
+static void
+floodserv_gc_routine(void *param)
+{
+  dlink_node *ptr = NULL, *next_ptr = NULL;
+  dlink_node *qptr = NULL, *qnext_ptr = NULL;
+  struct Channel *chptr = NULL;
+  struct MessageQueue *queue = NULL;
+  int age = 0;
+
+  ilog(L_DEBUG, "FloodServ GC Routine Invoked");
+
+  DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
+  {
+    chptr = ptr->data;
+    if(chptr->regchan != NULL && chptr->regchan->floodserv
+      && chptr->regchan->flood_hash != NULL
+      && chptr->regchan->flood_list.length > FS_GC_LIST_LENGTH)
+    {
+      ilog(L_DEBUG, "FloodServ GC Iterating %s MessageQueue", chptr->chname);
+      DLINK_FOREACH_SAFE(qptr, qnext_ptr, chptr->regchan->flood_list.head)
+      {
+        queue = qptr->data;
+        age = CurrentTime - queue->last_used;
+        if(age >= FS_GC_EXPIRE_TIME)
+        {
+          ilog(L_DEBUG, "FloodServ GC Freeing %s for %s age: %d", queue->name,
+            chptr->chname, age);
+          hash_del_mqueue(chptr->regchan->flood_hash, queue);
+          dlinkDelete(qptr, &chptr->regchan->flood_list);
+          mqueue_free(queue);
+        }
+      }
+    }
+  }
 }
 
 static void
@@ -137,6 +180,7 @@ floodserv_free_channel(struct RegChannel *chptr)
   mqueue_hash_free(chptr->flood_hash, chptr->flood_list);
   chptr->flood_hash = NULL;
   mqueue_free(chptr->gqueue);
+  chptr->gqueue = NULL;
 }
 
 static void
@@ -165,6 +209,9 @@ int lne_time)
   struct MessageQueue *queue;
   int i;
   queue = MyMalloc(sizeof(struct MessageQueue));
+
+  assert(queue->name == NULL);
+
   DupString(queue->name, name);
 
   queue->last = max - 1;
@@ -196,6 +243,7 @@ mqueue_add_message(struct MessageQueue *queue, const char *message)
   }
 
   queue->entries[queue->last] = floodmsg_new(message);
+  queue->last_used = CurrentTime;
 
   if(queue->last > 0)
     --queue->last;
@@ -247,13 +295,16 @@ static void
 mqueue_hash_free(struct MessageQueue **hash, dlink_list list)
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
+  struct MessageQueue *queue;
   if(hash != NULL)
   {
     DLINK_FOREACH_SAFE(ptr, next_ptr, list.head)
     {
-      hash_del_mqueue(hash, ptr->data);
-      mqueue_free(ptr->data);
+      queue = ptr->data;
+      assert(queue->name != NULL);
+      hash_del_mqueue(hash, queue);
       dlinkDelete(ptr, &list);
+      mqueue_free(queue);
     }
     MyFree(hash);
   }
