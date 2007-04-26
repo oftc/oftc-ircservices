@@ -143,7 +143,7 @@ introduce_client(const char *name)
   if(me.uplink != NULL)
   {
     execute_callback(send_newuser_cb, me.uplink, name, "services", me.name,
-      name, "o");
+      name, "");
   }
 
   return client;
