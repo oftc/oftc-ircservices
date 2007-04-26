@@ -415,7 +415,7 @@ fs_on_privmsg(va_list args)
           source->name, source->host, message);
         snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
         akill_add(floodserv, fsclient, mask, FS_KILL_MSG, FS_KILL_DUR);
-        goto pass_cb;
+        return pass_callback(fs_privmsg_hook, source, channel, message);
         break;
     }
 
@@ -429,7 +429,7 @@ fs_on_privmsg(va_list args)
           source->name, source->host, message);
         snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
         quiet_mask(floodserv, channel, mask);
-        goto pass_cb;
+        return pass_callback(fs_privmsg_hook, source, channel, message);
         break;
     }
 
@@ -452,7 +452,6 @@ fs_on_privmsg(va_list args)
     }
   }
 
-  pass_cb:
   return pass_callback(fs_privmsg_hook, source, channel, message);
 }
 
