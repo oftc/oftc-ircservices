@@ -374,7 +374,10 @@ akill_add(struct Service *service, struct Client *client, const char* mask,
   akill = MyMalloc(sizeof(struct ServiceBan));
 
   akill->type = AKILL_BAN;
-  akill->setter = client->nickname->id;
+  if(client->nickname != NULL)
+    akill->setter = client->nickname->id;
+  else
+    akill->setter = db_get_id_from_name("OFTC", GET_ACCID_FROM_NICK);
   akill->time_set = CurrentTime;
   akill->duration = duration;
   DupString(akill->mask, mask);
