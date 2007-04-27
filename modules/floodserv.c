@@ -449,15 +449,21 @@ fs_on_privmsg(va_list args)
   struct MessageQueue *queue = NULL, *gqueue = NULL;
   int enforce = MQUEUE_NONE;
   char mask[IRC_BUFSIZE+1];
+  char host[HOSTLEN+1];
 
   if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
   {
-    queue = hash_find_mqueue_host(channel->regchan->flood_hash, source->host);
-    gqueue = hash_find_mqueue_host(global_msg_queue, source->host);
+    if(source->realhost != NULL)
+      strlcpy(host, source->realhost, sizeof(host));
+    else
+      strlcpy(host, source->host, sizeof(host));
+
+    queue = hash_find_mqueue_host(channel->regchan->flood_hash, host);
+    gqueue = hash_find_mqueue_host(global_msg_queue, host);
 
     if(queue == NULL)
     {
-      queue = mqueue_new(source->host,MQUEUE_CHAN, FS_MSG_COUNT, FS_MSG_TIME,
+      queue = mqueue_new(host, MQUEUE_CHAN, FS_MSG_COUNT, FS_MSG_TIME,
         FS_LNE_TIME);
       hash_add_mqueue(channel->regchan->flood_hash, queue);
       dlinkAdd(queue, &queue->node, &channel->regchan->flood_list);
@@ -465,8 +471,7 @@ fs_on_privmsg(va_list args)
 
     if(gqueue == NULL)
     {
-      gqueue = mqueue_new(source->host, MQUEUE_GLOB, FS_GMSG_COUNT,
-        FS_GMSG_TIME, 0);
+      gqueue = mqueue_new(host, MQUEUE_GLOB, FS_GMSG_COUNT, FS_GMSG_TIME, 0);
       hash_add_mqueue(global_msg_queue, gqueue);
       dlinkAdd(gqueue, &gqueue->node, &global_msg_list);
     }
@@ -478,8 +483,8 @@ fs_on_privmsg(va_list args)
     {
       case MQUEUE_MESG:
         ilog(L_NOTICE, "%s@%s TRIGGERED NETWORK MSG FLOOD Message: %s",
-          source->name, source->host, message);
-        snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
+          source->name, host, message);
+        snprintf(mask, IRC_BUFSIZE, "*!*@%s", host);
         akill_add(floodserv, fsclient, mask, FS_KILL_MSG, FS_KILL_DUR);
         return pass_callback(fs_privmsg_hook, source, channel, message);
         break;

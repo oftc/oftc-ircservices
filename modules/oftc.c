@@ -49,6 +49,7 @@ static void m_tmode(struct Client *, struct Client *, int, char *[]);
 static void m_bmask(struct Client *, struct Client *, int, char *[]);
 static void m_svsmode(struct Client *, struct Client *, int, char *[]);
 static void m_eob(struct Client *, struct Client *, int, char *[]);
+static void m_realhost(struct Client *, struct Client *, int, char *[]);
 
 static struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
@@ -98,6 +99,11 @@ static struct Message eob_msgtab = {
   "EOB", 0, 0, 0, 0, 0, 0, { m_eob, m_eob } 
 };
 
+static struct Message realhost_msgtab = {
+  "REALHOST", 0, 0, 3, 0, 0, 0,
+  { m_realhost, m_realhost }
+};
+
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
   { MODE_TOPICLIMIT,  't' },
@@ -120,7 +126,7 @@ INIT_MODULE(oftc, "$Revision$")
   oftc_svscloak_hook  = install_hook(send_cloak_cb, oftc_sendmsg_svscloak);
 //  oftc_svsjoin_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsjoin);
   oftc_svsnick_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsnick);
-  oftc_identify_hook  = install_hook(on_identify_cb, oftc_identify); 
+  oftc_identify_hook  = install_hook(on_identify_cb, oftc_identify);
   mod_add_cmd(&gnotice_msgtab);
   mod_add_cmd(&pass_msgtab);
   mod_add_cmd(&server_msgtab);
@@ -131,6 +137,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&bmask_msgtab);
   mod_add_cmd(&svsmode_msgtab);
   mod_add_cmd(&eob_msgtab);
+  mod_add_cmd(&realhost_msgtab);
 }
 
 CLEANUP_MODULE
@@ -145,6 +152,7 @@ CLEANUP_MODULE
   mod_del_cmd(&bmask_msgtab);
   mod_del_cmd(&svsmode_msgtab);
   mod_del_cmd(&eob_msgtab);
+  mod_del_cmd(&realhost_msgtab);
 
   uninstall_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
   uninstall_hook(send_umode_cb, oftc_sendmsg_svsmode);
@@ -209,6 +217,24 @@ static void
 m_pass(struct Client *client, struct Client *source, int parc, char *parv[])
 {
   strlcpy(client->id, parv[4], sizeof(client->id));
+}
+
+static void
+m_realhost(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  struct Client *nclient = NULL;
+
+  ilog(L_DEBUG, "REALHOST for %s IS %s", parv[1], parv[2]);
+
+  nclient = find_client(parv[1]);
+
+  if(nclient == NULL)
+  {
+    ilog(L_INFO, "Got REALHOST for %s but we don't know the client", parv[1]);
+    return;
+  }
+
+  strlcpy(nclient->realhost, parv[2], sizeof(nclient->realhost));
 }
 
 static void

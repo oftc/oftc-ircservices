@@ -122,6 +122,7 @@ struct Client
   char          name[HOSTLEN+1];
   char          release_name[NICKLEN+1];
   char          host[HOSTLEN+1];
+  char          realhost[HOSTLEN+1];
   char          sockhost[HOSTLEN+1];
   char          id[IDLEN + 1];      /* client ID, unique ID per client */
   char          info[REALLEN + 1];  /* Free form additional client info */
