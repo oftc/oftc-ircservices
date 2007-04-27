@@ -45,6 +45,7 @@
 #include "interface.h"
 #include "nickserv.h"
 #include "crypt.h"
+#include "mqueue.h"
 #include "floodserv.h"
 
 #endif /* INCLUDED_stdinc_h */
