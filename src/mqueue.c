@@ -29,13 +29,13 @@ int lne_time)
 }
 
 void
-mqueue_hash_free(struct MessageQueue **hash, dlink_list list)
+mqueue_hash_free(struct MessageQueue **hash, dlink_list *list)
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
   struct MessageQueue *queue;
   if(hash != NULL)
   {
-    DLINK_FOREACH_SAFE(ptr, next_ptr, list.head)
+    DLINK_FOREACH_SAFE(ptr, next_ptr, list->head)
     {
       queue = ptr->data;
       if(queue->name == NULL)
@@ -45,7 +45,7 @@ mqueue_hash_free(struct MessageQueue **hash, dlink_list list)
       }
       assert(queue->name != NULL);
       hash_del_mqueue(hash, queue);
-      dlinkDelete(ptr, &list);
+      dlinkDelete(ptr, list);
       mqueue_free(queue);
     }
     MyFree(hash);

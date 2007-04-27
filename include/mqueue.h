@@ -26,7 +26,7 @@ struct MessageQueue
 
 struct MessageQueue *mqueue_new(const char *, unsigned int, int, int,
   int);
-void mqueue_hash_free(struct MessageQueue **, dlink_list);
+void mqueue_hash_free(struct MessageQueue **, dlink_list *);
 void mqueue_free(struct MessageQueue *);
 void floodmsg_free(struct FloodMsg *);
 struct FloodMsg *floodmsg_new(const char *);

@@ -26,26 +26,6 @@
  * the last GC run it's probably safe to free their queue */
 /* Default one hour */
 #define FS_GC_EXPIRE_TIME 3600
-struct FloodMsg
-{
-  time_t time;
-  char *message;
-};
-
-struct MessageQueue
-{
-  char *name;
-  int last;
-  int max;
-  int msg_enforce_time;
-  int lne_enforce_time;
-  struct FloodMsg **entries;
-  unsigned int type;
-  time_t last_used;
-  struct MessageQueue *hnext;
-  struct MessageQueue *next;
-  dlink_node node;
-};
 
 enum MessageQueueType
 {

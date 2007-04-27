@@ -1208,7 +1208,7 @@ free_regchan(struct RegChannel *regchptr)
   MyFree(regchptr->url);
   MyFree(regchptr->email);
   MyFree(regchptr->topic);
-  mqueue_hash_free(regchptr->flood_hash, regchptr->flood_list);
+  mqueue_hash_free(regchptr->flood_hash, &regchptr->flood_list);
   regchptr->flood_hash = NULL;
   mqueue_free(regchptr->gqueue);
   regchptr->gqueue = NULL;
