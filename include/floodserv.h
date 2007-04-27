@@ -15,8 +15,17 @@
 #define FS_KILL_MSG "This Host Triggered Network Flood Protection, please mail support@oftc.net" 
 #define FS_KILL_DUR 2592000 /* 30 Days */
 
-#define FS_GC_LIST_LENGTH 25 /* 0 for testing */
-#define FS_GC_EXPIRE_TIME 3600 /* 60 for testing */
+/* GC Timer, how often the routine should fire */
+/* Default every hour */
+#define FS_GC_EVENT_TIMER 3600
+/* Only interate channels that have at least this many unique hosts in their
+ * queues, so to save time on the gc routine */
+/* Default 25 */
+#define FS_GC_LIST_LENGTH 25
+/* The smallest age at which to free a queue, if someone hasn't spoken since
+ * the last GC run it's probably safe to free their queue */
+/* Default one hour */
+#define FS_GC_EXPIRE_TIME 3600
 struct FloodMsg
 {
   time_t time;

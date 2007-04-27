@@ -96,7 +96,7 @@ INIT_MODULE(floodserv, "$Revision: 864 $")
   for(i = 0; i < HASHSIZE; ++i)
     global_msg_queue[i] = NULL;
 
-  eventAdd("floodserv gc routine", floodserv_gc_routine, NULL, 3600);
+  eventAdd("floodserv gc routine", floodserv_gc_routine, NULL, FS_GC_EVENT_TIMER);
 }
 
 CLEANUP_MODULE
@@ -210,9 +210,8 @@ int lne_time)
   int i;
   queue = MyMalloc(sizeof(struct MessageQueue));
 
-  assert(queue->name == NULL);
-
   DupString(queue->name, name);
+  assert(queue->name != NULL);
 
   queue->last = max - 1;
   queue->max  = max;
@@ -225,6 +224,7 @@ int lne_time)
   for(i = 0; i < queue->max; ++i)
     queue->entries[i] = NULL;
 
+  assert(queue->name != NULL);
   return queue;
 }
 
@@ -234,12 +234,15 @@ mqueue_add_message(struct MessageQueue *queue, const char *message)
   struct FloodMsg *entry = NULL;
   int i;
 
+  assert(queue->name != NULL);
+
   if(queue->last == 0 && queue->entries[0] != NULL)
   {
     entry = queue->entries[queue->max-1];
     for(i = queue->max - 1; i > 0; --i)
       queue->entries[i] = queue->entries[i - 1];
     floodmsg_free(entry);
+    queue->entries[0] = NULL;
   }
 
   queue->entries[queue->last] = floodmsg_new(message);
@@ -252,20 +255,20 @@ mqueue_add_message(struct MessageQueue *queue, const char *message)
 static int
 mqueue_enforce(struct MessageQueue *queue)
 {
-  struct FloodMsg *lentry = NULL, *fentry = NULL, *tmp = NULL;
+  struct FloodMsg *oldest = NULL, *newest = NULL, *tmp = NULL;
   time_t age = 0;
   int i = 0;
   int enforce = 1;
 
-  lentry = queue->entries[queue->max-1];
-  fentry = queue->entries[0];
+  oldest = queue->entries[queue->max-1];
+  newest = queue->entries[0];
 
-  if(queue->last != 0 || lentry == NULL || fentry == NULL)
+  if(queue->last != 0 || oldest == NULL || newest == NULL)
     return MQUEUE_NONE;
 
-  assert(fentry != lentry);
+  assert(newest != oldest);
 
-  age = fentry->time - lentry->time;
+  age = newest->time - oldest->time;
 
   if(queue->type != MQUEUE_GLOB && age <= queue->lne_enforce_time)
     return MQUEUE_LINE;
@@ -275,7 +278,7 @@ mqueue_enforce(struct MessageQueue *queue)
     for(i = 0; i < queue->max; ++i)
     {
       tmp = queue->entries[i];
-      if(ircncmp(fentry->message, tmp->message, IRC_BUFSIZE) != 0)
+      if(ircncmp(newest->message, tmp->message, IRC_BUFSIZE) != 0)
       {
         enforce = 0;
         break;
@@ -301,6 +304,11 @@ mqueue_hash_free(struct MessageQueue **hash, dlink_list list)
     DLINK_FOREACH_SAFE(ptr, next_ptr, list.head)
     {
       queue = ptr->data;
+      if(queue->name == NULL)
+      {
+        ilog(L_DEBUG, "Trying to free already free'd MessageQueue");
+        abort();
+      }
       assert(queue->name != NULL);
       hash_del_mqueue(hash, queue);
       dlinkDelete(ptr, &list);
@@ -317,9 +325,16 @@ mqueue_free(struct MessageQueue *queue)
   if(queue != NULL)
   {
     MyFree(queue->name);
+    queue->name = NULL;
 
     for(i = 0; i < queue->max; ++i)
+    {
       floodmsg_free(queue->entries[i]);
+      queue->entries[i] = NULL;
+    }
+
+    MyFree(queue->entries);
+    queue->entries = NULL;
 
     MyFree(queue);
   }
@@ -330,8 +345,8 @@ floodmsg_free(struct FloodMsg *entry)
 {
   if(entry != NULL)
   {
-    if(!EmptyString(entry->message))
-      MyFree(entry->message);
+    MyFree(entry->message);
+    entry->message = NULL;
     MyFree(entry);
   }
 }
@@ -453,7 +468,7 @@ fs_on_privmsg(va_list args)
       gqueue = mqueue_new(source->host, MQUEUE_GLOB, FS_GMSG_COUNT,
         FS_GMSG_TIME, 0);
       hash_add_mqueue(global_msg_queue, gqueue);
-      dlinkAdd(gqueue, &queue->node, &global_msg_list);
+      dlinkAdd(gqueue, &gqueue->node, &global_msg_list);
     }
 
     mqueue_add_message(gqueue, message);
