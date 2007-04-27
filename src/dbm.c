@@ -82,6 +82,8 @@ query_t queries[QUERY_COUNT] = {
     NULL, QUERY },
   { "INSERT INTO akill (mask, reason, setter, time, duration) "
       "VALUES(?v, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
+  { "INSERT INTO akill (mask, reason, time, duration) "
+      "VALUES(?v, ?v, ?d, ?d)", NULL, EXECUTE },
   { "UPDATE account SET password=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET url=?v WHERE id=?d", NULL, EXECUTE },
   { "UPDATE account SET email=?v WHERE id=?d", NULL, EXECUTE },
@@ -779,6 +781,10 @@ db_list_add(unsigned int type, const void *value)
     case AKILL_LIST:
       db_exec(ret, INSERT_AKILL, banval->mask, banval->reason, 
           banval->setter, banval->time_set, banval->duration);
+      break;
+    case AKILL_SERVICES_LIST:
+      db_exec(ret, INSERT_SERVICES_AKILL, banval->mask, banval->reason,
+          banval->time_set, banval->duration);
       break;
     case AKICK_LIST:
       id = db_get_id_from_name(banval->channel, GET_CHANID_FROM_CHAN);

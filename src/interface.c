@@ -370,20 +370,24 @@ akill_add(struct Service *service, struct Client *client, const char* mask,
   const char *reason, int duration)
 {
   struct ServiceBan *akill;
+  int ret = 0;
 
   akill = MyMalloc(sizeof(struct ServiceBan));
 
   akill->type = AKILL_BAN;
   if(client->nickname != NULL)
     akill->setter = client->nickname->id;
-  else
-    akill->setter = db_get_id_from_name("OFTC", GET_ACCID_FROM_NICK);
   akill->time_set = CurrentTime;
   akill->duration = duration;
   DupString(akill->mask, mask);
   DupString(akill->reason, reason);
 
-  if(!db_list_add(AKILL_LIST, akill))
+  if(client->nickname != NULL)
+    ret = db_list_add(AKILL_LIST, akill);
+  else
+    ret = db_list_add(AKILL_SERVICES_LIST, akill);
+
+  if(!ret)
   {
     ilog(L_NOTICE, "Failed to insert akill %s into database", mask);
     free_serviceban(akill);
