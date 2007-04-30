@@ -461,7 +461,6 @@ static void
 m_info(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct Channel *chptr;
   struct RegChannel *regchptr;
   void *first, *listptr;  
   char buf[IRC_BUFSIZE+1] = {0};
@@ -473,8 +472,7 @@ m_info(struct Service *service, struct Client *client,
     return;
   }
   
-  chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = db_find_chan(parv[1]);
   
   reply_user(service, service, client, CS_INFO_CHAN_START, regchptr->channel);
   reply_time(service, client, CS_INFO_REGTIME_FULL, regchptr->regtime);
@@ -531,8 +529,7 @@ m_info(struct Service *service, struct Client *client,
   reply_user(service, service, client, CS_INFO_OPTION, "AUTOVOICE",
       regchptr->autovoice ? "ON" : "OFF");
 
-  if (chptr == NULL)
-    free_regchan(regchptr);
+  free_regchan(regchptr);
 }
 
 static void
