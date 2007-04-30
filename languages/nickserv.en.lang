@@ -360,7 +360,9 @@ NS_REG_FAIL
 NS_REG_FIRST
 	Nickname %s is not registered. The nickname you specify must be a
 	
-	registered nickname. See HELP REGISTER for more information.
+	registered nickname. See HELP REGISTER for more information. If you believe
+	this to be incorrect, there could be a database problem; contact network
+	suppport if this problem persists.
 NS_NICKFORBID
 	This nickname(%s) is on the forbidden list and may not be registered or 
 	

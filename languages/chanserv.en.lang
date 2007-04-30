@@ -328,7 +328,10 @@ CS_NOT_ONCHAN
 CS_NOT_OPPED
 	You are not opped on that channel.
 CS_NOT_REG
-	Channel %s is not registered with channel services.
+	Channel %s is not registered with channel services. If you believe this
+	
+	to be incorrect there could be a database problem. Contact network support
+	if this problem persists.
 CS_DROPPED
 	Channel %s has been dropped.
 CS_DROP_FAILED
