@@ -154,8 +154,14 @@ introduce_server(const char *name, const char *gecos)
 {
   struct Client *client = make_client(&me);
 
+  client->status |= STAT_SERVER;
+
+  client->servptr = &me;
+  dlinkAdd(client, &client->lnode, &client->servptr->server_list);
+
   client->tsinfo = CurrentTime;
-  dlinkAdd(client, &client->node, &global_client_list);
+  //I don't think this is needed because it's on the server list
+  //dlinkAdd(client, &client->node, &global_client_list);
 
   strlcpy(client->name, name, sizeof(client->name));
   strlcpy(client->info, gecos, sizeof(client->info));

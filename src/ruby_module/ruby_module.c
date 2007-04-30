@@ -33,6 +33,7 @@ static dlink_node *ruby_newusr_hook;
 static dlink_node *ruby_privmsg_hook;
 static dlink_node *ruby_join_hook;
 static dlink_node *ruby_part_hook;
+static dlink_node *ruby_quit_hook;
 static dlink_node *ruby_nick_hook;
 static dlink_node *ruby_notice_hook;
 static dlink_node *ruby_chan_create_hook;
@@ -46,6 +47,7 @@ static void *rb_newusr_hdlr(va_list);
 static void *rb_privmsg_hdlr(va_list);
 static void *rb_join_hdlr(va_list);
 static void *rb_part_hdlr(va_list);
+static void *rb_quit_hdlr(va_list);
 static void *rb_nick_hdlr(va_list);
 static void *rb_notice_hdlr(va_list);
 static void *rb_chan_create_hdlr(va_list);
@@ -340,6 +342,19 @@ rb_part_hdlr(va_list args)
 }
 
 static void *
+rb_quit_hdlr(va_list args)
+{
+  struct Client* client = va_arg(args, struct Client *);
+  char *reason = va_arg(args, char *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_QUIT);
+
+  do_hook(hooks, 2, rb_cclient2rbclient(client), rb_str_new2(reason));
+
+  return pass_callback(ruby_quit_hook, client, reason);
+}
+
+static void *
 rb_nick_hdlr(va_list args)
 {
   struct Client *source = va_arg(args, struct Client *);
@@ -589,6 +604,7 @@ init_ruby(void)
   ruby_privmsg_hook = install_hook(on_privmsg_cb, rb_privmsg_hdlr);
   ruby_join_hook = install_hook(on_join_cb, rb_join_hdlr);
   ruby_part_hook = install_hook(on_part_cb, rb_part_hdlr);
+  ruby_quit_hook = install_hook(on_quit_cb, rb_quit_hdlr);
   ruby_nick_hook = install_hook(on_nick_change_cb, rb_nick_hdlr);
   ruby_notice_hook = install_hook(on_notice_cb, rb_notice_hdlr);
   ruby_chan_create_hook = install_hook(on_channel_created_cb, rb_chan_create_hdlr);

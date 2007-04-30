@@ -376,6 +376,7 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
   if (IsServer(source_p))
   {
     remove_dependents(source_p, from->from, comment);
+    execute_callback(on_quit_cb, source_p, comment);
   }
   else
   {

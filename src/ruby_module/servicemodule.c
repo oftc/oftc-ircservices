@@ -395,6 +395,7 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "PRIVMSG_HOOK", INT2NUM(RB_HOOKS_PRIVMSG));
   rb_define_const(cServiceModule, "JOIN_HOOK", INT2NUM(RB_HOOKS_JOIN));
   rb_define_const(cServiceModule, "PART_HOOK", INT2NUM(RB_HOOKS_PART));
+  rb_define_const(cServiceModule, "QUIT_HOOK", INT2NUM(RB_HOOKS_QUIT));
   rb_define_const(cServiceModule, "NICK_HOOK", INT2NUM(RB_HOOKS_NICK));
   rb_define_const(cServiceModule, "NOTICE_HOOK", INT2NUM(RB_HOOKS_NOTICE));
   rb_define_const(cServiceModule, "CHAN_CREATED_HOOK", INT2NUM(RB_HOOKS_CHAN_CREATED));

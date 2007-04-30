@@ -1,0 +1,17 @@
+0 English
+JS_HELP_SHORT
+	%s: Shows this help message
+JS_HELP_LONG
+	Shows this help message
+JS_HELP_JUPE_SHORT
+	%s: Jupiter a server
+JS_HELP_JUPE_LONG
+	Usage: JUPE <servername>
+	Jupiter a server
+	
+	Example: JUPE jupiter.example.com
+JS_HELP_LIST_SHORT
+	%s: List all jupitered servers
+JS_HELP_LIST_LONG
+	Usage: LIST
+	List all jupitered servers
