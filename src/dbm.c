@@ -290,8 +290,18 @@ db_try_reconnect()
     if(Database.yada->connect(Database.yada, Database.username,
           Database.password) != 0)
     {
+      int i;
+
       ilog(L_NOTICE, "Database connection restored after %d seconds",
           num_attempts * 5);
+      for(i = 0; i < QUERY_COUNT; i++)
+      {
+        query_t *query = &queries[i];
+        db_log("%d: %s\n", i, query->name);
+        if(query->name == NULL)
+          continue;
+        query->rc = Prepare((char*)query->name, 0);
+      }
       return;
     }
     sleep(5);
