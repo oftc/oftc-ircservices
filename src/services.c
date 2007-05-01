@@ -290,6 +290,9 @@ setup_signals()
   sigaddset(&act.sa_mask, SIGTERM);
   sigaction(SIGTERM, &act, 0);
 
+  sigaddset(&act.sa_mask, SIGUSR1);
+  sigaction(SIGUSR1, &act, 0);
+
   act.sa_handler = sigchld_handler;
   sigaddset(&act.sa_mask, SIGCHLD);
   sigaction(SIGCHLD, &act, 0);
@@ -343,6 +346,8 @@ signal_handler(int signum)
       break;
     case SIGHUP:
       dorehash = 1;
+      break;
+    case SIGUSR1:
       break;
   }
 }

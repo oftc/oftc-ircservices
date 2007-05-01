@@ -155,6 +155,7 @@ enum query_types {
 };
 
 typedef struct query {
+  int index;
   const char *name;
   yada_rc_t *rc;
   int type;
