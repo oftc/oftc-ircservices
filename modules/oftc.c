@@ -248,7 +248,7 @@ m_eob(struct Client *client, struct Client *source, int parc, char *parv[])
 static void
 m_server(struct Client *client, struct Client *source, int parc, char *parv[])
 {
-  if(IsConnecting(client))
+  if(IsConnecting(client) && irccmp(client->name, parv[1]) == 0)
   {
     sendto_server(client, "SVINFO 6 5 0: %lu", CurrentTime);
     //irc_sendmsg_ping(client, me.name, me.name);
