@@ -63,6 +63,7 @@ extern struct Callback *send_unresv_cb;
 extern struct Callback *send_newserver_cb;
 extern struct Callback *send_join_cb;
 extern struct Callback *send_part_cb;
+extern struct Callback *send_nosuchsrv_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;

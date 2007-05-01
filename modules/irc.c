@@ -37,6 +37,7 @@ static void m_mode(struct Client *, struct Client *, int, char*[]);
 static void m_topic(struct Client *, struct Client *, int, char*[]);
 static void m_kill(struct Client *, struct Client *, int, char*[]);
 static void m_kick(struct Client *, struct Client *, int, char*[]);
+static void m_version(struct Client *, struct Client *, int, char*[]);
 
 //static void do_user_modes(struct Client *client, const char *modes);
 static void set_final_mode(struct Mode *, struct Mode *);
@@ -58,6 +59,7 @@ static void *irc_sendmsg_unresv(va_list);
 static void *irc_sendmsg_server(va_list);
 static void *irc_sendmsg_join(va_list);
 static void *irc_server_connected(va_list);
+static void *irc_sendmsg_nosuchsrv(va_list);
 static void *part_one_client(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
@@ -78,7 +80,7 @@ static struct Message admin_msgtab = {
 
 static struct Message version_msgtab = {
   "VERSION", 0, 0, 0, 0, 0, 0,
-  { m_ignore, m_ignore }
+  { m_version, m_version }
 };
 
 static struct Message trace_msgtab = {
@@ -207,6 +209,7 @@ static dlink_node *unresv_hook;
 static dlink_node *newserver_hook;
 static dlink_node *join_hook;
 static dlink_node *part_hook;
+static dlink_node *nosuchsrv_hook;
 
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
@@ -236,6 +239,7 @@ INIT_MODULE(irc, "$Revision$")
   newserver_hook  = install_hook(send_newserver_cb, irc_sendmsg_server);
   join_hook       = install_hook(send_join_cb, irc_sendmsg_join);
   part_hook       = install_hook(send_part_cb, part_one_client);
+  nosuchsrv_hook  = install_hook(send_nosuchsrv_cb, irc_sendmsg_nosuchsrv);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -1580,4 +1584,34 @@ m_topic(struct Client *client_p, struct Client *source_p,
       source_p->host);
 
   set_channel_topic(chptr, parv[2], topic_info, CurrentTime);
+}
+
+static void
+m_version(struct Client *client_p, struct Client *source_p,
+    int parc, char *parv[])
+{
+  struct Client *target = NULL;
+
+  if((target = find_server(parv[1])) == NULL)
+    return;
+
+  if(IsMe(target))
+  {
+    //TODO Services should reply with its version
+    return;
+  }
+
+  execute_callback(send_nosuchsrv_cb, source_p->name, parv[1]);
+}
+
+static void *
+irc_sendmsg_nosuchsrv(va_list args)
+{
+  char *source = va_arg(args, char *);
+  char *server = va_arg(args, char *);
+
+  sendto_server(me.uplink, ":%s 402 %s %s :No such server", me.name, source,
+    server);
+
+  return NULL;
 }

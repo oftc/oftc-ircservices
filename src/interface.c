@@ -45,6 +45,7 @@ struct Callback *send_unresv_cb;
 struct Callback *send_newserver_cb;
 struct Callback *send_join_cb;
 struct Callback *send_part_cb;
+struct Callback *send_nosuchsrv_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -89,6 +90,7 @@ init_interface()
   send_newserver_cb   = register_callback("Introduce new server", NULL);
   send_join_cb        = register_callback("Send JOIN", NULL);
   send_part_cb        = register_callback("Send PART", NULL);
+  send_nosuchsrv_cb   = register_callback("Send No such server", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
