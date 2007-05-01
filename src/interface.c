@@ -252,7 +252,7 @@ reply_user(struct Service *source, struct Service *service,
     struct Client *client, unsigned int langid,
     ...)
 {
-  char buf[IRC_BUFSIZE+1];
+  char *buf;
   va_list ap;
   char *s, *t;
   char *langstr = NULL;
@@ -275,7 +275,7 @@ reply_user(struct Service *source, struct Service *service,
     langstr = "%s";
   
   va_start(ap, langid);
-  vsnprintf(buf, IRC_BUFSIZE, langstr, ap);
+  vasprintf(&buf, langstr, ap);
   va_end(ap);
   s = buf;
   while (*s) 
@@ -290,6 +290,8 @@ reply_user(struct Service *source, struct Service *service,
       execute_callback(send_notice_cb, me.uplink, source->name, client->name, 
           *t != '\0' ? t : " ");
   }
+
+  MyFree(buf);
 }
 
 void
