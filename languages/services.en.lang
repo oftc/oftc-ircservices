@@ -1,7 +1,7 @@
 0 English
 SERV_HELP_NOT_AVAIL
 	HELP for %s is not available.
-SERV_SUB_HELP_NOT_AVIL
+SERV_SUB_HELP_NOT_AVAIL
 	HELP for %s %s is not available.
 SERV_HELP_SHORT
 	%s: %s
@@ -14,13 +14,13 @@ SERV_SUB_HELP_HEADER
 SERV_SUB_HELP_FOOTER
 	*** End of %s %s Help ***
 SERV_UNKNOWN_CMD
-	Unknown command %s, /msg %s HELP for help.
+	Unknown command %s, /msg %s HELP for help.
 SERV_TOOFEW_PARAM
 	Too few parameters.  Expected at least %d. Got %d.
 SERV_TOOMANY_PARAM
 	Too many parameters.  Expected no more than %d. Got %d.
 SERV_NOT_IDENTIFIED
-	Nickname %s is not identified to nickname services.
+	Nickname %s is not identified to nickname services.
 SERV_ACCESS_DENIED
 	Access to that command is restricted to IRC Operators or services admins.
 SERV_UNREG_CHAN
@@ -33,6 +33,6 @@ SERV_NO_ACCESS_REGFIRST
 	You do not have access to the %s command. Identifying to your nickname
 	 may help. See HELP IDENTIFY for more information.
 SERV_UNKNOWN_OPTION
-	Unknown option %s, /msg %s HELP %s for help.
+	Unknown option %s, /msg %s HELP %s for help.
 SERV_DATETIME_FORMAT
 	%a %d %b %Y %H:%M:%S %z

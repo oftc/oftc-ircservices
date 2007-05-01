@@ -17,7 +17,7 @@ OS_MOD_LOAD_HELP_LONG
 	Usage: MOD LOAD modulename.(so|rb)
 	
 	Loads a dynamic module into services. This currently can either be a .so
-	file(or .la) or a ruby script(.rb). Modules typically provide their own
+	file (or .la) or a ruby script (.rb). Modules typically provide their own
 	services to the services package.
 OS_MOD_UNLOAD_HELP_SHORT
 	%s: Unload a module by name.
@@ -42,10 +42,9 @@ OS_MOD_HELP_LONG
 	scripts. The commands available are shown below:
 	
 OS_RAW_HELP_SHORT
-	%s: Execute a RAW server command(USE WITH CAUTION).
+	%s: Execute a RAW server command (USE WITH CAUTION).
 OS_RAW_HELP_LONG
 	Sends a command to the server directly.  This command can cause damage to
-	
 	the IRC network, do not use it if you do not know what you are doing, and
 	even if you do, BE CAREFUL.
 OS_ADMIN_HELP_SHORT
@@ -104,7 +103,6 @@ OS_AKILL_HELP_SHORT
 	%s: Manage the akill list.
 OS_AKILL_HELP_LONG
 	Provides commands for managing the services AKILL list. AKILLs are network
-	
 	wide bans that are enforced by services. If the network does not know about
 	a ban and allows a user to connect, services will re-issue it. The commands
 	available are:

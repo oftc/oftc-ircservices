@@ -714,7 +714,7 @@ do_help(struct Service *service, struct Client *client,
         }
         sub++;
       }
-      reply_user(service, NULL, client, SERV_SUB_HELP_NOT_AVIL, command, parv[2]);
+      reply_user(service, NULL, client, SERV_SUB_HELP_NOT_AVAIL, command, parv[2]);
       return;
     }
 
