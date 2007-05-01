@@ -4,8 +4,8 @@ made it happen, in alphabetical order:
 
 Luca Filipozzi <lfilipoz@debian.org>
   - converted build system to automake/libtool
-TJ Fontaine<insert@email.here>
-  - Wrote the ruby bindings and other odd bits
+TJ Fontaine <tjfontaine@atxconsulting.com>
+  - Wrote the ruby bindings and other odd bits like floodserv
 Rico Gloeckner<insert@email.here>
   - miscellaneous contributions to both the core and service modules
 Stuart Walsh<stu@ipng.org.uk>
