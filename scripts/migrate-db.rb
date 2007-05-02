@@ -187,12 +187,12 @@ def process_channels()
     topic = row["last_topic"] == "" ? nil : row["last_topic"]
     entrymsg = row["entry_message"] == "" ? nil : row["entry_message"]
 
-    modes_off = ""
-    modes_off = get_modes(row["mlock_off"]).join
-    modes_on = ""
-    modes_on = get_modes(row["mlock_on"]).join
+    modes_off = get_modes(row["mlock_off"])
+    modes_on = get_modes(row["mlock_on"])
 
-    mlock = "-#{modes_off}+#{modes_on}"
+    mlock = nil
+    mlock = "-#{modes_off.join}" if modes_off.length > 0
+    mlock = "#{mlock}+#{modes_on.join}" if modes_on.length > 0
     mlock << " %d" % row["mlock_limit"] if bit_check(CMODE['l'], row["mlock_on"])
     mlock << " %s" % row["mlock_key"] if bit_check(CMODE['k'], row["mlock_on"])
 
