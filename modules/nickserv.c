@@ -1555,7 +1555,7 @@ ns_on_umode_change(va_list args)
   int what            = va_arg(args, int);
   int umode           = va_arg(args, int);
 
-  if(what == MODE_ADD && umode == UMODE_IDENTIFIED)
+/*  if(what == MODE_ADD && umode == UMODE_IDENTIFIED)
   {
     if(user->nickname != NULL)
       free_nick(user->nickname);
@@ -1565,7 +1565,7 @@ ns_on_umode_change(va_list args)
       dlinkFindDelete(&nick_enforce_list, user);
       identify_user(user);
     }
-  }
+  }*/
   return pass_callback(ns_umode_hook, user, what, umode);
 }
 

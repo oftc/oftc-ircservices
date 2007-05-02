@@ -194,10 +194,9 @@ client_from_server(struct Client *client_p, struct Client *source_p, int parc,
   {
     memcpy(&source_p->ip, res->ai_addr, res->ai_addrlen);
     source_p->ip.ss_len = res->ai_addrlen;
+    source_p->aftype = res->ai_family;
     irc_freeaddrinfo(res);
   }
-
-  source_p->aftype = res->ai_family;
 
   hash_add_client(source_p);
   hash_add_id(source_p);
