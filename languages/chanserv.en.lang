@@ -350,6 +350,7 @@ CS_INFO_CHAN
 	         e-mail: %s
 	          Topic: %s
 	  Entry Message: %s
+		    Mode Lock: %s
 	
 CS_INFO_OPTION
 	    %s is %s

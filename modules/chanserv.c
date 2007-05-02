@@ -480,7 +480,8 @@ m_info(struct Service *service, struct Client *client,
       regchptr->url == NULL ? "Not Set" : regchptr->url, 
       regchptr->email == NULL ? "Not Set" : regchptr->email, 
       regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
-      regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg);
+      regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg,
+      regchptr->mlock == NULL ? "Not Set" : regchptr->mlock);
 
   if((listptr = db_list_first(CHMASTER_LIST, regchptr->id, 
           (void**)&nick)) != NULL)
