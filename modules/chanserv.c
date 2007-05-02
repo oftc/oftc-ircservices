@@ -1894,6 +1894,9 @@ cs_on_client_join(va_list args)
       dlinkAdd(chptr, make_dlink_node(), &channel_expireban_list);
     }
   }
+  
+  if(chptr->regchan != NULL && chptr->regchan->mlock != NULL)
+    set_mode_lock(chanserv, chptr->chname, NULL, chptr->regchan->mlock, NULL);
 
   return pass_callback(cs_join_hook, source_p, name);
 }
