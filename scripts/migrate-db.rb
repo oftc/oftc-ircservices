@@ -16,6 +16,25 @@ CI_RESTRICTED   = 0x10
 CI_VERBOTEN     = 0x80
 CI_VERBOSE      = 0x800
 
+CMODE = {
+  'i' => 0x00000001,
+  'm' => 0x00000002,
+  'n' => 0x00000004,
+  'p' => 0x00000008,
+  's' => 0x00000010,
+  't' => 0x00000020,
+  'k' => 0x00000040,
+  'l' => 0x00000080,
+  'R' => 0x00000100,
+  'c' => 0x00000400,
+  'O' => 0x00000800,
+  'M' => 0x00001000,
+}
+
+TABLES = ['channel', 'channel_access', 'channel_akick', 'forbidden_channel',
+  'nickname', 'account', 'forbidden_nickname', 'account_access', 'akill',
+  'sent_mail']
+
 $oftcid = -1
 
 $nicks = {}
@@ -23,6 +42,12 @@ $channels = {}
 
 def bit_check(flags, level)
   if (flags & level > 0) then true else false end
+end
+
+def get_modes(bitstring)
+  modes = []
+  CMODE.each {|k,v| modes << k if bit_check(v, bitstring)}
+  modes
 end
 
 def process_nicks()
@@ -143,8 +168,8 @@ def process_channels()
     insert_handle = $dest.prepare("INSERT INTO channel(channel, description,
       url, email, topic, entrymsg, reg_time, last_used, flag_private,
       flag_restricted, flag_topic_lock, flag_verbose, flag_autolimit,
-      flag_expirebans, flag_forbidden, flag_floodserv)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      flag_expirebans, flag_forbidden, flag_floodserv, mlock)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
     flags = row["flags"].to_i
     flag_private = bit_check(flags, CI_PRIVATE)
@@ -162,10 +187,20 @@ def process_channels()
     topic = row["last_topic"] == "" ? nil : row["last_topic"]
     entrymsg = row["entry_message"] == "" ? nil : row["entry_message"]
 
+    modes_off = ""
+    modes_off = get_modes(row["mlock_off"]).join
+    modes_on = ""
+    modes_on = get_modes(row["mlock_on"]).join
+
+    mlock = "-#{modes_off}+#{modes_on}"
+    mlock << " %d" % row["mlock_limit"] if bit_check(CMODE['l'], row["mlock_on"])
+    mlock << " %s" % row["mlock_key"] if bit_check(CMODE['k'], row["mlock_on"])
+
     insert_handle.execute(row["name"], row["description"], url, email,
       topic, entrymsg, row["time_registered"], row["last_used"],
       flag_private, flag_restricted, flag_topiclock, flag_verbose, 
-      flag_autolimit, flag_expirebans, flag_forbidden, flag_floodserv)
+      flag_autolimit, flag_expirebans, flag_forbidden, flag_floodserv,
+      mlock)
 
     insert_handle.finish
 
@@ -250,6 +285,8 @@ $source = DBI.connect(conf["source_str"], conf["source_user"], conf["source_pass
 $dest   = DBI.connect(conf["dest_str"], conf["dest_user"], conf["dest_pass"])
 
 $dest.do("BEGIN")
+
+TABLES.each {|t| $dest.do("DELETE FROM #{t} CASCADE")}
 
 start = Time.now
 puts "process_nicks #{Time.now}"
