@@ -1913,12 +1913,19 @@ static void *
 cs_on_channel_destroy(va_list args)
 {
   struct Channel *chan = va_arg(args, struct Channel *);
+  dlink_node *ptr;
 
   if (chan->regchan != NULL)
   {
     free_regchan(chan->regchan);
     chan->regchan = NULL;
   }
+
+  if((ptr = dlinkFindDelete(&channel_expireban_list, chan)) != NULL)
+    free_dlink_node(ptr);
+
+  if((ptr = dlinkFindDelete(&channel_limit_list, chan)) != NULL)
+    free_dlink_node(ptr);
 
   return pass_callback(cs_channel_destroy_hook, chan);
 }

@@ -26,7 +26,7 @@
 
 #ifdef IPV6
 static int try_parse_v6_netmask(const char *, struct irc_ssaddr *, int *);
-static unsigned long hash_ipv6(const struct irc_ssaddr *, int);
+//static unsigned long hash_ipv6(const struct irc_ssaddr *, int);
 #endif
 static int try_parse_v4_netmask(const char *, struct irc_ssaddr *, int *);
 //static unsigned long hash_ipv4(const struct irc_ssaddr *, int);
@@ -365,7 +365,7 @@ hash_ipv4(const struct irc_ssaddr *addr, int bits)
  * Output: A hash value of the IP address.
  * Side effects: None
  */
-#ifdef IPV6
+#if 0
 static unsigned long
 hash_ipv6(const struct irc_ssaddr *addr, int bits)
 {

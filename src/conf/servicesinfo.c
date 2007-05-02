@@ -138,7 +138,7 @@ si_set_vhost(void *value, void *where)
   memset(&hints, 0, sizeof(hints));
 
 #ifdef IPV6
-  hints.ai_family   = (where == ServicesInfo.vhost6 ? AF_INET6 : AF_INET);
+  hints.ai_family   = (where == &ServicesInfo.vhost6) ? AF_INET6 : AF_INET;
 #else
   hints.ai_family   = AF_INET;
 #endif
