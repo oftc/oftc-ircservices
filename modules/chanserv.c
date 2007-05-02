@@ -853,7 +853,7 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
     return;
   }
 
-  if(set_mode_lock(service, chptr, client, value, &regchptr->mlock))
+  if(set_mode_lock(service, parv[1], client, value, &regchptr->mlock))
   {
     reply_user(service, service, client, CS_SET_SUCCESS, "MLOCK",
         regchptr->mlock == NULL ? "Not set" : regchptr->mlock, 
@@ -1788,7 +1788,7 @@ cs_on_cmode_change(va_list args)
 
   if(chptr->regchan != NULL && chptr->regchan->mlock != NULL)
   {
-    set_mode_lock(chanserv, chptr, NULL, chptr->regchan->mlock, NULL);
+    set_mode_lock(chanserv, chptr->chname, NULL, chptr->regchan->mlock, NULL);
   }
   
   /* last function to call in this func */

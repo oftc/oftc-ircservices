@@ -958,7 +958,7 @@ get_modestring(unsigned int modes, char *modbuf, int len)
  * comments to clarify it somewhat.
  */
 int
-set_mode_lock(struct Service *service, struct Channel *chptr, 
+set_mode_lock(struct Service *service, const char *channel, 
     struct Client *client, const char *lock, char **value)
 {
   const char *parv[3] = { NULL, NULL, NULL };
@@ -971,6 +971,7 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
   char setstr[MODEBUFLEN/2+1], delstr[MODEBUFLEN/2+1]; 
   char mlockbuf[MODEBUFLEN+1];
   struct RegChannel *regchptr;
+  struct Channel *chptr;
   int k, l, s, d;
 
   k = l = s = d = 0;
@@ -978,7 +979,8 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
   setmodes = delmodes = dir = limit = 0;
   memset(key, 0, sizeof(key));
 
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  chptr = hash_find_channel(channel);
+  regchptr = chptr == NULL ? db_find_chan(channel) : chptr->regchan;
 
   parv[0] = lock;
 

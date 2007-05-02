@@ -112,7 +112,7 @@ void send_topic(struct Service *, struct Channel *, struct Client *,
     const char *);
 void send_kill(struct Service *, struct Client *, const char *);
 void set_limit(struct Service *, struct Channel *, int);
-int set_mode_lock(struct Service *, struct Channel *, struct Client *, 
+int set_mode_lock(struct Service *, const char *, struct Client *, 
     const char *, char **);
 
 char *replace_string(char *, const char *);
