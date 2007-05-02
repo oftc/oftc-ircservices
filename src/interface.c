@@ -970,12 +970,15 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
   char modebuf[MODEBUFLEN+1], parabuf[MODEBUFLEN+1];
   char setstr[MODEBUFLEN/2+1], delstr[MODEBUFLEN/2+1]; 
   char mlockbuf[MODEBUFLEN+1];
+  struct RegChannel *regchptr;
   int k, l, s, d;
 
   k = l = s = d = 0;
 
   setmodes = delmodes = dir = limit = 0;
   memset(key, 0, sizeof(key));
+
+  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
   parv[0] = lock;
 
@@ -1121,7 +1124,7 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
         d ? delstr : "",
         l || k ? parabuf : "");
 
-    if(!db_set_string(SET_CHAN_MLOCK, chptr->regchan->id, 
+    if(!db_set_string(SET_CHAN_MLOCK, regchptr->id, 
           *mlockbuf == '\0' ? NULL : mlockbuf))
       return FALSE;
 
@@ -1132,6 +1135,13 @@ set_mode_lock(struct Service *service, struct Channel *chptr,
     }
     else
       *value = replace_string(*value, mlockbuf);
+  }
+
+  // Channel doesnt exist on the network, skip this
+  if(chptr == NULL)
+  {
+    free_regchan(regchptr);
+    return TRUE;
   }
 
   /* Now only set the mode that needs to be set */
