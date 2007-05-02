@@ -89,4 +89,5 @@ init_database(void)
   add_conf_field(s, "username", CT_STRING, NULL, &Database.username);
   add_conf_field(s, "password", CT_STRING, NULL, &Database.password);
   add_conf_field(s, "hostname", CT_STRING, NULL, &Database.hostname);
+  add_conf_field(s, "port", CT_NUMBER, NULL, &Database.port);
 }

@@ -33,6 +33,7 @@ struct DatabaseConf
   char *hostname;
   char *username;
   char *password;
+  int port;
   yada_t *yada;
 };
 

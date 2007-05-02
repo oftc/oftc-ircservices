@@ -206,10 +206,22 @@ init_db()
 {
   char *dbstr;
   char logpath[LOG_BUFSIZE];
+  char port[128] = {'\0'};
+  int len;
 
-  dbstr = MyMalloc(strlen(Database.driver) + strlen(Database.hostname) + strlen(Database.dbname) +
-      3 /* ::: */ + 1);
-  sprintf(dbstr, "%s:::%s", Database.driver, Database.dbname);
+  if(Database.port != 0)
+    snprintf(port, 127, "%d", Database.port);
+
+  len = strlen(Database.driver);
+  if(Database.hostname != NULL)
+    len += strlen(Database.hostname);
+  len += strlen(port);
+  len += strlen(":::");
+  len++;
+
+  dbstr = MyMalloc(len);
+  snprintf(dbstr, len-1, "%s:%s:%s:%s", Database.driver, 
+      Database.hostname == NULL ? "" : Database.hostname, port, Database.dbname);
 
   Database.yada = yada_init(dbstr, 0);
   MyFree(dbstr);
