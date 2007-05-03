@@ -9,7 +9,7 @@ AC_DEFUN([AX_CHECK_LIB_IPV4],[
 ])dnl }}}
 dnl {{{ ax_check_lib_ipv6
 AC_DEFUN([AX_CHECK_LIB_IPV6],[
-  AC_CHECK_TYPES([struct sockaddr_in6],,[AC_DEFINE([IPV6],[1],[Define to 1 if you have IPv6 support.])],[#include <netdb.h>])
+  AC_CHECK_TYPES([struct sockaddr_in6],,[AC_DEFINE([IPV6],[1],[Define to 1 if you have IPv6 support.])],,[#include <netdb.h>])
 ])dnl }}}
 dnl {{{ ax_check_lib_ruby
 AC_DEFUN([AX_CHECK_LIB_RUBY],[
