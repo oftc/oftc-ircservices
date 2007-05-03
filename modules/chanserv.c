@@ -29,6 +29,7 @@ static struct Service *chanserv = NULL;
 static dlink_node *cs_cmode_hook;
 static dlink_node *cs_join_hook;
 static dlink_node *cs_channel_destroy_hook;
+static dlink_node *cs_channel_create_hook;
 static dlink_node *cs_on_nick_drop_hook;
 static dlink_node *cs_on_topic_change_hook;
 
@@ -41,6 +42,7 @@ static void process_expireban_list(void *);
 static void *cs_on_cmode_change(va_list);
 static void *cs_on_client_join(va_list);
 static void *cs_on_channel_destroy(va_list);
+static void *cs_on_channel_create(va_list);
 static void *cs_on_nick_drop(va_list);
 static void *cs_on_topic_change(va_list);
 
@@ -274,8 +276,11 @@ INIT_MODULE(chanserv, "$Revision$")
 
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
-  cs_channel_destroy_hook = 
-       install_hook(on_channel_destroy_cb, cs_on_channel_destroy);
+  cs_channel_destroy_hook = install_hook(on_channel_destroy_cb, 
+      cs_on_channel_destroy);
+
+  cs_channel_create_hook = install_hook(on_channel_created_cb, 
+      cs_on_channel_create);
   cs_on_nick_drop_hook = install_hook(on_nick_drop_cb, cs_on_nick_drop);
   cs_on_topic_change_hook = install_hook(on_topic_change_cb, cs_on_topic_change);
 
@@ -288,6 +293,7 @@ CLEANUP_MODULE
   uninstall_hook(on_cmode_change_cb, cs_on_cmode_change);
   uninstall_hook(on_join_cb, cs_on_client_join);
   uninstall_hook(on_channel_destroy_cb, cs_on_channel_destroy);
+  uninstall_hook(on_channel_created_cb, cs_on_channel_create);
   uninstall_hook(on_nick_drop_cb, cs_on_nick_drop);
   uninstall_hook(on_topic_change_cb, cs_on_topic_change);
 
@@ -1787,9 +1793,7 @@ cs_on_cmode_change(va_list args)
   char *param = va_arg(args, char *);
 
   if(chptr->regchan != NULL && chptr->regchan->mlock != NULL)
-  {
     set_mode_lock(chanserv, chptr->chname, NULL, chptr->regchan->mlock, NULL);
-  }
   
   /* last function to call in this func */
   return pass_callback(cs_cmode_hook, source, chptr, dir, mode, param);
@@ -1895,12 +1899,19 @@ cs_on_client_join(va_list args)
     }
   }
   
-  if(chptr->regchan != NULL && chptr->regchan->mlock != NULL)
-    set_mode_lock(chanserv, chptr->chname, NULL, chptr->regchan->mlock, NULL);
-
   return pass_callback(cs_join_hook, source_p, name);
 }
 
+static void *
+cs_on_channel_create(va_list args)
+{
+  struct Channel *chptr = va_arg(args, struct Channel *);
+
+  if(chptr->regchan != NULL && chptr->regchan->mlock != NULL)
+    set_mode_lock(chanserv, chptr->chname, NULL, chptr->regchan->mlock, NULL);
+
+  return pass_callback(cs_channel_create_hook, chptr);
+}
 
 /**
  * @brief CS Callback when a channel is destroyed.

@@ -66,8 +66,6 @@ make_channel(const char *chname)
 
   hash_add_channel(chptr);
 
-  execute_callback(on_channel_created_cb, chptr);
-
   return chptr;
 }
 
