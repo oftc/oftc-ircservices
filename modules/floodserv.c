@@ -62,7 +62,7 @@ static struct ServiceMessage help_msgtab = {
   FS_HELP_LONG, m_help
 };
 
-INIT_MODULE(floodserv, "$Revision: 864 $")
+INIT_MODULE(floodserv, "$Revision$")
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
   int i;
