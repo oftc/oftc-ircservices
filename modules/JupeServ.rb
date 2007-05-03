@@ -27,23 +27,28 @@ class JupeServ < ServiceModule
   end
   def JUPE(client, parv = [])
 	  reason = ""
-    parv.shift
-    if @jupes.find(parv[0])
-    	reply_user(client, "Server #{parv[0]} already juped")
+    parv.shift #left over client name
+    sname = parv.shift #server name
+
+    if @jupes.find(sname)
+    	reply_user(client, "Server #{sname} already juped")
 	    return
     end
-		if(parv.length == 1)
-	    server = introduce_server(parv[0], "Jupitered")
-			log(LOG_INFO, "Jupitered Server #{parv[0]}")
+		
+    if(parv.length < 1)
+	    server = introduce_server(sname, "Jupitered")
 		else
-			sname = parv.shift
-			reason = parv.length > 0 ? parv.join(' ') : "No Reason"
+			reason = parv.join(' ')
 	    server = introduce_server(sname, "Jupitered: #{reason}")
-			log(LOG_INFO, "Jupitered Server #{sname} #{reason}")
 		end
 
-    @jupes.jupe(client, server, reason)
-    reply_user(client, "Jupitered #{parv[0]}")
+    if server
+	    log(LOG_INFO, "Jupitered Server #{sname} #{reason}")
+      @jupes.jupe(client, server, reason)
+      reply_user(client, "Jupitered #{sname}")
+    else
+      log(LOG_INFO, "Failed to Jupiter #{sname}")
+    end
   end
 
   def LIST(client, parv = [])
