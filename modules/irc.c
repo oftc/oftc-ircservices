@@ -1267,7 +1267,8 @@ m_version(struct Client *client_p, struct Client *source_p,
 
   if(IsMe(target))
   {
-    //TODO Services should reply with its version
+    sendto_server(me.uplink, "351 %s oftc-ircservices-%s %s", source_p->name,
+        VERSION, me.name);
     return;
   }
 
