@@ -1757,6 +1757,9 @@ ns_on_quit(va_list args)
   char          *comment  = va_arg(args, char *);
   struct Nick *nick = user->nickname;
 
+  if(IsServer(user))
+    return pass_callback(ns_quit_hook, user, comment);
+
   if(nick)
   {
     db_set_string(SET_NICK_LAST_QUIT, nick->id, comment);

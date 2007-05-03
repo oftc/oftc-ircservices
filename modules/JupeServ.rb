@@ -4,7 +4,7 @@ class JupeServ < ServiceModule
     load_language("jupeserv.en")
     register([
       ["HELP", 0, 2, SFLG_NOMAXPARAM, ADMIN_FLAG, lm('JS_HELP_SHORT'), lm('JS_HELP_LONG')],
-      ["JUPE", 0, 1, 0, ADMIN_FLAG, lm('JS_HELP_JUPE_SHORT'), lm('JS_HELP_JUPE_LONG')],
+      ["JUPE", 1, 2, SFLG_NOMAXPARAM, ADMIN_FLAG, lm('JS_HELP_JUPE_SHORT'), lm('JS_HELP_JUPE_LONG')],
       ["LIST", 0, 0, 0, ADMIN_FLAG, lm('JS_HELP_LIST_SHORT'), lm('JS_HELP_LIST_LONG')],
     ])
     add_hook([
@@ -26,14 +26,23 @@ class JupeServ < ServiceModule
     do_help(client, parv[1], parv)
   end
   def JUPE(client, parv = [])
+	  reason = ""
     parv.shift
     if @jupes.find(parv[0])
     	reply_user(client, "Server #{parv[0]} already juped")
 	    return
     end
-    log(LOG_INFO, "Jupitered Server #{parv[0]}")
-    server = introduce_server(parv[0], "Jupitered")
-    @jupes.jupe(client, server)
+		if(parv.length == 1)
+	    server = introduce_server(parv[0], "Jupitered")
+			log(LOG_INFO, "Jupitered Server #{parv[0]}")
+		else
+			parv.shift
+			reason = parv.join(' ')
+	    server = introduce_server(parv[0], "Jupitered: " + reason)
+			log(LOG_INFO, "Jupitered Server #{parv[0]} #{reason}")
+		end
+
+    @jupes.jupe(client, server, reason)
     reply_user(client, "Jupitered #{parv[0]}")
   end
 
@@ -67,11 +76,12 @@ class Jupes
 	  @jupes.delete(s)
 	end
 
-	def jupe(c,s)
+	def jupe(c,s, r)
 		jupe = Jupe.new
 		jupe.server = s
 		jupe.client = c
 		jupe.datetime = Time.new
+		jupe.reason = r
 		@jupes[s.name] = jupe
 	end
 
