@@ -8,7 +8,6 @@ NS_HELP_REG_SHORT
 NS_HELP_REG_LONG
 	Usage: REGISTER password e-mail
 	
-	
 	Registers a nickname in our database for your use. Registering your nickname
 	ensures it is reserved for your use and cannot be used by others if you do
 	not wish them to use it. It also allows you to associate various pieces of
@@ -27,7 +26,6 @@ NS_HELP_ID_SHORT
 NS_HELP_ID_LONG
 	Usage: IDENTIFY password [nick]
 	
-	
 	Identify that you the owner of the nick you are currently using.
 	If you specify a nickname to identify against, your IRC nick will
 	automatically be changed to the one you identify for.
@@ -37,7 +35,6 @@ NS_HELP_DROP_SHORT
 	%s: Releases your nickname for use.
 NS_HELP_DROP_LONG
 	Usage: DROP [auth-code]
-	
 	
 	Releases your nickname for use and deletes it from the database.
 	This cannot be undone. You will be asked to confirm this action by following
@@ -68,7 +65,6 @@ NS_HELP_ACCESS_ADD_SHORT
 NS_HELP_ACCESS_ADD_LONG
 	Usage: ACCESS ADD mask
 	
-	
 	Add an access entry to your access list. If your IRC userhost maches this
 	entry, and SECURE is off, you will be automatically identified to your
 	nickname without having to use the IDENTIFY command. If SECURE is on, you
@@ -81,7 +77,6 @@ NS_HELP_ACCESS_LIST_SHORT
 NS_HELP_ACCESS_LIST_LONG
 	Usage: ACCESS LIST
 	
-	
 	List entries in your access list.
 	
 	Example:
@@ -90,7 +85,6 @@ NS_HELP_ACCESS_DEL_SHORT
 	%s
 NS_HELP_ACCESS_DEL_LONG
 	Usage: ACCESS DEL (index|mask)
-	
 	
 	Delete an entry from your access list. You can either delete by entry index
 	or by userhost matching. Index values will change after each delete.
@@ -110,7 +104,6 @@ NS_HELP_SET_LANG_SHORT
 NS_HELP_SET_LANG_LONG
 	Usage: SET LANGUAGE [language id]
 	
-	
 	SET the language services will communicate to you in. To see the list of
 	available translations execute SET LANGUAGE with no parameters. The default
 	language is English.
@@ -123,7 +116,6 @@ NS_HELP_SET_PASS_SHORT
 NS_HELP_SET_PASS_LONG
 	Usage: SET PASSWORD password
 	
-	
 	SET the password of your current account. Please choose a password which you
 	can remember but is not easily guessed.
 	
@@ -133,7 +125,6 @@ NS_HELP_SET_URL_SHORT
 	%s
 NS_HELP_SET_URL_LONG
 	Usage: SET URL [url|-]
-	
 	
 	SET url field to be shown in the INFO command. Specify '-' (without the
 	quotes) to remove your URL.
@@ -146,7 +137,6 @@ NS_HELP_SET_EMAIL_SHORT
 NS_HELP_SET_EMAIL_LONG
 	Usage: SET EMAIL [e-mail address]
 		
-	
 	SET e-mail field to be used for password recovery. E-mail addresses are
 	shown in the INFO command if PRIVATE is turned off.
 	
@@ -157,7 +147,6 @@ NS_HELP_SET_ENFORCE_SHORT
 NS_HELP_SET_ENFORCE_LONG
 	Usage: SET ENFORCE [(ON|OFF)]
 		
-	
 	ENFORCE enables or disables nickname enforcement of your account. This means
 	that if someone who is not not on your access list attempts to use your
 	nickname and doesn't identify within a given period their nick will be
@@ -173,7 +162,6 @@ NS_HELP_SET_SECURE_SHORT
 	%s
 NS_HELP_SET_SECURE_LONG
 	Usage: SET SECURE [(ON|OFF)]
-	
 	
 	SECURE enables or disables nickname security. If SECURE is off, when you
 	change to your nickname you be automatically identified if your userhost
@@ -193,7 +181,6 @@ NS_HELP_SET_CLOAK_SHORT
 NS_HELP_SET_CLOAK_LONG
 	Usage: SET CLOAK [(ON|OFF)]
 	
-	
 	CLOAK enables or disables a cloak on your current account. If your account
 	has a cloak set on it, when cloak is enabled your hostname will be changed
 	to the cloak when you identify (or are automatically identified) to services.
@@ -205,7 +192,6 @@ NS_HELP_CLOAKSTRING_SHORT
 	%s: Sets the cloakstring for a nickname.
 NS_HELP_CLOAKSTRING_LONG
 	Usage: CLOAKSTRING nick [cloakstring|-]
-	
 	
 	Sets or displays the cloak on the account of the specified nickname.
 	This command is restricted to services admins. Specify '-' (without the
@@ -222,7 +208,6 @@ NS_HELP_SET_MASTER_SHORT
 NS_HELP_SET_MASTER_LONG
 	Usage: SET MASTER [nickname]
 	
-	
 	Sets the master nickname of this account. The master nickname is the one
 	that will display in services displays such as access lists.
 	
@@ -236,7 +221,6 @@ NS_HELP_SET_PRIVATE_SHORT
 NS_HELP_SET_PRIVATE_LONG
 	Usage SET PRIVATE [(ON|OFF)]
 		
-	
 	Enables the private flag on your nickname which prevents your e-mail address
 	being shown in an INFO request, and also prevents your nickname showing in a
 	LIST.
@@ -244,7 +228,6 @@ NS_HELP_GHOST_SHORT
 	%s: Terminate a GHOST IRC session.
 NS_HELP_GHOST_LONG
 	Usage: GHOST nickname [password]
-	
 	
 	Terminates the GHOST IRC session with the nickname specified.  If the
 	nickname has SECURE set, or you do not match an entry in the nickname's
@@ -255,7 +238,6 @@ NS_HELP_LINK_SHORT
 	%s: Link this nickname to a master nickname.
 NS_HELP_LINK_LONG
 	Usage: LINK master_nickname password
-	
 	
 	Link this nickname to a master nickname.  This effectively creates an alias
 	for your nickname to the master nickname.  When you change to this nickname
@@ -278,7 +260,6 @@ NS_HELP_REGAIN_SHORT
 NS_HELP_REGAIN_LONG
 	Usage: REGAIN nickname [password]
 	
-	
 	If your nickname is being held by services, as is the case if your nickname
 	has been enforced recently, this command will release the hold and change
 	your nickname to the nickname that you specify. If you have SECURE set on,
@@ -287,7 +268,6 @@ NS_HELP_FORBID_SHORT
 	%s: Forbid a nickname from being used.
 NS_HELP_FORBID_LONG
 	Usage: FORBID nickname
-	
 	
 	Adds the nickname specified to the forbidden nickname list, preventing it to
 	be used. Forbidden nicknames may not be registered and anyone attempting to
@@ -299,7 +279,6 @@ NS_HELP_INFO_SHORT
 NS_HELP_INFO_LONG
 	Usage: INFO [nickname]
 	
-	
 	Displays all the information that services knows about a nickname, or your
 	nickname if no nickname is specified. Settings will only be shown if this
 	nickname is yours, or is linked to yours, or if you are a services admin.
@@ -308,7 +287,6 @@ NS_HELP_SENDPASS_SHORT
 	%s: Send a password reset request.
 NS_HELP_SENDPASS_LONG
 	Usage: SENDPASS nickname [auth-code newpassword]
-	
 	
 	Sends a password reset request to the e-mail address registered on this
 	account. This e-mail will contain an authentication code which you will need
@@ -319,7 +297,6 @@ NS_HELP_SUDO_SHORT
 	%s: Execute a command as another user.
 NS_HELP_SUDO_LONG
 	Usage: SUDO nickname command
-	
 	
 	This will execute the specified commands as if you are the user that you
 	specify, including taking on their access level. This command should be used
@@ -345,7 +322,6 @@ NS_ALREADY_REG
 	support.
 NS_REG_COMPLETE
 	Nickname %s has been registered successfully and is now yours to use.
-	
 	See HELP SET for information on settings that you can set on your new
 	nickname. If you change nickname or reconnect to the IRC network you will be
 	required to identify using the password you chose when you registered. See
@@ -421,7 +397,6 @@ NS_GHOST_SUCCESS
 	GHOST succeed on nickname %s. The nickname is now available for use.
 NS_GHOST_FAILED
 	GHOST failed on nickname %s. You may have given an incorrect password.
-	
 	If you believe this to be incorrect please contact network support.
 NS_GHOST_FAILED_SECURITY
 	Access Denied. Either you are not on the access list for this nickname, or
@@ -457,7 +432,6 @@ NS_UNLINK_NOLINK
 	contain a link in the first place.
 NS_INFO
 	Last quit message: %s
-	
 	              URL: %s
 	     Cloak String: %s
 NS_INFO_REGTIME_FULL
@@ -523,7 +497,6 @@ NS_FORBID_BAD_DURATIONCHAR
 	Invalid duration charater, '%c'.
 NS_NOREG_GUEST
 	Guest nicknames are reserved for services use and may not be registered.
-	
 	Please change your nickname and try again.
 NS_NOREG_FORBID
 	%s is forbidden and may not be registered or used. Please change your
@@ -555,7 +528,6 @@ NS_REGAIN_FAIL
 	Failed to regain nickname %s.
 NS_SENDPASS_SENT
 	This is a two stage process; instructions on the second stage have been
-	
 	e-mailed to the e-mail address listed on the account.
 NS_SENDPASS_NEED_PASS
 	You must specify a new password to be set on the account.
@@ -570,7 +542,6 @@ NS_SENDPASS_SUBJECT
 	OFTC Nickname password reset request
 NS_SENDPASS_BODY
 	Hi %s,
-	
 	
 	Someone (hopefully you) matching the IRC userhost %s!%s@%s requested that the
 	password on the addressed nickname (%s) be reset. If this was not you, please

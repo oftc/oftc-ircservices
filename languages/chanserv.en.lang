@@ -294,7 +294,6 @@ CS_HELP_FORBID_SHORT
 CS_HELP_FORBID_LONG
 	Usage: FORBID channel
 	
-	
 	Adds the channel specified to the forbidden channel list, preventing
 	it to be used. Forbidden channels may not be registered and anyone
 	attempting to use them will be removed from the channel. This option is only
@@ -345,7 +344,6 @@ CS_INFO_CHAN_START
 	Channel Information for %s
 CS_INFO_CHAN
 	    Description: %s
-	
 	            URL: %s
 	         e-mail: %s
 	          Topic: %s

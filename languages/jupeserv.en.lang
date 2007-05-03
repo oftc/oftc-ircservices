@@ -7,6 +7,7 @@ JS_HELP_JUPE_SHORT
 	%s: Jupiter a server
 JS_HELP_JUPE_LONG
 	Usage: JUPE <servername>
+	
 	Jupiter a server
 	
 	Example: JUPE jupiter.example.com
