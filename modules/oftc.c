@@ -530,7 +530,8 @@ oftc_identify(va_list args)
   /* XXX */
   uplink = uplink;
   
-  send_umode(NULL, client, "+R");
+  if(!IsConnecting(me.uplink) || !IsIdentified(client))
+    send_umode(NULL, client, "+R");
 
   SetIdentified(client);
   return pass_callback(oftc_identify_hook, uplink, client);
