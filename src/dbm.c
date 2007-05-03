@@ -279,10 +279,12 @@ db_load_driver()
   for(i = 0; i < QUERY_COUNT; i++)
   {
     query_t *query = &queries[i];
-    db_log("%d: %s\n", i, query->name);
+    db_log("Prepare %d: %s\n", i, query->name);
     if(query->name == NULL)
       continue;
     query->rc = Prepare((char*)query->name, 0);
+    if(query->rc == NULL)
+      ilog(L_CRIT, "Prepare: %d Failed: %s\n", i, Database.yada->errmsg);
   }
 
   eventAdd("Expire sent mail", expire_sentmail, NULL, 60); 
@@ -313,6 +315,8 @@ db_try_reconnect()
         if(query->name == NULL)
           continue;
         query->rc = Prepare((char*)query->name, 0);
+        if(query->rc == NULL)
+          ilog(L_CRIT, "Prepare: %d Failed: %s\n", i, Database.yada->errmsg);
       }
       return;
     }
@@ -345,7 +349,7 @@ db_try_reconnect()
       db_try_reconnect();                                             \
       db_log("Query failed because server went away, reconnected.");  \
     }                                                                 \
-    db_log("db_query: %d Failed: %s\n", __id, Database.yada->errmsg); \
+    ilog(L_CRIT, "db_query: %d Failed: %s\n", __id, Database.yada->errmsg); \
   }                                                                   \
                                                                       \
   ret = __result;                                                     \
