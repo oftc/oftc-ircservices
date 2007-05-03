@@ -150,7 +150,17 @@ static void
 m_mod_list(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  reply_user(service, service, client, 0, "LIST not implemented");
+  dlink_node *ptr;
+
+  DLINK_FOREACH(ptr, loaded_modules.head)
+  {
+    struct Module *mod = ptr->data;
+
+    reply_user(service, service, client, OS_MOD_LIST, mod->name, mod->version,
+        mod->type == MODTYPE_RUBY ? "Ruby" : "so");
+  }
+
+  reply_user(service, service, client, OS_MOD_LIST_END);
 }
 
 static void

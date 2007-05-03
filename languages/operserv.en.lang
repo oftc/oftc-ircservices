@@ -141,6 +141,10 @@ OS_MOD_RELOADING
 	Module %s is reloading.
 OS_MOD_UNLOAD
 	Module %s unloaded.
+OS_MOD_LIST
+	%s %s Type: %s
+OS_MOD_LIST_END
+	End of module list.
 OS_AKILL_LIST
 	%d: %s(%s) - Set by %s at %s (Expires: %s).
 OS_AKILL_LIST_END
