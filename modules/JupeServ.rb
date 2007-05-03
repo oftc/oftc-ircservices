@@ -36,10 +36,10 @@ class JupeServ < ServiceModule
 	    server = introduce_server(parv[0], "Jupitered")
 			log(LOG_INFO, "Jupitered Server #{parv[0]}")
 		else
-			parv.shift
-			reason = parv.join(' ')
-	    server = introduce_server(parv[0], "Jupitered: " + reason)
-			log(LOG_INFO, "Jupitered Server #{parv[0]} #{reason}")
+			sname = parv.shift
+			reason = parv.length > 0 ? parv.join(' ') : "No Reason"
+	    server = introduce_server(sname, "Jupitered: #{reason}")
+			log(LOG_INFO, "Jupitered Server #{sname} #{reason}")
 		end
 
     @jupes.jupe(client, server, reason)
