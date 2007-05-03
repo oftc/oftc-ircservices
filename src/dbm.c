@@ -241,7 +241,7 @@ void
 cleanup_db()
 {
   Database.yada->disconnect(Database.yada);
-//  Database.yada->destroy(Database.yada);
+  Database.yada->destroy(Database.yada);
 }
 
 void
