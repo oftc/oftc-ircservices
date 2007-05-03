@@ -109,7 +109,6 @@ struct Client
   dlink_list server_list;   /**< Servers on this server      */
   dlink_list client_list;   /**< Clients on this server      */
 
-
   struct Client *hnext;         /* For client hash table lookups by name */
   struct Client *idhnext;       /* For SID hash table lookups by sid */
   struct Client *from;

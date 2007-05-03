@@ -61,7 +61,7 @@ class JupeServ < ServiceModule
 end
 
 class Jupe
-	attr_accessor :server, :client, :datetime
+	attr_accessor :server, :client, :datetime, :reason
 end
 
 class Jupes 

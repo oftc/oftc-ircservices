@@ -130,22 +130,34 @@ make_service(char *name)
 struct Client *
 introduce_client(const char *name)
 {
-  struct Client *client = make_client(&me);
+  struct Client *client; 
+  dlink_node *ptr;
 
-  client->tsinfo = CurrentTime;
-  dlinkAdd(client, &client->node, &global_client_list);
 
-  /* copy the nick in place */
-  strlcpy(client->name, name, sizeof(client->name));
-  hash_add_client(client);
+  client = find_client(name);
+  if(client == NULL)
+  {
+    client = make_client(&me);
+    client->tsinfo = CurrentTime;
+    dlinkAdd(client, &client->node, &global_client_list);
 
-  register_remote_user(&me, client, "services", me.name, me.name, name);
+    /* copy the nick in place */
+    strlcpy(client->name, name, sizeof(client->name));
+    hash_add_client(client);
+
+    register_remote_user(&me, client, "services", me.name, me.name, name);
+  }
 
   /* If we are not connected yet, the service will be sent as part of burst */
   if(me.uplink != NULL)
   {
     execute_callback(send_newuser_cb, me.uplink, name, "services", me.name,
       name, "");
+    DLINK_FOREACH(ptr, client->channel.head)
+    {
+      struct Membership *ms = ptr->data;
+      join_channel(client, ms->chptr);
+    }
   }
 
   return client;
@@ -154,7 +166,12 @@ introduce_client(const char *name)
 struct Client*
 introduce_server(const char *name, const char *gecos)
 {
-  struct Client *client = make_client(&me);
+  struct Client *client;
+    
+  if((client = find_client(name)) != NULL)
+    return client;
+  
+  client = make_client(&me);
 
   client->status |= STAT_SERVER;
 
