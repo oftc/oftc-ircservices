@@ -1,8 +1,3 @@
-- consider authoring trunk/INSTALL; it is automatically added by automake but
-  if there are specific instructions that a user should know about, then we
-  should have an INSTALL file of our own
-
-. Does changing passwords work yet? -w - it should
 - Make the yada configure check not suck
 - Talk TS6 properly
 

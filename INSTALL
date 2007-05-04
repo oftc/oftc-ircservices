@@ -1,7 +1,29 @@
                         oftc-ircservices INSTALL file
 
-$Id: $
+$Id$
 
 This document will tell you how to install oftc-ircservices onto your machine
-and hopefully get them up and running with minimal fuss.  And hopefully
-sometime soon someone will write it.
+and hopefully get them up and running with minimal fuss. 
+
+Installation of oftc-ircservices is reasonably straight forward.  It is
+distributed using standard GNU autoconf processes, so should be similar to
+most other GNU software you have used.
+
+To this end, to get started, do:
+
+./configure (see ./configure --help for options that you can tune)
+make
+make install
+
+This will install the services binary and support files in the location you
+have specified(or your default prefix if you havent specified one).
+
+Once installation if complete you will need to configure services by editing
+etc/services.conf.  Use example.conf as a guide.
+
+Now, depending on which database platform you are using, you will need to set
+up your database tables.  Firstly, create the database you will use, then
+import the scripts in sql/ for the database type you are using.  E.g. if you
+are using postgres, you will need to import sql/nickserv-pgsql.sql
+sql/chanserv-pgsql.sqlp and sql/operserv-pgql.sql.  Once this is done
+services.conf should be updated to the database you created.
