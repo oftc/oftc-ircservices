@@ -2,5 +2,5 @@
 
 $Id$
 
-This guide will hopefully one day tell you about operating oftc-ircservices.
-Someone just needs to write it.
+See INSTALL for instructions on how to install this package, and once they are
+online see /msg ServiceName HELP for help using the services.
