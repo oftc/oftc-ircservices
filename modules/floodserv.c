@@ -252,8 +252,8 @@ mqueue_enforce(struct MessageQueue *queue)
 
   age = newest->time - oldest->time;
 
-  if(queue->type != MQUEUE_GLOB && age <= queue->lne_enforce_time)
-    return MQUEUE_LINE;
+/*  if(queue->type != MQUEUE_GLOB && age <= queue->lne_enforce_time)
+    return MQUEUE_LINE;*/
 
   if(age <= queue->msg_enforce_time)
   {
