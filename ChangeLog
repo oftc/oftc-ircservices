@@ -3,10 +3,15 @@
 	- FloodServ needs to deal with notices too.
 2007-05-07 - 1.0.2
 	Bugfix point release.  Bug(s) fixed:
-	- Fix wrong variable usage in ChanServ causing a core
+	- Fix wrong variable usage in ChanServ causing a core.
 2007-05-07 - 1.0.3
 	Bugfix point release.  Bug(s) fixed:
 	- Fix SJOIN not understanding chanmode +c causing a duplicate mlock on
 		burst.
 	- Fix a whole bunch of typos in the help files. Mainly reported by
-		ErrantEgo
+		ErrantEgo.
+	- Fix a bug causing normal user help not to get displayed.
+	- Fix a crash caused by not removing enforcers from the release list
+		properly.
+	- Fix the channel list to be ordered in NickServ info.
+	- FloodServ shouldn't enforce on operators

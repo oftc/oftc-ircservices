@@ -367,7 +367,8 @@ fs_on_privmsg(va_list args)
   char mask[IRC_BUFSIZE+1];
   char host[HOSTLEN+1];
 
-  if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
+  if(channel->regchan != NULL && channel->regchan->flood_hash != NULL &&
+    !IsOper(source))
   {
     if(source->realhost != NULL)
       strlcpy(host, source->realhost, sizeof(host));
@@ -398,7 +399,7 @@ fs_on_privmsg(va_list args)
     switch(enforce)
     {
       case MQUEUE_MESG:
-        ilog(L_NOTICE, "%s@%s TRIGGERED NETWORK MSG FLOOD Message: %s",
+        ilog(L_NOTICE, "Flood %s@%s TRIGGERED NETWORK MSG FLOOD Message: %s",
           source->name, host, message);
         snprintf(mask, IRC_BUFSIZE, "*!*@%s", host);
         akill_add(floodserv, fsclient, mask, FS_KILL_MSG, FS_KILL_DUR);
@@ -412,7 +413,7 @@ fs_on_privmsg(va_list args)
     switch(enforce)
     {
       case MQUEUE_MESG:
-        ilog(L_NOTICE, "%s@%s TRIGGERED CHANNEL MSG FLOOD Message: %s",
+        ilog(L_NOTICE, "Flood %s@%s TRIGGERED CHANNEL MSG FLOOD Message: %s",
           source->name, source->host, message);
         snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
         quiet_mask(floodserv, channel, mask);
@@ -425,13 +426,13 @@ fs_on_privmsg(va_list args)
     switch(enforce)
     {
       case MQUEUE_LINE:
-        ilog(L_NOTICE, "%s@%s TRIGGERED LINE FLOOD in %s", source->name,
+        ilog(L_NOTICE, "Flood %s@%s TRIGGERED LINE FLOOD in %s", source->name,
           source->host, channel->chname);
         snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
         quiet_mask(floodserv, channel, mask);
         break;
       case MQUEUE_MESG:
-        ilog(L_NOTICE, "%s@%s TRIGGERED MESSAGE FLOOD in %s Message: %s",
+        ilog(L_NOTICE, "Flood %s@%s TRIGGERED MESSAGE FLOOD in %s Message: %s",
           source->name, source->host, channel->chname, message);
         snprintf(mask, IRC_BUFSIZE, "*!*@%s", source->host);
         quiet_mask(floodserv, channel, mask);

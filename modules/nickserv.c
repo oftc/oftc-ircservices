@@ -521,6 +521,7 @@ m_identify(struct Service *service, struct Client *client,
     {
       if(MyConnect(target))
       {
+        dlinkFindDelete(&nick_release_list, target);
         exit_client(target, &me, "Enforcer no longer needed");
         send_nick_change(service, client, name);
       }
@@ -1005,6 +1006,7 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     if(MyConnect(target))
     {
+      dlinkFindDelete(&nick_release_list, target);
       exit_client(target, &me, "Enforcer no longer needed");
       send_nick_change(service, client, parv[1]);
     }
@@ -1314,6 +1316,7 @@ m_regain(struct Service *service, struct Client *client, int parc,
 {
   struct Nick *nick;
   struct Client *enforcer;
+  dlink_node *ptr;
 
   enforcer = find_client(parv[1]);
   
@@ -1334,10 +1337,11 @@ m_regain(struct Service *service, struct Client *client, int parc,
     free_nick(client->nickname);
   client->nickname = nick;
  
-  if(enforcer != NULL && dlinkFind(&nick_release_list, enforcer) != NULL)
+  if(enforcer != NULL && (ptr = dlinkFind(&nick_release_list, enforcer)) != NULL)
   {
     dlinkFindDelete(&nick_enforce_list, client);
-    exit_client(enforcer, &me, "RELEASE command issued");
+    dlinkDelete(ptr, &nick_release_list);
+    exit_client(enforcer, &me, "REGAIN command issued");
     send_nick_change(service, client, parv[1]);
   }
   else if(enforcer != NULL)
