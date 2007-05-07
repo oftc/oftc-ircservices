@@ -163,8 +163,10 @@ query_t queries[QUERY_COUNT] = {
   { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=?d",
     NULL, QUERY },
   { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=?d", NULL, QUERY },
-  { GET_NICK_CHAN_INFO, "SELECT channel, level FROM channel, channel_access WHERE channel.id="
-    "channel_access.channel_id AND channel_access.account_id=?d", NULL, QUERY },
+  { GET_NICK_CHAN_INFO, "SELECT channel, level FROM "
+    "channel, channel_access WHERE "
+      "channel.id=channel_access.channel_id AND channel_access.account_id=?d "
+      "ORDER BY upper(channel.channel), channel_access.level", NULL, QUERY },
   { GET_CHAN_MASTERS, "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
     "AND level=4 AND channel_access.account_id=account.id AND "
       "account.primary_nick=nickname.id", NULL, QUERY },
