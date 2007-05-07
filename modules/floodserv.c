@@ -39,7 +39,6 @@ static void *fs_on_client_part(va_list);
 static void *fs_on_channel_created(va_list);
 static void *fs_on_channel_destroy(va_list);
 static void *fs_on_privmsg(va_list);
-static void *fs_on_notice(va_list);
 
 static void floodserv_gc_routine(void *);
 static void floodserv_gc_hash(struct MessageQueue **, dlink_list *);
@@ -81,7 +80,7 @@ INIT_MODULE(floodserv, "$Revision$")
   fs_channel_created_hook = install_hook(on_channel_created_cb, fs_on_channel_created);
   fs_channel_destroy_hook = install_hook(on_channel_destroy_cb, fs_on_channel_destroy);
   fs_privmsg_hook = install_hook(on_privmsg_cb, fs_on_privmsg);
-  fs_notice_hook = install_hook(on_notice_cb, fs_on_notice);
+  fs_notice_hook = install_hook(on_notice_cb, fs_on_privmsg);
 
   DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
     setup_channel(ptr->data);
@@ -100,7 +99,7 @@ CLEANUP_MODULE
   uninstall_hook(on_channel_created_cb, fs_on_channel_created);
   uninstall_hook(on_channel_destroy_cb, fs_on_channel_destroy);
   uninstall_hook(on_privmsg_cb, fs_on_privmsg);
-  uninstall_hook(on_notice_cb, fs_on_notice);
+  uninstall_hook(on_notice_cb, fs_on_privmsg);
 
   serv_clear_messages(floodserv);
 
@@ -441,16 +440,4 @@ fs_on_privmsg(va_list args)
   }
 
   return pass_callback(fs_privmsg_hook, source, channel, message);
-}
-
-static void *
-fs_on_notice(va_list args)
-{
-  struct Client *source = va_arg(args, struct Client *);
-  struct Channel *channel = va_arg(args, struct Channel *);
-  char *message = va_arg(args, char *);
-
-  /* TODO Notice flood metrics, should be same as privmsg */
-
-  return pass_callback(fs_notice_hook, source, channel, message);
 }
