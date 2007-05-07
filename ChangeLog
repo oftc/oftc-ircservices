@@ -10,3 +10,4 @@
 		burst.
 	- Fix a whole bunch of typos in the help files. Mainly reported by
 		ErrantEgo
+	- Fix a bug causing normal user help not to get displayed
