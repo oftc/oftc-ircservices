@@ -1,3 +1,12 @@
 2007-05-07 - 1.0.1
 	Bugfix point release.  Bug(s) fixed:
 	- FloodServ needs to deal with notices too.
+2007-05-07 - 1.0.2
+	Bugfix point release.  Bug(s) fixed:
+	- Fix wrong variable usage in ChanServ causing a core
+2007-05-07 - 1.0.3
+	Bugfix point release.  Bug(s) fixed:
+	- Fix SJOIN not understanding chanmode +c causing a duplicate mlock on
+		burst.
+	- Fix a whole bunch of typos in the help files. Mainly reported by
+		ErrantEgo

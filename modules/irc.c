@@ -831,6 +831,9 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
       case 'p':
         mode.mode |= MODE_PARANOID;
         break;
+      case 'c':
+        mode.mode |= MODE_NOCOLOR;
+        break;
       case 'k':
         strlcpy(mode.key, parv[4 + args], sizeof(mode.key));
         args++;

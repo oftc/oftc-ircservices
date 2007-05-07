@@ -1027,7 +1027,7 @@ set_mode_lock(struct Service *service, const char *channel,
   {
     /*
      * l and k are both special cases because they arent listed in the
-     * protocol's mode list because they take paramters, but we can MLOCK
+     * protocol's mode list because they take parameters, but we can MLOCK
      * them.
      */
     if(mode != '+' && mode != '-' && mode != 'l' && mode != 'k')
@@ -1202,7 +1202,7 @@ set_mode_lock(struct Service *service, const char *channel,
     strcpy(chptr->mode.key, key);
  
   /* 
-   * Set up the modestring and paramter(s) and set them. This could probably
+   * Set up the modestring and parameter(s) and set them. This could probably
    * be written a little better.
    */
   if(limit > 0 && key[0] != '\0')
