@@ -84,7 +84,7 @@ OS_AKILL_ADD_HELP_LONG
 	
 	Adds an AKILL on the specified user@host for the specified duration with the
 	specified reason. If a duration is not specified, the default is used. The
-	duration paramter takes the form +duration[suffix], where suffix can be one
+	duration parameter takes the form +duration[suffix], where suffix can be one
 	of 'm', 'h', 'd', meaning minutes, hours and days respectively. If no suffix
 	is specified, days is used.
 OS_AKILL_LIST_HELP_SHORT
@@ -112,7 +112,7 @@ OS_SET_HELP_SHORT
 OS_SET_HELP_LONG
 	Usage: SET option [args]
 	
-	Allows the setting of various services options are runtime. The options
+	Allows the setting of various services options at runtime. The options
 	available are:
 	
 OS_ADMIN_LIST

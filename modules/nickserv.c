@@ -579,7 +579,7 @@ static void
 m_set_language(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  /* No paramters, list languages */
+  /* No parameters, list languages */
   if(parc == 0)
   {
     int i;
