@@ -1325,7 +1325,7 @@ m_op(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(target == NULL || (ms = find_channel_link(target, chptr)) == NULL)
   {
-    reply_user(service, service, client, CS_NOT_ON_CHAN, target->name, parv[1]);
+    reply_user(service, service, client, CS_NOT_ON_CHAN, parv[2], parv[1]);
     return;
   }
 
