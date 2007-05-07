@@ -14,3 +14,4 @@
 	- Fix a crash caused by not removing enforcers from the release list
 		properly.
 	- Fix the channel list to be ordered in NickServ info.
+	- FloodServ shouldn't enforce on operators

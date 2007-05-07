@@ -367,7 +367,8 @@ fs_on_privmsg(va_list args)
   char mask[IRC_BUFSIZE+1];
   char host[HOSTLEN+1];
 
-  if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
+  if(channel->regchan != NULL && channel->regchan->flood_hash != NULL &&
+    !IsOper(source))
   {
     if(source->realhost != NULL)
       strlcpy(host, source->realhost, sizeof(host));
