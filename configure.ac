@@ -2,8 +2,8 @@
 # vim: set fdm=marker ts=2 sw=2 et:
 
 AC_PREREQ(2.59)
-AC_INIT([oftc-services],[1.0.2])
-AM_INIT_AUTOMAKE([oftc-ircservices],[1.0.2])
+AC_INIT([oftc-services],[1.0.3])
+AM_INIT_AUTOMAKE([oftc-ircservices],[1.0.3])
 AC_CONFIG_HEADERS([config.h])
 
 #ltdl stuff
@@ -77,6 +77,6 @@ AC_DEFINE_DIR([LIBDIR],[libdir],[Set to libdir.])
 AC_DEFINE_DIR([DATADIR],[datadir],[Set to datadir.])
 AC_DEFINE_DIR([LOCALSTATEDIR],[localstatedir],[Set to localstatedir.])
 AC_DEFINE([SHARED_SUFFIX],[".so"],[Suffix for shared libraries on this platform.]) # wtf is this needed? replace libdl with libltdl to correct
-AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile src/ruby_module/Makefile languages/Makefile include/Makefile include/conf/Makefile])
+AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile src/ruby_module/Makefile languages/Makefile include/Makefile include/conf/Makefile sql/Makefile])
 AC_CONFIG_SUBDIRS(libltdl)
 AC_OUTPUT
