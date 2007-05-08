@@ -232,18 +232,16 @@ find_bmask(const struct Client *who, const dlink_list *const list)
           if (match(bp->host, who->host) || match(bp->host, who->sockhost))
             return bp;
           break;
-#if 0
         case HM_IPV4:
-          if (who->localClient->aftype == AF_INET)
-            if (match_ipv4(&who->localClient->ip, &bp->addr, bp->bits))
+          if (who->aftype == AF_INET)
+            if (match_ipv4(&who->ip, &bp->addr, bp->bits))
               return bp;
           break;
         case HM_IPV6:
-          if (who->localClient->aftype == AF_INET6)
-            if (match_ipv6(&who->localClient->ip, &bp->addr, bp->bits))
+          if (who->aftype == AF_INET6)
+            if (match_ipv6(&who->ip, &bp->addr, bp->bits))
               return bp;
           break;
-#endif
         default:
           assert(0);
       }

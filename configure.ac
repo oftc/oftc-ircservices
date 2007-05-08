@@ -2,8 +2,8 @@
 # vim: set fdm=marker ts=2 sw=2 et:
 
 AC_PREREQ(2.59)
-AC_INIT([oftc-services],[1.0.4])
-AM_INIT_AUTOMAKE([oftc-ircservices],[1.0.4])
+AC_INIT([oftc-services],[1.0.5])
+AM_INIT_AUTOMAKE([oftc-ircservices],[1.0.5])
 AC_CONFIG_HEADERS([config.h])
 
 #ltdl stuff

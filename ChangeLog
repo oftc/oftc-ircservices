@@ -24,3 +24,8 @@
 	- Fixed chanserv help to report EXPIREBANS properly.
 	- Fixed a bug in chanserv info causing EXPIREBANS to display twice.
 	- Fixed a bug in the kill handler causing the uplink to get closed wrongly.
+2007-05-08 - 1.0.5
+	Bugfix point release.  Bug(s) fixed:
+	- Fix a core caused by dealing with a ip ban.
+	- Fix access add to not generate db errors on trying to add an already
+		existing account

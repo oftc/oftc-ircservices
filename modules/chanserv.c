@@ -564,7 +564,7 @@ m_access_add(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  struct ChanAccess *access;
+  struct ChanAccess *access, *oldaccess;
   unsigned int account, level;
   char *level_added = "MEMBER";
 
@@ -603,6 +603,21 @@ m_access_add(struct Service *service, struct Client *client,
   access->channel = regchptr->id;
   access->account = account;
   access->level   = level;
+
+  if((oldaccess = db_find_chanaccess(access->channel, access->account)) != NULL)
+  {
+    if(oldaccess->level == MASTER_FLAG && db_get_num_masters(regchptr->id) <= 1)
+    {
+      reply_user(service, service, client, CS_ACCESS_NOMASTERS, parv[2],
+          regchptr->channel);
+      if(chptr == NULL)
+        free_regchan(regchptr);
+      free_chanaccess(oldaccess);
+      return;
+    }
+    db_list_del_index(DELETE_CHAN_ACCESS, access->account, access->channel);
+    free_chanaccess(oldaccess);
+  }
  
   if(db_list_add(CHACCESS_LIST, access))
   {
