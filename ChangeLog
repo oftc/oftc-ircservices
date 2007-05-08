@@ -15,3 +15,11 @@
 		properly.
 	- Fix the channel list to be ordered in NickServ info.
 	- FloodServ shouldn't enforce on operators
+2007-05-08 - 1.0.4
+	Bugfix point release.  Bug(s) fixed:
+	- Readd the missing VOICE/DEVOICE commands to chanserv.
+	- Fixed a bug causing OP/DEOP to not report failure because of the mode
+		already existing.
+	- Fixed a bug causing a core caused by trying to send to ourselves.
+	- Fixed chanserv help to report EXPIREBANS properly.
+	- Fixed a bug in chanserv info causing EXPIREBANS to display twice.
