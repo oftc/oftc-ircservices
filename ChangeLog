@@ -30,3 +30,7 @@
 	- Fix access add to not generate db errors on trying to add an already
 		existing account.
 	- Fix a bug in chanserv sudo causing SUDO to "stick" on.
+2007-05-08 - 1.0.6
+	Bugfix point release. Bug(s) fixed:
+	- Sort channel access list output.
+	- Fix a bug in autolimit causing it to not work at all.

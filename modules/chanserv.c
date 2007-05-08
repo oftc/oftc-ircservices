@@ -332,7 +332,7 @@ process_limit_list(void *param)
   {
     struct Channel *chptr = ptr->data;
 
-    if(chptr->limit_time > CurrentTime)
+    if(chptr->limit_time < CurrentTime)
     {
       int limit;
 
