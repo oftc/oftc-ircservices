@@ -1751,7 +1751,7 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   MyFree(newparv[2]);
   MyFree(newparv);
 
-  client->access = MASTER_FLAG;
+  client->access = ADMIN_FLAG;
 }
 
 static void

@@ -316,7 +316,7 @@ handle_services_command(struct ServiceMessage *pmptr,
   struct Channel *chptr;
   struct RegChannel *regchptr = NULL;
   struct ChanAccess *access;
-  unsigned int level;
+  unsigned int level = 0;
 
   if(i < mptr->parameters)
   {

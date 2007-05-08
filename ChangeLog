@@ -28,4 +28,5 @@
 	Bugfix point release.  Bug(s) fixed:
 	- Fix a core caused by dealing with a ip ban.
 	- Fix access add to not generate db errors on trying to add an already
-		existing account
+		existing account.
+	- Fix a bug in chanserv sudo causing SUDO to "stick" on.
