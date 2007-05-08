@@ -225,6 +225,8 @@ close_connection(struct Client *client_p)
   client_p->from = NULL; /* ...this should catch them! >:) --msa */
 
   ilog(L_DEBUG, "Closed connection to %s", client_p->name);
+  if(client_p == me.uplink)
+    me.uplink = NULL;
 }
 
 /*

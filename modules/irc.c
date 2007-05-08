@@ -1142,12 +1142,18 @@ m_quit(struct Client *client, struct Client *source, int parc, char *parv[])
 static void
 m_kill(struct Client *client, struct Client *source, int parc, char *parv[])
 {
-  char *comment = (parc > 1 && parv[1]) ? parv[1] : client->name;
+  struct Client *target = find_client(parv[1]);
+  char *comment;
+  
+  if(target == NULL)
+    return;
+  
+  comment = (parc > 1 && parv[2]) ? parv[2] : target->name;
 
   if (strlen(comment) > (size_t)KICKLEN)
     comment[KICKLEN] = '\0';
 
-  exit_client(source, source, comment);
+  exit_client(target, source, comment);
 }
 
 static void

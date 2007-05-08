@@ -23,3 +23,4 @@
 	- Fixed a bug causing a core caused by trying to send to ourselves.
 	- Fixed chanserv help to report EXPIREBANS properly.
 	- Fixed a bug in chanserv info causing EXPIREBANS to display twice.
+	- Fixed a bug in the kill handler causing the uplink to get closed wrongly.
