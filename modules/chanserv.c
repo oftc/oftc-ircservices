@@ -850,8 +850,9 @@ m_set_topic(struct Service *service, struct Client *client,
   m_set_string(service, client, parv[1], "TOPIC", SET_CHAN_TOPIC, value, 
       &regchptr->topic, parc);
 
-  if(topic != NULL && strncmp(topic, regchptr->topic, 
-        LIBIO_MAX(strlen(topic), strlen(regchptr->topic))) != 0)
+  if(topic != NULL && (regchptr->topic == NULL || 
+        strncmp(topic, regchptr->topic, 
+          LIBIO_MAX(strlen(topic), strlen(regchptr->topic)))) != 0)
     changetopic = TRUE;
 
   if(changetopic || ((topic == NULL && (regchptr->topic != NULL)) && (chptr != NULL)))

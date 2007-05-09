@@ -50,8 +50,10 @@ NS_HELP_ACCESS_LONG
 	       ACCESS LIST
 	
 	Maintains the nickname access list.  If your IRC userhost matches an entry
-	in your access list, you will be automatically identified to your nickname
-	without having to use the IDENTIFY command.
+	in your access list, you will not receive notices asking you to identify
+	when you connect, and your nickname will not be changed if you have ENFORCE
+	set.  Additionally, if SECURE is set to OFF, you will be automatically 
+	identified to your nickname without having to use the IDENTIFY command.
 	
 	Examples:
 	    ACCESS ADD foo@*.org
@@ -479,13 +481,16 @@ NS_INFO_CHANS
 NS_INFO_CHAN
 	    %s: %s
 NS_NICK_IN_USE
-	%s is a registered nickname and you are not on its access list. If this is
-	your nickname, you may authenticate yourself to services with the IDENTIFY
-	command.
+	This nickname is registered and protected.  If it is your nickname, you may 
+	authenticate yourself to services with the IDENTIFY	command.  You are 
+	getting this message because you are not on the	access list for the
+	%s nickname.
 NS_NICK_IN_USE_IWILLCHANGE
-	%s is a registered nickname and you are not on its access list.  Change your
-	nickname now or I will change it for you.  If this is your nickname,
-	authenticate yourself to services now with the IDENTIFY command.
+	This nickname is registered and protected.  If it is your nickname, you may
+	authenticate yourself to services with the IDENTIFY command.  If you do
+	not authenticate or change your nickname, I will change your nickname.  You
+	are getting this notice because you are not on the access list for the %s
+	nickname.
 NS_NICK_FORBID_IWILLCHANGE
 	This nickname, %s, may not be used. Choose another or I will forcefully
 	change your nickname.

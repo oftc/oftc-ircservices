@@ -474,8 +474,16 @@ irc_sendmsg_topic(va_list args)
 
   source = source;
 
-  sendto_server(uplink, ":%s TBURST 1 %s %lu %s :%s", me.name, chptr->chname,
-      CurrentTime, setter->name, topic);
+  if(topic == NULL)
+  {
+    sendto_server(uplink, ":%s TBURST 1 %s %lu %s", me.name, chptr->chname,
+        CurrentTime, setter->name);
+  }
+  else
+  {
+    sendto_server(uplink, ":%s TBURST 1 %s %lu %s :%s", me.name, chptr->chname,
+        CurrentTime, setter->name, topic);
+  }
 
   return NULL;
 }
@@ -1121,7 +1129,7 @@ m_kick(struct Client *client, struct Client *source, int parc, char *parv[])
 
   reason = (EmptyString(parv[3])) ? parv[2] : parv[3];
 
-  target = find_client(parv[2]);
+  target = find_person(source, parv[2]);
   if(target == NULL)
     return;
 
@@ -1142,7 +1150,7 @@ m_quit(struct Client *client, struct Client *source, int parc, char *parv[])
 static void
 m_kill(struct Client *client, struct Client *source, int parc, char *parv[])
 {
-  struct Client *target = find_client(parv[1]);
+  struct Client *target = find_person(source, parv[1]);
   char *comment;
   
   if(target == NULL)
