@@ -387,8 +387,12 @@ kill_user(struct Service *service, struct Client *client, const char *reason)
     ilog(L_DEBUG, "Was going to kill: %s (%s)", client->name, reason);
   else
   {
-    execute_callback(send_kill_cb, me.uplink, service, client, reason);
-    exit_client(client, &me, reason);
+    if(!IsKilled(client))
+    {
+      execute_callback(send_kill_cb, me.uplink, service, client, reason);
+      exit_client(client, &me, reason);
+      SetKilled(client);
+    }
   }
 }
 

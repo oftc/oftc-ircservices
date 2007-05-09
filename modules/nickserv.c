@@ -1015,6 +1015,8 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
       guest_user(target);
     }
   }
+
+  identify_user(client);
   reply_user(service, service, client, NS_GHOST_SUCCESS, parv[1]);
 }
 

@@ -51,11 +51,13 @@ EXTERN unsigned int user_modes[];
 #define IsClosing(x)            ((x)->flags & FLAGS_CLOSING)
 #define IsOnAccess(x)           ((x)->flags & FLAGS_ONACCESS)
 #define IsEnforce(x)            ((x)->flags & FLAGS_ENFORCE)
+#define IsKilled(x)             ((x)->flags & FLAGS_KILLED)
 
 #define SetConnecting(x)        ((x)->flags |= FLAGS_CONNECTING)
 #define SetClosing(x)           ((x)->flags |= FLAGS_CLOSING)
 #define SetOnAccess(x)          ((x)->flags |= FLAGS_ONACCESS)
 #define SetEnforce(x)           ((x)->flags |= FLAGS_ENFORCE)
+#define SetKilled(x)            ((x)->flags |= FLAGS_KILLED)
 
 #define ClearConnecting(x)      ((x)->flags &= ~FLAGS_CONNECTING)
 #define ClearOnAccess(x)        ((x)->flags &= ~FLAGS_ONACCESS)
