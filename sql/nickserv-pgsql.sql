@@ -30,11 +30,11 @@ CREATE TABLE nickname (
   reg_time            INTEGER NOT NULL, -- This nickname
   last_seen           INTEGER
 );
+CREATE UNIQUE INDEX nickname_nick_idx ON nickname ((lower(nick)));
 
 -- This needs to be here because of the table creation order and the circular
 -- reference
-ALTER TABLE account ADD FOREIGN KEY (primary_nick) REFERENCES nickname(id)
-DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE account ADD FOREIGN KEY (primary_nick) REFERENCES nickname(id) DEFERRABLE INITIALLY DEFERRED;
 
 DROP TABLE forbidden_nickname;
 CREATE TABLE forbidden_nickname (

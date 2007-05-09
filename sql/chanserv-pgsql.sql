@@ -19,9 +19,9 @@ CREATE TABLE channel(
   topic                 VARCHAR(512),
   mlock                 VARCHAR(255),
   reg_time              INTEGER NOT NULL,
-  last_used             INTEGER NOT NULL,
-  UNIQUE (channel)
+  last_used             INTEGER NOT NULL
 );
+CREATE UNIQUE INDEX channel_channel_idx ON channel ((lower(channel)));
 
 DROP TABLE channel_access;
 CREATE TABLE channel_access(
