@@ -34,3 +34,10 @@
 	Bugfix point release. Bug(s) fixed:
 	- Sort channel access list output.
 	- Fix a bug in autolimit causing it to not work at all.
+2007-05-09 - 1.0.7
+	Bugfix point release. Bug(s) fixed:
+	- Fix issue causing FloodServ to akill *@* when a non cloaked offender
+		triggers a network flood.
+	- Improve FloodServ's kill message.
+	- Fix a memory leak in FloodServ.
+	- Add safeguards to akill_add to prevent this happening again.

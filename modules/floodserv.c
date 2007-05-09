@@ -363,6 +363,7 @@ fs_on_privmsg(va_list args)
   struct Channel *channel = va_arg(args, struct Channel *);
   char *message = va_arg(args, char *);
   struct MessageQueue *queue = NULL, *gqueue = NULL;
+  struct ServiceBan *akill;
   int enforce = MQUEUE_NONE;
   char mask[IRC_BUFSIZE+1];
   char host[HOSTLEN+1];
@@ -370,7 +371,7 @@ fs_on_privmsg(va_list args)
   if(channel->regchan != NULL && channel->regchan->flood_hash != NULL &&
     !IsOper(source))
   {
-    if(source->realhost != NULL)
+    if(*source->realhost != '\0')
       strlcpy(host, source->realhost, sizeof(host));
     else
       strlcpy(host, source->host, sizeof(host));
@@ -401,8 +402,11 @@ fs_on_privmsg(va_list args)
       case MQUEUE_MESG:
         ilog(L_NOTICE, "Flood %s@%s TRIGGERED NETWORK MSG FLOOD Message: %s",
           source->name, host, message);
-        snprintf(mask, IRC_BUFSIZE, "*!*@%s", host);
-        akill_add(floodserv, fsclient, mask, FS_KILL_MSG, FS_KILL_DUR);
+        snprintf(mask, IRC_BUFSIZE, "*@%s", host);
+        akill = akill_add(floodserv, fsclient, mask, FS_KILL_MSG, FS_KILL_DUR);
+
+        if(akill != NULL)
+          free_serviceban(akill);
         return pass_callback(fs_privmsg_hook, source, channel, message);
         break;
     }
