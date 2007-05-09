@@ -51,7 +51,6 @@ static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
 static void m_register(struct Service *, struct Client *, int, char *[]);
-static void m_ghost(struct Service *, struct Client *, int, char *[]);
 static void m_link(struct Service *, struct Client *, int, char *[]);
 static void m_unlink(struct Service *, struct Client *, int, char *[]);
 static void m_info(struct Service *,struct Client *, int, char *[]);
@@ -150,8 +149,8 @@ static struct ServiceMessage access_msgtab = {
 };
 
 static struct ServiceMessage ghost_msgtab = {
-  NULL, "GHOST", 0, 1, 2, 0, USER_FLAG, NS_HELP_GHOST_SHORT, NS_HELP_GHOST_LONG,
-  m_ghost
+  NULL, "GHOST", 0, 1, 2, SFLG_ALIAS, USER_FLAG, NS_HELP_REGAIN_SHORT, 
+  NS_HELP_REGAIN_LONG, m_regain
 };
 
 static struct ServiceMessage link_msgtab = {
@@ -304,6 +303,43 @@ process_release_list(void *param)
       user->enforce_time = 0;
     }
   }
+}
+
+static void
+handle_nick_change(struct Service *service, struct Client *client, 
+    const char *name, unsigned int message)
+{
+  struct Client *target;
+
+  if((target = find_client(name)) != NULL)
+  {
+    if(MyConnect(target))
+    {
+      dlinkFindDelete(&nick_release_list, target);
+      exit_client(target, &me, "Enforcer no longer needed");
+      reply_user(service, service, client, message, name);
+      send_nick_change(service, client, name);
+    }
+    else if(target != client)
+    {
+      target->release_to = client;
+      strlcpy(target->release_name, name, NICKLEN);
+      guest_user(target);
+      reply_user(service, service, client, message, name);
+    }
+    else
+    {
+      identify_user(client);
+      reply_user(service, service, client, message, name);
+    }
+  }
+  else
+  {
+    reply_user(service, service, client, message, name);
+    send_nick_change(service, client, name);
+  }
+
+  SetIdentified(client);
 }
 
 static void 
@@ -510,35 +546,19 @@ m_identify(struct Service *service, struct Client *client,
     return;
   }
 
+  if(client->nickname != NULL)
+    free_nick(client->nickname);
+
   client->nickname = nick;
   dlinkFindDelete(&nick_enforce_list, client);
 
   if(parc > 1)
+    handle_nick_change(service, client, name, NS_IDENTIFIED);
+  else
   {
-    struct Client *target;
-    /* User specified nick to change them too, so do so */
-    if((target = find_client(name)) != NULL)
-    {
-      if(MyConnect(target))
-      {
-        dlinkFindDelete(&nick_release_list, target);
-        exit_client(target, &me, "Enforcer no longer needed");
-        send_nick_change(service, client, name);
-      }
-      else if(target != client)
-      {
-        target->release_to = client;
-        strlcpy(target->release_name, name, NICKLEN);
-        guest_user(target);
-      }
-    }
-    else
-    {
-      send_nick_change(service, client, name);
-    }
+    identify_user(client);
+    reply_user(service, service, client, NS_IDENTIFIED, name);
   }
-  identify_user(client);
-  reply_user(service, service, client, NS_IDENTIFIED, name);
 }
 
 static void
@@ -964,14 +984,13 @@ m_access_del(struct Service *service, struct Client *client, int parc,
 }
 
 static void
-m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
+m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
-  struct Client *target;
 
   if(find_client(parv[1]) == NULL)
   {
-    reply_user(service, service, client, NS_GHOST_NOTONLINE, parv[1]);
+    reply_user(service, service, client, NS_REGAIN_NOTONLINE, parv[1]);
     return;
   }
 
@@ -981,43 +1000,26 @@ m_ghost(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(ircncmp(client->name, parv[1], NICKLEN) == 0)
-  {
-    free_nick(nick);
-    reply_user(service, service, client, NS_GHOST_NOSELF, parv[1]);
-    return;
-  }
-
   if(parc == 1 && (nick->secure || !IsOnAccess(client)))
   {
     free_nick(nick);
-    reply_user(service, service, client, NS_GHOST_FAILED_SECURITY, parv[1]);   
+    reply_user(service, service, client, NS_REGAIN_FAILED_SECURITY, parv[1]);   
     return;
   }
 
   if((parc == 2 && !check_nick_pass(nick, parv[2])))
   {
     free_nick(nick);
-    reply_user(service, service, client, NS_GHOST_FAILED, parv[1]);   
+    reply_user(service, service, client, NS_REGAIN_FAILED, parv[1]);   
     return;
   }
+  
+  if(client->nickname != NULL)
+    free_nick(client->nickname);
 
-  if((target = find_client(parv[1])) != NULL)
-  {
-    if(MyConnect(target))
-    {
-      dlinkFindDelete(&nick_release_list, target);
-      exit_client(target, &me, "Enforcer no longer needed");
-      send_nick_change(service, client, parv[1]);
-    }
-    else
-    {
-      guest_user(target);
-    }
-  }
+  client->nickname = nick;
 
-  identify_user(client);
-  reply_user(service, service, client, NS_GHOST_SUCCESS, parv[1]);
+  handle_nick_change(service, client, parv[1], NS_REGAIN_SUCCESS);
 }
 
 static void
@@ -1310,55 +1312,6 @@ m_unforbid(struct Service *service, struct Client *client, int parc,
     free_dlink_node(ptr);
     target->enforce_time = 0;
   }
-}
-
-static void
-m_regain(struct Service *service, struct Client *client, int parc, 
-    char *parv[])
-{
-  struct Nick *nick;
-  struct Client *enforcer;
-  dlink_node *ptr;
-
-  enforcer = find_client(parv[1]);
-  
-  if((nick = db_find_nick(parv[1])) == NULL)
-  {
-    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
-    return;
-  }
-
-  if(!check_nick_pass(nick, parv[2]))
-  {
-    free_nick(nick);
-    reply_user(service, service, client, NS_REGAIN_FAIL, parv[1]);
-    return;
-  }
-
-  if(client->nickname)
-    free_nick(client->nickname);
-  client->nickname = nick;
- 
-  if(enforcer != NULL && (ptr = dlinkFind(&nick_release_list, enforcer)) != NULL)
-  {
-    dlinkFindDelete(&nick_enforce_list, client);
-    dlinkDelete(ptr, &nick_release_list);
-    exit_client(enforcer, &me, "REGAIN command issued");
-    send_nick_change(service, client, parv[1]);
-  }
-  else if(enforcer != NULL)
-  {
-    enforcer->release_to = client;
-    strlcpy(enforcer->release_name, parv[1], NICKLEN);
-    guest_user(enforcer);
-  }
-  else
-  {
-    send_nick_change(service, client, parv[1]);
-  }
- 
-  identify_user(client);
-  reply_user(service, service, client, NS_REGAINED, client->name);
 }
 
 static void 

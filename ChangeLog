@@ -47,3 +47,9 @@
 	- Fixed desync bug caused by services not tracking KICK properly.
 	- Fix nickserv notices to work with nickserv scripts.
 	- Fix ACCESS help.
+2007-05-09 - 1.0.9
+	Bugfi point release. Bug(s) fixed:
+	- Fix core caused by KILLs not acting fast enough and exit_client being
+		called twice.
+	- Rewrote nickserv identify/regain/ghost to share code and ghost to be an
+		alias for regain. Also fixed the notices not being sent to the right nick.
