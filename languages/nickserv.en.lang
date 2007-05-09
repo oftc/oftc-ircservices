@@ -250,14 +250,13 @@ NS_HELP_UNLINK_LONG
 NS_HELP_REGAIN_SHORT
 	%s: Release your nickname for you to use.
 NS_HELP_REGAIN_LONG
-	Usage: REGAIN nickname [password]
+	Usage: REGAIN nickname password
 	
 	If your nickname is being held by services, as is the case if your nickname
 	has been enforced recently, this command will release the hold and change
-	your nickname to the nickname that you specify. If you have SECURE set on,
-	you will need to provide a password. This command will also free up your
-	nickname if another user is using it and will change your current nickname
-	to be your registered nickname if successful.
+	your nickname to the nickname that you specify. This command will also 
+	free up your nickname if another user is using it and will change your 
+	current nickname to be your registered nickname if successful.
 NS_HELP_FORBID_SHORT
 	%s: Forbid a nickname from being used.
 NS_HELP_FORBID_LONG

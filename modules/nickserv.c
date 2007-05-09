@@ -149,7 +149,7 @@ static struct ServiceMessage access_msgtab = {
 };
 
 static struct ServiceMessage ghost_msgtab = {
-  NULL, "GHOST", 0, 1, 2, SFLG_ALIAS, USER_FLAG, NS_HELP_REGAIN_SHORT, 
+  NULL, "GHOST", 0, 2, 2, SFLG_ALIAS, USER_FLAG, NS_HELP_REGAIN_SHORT, 
   NS_HELP_REGAIN_LONG, m_regain
 };
 
