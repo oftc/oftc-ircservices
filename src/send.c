@@ -156,7 +156,7 @@ send_queued_write(struct Client *to)
    ** Once socket is marked dead, we cannot start writing to it,
    ** even if the error is removed...
    */
-  if (IsMe(to) || IsDead(to->server))
+  if (IsMe(to) || (to->from != NULL && IsMe(to->from)) || IsDead(to->server))
     return;  /* no use calling send() now */
 
   /* Next, lets try to write some data */

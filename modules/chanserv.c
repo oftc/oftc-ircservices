@@ -318,7 +318,7 @@ process_limit_list(void *param)
   {
     struct Channel *chptr = ptr->data;
 
-    if(chptr->limit_time > CurrentTime)
+    if(chptr->limit_time < CurrentTime)
     {
       int limit;
 
@@ -553,7 +553,7 @@ m_access_add(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  struct ChanAccess *access;
+  struct ChanAccess *access, *oldaccess;
   unsigned int account, level;
   char *level_added = "MEMBER";
 
@@ -592,6 +592,21 @@ m_access_add(struct Service *service, struct Client *client,
   access->channel = regchptr->id;
   access->account = account;
   access->level   = level;
+
+  if((oldaccess = db_find_chanaccess(access->channel, access->account)) != NULL)
+  {
+    if(oldaccess->level == MASTER_FLAG && db_get_num_masters(regchptr->id) <= 1)
+    {
+      reply_user(service, service, client, CS_ACCESS_NOMASTERS, parv[2],
+          regchptr->channel);
+      if(chptr == NULL)
+        free_regchan(regchptr);
+      free_chanaccess(oldaccess);
+      return;
+    }
+    db_list_del_index(DELETE_CHAN_ACCESS, access->account, access->channel);
+    free_chanaccess(oldaccess);
+  }
  
   if(db_list_add(CHACCESS_LIST, access))
   {
@@ -824,8 +839,9 @@ m_set_topic(struct Service *service, struct Client *client,
   m_set_string(service, client, parv[1], "TOPIC", SET_CHAN_TOPIC, value, 
       &regchptr->topic, parc);
 
-  if(topic != NULL && strncmp(topic, regchptr->topic, 
-        LIBIO_MAX(strlen(topic), strlen(regchptr->topic))) != 0)
+  if(topic != NULL && (regchptr->topic == NULL || 
+        strncmp(topic, regchptr->topic, 
+          LIBIO_MAX(strlen(topic), strlen(regchptr->topic)))) != 0)
     changetopic = TRUE;
 
   if(changetopic || ((topic == NULL && (regchptr->topic != NULL)) && (chptr != NULL)))
@@ -1625,7 +1641,7 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   MyFree(newparv[2]);
   MyFree(newparv);
 
-  client->access = MASTER_FLAG;
+  client->access = ADMIN_FLAG;
 }
 
 static void

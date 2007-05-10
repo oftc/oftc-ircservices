@@ -399,6 +399,13 @@ akill_add(struct Service *service, struct Client *client, const char* mask,
   struct ServiceBan *akill;
   int ret = 0;
 
+  if(!valid_wild_card(mask))
+  {
+    ilog(L_NOTICE, "%s tried to add an akill(%s) that was too wild!", 
+        client->nickname != NULL ? client->nickname->nick : "Services", mask);
+    return NULL;
+  }
+
   akill = MyMalloc(sizeof(struct ServiceBan));
 
   akill->type = AKILL_BAN;

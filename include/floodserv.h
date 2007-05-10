@@ -12,7 +12,9 @@
 #define FS_GMSG_COUNT 10
 #define FS_GMSG_TIME  60
 
-#define FS_KILL_MSG "This Host Triggered Network Flood Protection, please mail support@oftc.net" 
+#define FS_KILL_MSG "This host triggered network flood protection. "\
+    "please mail support@oftc.net if you feel this is in error, quoting "\
+    "this message." 
 #define FS_KILL_DUR 2592000 /* 30 Days */
 
 /* GC Timer, how often the routine should fire */

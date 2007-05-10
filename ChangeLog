@@ -15,3 +15,41 @@
 		properly.
 	- Fix the channel list to be ordered in NickServ info.
 	- FloodServ shouldn't enforce on operators
+2007-05-08 - 1.0.4
+	Bugfix point release.  Bug(s) fixed:
+	- Readd the missing VOICE/DEVOICE commands to chanserv.
+	- Fixed a bug causing OP/DEOP to not report failure because of the mode
+		already existing.
+	- Fixed a bug causing a core caused by trying to send to ourselves.
+	- Fixed chanserv help to report EXPIREBANS properly.
+	- Fixed a bug in chanserv info causing EXPIREBANS to display twice.
+	- Fixed a bug in the kill handler causing the uplink to get closed wrongly.
+2007-05-08 - 1.0.5
+	Bugfix point release.  Bug(s) fixed:
+	- Fix a core caused by dealing with a ip ban.
+	- Fix access add to not generate db errors on trying to add an already
+		existing account.
+	- Fix a bug in chanserv sudo causing SUDO to "stick" on.
+2007-05-08 - 1.0.6
+	Bugfix point release. Bug(s) fixed:
+	- Sort channel access list output.
+	- Fix a bug in autolimit causing it to not work at all.
+2007-05-09 - 1.0.7
+	Bugfix point release. Bug(s) fixed:
+	- Fix issue causing FloodServ to akill *@* when a non cloaked offender
+		triggers a network flood.
+	- Improve FloodServ's kill message.
+	- Fix a memory leak in FloodServ.
+	- Add safeguards to akill_add to prevent this happening again.
+2007-05-09 - 1.0.8
+	Bugfix point release. Bug(s) fixed:
+	- Fixed crash on topic unset.
+	- Fixed desync bug caused by services not tracking KICK properly.
+	- Fix nickserv notices to work with nickserv scripts.
+	- Fix ACCESS help.
+2007-05-09 - 1.0.9
+	Bugfi point release. Bug(s) fixed:
+	- Fix core caused by KILLs not acting fast enough and exit_client being
+		called twice.
+	- Rewrote nickserv identify/regain/ghost to share code and ghost to be an
+		alias for regain. Also fixed the notices not being sent to the right nick.

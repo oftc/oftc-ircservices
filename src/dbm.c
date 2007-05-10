@@ -60,9 +60,14 @@ query_t queries[QUERY_COUNT] = {
     "account.primary_nick = nickname.id ORDER BY nick", NULL, QUERY },
   { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
     NULL, QUERY },
-  { GET_CHAN_ACCESSES, "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
-    "channel_id=?d", NULL, QUERY },
-  { GET_CHANID_FROM_CHAN, "SELECT id from channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
+  { GET_CHAN_ACCESSES, "SELECT channel_access.id, channel_access.channel_id, "
+      "channel_access.account_id, channel_access.level FROM "
+      "channel_access JOIN account ON "
+      "channel_access.account_id=account.id JOIN nickname ON "
+      "account.primary_nick=nickname.id WHERE channel_id=?d "
+      "ORDER BY lower(nickname.nick)", NULL, QUERY },
+  { GET_CHANID_FROM_CHAN, "SELECT id from channel WHERE "
+      "lower(channel)=lower(?v)", NULL, QUERY },
   { GET_FULL_CHAN, "SELECT id, channel, description, entrymsg, reg_time, "
       "flag_private, flag_restricted, flag_topic_lock, flag_verbose, "
       "flag_autolimit, flag_expirebans, flag_floodserv, flag_autoop, "
@@ -166,7 +171,7 @@ query_t queries[QUERY_COUNT] = {
   { GET_NICK_CHAN_INFO, "SELECT channel, level FROM "
     "channel, channel_access WHERE "
       "channel.id=channel_access.channel_id AND channel_access.account_id=?d "
-      "ORDER BY upper(channel.channel), channel_access.level", NULL, QUERY },
+      "ORDER BY lower(channel.channel)", NULL, QUERY },
   { GET_CHAN_MASTERS, "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
     "AND level=4 AND channel_access.account_id=account.id AND "
       "account.primary_nick=nickname.id", NULL, QUERY },

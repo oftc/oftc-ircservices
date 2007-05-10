@@ -50,8 +50,10 @@ NS_HELP_ACCESS_LONG
 	       ACCESS LIST
 	
 	Maintains the nickname access list.  If your IRC userhost matches an entry
-	in your access list, you will be automatically identified to your nickname
-	without having to use the IDENTIFY command.
+	in your access list, you will not receive notices asking you to identify
+	when you connect, and your nickname will not be changed if you have ENFORCE
+	set.  Additionally, if SECURE is set to OFF, you will be automatically 
+	identified to your nickname without having to use the IDENTIFY command.
 	
 	Examples:
 	    ACCESS ADD foo@*.org
@@ -146,7 +148,7 @@ NS_HELP_SET_ENFORCE_SHORT
 	%s
 NS_HELP_SET_ENFORCE_LONG
 	Usage: SET ENFORCE [(ON|OFF)]
-		
+	
 	ENFORCE enables or disables nickname enforcement of your account. This means
 	that if someone who is not not on your access list attempts to use your
 	nickname and doesn't identify within a given period their nick will be
@@ -224,16 +226,6 @@ NS_HELP_SET_PRIVATE_LONG
 	Enables the private flag on your nickname which prevents your e-mail address
 	being shown in an INFO request, and also prevents your nickname showing in a
 	LIST.
-NS_HELP_GHOST_SHORT
-	%s: Terminate a GHOST IRC session.
-NS_HELP_GHOST_LONG
-	Usage: GHOST nickname [password]
-	
-	Terminates the GHOST IRC session with the nickname specified.  If the
-	nickname has SECURE set, or you do not match an entry in the nickname's
-	ACCESS list, you will require a password. This command should not be used to
-	prevent someone else from using a nickname you are not currently using. To
-	do this, use the ENFORCE option.
 NS_HELP_LINK_SHORT
 	%s: Link this nickname to a master nickname.
 NS_HELP_LINK_LONG
@@ -256,14 +248,15 @@ NS_HELP_UNLINK_LONG
 	master nickname and reverts this nickname to be a standalone nickname with
 	all the settings it had(including password) before it was linked.
 NS_HELP_REGAIN_SHORT
-	%s: Release the hold on your nickname.
+	%s: Release your nickname for you to use.
 NS_HELP_REGAIN_LONG
-	Usage: REGAIN nickname [password]
+	Usage: REGAIN nickname password
 	
 	If your nickname is being held by services, as is the case if your nickname
 	has been enforced recently, this command will release the hold and change
-	your nickname to the nickname that you specify. If you have SECURE set on,
-	you will need to provide a password.
+	your nickname to the nickname that you specify. This command will also 
+	free up your nickname if another user is using it and will change your 
+	current nickname to be your registered nickname if successful.
 NS_HELP_FORBID_SHORT
 	%s: Forbid a nickname from being used.
 NS_HELP_FORBID_LONG
@@ -393,20 +386,18 @@ NS_ACCESS_ENTRY
 	%d  %s
 NS_ACCESS_DEL
 	%d ACCESS entries deleted.
-NS_GHOST_SUCCESS
-	GHOST succeed on nickname %s. The nickname is now available for use.
-NS_GHOST_FAILED
-	GHOST failed on nickname %s. You may have given an incorrect password.
+NS_REGAIN_SUCCESS
+	REGAIN succeed on nickname %s. You have been changed to your nickname.
+NS_REGAIN_FAILED
+	REGAIN failed on nickname %s. You may have given an incorrect password.
 	If you believe this to be incorrect please contact network support.
-NS_GHOST_FAILED_SECURITY
+NS_REGAIN_FAILED_SECURITY
 	Access Denied. Either you are not on the access list for this nickname, or
 	it has SECURE set on it. If you believe this to be incorrect please contact
 	network support.
-NS_GHOST_NOSELF
-	You cannot GHOST yourself, %s.
-NS_GHOST_NOTONLINE
-	%s is not online to GHOST. The nickname may be freely used and does not
-	require ghosting.
+NS_REGAIN_NOTONLINE
+	%s is not online. The nickname may be freely used and does not
+	require regain or ghost.
 NS_LINK_NOMASTER
 	Master nickname %s not registered. The nickname you want to link to must
 	be registered with nickname services.
@@ -479,13 +470,16 @@ NS_INFO_CHANS
 NS_INFO_CHAN
 	    %s: %s
 NS_NICK_IN_USE
-	%s is a registered nickname and you are not on its access list. If this is
-	your nickname, you may authenticate yourself to services with the IDENTIFY
-	command.
+	This nickname is registered and protected.  If it is your nickname, you may 
+	authenticate yourself to services with the IDENTIFY command.  You are 
+	getting this message because you are not on the access list for the
+	%s nickname.
 NS_NICK_IN_USE_IWILLCHANGE
-	%s is a registered nickname and you are not on its access list.  Change your
-	nickname now or I will change it for you.  If this is your nickname,
-	authenticate yourself to services now with the IDENTIFY command.
+	This nickname is registered and protected.  If it is your nickname, you may
+	authenticate yourself to services with the IDENTIFY command.  If you do
+	not authenticate or change your nickname, I will change your nickname.  You
+	are getting this notice because you are not on the access list for the %s
+	nickname.
 NS_NICK_FORBID_IWILLCHANGE
 	This nickname, %s, may not be used. Choose another or I will forcefully
 	change your nickname.
@@ -522,10 +516,6 @@ NS_UNFORBID_OK
 	Nickname %s removed from forbidden list and may now be used again.
 NS_UNFORBID_FAIL
 	Nickname %s could not be removed from the forbidden list.
-NS_REGAINED
-	Nickname %s has been released and your nick has been changed.
-NS_REGAIN_FAIL
-	Failed to regain nickname %s.
 NS_SENDPASS_SENT
 	This is a two stage process; instructions on the second stage have been
 	e-mailed to the e-mail address listed on the account.
