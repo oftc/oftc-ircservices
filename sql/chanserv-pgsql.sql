@@ -30,6 +30,7 @@ CREATE TABLE channel_access(
   level                INTEGER NOT NULL,
   UNIQUE (channel_id, account_id)
 );
+CREATE INDEX channel_access_account_id_idx ON channel_access (account_id);
 
 DROP TABLE channel_akick;
 CREATE TABLE channel_akick(
