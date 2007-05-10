@@ -50,3 +50,5 @@ DROP TABLE forbidden_channel;
 CREATE TABLE forbidden_channel (
   channel             VARCHAR(255) PRIMARY KEY
 );
+-- this is not so much for performance as for unique constraint reasons:
+CREATE UNIQUE INDEX forbidden_channel_channel_idx ON forbidden_channel ((lower(channel)));

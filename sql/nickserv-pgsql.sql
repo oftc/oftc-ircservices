@@ -40,6 +40,8 @@ DROP TABLE forbidden_nickname;
 CREATE TABLE forbidden_nickname (
   nick                VARCHAR(255) PRIMARY KEY
 );
+-- this is not so much for performance as for unique constraint reasons:
+CREATE UNIQUE INDEX forbidden_nickname_nick_idx ON forbidden_nickname ((lower(nick)));
 
 DROP TABLE account_access;
 CREATE TABLE account_access (
