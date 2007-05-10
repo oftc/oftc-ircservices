@@ -2,7 +2,6 @@ DROP TABLE channel CASCADE;
 CREATE TABLE channel(
   id                    SERIAL PRIMARY KEY,
   channel               VARCHAR(255) NOT NULL,
-  flag_forbidden        BOOLEAN NOT NULL DEFAULT 'False', -- channel is forbidden.  it may not be used
   flag_private          BOOLEAN NOT NULL DEFAULT 'False', -- do not show up in list of channels
   flag_restricted       BOOLEAN NOT NULL DEFAULT 'False', -- only people on the access list can hold channel operator status
   flag_topic_lock       BOOLEAN NOT NULL DEFAULT 'False', -- topics can only be changed via chanserv
