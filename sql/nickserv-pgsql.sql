@@ -50,3 +50,4 @@ CREATE TABLE account_access (
   entry               VARCHAR(255) NOT NULL,
   UNIQUE (id, entry)
 );
+CREATE INDEX account_access_account_id_idx ON account_access (account_id);
