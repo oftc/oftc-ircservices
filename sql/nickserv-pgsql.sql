@@ -31,6 +31,9 @@ CREATE TABLE nickname (
   last_seen           INTEGER
 );
 CREATE UNIQUE INDEX nickname_nick_idx ON nickname ((lower(nick)));
+-- this speeds up GET_NICK_LINKS("SELECT nick FROM nickname WHERE account_id=?d") for instance.
+-- it's otherwise not often needed
+CREATE INDEX nickname_account_id_idx ON nickname (account_id);
 
 -- This needs to be here because of the table creation order and the circular
 -- reference
