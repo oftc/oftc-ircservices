@@ -25,7 +25,7 @@
 #include "stdinc.h"
 
 static struct Service *chanserv = NULL;
-static struct Service *chanserv_client = NULL;
+static struct Client *chanserv_client = NULL;
 
 static dlink_node *cs_cmode_hook;
 static dlink_node *cs_join_hook;
