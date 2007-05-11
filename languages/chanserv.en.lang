@@ -135,7 +135,7 @@ CS_HELP_SET_LEAVEOPS_SHORT
 CS_HELP_SET_LEAVEOPS_LONG
 	Usage: SET channel LEAVEOPS [ON|OFF]
 	
-	There are two instances where this setting is used. Firstly when a channel
+	There are two instances where this setting is used. First, when a channel
 	is empty and a user joins it, the IRC server software will grant them
 	channel operator status. If this person is not on the channel access list at
 	level CHANOP or higher, IRC services will remove their channel operator
