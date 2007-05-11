@@ -1951,7 +1951,13 @@ cs_on_channel_create(va_list args)
   {
     if(chptr->regchan->mlock != NULL)
       set_mode_lock(chanserv, chptr->chname, NULL, chptr->regchan->mlock, NULL);
- }
+
+    if(!IsConnecting(me.uplink))
+    {
+      send_topic(chanserv, chptr, find_client(chanserv->name), 
+          chptr->regchan->topic); 
+    }
+  }
 
   return pass_callback(cs_channel_create_hook, chptr);
 }
