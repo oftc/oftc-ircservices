@@ -296,9 +296,9 @@ CS_HELP_ACCESS_ADD_LONG
 	you give this to.
 	CHANOP - Channel operator level access. Enables the user to perform channel
 	operator functions. OP/DEOP, AKICK management etc.
-	MEMBER - Recognises the user as a member of the channel. Gives them access
-	to the channel when it is invite only and allows them to view channel
-	settings.
+	MEMBER - Recognises the user as a member of the channel. Allows users to
+	request voice for themselves. Gives them access	to the channel when it is 
+	invite only and allows them to view channel settings.
 CS_HELP_ACCESS_DEL_SHORT
 	%s: Remove a nickname from the channel access list.
 CS_HELP_ACCESS_DEL_LONG
