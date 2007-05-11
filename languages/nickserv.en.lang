@@ -334,6 +334,9 @@ NS_NICKFORBID
 	used in any services commands.
 NS_IDENTIFIED
 	You are sucessfully identified as %s.
+NS_IDENTIFY_ACCESS
+	This hostname matches an entry on the access list of nickname %s. You
+	have been automatically identified.
 NS_IDENT_FAIL
 	Identify failed as %s. You may have entered an incorrect password. If
 	you believe you have entered the correct password and are still getting this

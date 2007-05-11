@@ -60,3 +60,5 @@
 	- Fix DROP on unlinked nicknames and child nicknames.
 	- Added missing leaveops command which doesnt deop people not on the channel
 		access list.
+	- Added notice about being identified when you match an entry in the access
+		list.

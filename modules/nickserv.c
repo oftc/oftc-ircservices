@@ -1635,6 +1635,7 @@ ns_on_nick_change(va_list args)
         free_nick(user->nickname);
       user->nickname = nick_p;
       identify_user(user);
+      reply_user(nickserv, nickserv, user, NS_IDENTIFY_ACCESS, user->name);
     }
   }
   else
@@ -1702,6 +1703,7 @@ ns_on_newuser(va_list args)
         free_nick(newuser->nickname);
       newuser->nickname = nick_p;
       identify_user(newuser);
+      reply_user(nickserv, nickserv, newuser, NS_IDENTIFY_ACCESS, newuser->name);
     }
   }
   else
