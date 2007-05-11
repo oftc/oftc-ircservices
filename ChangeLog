@@ -62,3 +62,7 @@
 		access list.
 	- Added notice about being identified when you match an entry in the access
 		list.
+	- Add nick + realname to nickserv info output.
+	- Add a line stating which is the master of a nickname in info, if not
+		infoing the master.
+	- Fix a bug in the display of various unknown time elements.

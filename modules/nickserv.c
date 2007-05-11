@@ -1141,6 +1141,9 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     name = parv[1];
   }
 
+  reply_user(service, service, client, NS_INFO_START, name, 
+      nick->last_realname != NULL ? nick->last_realname : "Unknown");
+
   if((listptr = db_list_first(NICKLINK_LIST, nick->id, (void**)&link)) != NULL)
   {
     int comma = 0;
@@ -1203,6 +1206,14 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
     if(*buf != '\0')
       reply_user(service, service, client, NS_INFO_LINKS, buf);
+
+    if(nick->nickid != nick->pri_nickid)
+    {
+      char *prinick = db_get_nickname_from_id(nick->id);
+
+      reply_user(service, service, client, NS_INFO_MASTER, prinick);
+      MyFree(prinick);
+    }
 
     if((listptr = db_list_first(NICKCHAN_LIST, nick->id, (void**)&chan)) != NULL)
     {
