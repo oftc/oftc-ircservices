@@ -12,7 +12,6 @@ struct Nick
   unsigned int nickid;
   unsigned int pri_nickid;
   char nick[NICKLEN+1];
-  char real_nick[NICKLEN+1];
   char pass[PASSLEN+1];
   char salt[SALTLEN+1];
   char cloak[HOSTLEN+1];

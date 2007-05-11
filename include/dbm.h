@@ -55,6 +55,7 @@ enum db_queries
 {
   GET_FULL_NICK = 0,
   GET_NICK_FROM_ACCID,
+  GET_NICK_FROM_NICKID,
   GET_ACCID_FROM_NICK,
   GET_NICKID_FROM_NICK,
   INSERT_ACCOUNT,
@@ -183,8 +184,9 @@ int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
 int db_register_nick(struct Nick *);
-int db_delete_nick(unsigned int, unsigned int, unsigned int, const char *);
+int db_delete_nick(unsigned int, unsigned int, unsigned int);
 char *db_get_nickname_from_id(unsigned int);
+char *db_get_nickname_from_nickid(unsigned int);
 unsigned int db_get_id_from_name(const char *, unsigned int);
 int db_set_nick_master(unsigned int, const char *);
 

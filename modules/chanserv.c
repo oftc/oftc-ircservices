@@ -30,7 +30,6 @@ static dlink_node *cs_cmode_hook;
 static dlink_node *cs_join_hook;
 static dlink_node *cs_channel_destroy_hook;
 static dlink_node *cs_channel_create_hook;
-static dlink_node *cs_on_nick_drop_hook;
 static dlink_node *cs_on_topic_change_hook;
 static dlink_node *cs_on_burst_done_hook;
 
@@ -44,7 +43,6 @@ static void *cs_on_cmode_change(va_list);
 static void *cs_on_client_join(va_list);
 static void *cs_on_channel_destroy(va_list);
 static void *cs_on_channel_create(va_list);
-static void *cs_on_nick_drop(va_list);
 static void *cs_on_topic_change(va_list);
 static void *cs_on_burst_done(va_list);
 
@@ -283,7 +281,6 @@ INIT_MODULE(chanserv, "$Revision$")
 
   cs_channel_create_hook = install_hook(on_channel_created_cb, 
       cs_on_channel_create);
-  cs_on_nick_drop_hook = install_hook(on_nick_drop_cb, cs_on_nick_drop);
   cs_on_topic_change_hook = install_hook(on_topic_change_cb, cs_on_topic_change);
   cs_on_burst_done_hook = install_hook(on_burst_done_cb, cs_on_burst_done);
 
@@ -297,7 +294,6 @@ CLEANUP_MODULE
   uninstall_hook(on_join_cb, cs_on_client_join);
   uninstall_hook(on_channel_destroy_cb, cs_on_channel_destroy);
   uninstall_hook(on_channel_created_cb, cs_on_channel_create);
-  uninstall_hook(on_nick_drop_cb, cs_on_nick_drop);
   uninstall_hook(on_topic_change_cb, cs_on_topic_change);
   uninstall_hook(on_burst_done_cb, cs_on_burst_done);
 
@@ -1968,21 +1964,6 @@ cs_on_channel_destroy(va_list args)
     free_dlink_node(ptr);
 
   return pass_callback(cs_channel_destroy_hook, chan);
-}
-
-/**
- * @brief CS Callback when a nick is dropped
- * @param args 
- * @return pass_callback(self, char *)
- * When a Nick is dropped
- * - we need to make sure theres no Channel left with the nick as eounder
- */
-static void *
-cs_on_nick_drop(va_list args)
-{
-  char *nick = va_arg(args, char *);
-
-  return pass_callback(cs_on_nick_drop_hook, nick);
 }
 
 static void *

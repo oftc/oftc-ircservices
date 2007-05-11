@@ -196,7 +196,6 @@ int main(int argc, char *argv[])
   iorecv_cb = register_callback("iorecv", iorecv_default);
   connected_cb = register_callback("server connected", server_connected);
   iosend_cb = register_callback("iosend", iosend_default);
-  on_nick_drop_cb = register_callback("Nick DROP Callback", NULL);
 
   OpenSSL_add_all_digests();
  
