@@ -53,7 +53,7 @@
 		called twice.
 	- Rewrote nickserv identify/regain/ghost to share code and ghost to be an
 		alias for regain. Also fixed the notices not being sent to the right nick.
-2007-05-?? - 1.0.10
+2007-05-11 - 1.0.10
 	Bugfix point release. Bug(s) fixed:
 	- Fix ChanServ so that it resets topiclocked topics on burst, and also
 		resets empty topics.
