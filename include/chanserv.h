@@ -27,6 +27,7 @@ struct RegChannel
   char floodserv;
   char autoop;
   char autovoice;
+  char leaveops;
   /* Per Host */
   struct MessageQueue **flood_hash;
   dlink_list flood_list;

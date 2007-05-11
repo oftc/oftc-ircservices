@@ -71,6 +71,7 @@ static void m_set_floodserv(struct Service *, struct Client *, int, char *[]);
 static void m_set_mlock(struct Service *, struct Client *, int, char *[]);
 static void m_set_autoop(struct Service *, struct Client *, int, char *[]);
 static void m_set_autovoice(struct Service *, struct Client *, int, char *[]);
+static void m_set_leaveops(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
@@ -138,6 +139,8 @@ static struct ServiceMessage set_sub[] = {
     CS_HELP_SET_AUTOOP_SHORT, CS_HELP_SET_AUTOOP_LONG, m_set_autoop },
   { NULL, "AUTOVOICE", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
     CS_HELP_SET_AUTOVOICE_SHORT, CS_HELP_SET_AUTOVOICE_LONG, m_set_autovoice },
+  { NULL, "LEAVEOPS", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
+    CS_HELP_SET_LEAVEOPS_SHORT, CS_HELP_SET_LEAVEOPS_LONG, m_set_leaveops },
   { NULL, NULL, 0, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, 0, 0, 
     SFLG_KEEPARG|SFLG_CHANARG, NULL } 
 };
@@ -537,6 +540,9 @@ m_info(struct Service *service, struct Client *client,
   reply_user(service, service, client, CS_INFO_OPTION, "AUTOVOICE",
       regchptr->autovoice ? "ON" : "OFF");
 
+  reply_user(service, service, client, CS_INFO_OPTION, "LEAVEOPS",
+      regchptr->leaveops ? "ON" : "OFF");
+
   free_regchan(regchptr);
 }
 
@@ -932,6 +938,14 @@ m_set_autovoice(struct Service *service, struct Client *client,
 {
   m_set_flag(service, client, parv[1], parv[2], SET_CHAN_AUTOVOICE, 
      "AUTOVOICE");
+}
+
+static void
+m_set_leaveops(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], SET_CHAN_LEAVEOPS, 
+     "LEAVEOPS");
 }
 
 static void
@@ -1610,6 +1624,9 @@ m_set_flag(struct Service *service, struct Client *client,
       case SET_CHAN_AUTOVOICE:
         regchptr->autovoice = on;
         break;
+      case SET_CHAN_LEAVEOPS:
+        regchptr->leaveops = on;
+        break;
     }
     if (chptr == NULL)
       free_regchan(regchptr);
@@ -1883,7 +1900,7 @@ cs_on_client_join(va_list args)
     return pass_callback(cs_join_hook, source_p, name);
   }
 
-  if(IsChanop(source_p, chptr) && level < CHANOP_FLAG)
+  if(!regchptr->leaveops && (IsChanop(source_p, chptr) && level < CHANOP_FLAG))
   {
     deop_user(chanserv, chptr, source_p);
     reply_user(chanserv, chanserv, source_p, CS_DEOP_REGISTERED, 
