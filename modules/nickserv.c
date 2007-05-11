@@ -488,8 +488,8 @@ m_drop(struct Service *service, struct Client *client,
    * drop
    */
 
-  if(db_delete_nick(client->nickname->id, client->nickname->pri_nickid,
-        client->nickname->nickid)) 
+  if(db_delete_nick(client->nickname->id, client->nickname->nickid,
+        client->nickname->pri_nickid)) 
   {
     if(target != NULL)
     {
@@ -1073,7 +1073,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
   free_nick(master_nick);
   free_nick(nick);
 
-  client->nickname = db_find_nick(parv[1]);
+  client->nickname = db_find_nick(client->name);
   assert(client->nickname != NULL);
 }
 
