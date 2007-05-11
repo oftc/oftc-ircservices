@@ -183,7 +183,7 @@ int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
 int db_register_nick(struct Nick *);
-int db_delete_nick(unsigned int, unsigned int, const char *);
+int db_delete_nick(unsigned int, unsigned int, unsigned int, const char *);
 char *db_get_nickname_from_id(unsigned int);
 unsigned int db_get_id_from_name(const char *, unsigned int);
 int db_set_nick_master(unsigned int, const char *);

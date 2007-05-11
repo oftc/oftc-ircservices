@@ -611,7 +611,7 @@ db_forbid_nick(const char *n)
 
   if((nick = db_find_nick(n)) != NULL)
   {
-    db_delete_nick(nick->id, nick->nickid, nick->nick);
+    db_delete_nick(nick->id, nick->pri_nickid, nick->nickid, nick->nick);
     free_nick(nick);
   }
 
@@ -719,30 +719,38 @@ db_set_nick_master(unsigned int accid, const char *newnick)
 }
 
 int
-db_delete_nick(unsigned int accid, unsigned int nickid, const char *nick)
+db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid,
+    const char *nick)
 {
   int ret;
   unsigned int newid;
 
   TransBegin();
 
-  newid = db_fix_link(accid, nickid);
-
-  if(newid == -1)
+  if(priid == nickid)
   {
-    db_exec(ret, DELETE_NICK, nick);
-    if(ret != -1)
+    newid = db_fix_link(accid, nickid);
+
+    if(newid == -1)
     {
-      db_exec(ret, DELETE_ACCOUNT_CHACCESS, accid);
+      db_exec(ret, DELETE_NICK, nick);
       if(ret != -1)
-        db_exec(ret, DELETE_ACCOUNT, accid);
+      {
+        db_exec(ret, DELETE_ACCOUNT_CHACCESS, accid);
+        if(ret != -1)
+          db_exec(ret, DELETE_ACCOUNT, accid);
+      }
+    }
+    else
+    {
+      db_exec(ret, SET_NICK_MASTER, newid, accid);
+      if(ret != -1)
+        db_exec(ret, DELETE_NICK, nick);
     }
   }
   else
   {
-    db_exec(ret, SET_NICK_MASTER, newid, accid);
-    if(ret != -1)
-      db_exec(ret, DELETE_NICK, nick);
+    db_exec(ret, DELETE_NICK, nick);
   }
 
   if(ret == -1)

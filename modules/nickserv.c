@@ -474,8 +474,8 @@ m_drop(struct Service *service, struct Client *client,
     }
   }
 
-  if(db_delete_nick(client->nickname->id, client->nickname->nickid, 
-        client->nickname->nick)) 
+  if(db_delete_nick(client->nickname->id, client->nickname->pri_nickid,
+        client->nickname->nickid, client->nickname->real_nick)) 
   {
     if(target != NULL)
     {

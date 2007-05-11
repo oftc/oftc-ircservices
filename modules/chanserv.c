@@ -1,6 +1,6 @@
 /*
  *  oftc-ircservices: an exstensible and flexible IRC Services package
- *  chanserv.c: A C implementation of Chanell Services
+ *  chanserv.c: A C implementation of Channel Services
  *
  *  Copyright (C) 2006 The OFTC Coding department
  *
@@ -32,6 +32,7 @@ static dlink_node *cs_channel_destroy_hook;
 static dlink_node *cs_channel_create_hook;
 static dlink_node *cs_on_nick_drop_hook;
 static dlink_node *cs_on_topic_change_hook;
+static dlink_node *cs_on_burst_done_hook;
 
 static dlink_list channel_limit_list = { NULL, NULL, 0 };
 static dlink_list channel_expireban_list = { NULL, NULL, 0 };
@@ -45,6 +46,7 @@ static void *cs_on_channel_destroy(va_list);
 static void *cs_on_channel_create(va_list);
 static void *cs_on_nick_drop(va_list);
 static void *cs_on_topic_change(va_list);
+static void *cs_on_burst_done(va_list);
 
 static void m_register(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
@@ -283,6 +285,7 @@ INIT_MODULE(chanserv, "$Revision$")
       cs_on_channel_create);
   cs_on_nick_drop_hook = install_hook(on_nick_drop_cb, cs_on_nick_drop);
   cs_on_topic_change_hook = install_hook(on_topic_change_cb, cs_on_topic_change);
+  cs_on_burst_done_hook = install_hook(on_burst_done_cb, cs_on_burst_done);
 
   eventAdd("process channel autolimits", process_limit_list, NULL, 10);
   eventAdd("process channel expirebans", process_expireban_list, NULL, 10);
@@ -296,6 +299,7 @@ CLEANUP_MODULE
   uninstall_hook(on_channel_created_cb, cs_on_channel_create);
   uninstall_hook(on_nick_drop_cb, cs_on_nick_drop);
   uninstall_hook(on_topic_change_cb, cs_on_topic_change);
+  uninstall_hook(on_burst_done_cb, cs_on_burst_done);
 
   serv_clear_messages(chanserv);
 
@@ -1477,23 +1481,29 @@ m_set_string(struct Service *service, struct Client *client,
 
     if(response == NULL)
       response = "Not set";
-    reply_user(service, service, client, CS_SET_VALUE, field, response, 
-        regchptr->channel);
+    if(client != NULL)
+    {
+      reply_user(service, service, client, CS_SET_VALUE, field, response, 
+          regchptr->channel);
+    }
     if(chptr == NULL)
       free_regchan(regchptr);
     return TRUE;
   }
 
-  if(ircncmp(value, "-", strlen(value)) == 0)
+  if(value != NULL && ircncmp(value, "-", strlen(value)) == 0)
     value = NULL;
 
   if(db_set_string(query, regchptr->id, value))
   {
-    reply_user(service, service, client, CS_SET_SUCCESS, field, 
-        value == NULL ? "Not set" : value, regchptr->channel);
-    ilog(L_DEBUG, "%s (%s@%s) changed %s of %s to %s", 
-      client->name, client->username, client->host, field, regchptr->channel, 
-      value);
+    if(client != NULL)
+    {
+      reply_user(service, service, client, CS_SET_SUCCESS, field, 
+          value == NULL ? "Not set" : value, regchptr->channel);
+      ilog(L_DEBUG, "%s (%s@%s) changed %s of %s to %s", 
+          client->name, client->username, client->host, field, regchptr->channel, 
+          value);
+    }
 
     if(value != NULL)
       *param = replace_string(*param, value);
@@ -1507,7 +1517,7 @@ m_set_string(struct Service *service, struct Client *client,
 
     return TRUE;
   }
-  else
+  else if(client != NULL)
     reply_user(service, service, client, CS_SET_FAILED, field,
         value == NULL ? "Not set" : value, regchptr->channel);
   
@@ -1923,8 +1933,11 @@ cs_on_channel_create(va_list args)
 {
   struct Channel *chptr = va_arg(args, struct Channel *);
 
-  if(chptr->regchan != NULL && chptr->regchan->mlock != NULL)
-    set_mode_lock(chanserv, chptr->chname, NULL, chptr->regchan->mlock, NULL);
+  if(chptr->regchan != NULL)
+  {
+    if(chptr->regchan->mlock != NULL)
+      set_mode_lock(chanserv, chptr->chname, NULL, chptr->regchan->mlock, NULL);
+ }
 
   return pass_callback(cs_channel_create_hook, chptr);
 }
@@ -1988,13 +2001,55 @@ cs_on_topic_change(va_list args)
   {
     if(regchptr->topic != NULL)
     {
-      if(chan->topic == NULL || ircncmp(chan->topic, regchptr->topic,
-            LIBIO_MAX(strlen(chan->topic), strlen(regchptr->topic))) != 0)
+      if(chan->topic == NULL || 
+          ircncmp(chan->topic, regchptr->topic, TOPICLEN) != 0)
       {
         send_topic(chanserv, chan, find_client(chanserv->name), regchptr->topic); 
       }
     }
+    else
+      send_topic(chanserv, chan, find_client(chanserv->name), NULL);
+  }
+  else
+  {
+    /* Don't set empty topics on burst */
+    if(chan->topic != NULL || !IsConnecting(me.uplink))
+      m_set_string(chanserv, NULL, chan->chname, "TOPIC", SET_CHAN_TOPIC, 
+          chan->topic, &regchptr->topic, 2); /* 2 so we set it rather than display*/
   }
 
   return pass_callback(cs_on_topic_change_hook, chan, setter);
+}
+
+static void *
+cs_on_burst_done(va_list args)
+{
+  dlink_node *ptr;
+  struct Client *chanserv_client = find_client(chanserv->name);
+
+  DLINK_FOREACH(ptr, global_channel_list.head)
+  {
+    struct Channel *chptr = (struct Channel *)ptr->data;
+    struct RegChannel *regchptr = chptr->regchan;
+
+    if(regchptr == NULL)
+      continue;
+
+    if(regchptr->topic_lock)
+    {
+      if((regchptr->topic == NULL && !EmptyString(chptr->topic)) || 
+          (regchptr->topic != NULL && (EmptyString(chptr->topic) ||
+           ircncmp(chptr->topic, regchptr->topic, TOPICLEN) != 0)))
+      {
+        send_topic(chanserv, chptr, chanserv_client, regchptr->topic);
+      }
+    }
+    else
+    {
+      if(EmptyString(chptr->topic) && regchptr->topic != NULL)
+        send_topic(chanserv, chptr, chanserv_client, regchptr->topic);
+    }
+  }
+
+  return pass_callback(cs_on_burst_done_hook);
 }
