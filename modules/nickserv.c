@@ -29,6 +29,7 @@
 #include "stdinc.h"
 
 static struct Service *nickserv = NULL;
+static struct Client *nickserv_client = NULL;
 
 static dlink_node *ns_umode_hook;
 static dlink_node *ns_nick_hook;
@@ -204,7 +205,7 @@ INIT_MODULE(nickserv, "$Revision$")
   clear_serv_tree_parse(&nickserv->msg_tree);
   dlinkAdd(nickserv, &nickserv->node, &services_list);
   hash_add_service(nickserv);
-  introduce_client(nickserv->name);
+  nickserv_client = introduce_client(nickserv->name);
   load_language(nickserv->languages, "nickserv.en");
 
   mod_add_servcmd(&nickserv->msg_tree, &drop_msgtab);
@@ -246,7 +247,7 @@ CLEANUP_MODULE
   eventDelete(process_enforce_list, NULL);
   eventDelete(process_release_list, NULL);
   serv_clear_messages(nickserv);
-  exit_client(find_client(nickserv->name), &me, "Service unloaded");
+  exit_client(nickserv_client, &me, "Service unloaded");
   unload_languages(nickserv->languages);
   hash_del_service(nickserv);
   ilog(L_DEBUG, "Unloaded nickserv");

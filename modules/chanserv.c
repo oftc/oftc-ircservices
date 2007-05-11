@@ -25,6 +25,7 @@
 #include "stdinc.h"
 
 static struct Service *chanserv = NULL;
+static struct Service *chanserv_client = NULL;
 
 static dlink_node *cs_cmode_hook;
 static dlink_node *cs_join_hook;
@@ -251,7 +252,7 @@ INIT_MODULE(chanserv, "$Revision$")
   clear_serv_tree_parse(&chanserv->msg_tree);
   dlinkAdd(chanserv, &chanserv->node, &services_list);
   hash_add_service(chanserv);
-  introduce_client(chanserv->name);
+  chanserv_client = introduce_client(chanserv->name);
   load_language(chanserv->languages, "chanserv.en");
 /*  load_language(chanserv, "chanserv.rude");
   load_language(chanserv, "chanserv.de");
@@ -301,7 +302,7 @@ CLEANUP_MODULE
 
   unload_languages(chanserv->languages);
 
-  exit_client(find_client(chanserv->name), &me, "Service unloaded");
+  exit_client(chanserv_client, &me, "Service unloaded");
   hash_del_service(chanserv);
   dlinkDelete(&chanserv->node, &services_list);
   eventDelete(process_limit_list, NULL);
@@ -1985,11 +1986,11 @@ cs_on_topic_change(va_list args)
       if(chan->topic == NULL || 
           ircncmp(chan->topic, regchptr->topic, TOPICLEN) != 0)
       {
-        send_topic(chanserv, chan, find_client(chanserv->name), regchptr->topic); 
+        send_topic(chanserv, chan, chanserv_client, regchptr->topic); 
       }
     }
     else
-      send_topic(chanserv, chan, find_client(chanserv->name), NULL);
+      send_topic(chanserv, chan, chanserv_client, NULL);
   }
   else
   {
@@ -2006,7 +2007,7 @@ static void *
 cs_on_burst_done(va_list args)
 {
   dlink_node *ptr;
-  struct Client *chanserv_client = find_client(chanserv->name);
+  struct Client *chanserv_client = chanserv_client;
 
   DLINK_FOREACH(ptr, global_channel_list.head)
   {
