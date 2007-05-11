@@ -38,6 +38,7 @@ static void m_topic(struct Client *, struct Client *, int, char*[]);
 static void m_kill(struct Client *, struct Client *, int, char*[]);
 static void m_kick(struct Client *, struct Client *, int, char*[]);
 static void m_version(struct Client *, struct Client *, int, char*[]);
+static void m_tburst(struct Client *, struct Client *, int, char*[]);
 
 //static void do_user_modes(struct Client *client, const char *modes);
 
@@ -190,6 +191,11 @@ static struct Message notice_msgtab = {
   { m_notice, m_ignore }
 };
 
+static struct Message tburst_msgtab = {
+  "TBURST", 0, 0, 4, 0, 0, 0,
+  { m_tburst, m_tburst }
+};
+
 static dlink_node *connected_hook;
 static dlink_node *newuser_hook;
 static dlink_node *privmsg_hook;
@@ -262,6 +268,7 @@ INIT_MODULE(irc, "$Revision$")
   mod_add_cmd(&kill_msgtab);
   mod_add_cmd(&kick_msgtab);
   mod_add_cmd(&notice_msgtab);
+  mod_add_cmd(&tburst_msgtab);
 }
 
 CLEANUP_MODULE
@@ -289,6 +296,7 @@ CLEANUP_MODULE
   mod_del_cmd(&trace_msgtab);
   mod_del_cmd(&stats_msgtab);
   mod_del_cmd(&topic_msgtab);
+  mod_del_cmd(&tburst_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes
@@ -1290,6 +1298,34 @@ m_version(struct Client *client_p, struct Client *source_p,
   }
 
   execute_callback(send_nosuchsrv_cb, source_p->name, parv[1]);
+}
+
+static void
+m_tburst(struct Client *client_p, struct Client *source_p, int parc, 
+    char *parv[])
+{
+  struct Channel *chptr = NULL;
+  time_t remote_topic_ts = atol(parv[3]);
+  const char *topic = "";
+  const char *setby = "";
+
+  /*
+   * Do NOT test parv[5] for an empty string and return if true!
+   * parv[5] CAN be an empty string, i.e. if the other side wants
+   * to unset our topic.  Don't forget: an empty topic is also a
+   * valid topic.
+   */
+
+  if ((chptr = hash_find_channel(parv[2])) == NULL)
+    return;
+
+  if (parc == 6)
+  {
+    topic = parv[5];
+    setby = parv[4];
+  }
+
+  set_channel_topic(chptr, topic, setby, remote_topic_ts);
 }
 
 static void *
