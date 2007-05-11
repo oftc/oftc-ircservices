@@ -58,3 +58,5 @@
 	- Fix ChanServ so that it resets topiclocked topics on burst, and also
 		resets empty topics.
 	- Fix DROP on unlinked nicknames and child nicknames.
+	- Added missing leaveops command which doesnt deop people not on the channel
+		access list.
