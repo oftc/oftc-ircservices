@@ -35,7 +35,7 @@ static void expire_sentmail(void *);
 static void expire_akills(void *);
 
 query_t queries[QUERY_COUNT] = { 
-  { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, nickname.nick, "
+  { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
     "(SELECT nick FROM nickname WHERE nickname.id=account.primary_nick), "
     "password, salt, url, email, cloak, flag_enforce, flag_secure, "
     "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
@@ -45,13 +45,14 @@ query_t queries[QUERY_COUNT] = {
     "lower(nick) = lower(?v)", NULL, QUERY },
   { GET_NICK_FROM_ACCID, "SELECT nick from account, nickname WHERE account.id=?d AND "
     "account.primary_nick=nickname.id", NULL, QUERY },
+  { GET_NICK_FROM_NICKID, "SELECT nick from nickname WHERE id=?d", NULL, QUERY },
   { GET_ACCID_FROM_NICK, "SELECT account_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
   { GET_NICKID_FROM_NICK, "SELECT id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
   { INSERT_ACCOUNT, "INSERT INTO account (primary_nick, password, salt, email, reg_time) VALUES "
     "(?d, ?v, ?v, ?v, ?d)", NULL, EXECUTE },
   { INSERT_NICK, "INSERT INTO nickname (id, nick, account_id, reg_time, last_seen) VALUES "
     "(?d, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
-  { DELETE_NICK, "DELETE FROM nickname WHERE lower(nick)=lower(?v)", NULL, EXECUTE },
+  { DELETE_NICK, "DELETE FROM nickname WHERE id=?d", NULL, EXECUTE },
   { DELETE_ACCOUNT, "DELETE FROM account WHERE id=?d", NULL, EXECUTE },
   { INSERT_NICKACCESS, "INSERT INTO account_access (account_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
@@ -291,7 +292,7 @@ db_load_driver()
       continue;
     query->rc = Prepare((char*)query->name, 0);
     if(query->rc == NULL)
-      ilog(L_CRIT, "Prepare: %d Failed: %s\n", i, Database.yada->errmsg);
+      ilog(L_CRIT, "Prepare: %d Failed: %s", i, Database.yada->errmsg);
   }
 
   eventAdd("Expire sent mail", expire_sentmail, NULL, 60); 
@@ -323,7 +324,7 @@ db_try_reconnect()
           continue;
         query->rc = Prepare((char*)query->name, 0);
         if(query->rc == NULL)
-          ilog(L_CRIT, "Prepare: %d Failed: %s\n", i, Database.yada->errmsg);
+          ilog(L_CRIT, "Prepare: %d Failed: %s", i, Database.yada->errmsg);
       }
       return;
     }
@@ -356,7 +357,7 @@ db_try_reconnect()
       db_try_reconnect();                                             \
       db_log("Query failed because server went away, reconnected.");  \
     }                                                                 \
-    ilog(L_CRIT, "db_query: %d Failed: %s\n", __id, Database.yada->errmsg); \
+    db_log(L_CRIT, "db_query: %d Failed: %s", __id, Database.yada->errmsg); \
   }                                                                   \
                                                                       \
   ret = __result;                                                     \
@@ -392,7 +393,7 @@ db_find_nick(const char *nick)
 {
   yada_rc_t *rc, *brc;
   struct Nick *nick_p;
-  char *retnick, *retpass, *retcloak, *retsalt, *retrealnick;
+  char *retnick, *retpass, *retcloak, *retsalt;
 
   assert(nick != NULL);
 
@@ -403,8 +404,8 @@ db_find_nick(const char *nick)
  
   nick_p = MyMalloc(sizeof(struct Nick));
  
-  brc = Bind("?d?d?d?ps?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
-    &nick_p->id, &nick_p->pri_nickid, &nick_p->nickid, &retrealnick, &retnick, 
+  brc = Bind("?d?d?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
+    &nick_p->id, &nick_p->pri_nickid, &nick_p->nickid, &retnick, 
     &retpass, &retsalt, &nick_p->url, &nick_p->email, &retcloak, 
     &nick_p->enforce, &nick_p->secure, &nick_p->verified, &nick_p->cloak_on, 
     &nick_p->admin, &nick_p->email_verified, &nick_p->priv, &nick_p->language, 
@@ -423,7 +424,6 @@ db_find_nick(const char *nick)
 
   assert(retnick != NULL);
   strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
-  strlcpy(nick_p->real_nick, retrealnick, sizeof(nick_p->nick));
   strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
   strlcpy(nick_p->salt, retsalt, sizeof(nick_p->salt));
   if(retcloak)
@@ -458,6 +458,34 @@ db_get_nickname_from_id(unsigned int id)
   if(Fetch(rc, brc) == 0)
   {
     db_log("db_get_nickname_from_id: %d not found.\n", id);
+    Free(brc);
+    Free(rc);
+    return NULL;
+  }
+
+  DupString(retnick, retnick);
+
+  Free(brc);
+  Free(rc);
+
+  return retnick;
+}
+
+char *
+db_get_nickname_from_nickid(unsigned int id)
+{
+  yada_rc_t *rc, *brc; 
+  char *retnick; 
+
+  db_query(rc, GET_NICK_FROM_NICKID, id);
+
+  if(rc == NULL)
+    return NULL;
+
+  brc = Bind("?ps", &retnick);
+  if(Fetch(rc, brc) == 0)
+  {
+    db_log("db_get_nickname_from_nickid: %d not found.\n", id);
     Free(brc);
     Free(rc);
     return NULL;
@@ -611,7 +639,7 @@ db_forbid_nick(const char *n)
 
   if((nick = db_find_nick(n)) != NULL)
   {
-    db_delete_nick(nick->id, nick->pri_nickid, nick->nickid, nick->nick);
+    db_delete_nick(nick->id, nick->pri_nickid, nick->nickid);
     free_nick(nick);
   }
 
@@ -719,8 +747,7 @@ db_set_nick_master(unsigned int accid, const char *newnick)
 }
 
 int
-db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid,
-    const char *nick)
+db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid)
 {
   int ret;
   unsigned int newid;
@@ -733,7 +760,7 @@ db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid,
 
     if(newid == -1)
     {
-      db_exec(ret, DELETE_NICK, nick);
+      db_exec(ret, DELETE_NICK, nickid);
       if(ret != -1)
       {
         db_exec(ret, DELETE_ACCOUNT_CHACCESS, accid);
@@ -745,12 +772,12 @@ db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid,
     {
       db_exec(ret, SET_NICK_MASTER, newid, accid);
       if(ret != -1)
-        db_exec(ret, DELETE_NICK, nick);
+        db_exec(ret, DELETE_NICK, nickid);
     }
   }
   else
   {
-    db_exec(ret, DELETE_NICK, nick);
+    db_exec(ret, DELETE_NICK, nickid);
   }
 
   if(ret == -1)
@@ -761,8 +788,6 @@ db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid,
 
   if(TransCommit() != 0)
     return FALSE;
-
-  execute_callback(on_nick_drop_cb, nick);
  
   return TRUE;
 }

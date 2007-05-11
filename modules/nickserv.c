@@ -370,8 +370,7 @@ m_register(struct Service *service, struct Client *client,
 
   if(client->nickname != NULL)
   {
-    reply_user(service, service, client, NS_ALREADY_REG, 
-        client->nickname->real_nick);
+    reply_user(service, service, client, NS_ALREADY_REG, client->name);
     return;
   }
     
@@ -412,18 +411,28 @@ m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
   struct Client *target;
+  struct Nick *nick = db_find_nick(client->name);
+  char *target_nick = NULL;
+
+  assert(nick != NULL);
 
   /* This might be being executed via sudo, find the real user of the nick */
-  if(irccmp(client->name, client->nickname->nick) != 0 && 
-      irccmp(client->name, client->nickname->real_nick) != 0)
-    target = find_client(client->nickname->real_nick);
+  if(client->nickname->id != nick->id)
+  {
+    target_nick = db_get_nickname_from_nickid(client->nickname->nickid);
+    target = find_client(target_nick);
+  }
   else
     target = client;
 
+  free_nick(nick);
+
   if(target == client)
   {
+    /* A normal user dropping their own nick */
     if(parc == 0)
     {
+      /* No auth code, so give them one and do nothing else*/
       char buf[IRC_BUFSIZE+1] = {0};
       char *hmac;
 
@@ -439,6 +448,7 @@ m_drop(struct Service *service, struct Client *client,
     }
     else
     {
+      /* Auth code given, check it and do the drop */
       char buf[IRC_BUFSIZE+1] = {0};
       char *hmac;
       char *auth;
@@ -474,8 +484,12 @@ m_drop(struct Service *service, struct Client *client,
     }
   }
 
+  /* Authentication passed(possibly because they're using sudo), go ahead and
+   * drop
+   */
+
   if(db_delete_nick(client->nickname->id, client->nickname->pri_nickid,
-        client->nickname->nickid, client->nickname->real_nick)) 
+        client->nickname->nickid)) 
   {
     if(target != NULL)
     {
@@ -486,34 +500,33 @@ m_drop(struct Service *service, struct Client *client,
       target->access = USER_FLAG;
       send_umode(nickserv, target, "-R");
       reply_user(service, service, client, NS_NICK_DROPPED, target->name);
-      global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
+      ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
         client->username, client->host, target->name);
     }
     else
     {
-      reply_user(service, service, client, NS_NICK_DROPPED,
-          client->nickname->real_nick);
-      global_notice(NULL, "%s!%s@%s dropped nick %s\n", client->name, 
-        client->username, client->host, client->nickname->real_nick);
+      reply_user(service, service, client, NS_NICK_DROPPED, target_nick);
+      ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
+        client->username, client->host, target_nick);
     }
   }
   else
   {
     if(target == NULL)
     {
-      global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", 
-          client->name, client->username, client->host, 
-          client->nickname->real_nick);
-      reply_user(service, service, client, NS_NICK_DROPFAIL, 
-          client->nickname->real_nick);
+      ilog(L_NOTICE, "Error: %s!%s@%s could not DROP nick %s", 
+          client->name, client->username, client->host, target_nick);
+      reply_user(service, service, client, NS_NICK_DROPFAIL, target_nick);
     }
     else
     {
-      global_notice(NULL, "Error: %s!%s@%s could not DROP nick %s\n", 
+      ilog(L_NOTICE, "Error: %s!%s@%s could not DROP nick %s", 
           client->name, client->username, client->host, target->name);
       reply_user(service, service, client, NS_NICK_DROPFAIL, target->name);
     }
   }
+
+  MyFree(target_nick);
 }
 
 static void
@@ -1055,13 +1068,13 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  strlcpy(master_nick->nick, nick->nick, sizeof(master_nick->nick));
-  master_nick->nickid = nick->nickid;
-  master_nick->pri_nickid = master_nick->nickid;
-  client->nickname = master_nick;
   reply_user(service, service, client, NS_LINK_OK, nick->nick, parv[1]);
+  
+  free_nick(master_nick);
   free_nick(nick);
-  nick = NULL;
+
+  client->nickname = db_find_nick(parv[1]);
+  assert(client->nickname != NULL);
 }
 
 static void
