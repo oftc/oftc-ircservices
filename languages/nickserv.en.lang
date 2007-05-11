@@ -334,6 +334,9 @@ NS_NICKFORBID
 	used in any services commands.
 NS_IDENTIFIED
 	You are sucessfully identified as %s.
+NS_IDENTIFY_ACCESS
+	This hostname matches an entry on the access list of nickname %s. You
+	have been automatically identified.
 NS_IDENT_FAIL
 	Identify failed as %s. You may have entered an incorrect password. If
 	you believe you have entered the correct password and are still getting this
@@ -421,10 +424,14 @@ NS_UNLINK_OK
 NS_UNLINK_NOLINK
 	Nickname %s is not linked. You cannot unlink a nickname which does not
 	contain a link in the first place.
+NS_INFO_START
+	Nickname information for %s(%s).
 NS_INFO
 	Last quit message: %s
 	              URL: %s
 	     Cloak String: %s
+NS_INFO_MASTER
+	The master nickname for this account is %s.
 NS_INFO_REGTIME_FULL
 	  Time Registered: %s (%dy %dm %dd %02d:%02d:%02d ago)
 NS_INFO_REGTIME_NOYEAR
@@ -434,7 +441,7 @@ NS_INFO_REGTIME_NOMONTH
 NS_INFO_REGTIME_NODAY
 	  Time Registered: %s (%02d:%02d:%02d ago)
 NS_INFO_REGTIME_UNKNOWN
-		Time Registered: Unknown
+	  Time Registered: Unknown
 NS_INFO_QUITTIME_FULL
 	   Last quit time: %s (%dy %dm %dd %02d:%02d:%02d ago)
 NS_INFO_QUITTIME_NOYEAR
@@ -444,7 +451,7 @@ NS_INFO_QUITTIME_NOMONTH
 NS_INFO_QUITTIME_NODAY
 	   Last quit time: %s (%02d:%02d:%02d ago)
 NS_INF_QUITTIME_UNKNOWN
-	   Last quit time: Unknown
+	   Last quit time: Unknown
 NS_INFO_SEENTIME_FULL
 	        Last seen: %s (%dy %dm %dd %02d:%02d:%02d ago)
 NS_INFO_SEENTIME_NOYEAR
@@ -454,7 +461,7 @@ NS_INFO_SEENTIME_NOMONTH
 NS_INFO_SEENTIME_NODAY
 	        Last seen: %s (%02d:%02d:%02d ago)
 NS_INFO_SEENTIME_UNKNOWN
-					Last seen: Unknown
+	        Last seen: Unknown
 NS_INFO_EMAIL
 	    eMail address: %s
 NS_INFO_ONLINE
