@@ -1023,13 +1023,8 @@ m_set_floodserv(struct Service *service, struct Client *client,
 
     floodserv = find_client(fsname);
 
-    if(floodserv != NULL)
+    if(floodserv != NULL && IsMember(floodserv, chptr))
       part_channel(floodserv, chptr->chname, "Unset");
-    else
-    {
-      ilog(L_INFO, "%s SET %s OFF for %s but FloodServ isn't loaded",
-        client->name, fsname, chptr->chname);
-    }
   }
 }
 

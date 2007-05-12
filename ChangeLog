@@ -67,3 +67,6 @@
 		infoing the master.
 	- Fix a bug in the display of various unknown time elements.
 	- Improve chanserv access add help.
+2007-05-12 - 1.0.11
+	Bugfix point release. Bug(s) fixed:
+	- Fix parting FloodServ from a channel he's not joined to
