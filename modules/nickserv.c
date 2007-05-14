@@ -1313,6 +1313,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
         MyFree(chan);
         listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
       }
+      MyFree(chan);
       db_list_done(first);
     }
   }
@@ -1707,7 +1708,10 @@ ns_on_nick_change(va_list args)
   {
     ilog(L_DEBUG, "Nick Change: %s->%s(nick not registered)", oldnick, user->name);
     if(user->nickname != NULL)
+    {
       free_nick(user->nickname);
+      user->nickname = NULL;
+    }
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
@@ -1751,6 +1755,9 @@ ns_on_nick_change(va_list args)
  
     ilog(L_DEBUG, "%s changed nick to %s(no access entry)", oldnick, user->name);
   }
+
+  if(nick_p != user->nickname)
+    free_nick(nick_p);
   
   return pass_callback(ns_nick_hook, user, oldnick);
 }
@@ -1818,6 +1825,9 @@ ns_on_newuser(va_list args)
     }
     ilog(L_DEBUG, "new user:%s(no access entry)", newuser->name);
   }
+
+  if(nick_p != newuser->nickname)
+    free_nick(nick_p);
   
   return pass_callback(ns_newuser_hook, newuser);
 }

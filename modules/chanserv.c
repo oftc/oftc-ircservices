@@ -1882,6 +1882,8 @@ cs_on_client_join(va_list args)
       level = CHIDENTIFIED_FLAG;
     else
       level = access->level;
+
+    free_chanaccess(access);
   }
 
   if(regchptr->restricted && level < MEMBER_FLAG)

@@ -382,6 +382,8 @@ handle_services_command(struct ServiceMessage *pmptr,
     if(from->access < IDENTIFIED_FLAG && mptr->access == CHIDENTIFIED_FLAG)
     {
       reply_user(service, NULL, from, SERV_NOT_IDENTIFIED, from->name);
+      if(regchptr != chptr->regchan)
+        free_regchan(regchptr);
       return;
     }
 
@@ -406,11 +408,19 @@ handle_services_command(struct ServiceMessage *pmptr,
     {
       reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN, mptr->cmd,
           regchptr->channel);
+      if(regchptr != chptr->regchan)
+        free_regchan(regchptr);
       return;
     }
 
     if(chptr != NULL)
+    {
+      if(chptr->regchan != NULL)
+        free_regchan(chptr->regchan);
       chptr->regchan = regchptr;
+    }
+    else
+      free_regchan(regchptr);
   }
   else
   {
