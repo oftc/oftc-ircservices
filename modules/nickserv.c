@@ -330,6 +330,7 @@ handle_nick_change(struct Service *service, struct Client *client,
     else
     {
       identify_user(client);
+      db_set_string(SET_NICK_LAST_REALNAME, client->nickname->id, client->info);
       reply_user(service, service, client, message, name);
     }
   }
@@ -396,6 +397,7 @@ m_register(struct Service *service, struct Client *client,
   {
     client->nickname = nick;
     identify_user(client);
+    db_set_string(SET_NICK_LAST_REALNAME, client->nickname->id, client->info);
 
     reply_user(service, service, client, NS_REG_COMPLETE, client->name);
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
@@ -570,6 +572,7 @@ m_identify(struct Service *service, struct Client *client,
   else
   {
     identify_user(client);
+    db_set_string(SET_NICK_LAST_REALNAME, client->nickname->id, client->info);
     reply_user(service, service, client, NS_IDENTIFIED, name);
   }
 }
@@ -1226,6 +1229,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
         MyFree(chan);
         listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
       }
+      MyFree(chan);
       db_list_done(first);
     }
   }
@@ -1585,6 +1589,7 @@ ns_on_nick_change(va_list args)
     send_nick_change(nickserv, client, user->release_name);
     user->release_to = NULL;
     memset(user->release_name, 0, sizeof(user->release_name));
+    db_set_string(SET_NICK_LAST_REALNAME, client->nickname->id, client->info);
     identify_user(client);
   }
 
@@ -1620,7 +1625,10 @@ ns_on_nick_change(va_list args)
   {
     ilog(L_DEBUG, "Nick Change: %s->%s(nick not registered)", oldnick, user->name);
     if(user->nickname != NULL)
+    {
       free_nick(user->nickname);
+      user->nickname = NULL;
+    }
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
@@ -1630,6 +1638,7 @@ ns_on_nick_change(va_list args)
     if(user->nickname != NULL)
       free_nick(user->nickname);
     user->nickname = nick_p;
+    db_set_string(SET_NICK_LAST_REALNAME, user->nickname->id, user->info);
     identify_user(user);
     return pass_callback(ns_nick_hook, user, oldnick);
   }
@@ -1646,6 +1655,7 @@ ns_on_nick_change(va_list args)
         free_nick(user->nickname);
       user->nickname = nick_p;
       identify_user(user);
+      db_set_string(SET_NICK_LAST_REALNAME, user->nickname->id, user->info);
       reply_user(nickserv, nickserv, user, NS_IDENTIFY_ACCESS, user->name);
     }
   }
@@ -1664,6 +1674,9 @@ ns_on_nick_change(va_list args)
  
     ilog(L_DEBUG, "%s changed nick to %s(no access entry)", oldnick, user->name);
   }
+
+  if(nick_p != user->nickname)
+    free_nick(nick_p);
   
   return pass_callback(ns_nick_hook, user, oldnick);
 }
@@ -1700,6 +1713,7 @@ ns_on_newuser(va_list args)
       free_nick(newuser->nickname);
     newuser->nickname = nick_p;
     identify_user(newuser);
+    db_set_string(SET_NICK_LAST_REALNAME, newuser->nickname->id, newuser->info);
     return pass_callback(ns_newuser_hook, newuser);
   }
 
@@ -1714,6 +1728,7 @@ ns_on_newuser(va_list args)
         free_nick(newuser->nickname);
       newuser->nickname = nick_p;
       identify_user(newuser);
+      db_set_string(SET_NICK_LAST_REALNAME, newuser->nickname->id, newuser->info);
       reply_user(nickserv, nickserv, newuser, NS_IDENTIFY_ACCESS, newuser->name);
     }
   }
@@ -1731,6 +1746,9 @@ ns_on_newuser(va_list args)
     }
     ilog(L_DEBUG, "new user:%s(no access entry)", newuser->name);
   }
+
+  if(nick_p != newuser->nickname)
+    free_nick(nick_p);
   
   return pass_callback(ns_newuser_hook, newuser);
 }

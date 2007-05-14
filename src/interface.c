@@ -788,7 +788,7 @@ replace_string(char *str, const char *value)
 int
 check_list_entry(unsigned int type, unsigned int id, const char *value)
 {
-  struct AccessEntry *entry;
+  struct AccessEntry *entry = NULL;
   void *ptr, *first;
 
   first = ptr = db_list_first(type, id, (void**)&entry);
@@ -810,8 +810,10 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
     ilog(L_DEBUG, "check_list_entry: Not Found match: %s %s", entry->value, 
         value);
     MyFree(entry);
+    entry = NULL;
     ptr = db_list_next(ptr, type, (void**)&entry);
   }
+  MyFree(entry);
   db_list_done(first);
   return FALSE;
 }
@@ -1261,6 +1263,7 @@ free_regchan(struct RegChannel *regchptr)
   MyFree(regchptr->url);
   MyFree(regchptr->email);
   MyFree(regchptr->topic);
+  MyFree(regchptr->mlock);
   mqueue_hash_free(regchptr->flood_hash, &regchptr->flood_list);
   regchptr->flood_hash = NULL;
   mqueue_free(regchptr->gqueue);
