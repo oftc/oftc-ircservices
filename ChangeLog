@@ -72,3 +72,7 @@
 	- Fix parting FloodServ from a channel he's not joined to
 	- Fix various (some severe) memory leaks
 	- Fix bug causing some channel modes to go unnoticed.
+2007-05-14 - 1.0.12
+	Bugfix point release.  Bug(s) fixed:
+	- Fix core caused by tring to print channel name from a null struct.
+	- Fix chanserv access notices to be more helpful.
