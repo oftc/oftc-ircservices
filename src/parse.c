@@ -406,8 +406,12 @@ handle_services_command(struct ServiceMessage *pmptr,
 
     if(level < mptr->access)
     {
-      reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN, mptr->cmd,
-          regchptr->channel);
+      if(level > CHUSER_FLAG)
+        reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN, mptr->cmd,
+            regchptr->channel);
+      else
+        reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN_ID, mptr->cmd,
+            regchptr->channel);
       if(regchptr != chptr->regchan)
         free_regchan(regchptr);
       return;

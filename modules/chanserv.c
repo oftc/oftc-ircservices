@@ -1883,7 +1883,8 @@ cs_on_client_join(va_list args)
     else
       level = access->level;
 
-    free_chanaccess(access);
+    if(access != NULL)
+      free_chanaccess(access);
   }
 
   if(regchptr->restricted && level < MEMBER_FLAG)

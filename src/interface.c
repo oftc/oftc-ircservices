@@ -1294,6 +1294,8 @@ free_serviceban(struct ServiceBan *ban)
 void
 free_chanaccess(struct ChanAccess *access)
 {
+  if(access == NULL)
+    return;
 	ilog(L_DEBUG, "Freeing chanaccess %p for channel %d", access, access->channel);
 	MyFree(access);
 }

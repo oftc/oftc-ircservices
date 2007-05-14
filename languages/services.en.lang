@@ -27,6 +27,10 @@ SERV_UNREG_CHAN
 	Channel %s is not registered with channel services.
 SERV_NO_ACCESS_CHAN
 	You do not have access to the %s command on %s.
+SERV_NO_ACCESS_CHAN_ID
+	You do not have access to the %s command on %s. Identifying to your
+	nickname may give you this access. See nickname services' HELP IDENTIFY
+	command for more information.
 SERV_NO_ACCESS
 	You do not have access to the %s command.
 SERV_NO_ACCESS_REGFIRST
