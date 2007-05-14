@@ -64,7 +64,7 @@ modsym(void *handle, const char *name)
 void
 modunload(void *handle)
 {
-//  lt_dlclose(handle);
+  lt_dlclose(handle);
 }
 
 const char *
