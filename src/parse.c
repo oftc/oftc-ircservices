@@ -415,7 +415,7 @@ handle_services_command(struct ServiceMessage *pmptr,
 
     if(chptr != NULL)
     {
-      if(chptr->regchan != NULL)
+      if(chptr->regchan != regchptr)
         free_regchan(chptr->regchan);
       chptr->regchan = regchptr;
     }

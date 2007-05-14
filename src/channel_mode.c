@@ -795,12 +795,6 @@ chm_voice(struct Client *client_p, struct Client *source_p,
   struct Client *targ_p;
   struct Membership *member;
 
-  if (alev < CHACCESS_HALFOP)
-  {
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
-
   if ((dir == MODE_QUERY) || parc <= *parn)
     return;
 
