@@ -35,6 +35,7 @@ static dlink_node *ns_umode_hook;
 static dlink_node *ns_nick_hook;
 static dlink_node *ns_newuser_hook;
 static dlink_node *ns_quit_hook;
+static dlink_node *ns_certfp_hook;
 
 static dlink_list nick_enforce_list = { NULL, NULL, 0 };
 static dlink_list nick_release_list = { NULL, NULL, 0 };
@@ -48,6 +49,7 @@ static void *ns_on_umode_change(va_list);
 static void *ns_on_newuser(va_list);
 static void *ns_on_nick_change(va_list);
 static void *ns_on_quit(va_list);
+static void *ns_on_certfp(va_list);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
@@ -76,6 +78,10 @@ static void m_set_private(struct Service *, struct Client *, int, char *[]);
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
+
+static void m_cert_add(struct Service *, struct Client *, int, char *[]);
+static void m_cert_list(struct Service *, struct Client *, int, char *[]);
+static void m_cert_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, 2, 0, USER_FLAG, NS_HELP_REG_SHORT, NS_HELP_REG_LONG, 
@@ -133,6 +139,21 @@ static struct ServiceMessage cloakstring_msgtab = {
   NULL, "CLOAKSTRING", 0, 1, 2, 0, ADMIN_FLAG, NS_HELP_CLOAKSTRING_SHORT, 
     NS_HELP_CLOAKSTRING_LONG, m_cloakstring 
 }; 
+
+static struct ServiceMessage cert_sub[] = {
+  { NULL, "ADD", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_CERT_ADD_SHORT, 
+    NS_HELP_CERT_ADD_LONG, m_cert_add },
+  { NULL, "LIST", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_CERT_LIST_SHORT, 
+    NS_HELP_CERT_LIST_LONG, m_cert_list },
+  { NULL, "DEL", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_CERT_DEL_SHORT, 
+    NS_HELP_CERT_DEL_LONG, m_cert_del },
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
+};
+
+static struct ServiceMessage cert_msgtab = {
+  cert_sub, "CERT", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_CERT_SHORT, 
+  NS_HELP_CERT_LONG, NULL
+};
 
 static struct ServiceMessage access_sub[] = {
   { NULL, "ADD", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_ACCESS_ADD_SHORT, 
@@ -214,6 +235,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &access_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &cert_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &ghost_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &link_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);
@@ -231,6 +253,7 @@ INIT_MODULE(nickserv, "$Revision$")
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
   ns_newuser_hook     = install_hook(on_newuser_cb, ns_on_newuser);
   ns_quit_hook        = install_hook(on_quit_cb, ns_on_quit);
+  ns_certfp_hook      = install_hook(on_certfp_cb, ns_on_certfp);
   
   guest_number = 0;
 
@@ -244,6 +267,7 @@ CLEANUP_MODULE
   uninstall_hook(on_nick_change_cb, ns_on_nick_change);
   uninstall_hook(on_newuser_cb, ns_on_newuser);
   uninstall_hook(on_quit_cb, ns_on_quit);
+  uninstall_hook(on_certfp_cb, ns_on_certfp);
   eventDelete(process_enforce_list, NULL);
   eventDelete(process_release_list, NULL);
   serv_clear_messages(nickserv);
@@ -995,6 +1019,68 @@ m_access_del(struct Service *service, struct Client *client, int parc,
     ret = db_list_del(DELETE_NICKACCESS, nick->id, parv[1]);
   
   reply_user(service, service, client, NS_ACCESS_DEL, ret);
+}
+
+static void
+m_cert_add(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Nick *nick = client->nickname;
+  struct AccessEntry access;
+
+  /* XXX Cert validation */
+
+  access.id = nick->id;
+  access.value = parv[1];
+  
+  if(db_list_add(CERT_LIST, (void *)&access))
+    reply_user(service, service, client, NS_CERT_ADD, parv[1]);
+  else
+    reply_user(service, service, client, NS_CERT_ADDFAIL, parv[1]);
+}
+
+static void
+m_cert_list(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Nick *nick;
+  struct AccessEntry *entry;
+  void *first, *listptr;
+  int i = 1;
+
+  nick = client->nickname;
+
+  reply_user(service, service, client, NS_CERT_START);
+ 
+  if((listptr = db_list_first(CERT_LIST, nick->id, (void**)&entry)) == NULL)
+    return;
+
+  first = listptr;
+
+  while(listptr != NULL)
+  {
+    reply_user(service, service, client, NS_CERT_ENTRY, i++, entry->value);
+    MyFree(entry);
+    listptr = db_list_next(listptr, CERT_LIST, (void**)&entry);
+  }
+
+  db_list_done(first);
+}
+
+static void
+m_cert_del(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  struct Nick *nick = client->nickname;
+  int index, ret;
+
+  index = atoi(parv[1]);
+  if(index > 0)
+    ret = db_list_del_index(DELETE_NICKCERT_IDX, nick->id, index);
+  else
+    ret = db_list_del(DELETE_NICKCERT, nick->id, parv[1]);
+  
+  reply_user(service, service, client, NS_CERT_DEL, ret);
 }
 
 static void
@@ -1760,4 +1846,32 @@ ns_on_quit(va_list args)
     dlinkFindDelete(&nick_release_list, user);
 
   return pass_callback(ns_quit_hook, user, comment);
+}
+
+static void *
+ns_on_certfp(va_list args)
+{
+  struct Client *user = va_arg(args, struct Client *);
+  struct Nick *nick = db_find_nick(user->name);
+
+  if(nick == NULL)
+    return pass_callback(ns_certfp_hook, user);
+
+  if(user->nickname != NULL && user->nickname->nickid == nick->nickid) 
+  {
+    /* Already identified for this nick */
+    free_nick(nick);
+    return pass_callback(ns_certfp_hook, user);
+  }
+
+  if(check_list_entry(CERT_LIST, nick->id, user->certfp))
+  {
+    if(user->nickname != NULL)
+      free_nick(user->nickname);
+    user->nickname = nick;
+    identify_user(user);
+    reply_user(nickserv, nickserv, user, NS_IDENTIFY_CERT, user->name);
+  }
+  
+  return pass_callback(ns_certfp_hook, user);
 }

@@ -208,6 +208,18 @@ query_t queries[QUERY_COUNT] = {
       "flag_admin=?B, flag_email_verified=?B, flag_private=?B, language=?d, "
       "last_host=?v, last_realname=?v, last_quit_msg=?v, last_quit_time=?d "
       "WHERE id=?d", NULL, EXECUTE },
+  { INSERT_NICKCERT, "INSERT INTO account_fingerprint (account_id, fingerprint) "
+    "VALUES(?d, ?v)", NULL, EXECUTE },
+  { GET_NICKCERT, "SELECT id, fingerprint FROM account_fingerprint WHERE "
+    "account_id=?d", NULL, QUERY },
+  { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
+    "account_id=?d AND fingerprint=?v", NULL, EXECUTE },
+  { DELETE_NICKCERT_IDX, "DELETE FROM account_fimgerprint WHERE id = "
+          "(SELECT id FROM account_fingerprint AS a WHERE ?d = "
+          "(SELECT COUNT(id)+1 FROM account_fingerprint AS b WHERE b.id < a.id AND "
+          "b.account_id = ?d) AND account_id = ?d)", NULL, EXECUTE },
+  { DELETE_ALL_NICKACCESS, "DELETE FROM account_fingerprint WHERE "
+    "account_id=?d", NULL, EXECUTE },
 };
 
 void
@@ -846,6 +858,9 @@ db_list_add(unsigned int type, const void *value)
     case ACCESS_LIST:
       db_exec(ret, INSERT_NICKACCESS, aeval->id, aeval->value);
       break;
+    case CERT_LIST:
+      db_exec(ret, INSERT_NICKCERT, aeval->id, aeval->value);
+      break;
     case AKILL_LIST:
       db_exec(ret, INSERT_AKILL, banval->mask, banval->reason, 
           banval->setter, banval->time_set, banval->duration);
@@ -902,6 +917,12 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   {
     case ACCESS_LIST:
       query = GET_NICKACCESS;
+      aeval = MyMalloc(sizeof(struct AccessEntry));
+      *entry = aeval;
+      brc = Bind("?d?ps", &aeval->id, &aeval->value);
+      break;
+    case CERT_LIST:
+      query = GET_NICKCERT;
       aeval = MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
       brc = Bind("?d?ps", &aeval->id, &aeval->value);
@@ -1052,6 +1073,7 @@ db_list_next(void *result, unsigned int type, void **entry)
   switch(type)
   {
     case ACCESS_LIST:
+    case CERT_LIST:
       aeval = MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
       Free(res->brc);

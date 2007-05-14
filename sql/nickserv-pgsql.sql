@@ -54,3 +54,11 @@ CREATE TABLE account_access (
   UNIQUE (id, entry)
 );
 CREATE INDEX account_access_account_id_idx ON account_access (account_id);
+
+DROP TABLE account_fingerprint;
+CREATE TABLE account_fingerprint (
+	id									SERIAL PRIMARY KEY,
+	account_id					INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
+	fingerprint					VARCHAR(40) NOT NULL,
+	UNIQUE(account_id, fingerprint)
+);

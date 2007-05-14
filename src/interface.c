@@ -63,6 +63,7 @@ struct Callback *on_topic_change_cb;
 struct Callback *on_privmsg_cb;
 struct Callback *on_notice_cb;
 struct Callback *on_burst_done_cb;
+struct Callback *on_certfp_cb;
 
 struct LanguageFile ServicesLanguages[LANG_LAST];
 struct ModeList *ServerModeList;
@@ -108,6 +109,7 @@ init_interface()
   on_notice_cb        = register_callback("Notice for channel received", NULL);
   on_burst_done_cb    = register_callback("Notification that burst is complete", 
       NULL);
+  on_certfp_cb        = register_callback("Client certificate recieved for this user", NULL);
 
   load_language(ServicesLanguages, "services.en");
 }

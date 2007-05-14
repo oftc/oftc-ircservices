@@ -94,6 +94,59 @@ NS_HELP_ACCESS_DEL_LONG
 	Examples:
 	    ACCESS DEL 1
 	    ACCESS DEL foo@*.org
+NS_HELP_CERT_SHORT
+	%s: Maintains the nickname client certificate list.
+NS_HELP_CERT_LONG
+	Usage: CERT ADD fingerprint
+	       CERT DEL (fingerprint|number)
+	       CERT LIST
+	
+	Maintains the nickname client certificate list.  If you connect to IRC with 
+	SSL, and provide the client certificate with a fingerprint on your
+	certificate list  you will be automatically identified to your nickname 
+	without having to use the IDENTIFY command.
+	
+	Examples:
+	    CERT ADD 994EB294C15F4EE647FB5A426C11444E697B1814
+	    ACCESS DEL 994EB294C15F4EE647FB5A426C11444E697B1814
+	    ACCESS DEL 1
+	    ACCESS LIST
+	
+	The following are valid options to this command:
+NS_HELP_CERT_ADD_SHORT
+	%s
+NS_HELP_CERT_ADD_LONG
+	Usage: CERT ADD fingerprint
+	
+	Add an access entry to your client certificate list. If you connect to IRC with 
+	SSL, and provide the client certificate with a fingerprint on your
+	certificate list  you will be automatically identified to your nickname 
+	without having to use the IDENTIFY command.
+	
+	Example:
+	    CERT ADD 994EB294C15F4EE647FB5A426C11444E697B1814
+NS_HELP_CERT_LIST_SHORT
+	%s
+NS_HELP_CERT_LIST_LONG
+	Usage: CERT LIST
+	
+	List entries in your client certificate list.
+	
+	Example:
+	    CERT LIST
+NS_HELP_CERT_DEL_SHORT
+	%s
+NS_HELP_CERT_DEL_LONG
+	Usage: CERT DEL (index|mask)
+	
+	Delete an entry from your client certificate list. You can either delete by 
+	entry index or by fingerprint matching. Index values will change after each 
+	delete.
+	
+	Examples:
+	    ACCESS DEL 1
+	    ACCESS DEL 994EB294C15F4EE647FB5A426C11444E697B1814
+	
 NS_HELP_SET_SHORT
 	%s: Set nickname properties.
 NS_HELP_SET_LONG
@@ -337,6 +390,9 @@ NS_IDENTIFIED
 NS_IDENTIFY_ACCESS
 	This hostname matches an entry on the access list of nickname %s. You
 	have been automatically identified.
+NS_IDENTIFY_CERT
+	You are connected using SSL and have provided a matching client certificate
+	for nickname %s. You have been automatically identified.
 NS_IDENT_FAIL
 	Identify failed as %s. You may have entered an incorrect password. If
 	you believe you have entered the correct password and are still getting this
@@ -389,6 +445,22 @@ NS_ACCESS_ENTRY
 	%d  %s
 NS_ACCESS_DEL
 	%d ACCESS entries deleted.
+NS_CERT_ADD
+	CERT list entry %s added.
+NS_CERT_ADDFAIL
+	Failed to add CERT list entry %s. This may have been an internal error,
+	please try again shortly. If this is not the first time you have seen this
+	message please contact network support.
+NS_CERT_INVALID
+	CERT list entry %s is not a valid fingerprint. Please try again with
+	a valid fingerprint. Fingerprints may only contain the letters a-z and the
+	numbers 0-9.
+NS_CERT_START
+	CERT list:
+NS_CERT_ENTRY
+	%d  %s
+NS_CERT_DEL
+	%d CERT entries deleted.
 NS_REGAIN_SUCCESS
 	REGAIN succeed on nickname %s. You have been changed to your nickname.
 NS_REGAIN_FAILED

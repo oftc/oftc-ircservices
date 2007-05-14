@@ -90,6 +90,8 @@ EXTERN unsigned int user_modes[];
 #define MODE_ADD    1
 #define MODE_DEL   -1
 
+#define SHA1_DIGEST_LENGTH 40
+
 struct Server
 {
   dlink_node node;
@@ -126,6 +128,7 @@ struct Client
   char          id[IDLEN + 1];      /* client ID, unique ID per client */
   char          info[REALLEN + 1];  /* Free form additional client info */
   char          username[USERLEN + 1];
+  char          certfp[SHA1_DIGEST_LENGTH+1];
     
   struct Server      *server;
 

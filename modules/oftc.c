@@ -50,6 +50,7 @@ static void m_bmask(struct Client *, struct Client *, int, char *[]);
 static void m_svsmode(struct Client *, struct Client *, int, char *[]);
 static void m_eob(struct Client *, struct Client *, int, char *[]);
 static void m_realhost(struct Client *, struct Client *, int, char *[]);
+static void m_certfp(struct Client *, struct Client *, int, char *[]);
 
 static struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
@@ -104,6 +105,11 @@ static struct Message realhost_msgtab = {
   { m_realhost, m_realhost }
 };
 
+static struct Message certfp_msgtab = {
+  "CERTFP", 0, 0, 3, 0, 0, 0,
+  { m_certfp, m_certfp }
+};
+
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
   { MODE_TOPICLIMIT,  't' },
@@ -138,6 +144,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&svsmode_msgtab);
   mod_add_cmd(&eob_msgtab);
   mod_add_cmd(&realhost_msgtab);
+  mod_add_cmd(&certfp_msgtab);
 }
 
 CLEANUP_MODULE
@@ -153,6 +160,7 @@ CLEANUP_MODULE
   mod_del_cmd(&svsmode_msgtab);
   mod_del_cmd(&eob_msgtab);
   mod_del_cmd(&realhost_msgtab);
+  mod_del_cmd(&certfp_msgtab);
 
   uninstall_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
   uninstall_hook(send_umode_cb, oftc_sendmsg_svsmode);
@@ -234,6 +242,25 @@ m_realhost(struct Client *client, struct Client *source, int parc, char *parv[])
   }
 
   strlcpy(nclient->realhost, parv[2], sizeof(nclient->realhost));
+}
+
+static void
+m_certfp(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  struct Client *target = NULL;
+
+  ilog(L_DEBUG, "CERTFP for %s is %s", parv[1], parv[2]);
+
+  target = find_person(source, parv[1]);
+
+  if(target == NULL)
+  {
+    ilog(L_INFO, "Got CERTFP for %s but we don't know the client", parv[1]);
+    return;
+  }
+
+  strlcpy(target->certfp, parv[2], sizeof(target->certfp));
+  execute_callback(on_certfp_cb, target);
 }
 
 static void
