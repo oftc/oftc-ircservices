@@ -167,7 +167,7 @@ query_t queries[QUERY_COUNT] = {
     "FROM nickname WHERE lower(nick)=lower(?v))", NULL, EXECUTE },
   { SET_NICK_MASTER, "UPDATE account SET primary_nick=?d WHERE id=?d", NULL, EXECUTE },
   { DELETE_AKILL, "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
-  { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=?d",
+  { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=4",
     NULL, QUERY },
   { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=?d", NULL, QUERY },
   { GET_NICK_CHAN_INFO, "SELECT channel, level FROM "
@@ -1440,7 +1440,7 @@ db_get_num_masters(unsigned int chanid)
   yada_rc_t *rc, *brc;
   int count;
 
-  db_query(rc, GET_CHAN_MASTER_COUNT, chanid, MASTER_FLAG);
+  db_query(rc, GET_CHAN_MASTER_COUNT, chanid);
 
   if(rc == NULL)
     return 0;
