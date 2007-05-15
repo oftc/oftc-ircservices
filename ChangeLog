@@ -86,3 +86,4 @@
 		anyway. (#5)
 	- Allow NULL hostname to be specified for database{} connection to use the
 		system default to the database driver. (#21)
+	- Set Precedence: junk on outgoing mail. (#2)

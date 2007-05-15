@@ -357,6 +357,7 @@ reply_mail(struct Service *service, struct Client *client,
   fprintf(ptr, "To: %s\n", client->nickname->email);
   fprintf(ptr, "From: %s\n", Mail.from_address);
   fprintf(ptr, "Subject: %s\n", subjectstr);
+  fprintf(ptr, "Precedence: junk\n");
 
   bufptr = buf;
   while(*bufptr != '\0')
