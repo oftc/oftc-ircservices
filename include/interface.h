@@ -28,7 +28,7 @@ struct ServiceBan
 {
   unsigned int id;
   unsigned int type;
-  char *channel;
+  unsigned int channel;
   unsigned int target;
   unsigned int setter;
   char *mask;

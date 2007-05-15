@@ -154,9 +154,8 @@ query_t queries[QUERY_COUNT] = {
     "time, duration) VALUES (?d, ?d, ?d, ?v, ?d, ?d)", NULL, EXECUTE },
   { INSERT_AKICK_MASK, "INSERT INTO channel_akick (channel_id, setter, reason, mask, "
     "time, duration) VALUES (?d, ?d, ?v, ?v, ?d, ?d)", NULL, EXECUTE },
-  { GET_AKICKS, "SELECT channel_akick.id, channel.channel, target, setter, mask, reason, time, duration FROM "
-    "channel_akick, channel WHERE channel_id=?d AND channel.id=channel_id", 
-    NULL, QUERY },
+  { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, reason, time, duration FROM "
+    "channel_akick WHERE channel_id=?d", NULL, QUERY },
   { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
           "(SELECT id FROM channel_akick AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
@@ -870,10 +869,9 @@ db_list_add(unsigned int type, const void *value)
           banval->time_set, banval->duration);
       break;
     case AKICK_LIST:
-      id = db_get_id_from_name(banval->channel, GET_CHANID_FROM_CHAN);
       if(banval->target != 0)
       {
-        db_exec(ret, INSERT_AKICK_ACCOUNT, id, banval->target,
+        db_exec(ret, INSERT_AKICK_ACCOUNT, banval->channel, banval->target,
             banval->setter, banval->reason, banval->time_set, 
             banval->duration);
       }
@@ -950,7 +948,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
 
       banval = MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
-      brc = Bind("?d?ps?d?d?ps?ps?d?d", &banval->id, &banval->channel,
+      brc = Bind("?d?d?d?d?ps?ps?d?d", &banval->id, &banval->channel,
           &banval->target, &banval->setter, &banval->mask, 
           &banval->reason, &banval->time_set, &banval->duration);
       break;
@@ -1037,7 +1035,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   {
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
-    DupString(banval->channel, banval->channel);
     banval->type = AKICK_BAN;
   }
   else if(type == NICKCHAN_LIST)
@@ -1138,7 +1135,6 @@ db_list_next(void *result, unsigned int type, void **entry)
     banval->type = AKICK_BAN;
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
-    DupString(banval->channel, banval->channel);
   }
   else if(type == NICKCHAN_LIST)
   {

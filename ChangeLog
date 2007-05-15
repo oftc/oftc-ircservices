@@ -80,4 +80,7 @@
 2007-??-?? - 1.1.0
 	Feature/Bugfix release.
 	- Fix inconsistency in SQL statements used to deal with channel masters on
-		access lists.
+		access lists. (#1)
+	- Rework GET_AKICKS query to not join on channel and just use the id
+		directly, since that's what we use most and the name we have elsewhere
+		anyway. (#5)

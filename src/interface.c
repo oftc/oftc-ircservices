@@ -1287,7 +1287,6 @@ free_serviceban(struct ServiceBan *ban)
   ilog(L_DEBUG, "Freeing serviceban %p for %s", ban, ban->mask);
   MyFree(ban->mask);
   MyFree(ban->reason);
-  MyFree(ban->channel);
   MyFree(ban);
 }
 

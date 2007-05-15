@@ -1067,7 +1067,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   }
 
   akick->setter = client->nickname->id;
-  DupString(akick->channel, parv[1]);
+  akick->channel = regchptr->id;
   akick->time_set = CurrentTime;
   akick->duration = 0;
 
