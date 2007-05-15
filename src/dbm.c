@@ -237,14 +237,14 @@ init_db()
     len += strlen(Database.hostname);
   len += strlen(port);
   len += strlen(":::");
+  len += strlen(Database.dbname);
   len++;
 
   dbstr = MyMalloc(len);
-  snprintf(dbstr, len-1, "%s:%s:%s:%s", Database.driver, 
+  snprintf(dbstr, len, "%s:%s:%s:%s", Database.driver, 
       Database.hostname == NULL ? "" : Database.hostname, port, Database.dbname);
 
   Database.yada = yada_init(dbstr, 0);
-  MyFree(dbstr);
 
   snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
   if(db_log_fb == NULL)
@@ -261,6 +261,7 @@ void
 cleanup_db()
 {
   Database.yada->disconnect(Database.yada);
+  MyFree(Database.yada->dbstr);
 //  Database.yada->destroy(Database.yada);
 }
 

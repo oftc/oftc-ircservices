@@ -84,3 +84,5 @@
 	- Rework GET_AKICKS query to not join on channel and just use the id
 		directly, since that's what we use most and the name we have elsewhere
 		anyway. (#5)
+	- Allow NULL hostname to be specified for database{} connection to use the
+		system default to the database driver. (#21)
