@@ -50,10 +50,29 @@ init_channel(void)
 void
 cleanup_channel()
 {
-  BlockHeapDestroy(channel_heap);
-  BlockHeapDestroy(ban_heap);
-  BlockHeapDestroy(member_heap);
-  BlockHeapDestroy(topic_heap);
+  if(channel_heap != NULL)
+  {
+    BlockHeapDestroy(channel_heap);
+    channel_heap = NULL;
+  }
+  
+  if(ban_heap != NULL)
+  {
+    BlockHeapDestroy(ban_heap);
+    ban_heap = NULL;
+  }
+
+  if(member_heap != NULL)
+  {
+    BlockHeapDestroy(member_heap);
+    member_heap = NULL;
+  }
+
+  if(topic_heap != NULL)
+  {
+    BlockHeapDestroy(topic_heap);
+    topic_heap = NULL;
+  }
 }
 
 struct Channel *

@@ -272,7 +272,6 @@ cleanup_db()
       query_t *query = &queries[i];
       Free(query->rc);
     }
-
     Database.yada->destroy(Database.yada);
   }
   fbclose(db_log_fb);
