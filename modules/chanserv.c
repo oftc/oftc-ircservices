@@ -705,6 +705,8 @@ m_access_list(struct Service *service, struct Client *client,
   {
     reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
     free_chanaccess(access);
+    if(chptr == NULL)
+      free_regchan(regchptr);
     return;
   }
 
@@ -1163,6 +1165,9 @@ m_akick_del(struct Service *service, struct Client *client,
   else
     ret = db_list_del(DELETE_AKICK_ACCOUNT, regchptr->id, parv[2]);
 
+  if(chptr == NULL)
+    free_regchan(regchptr);
+
   reply_user(service, service, client, CS_AKICK_DEL, ret);
 }
 
@@ -1585,6 +1590,8 @@ m_set_flag(struct Service *service, struct Client *client,
   {
     reply_user(service, service, client, CS_SET_VALUE, flagname,
         on ? "ON" : "OFF", channel);
+    if(chptr == NULL)
+      free_regchan(regchptr);
     return -1;
   }
 
