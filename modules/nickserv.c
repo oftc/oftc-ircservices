@@ -980,7 +980,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Nick *nick;
-  struct AccessEntry *entry;
+  struct AccessEntry *entry = NULL;
   void *first, *listptr;
   int i = 1;
 
@@ -990,6 +990,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
  
   if((listptr = db_list_first(ACCESS_LIST, nick->id, (void**)&entry)) == NULL)
   {
+    MyFree(entry);
     return;
   }
 
@@ -1002,6 +1003,7 @@ m_access_list(struct Service *service, struct Client *client, int parc,
     listptr = db_list_next(listptr, ACCESS_LIST, (void**)&entry);
   }
 
+  MyFree(entry);
   db_list_done(first);
 }
 
@@ -1044,7 +1046,7 @@ m_cert_list(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Nick *nick;
-  struct AccessEntry *entry;
+  struct AccessEntry *entry = NULL;
   void *first, *listptr;
   int i = 1;
 
@@ -1053,7 +1055,10 @@ m_cert_list(struct Service *service, struct Client *client, int parc,
   reply_user(service, service, client, NS_CERT_START);
  
   if((listptr = db_list_first(CERT_LIST, nick->id, (void**)&entry)) == NULL)
+  {
+    MyFree(entry);
     return;
+  }
 
   first = listptr;
 
@@ -1185,7 +1190,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick;
   struct Client *target;
-  struct InfoChanList *chan;
+  struct InfoChanList *chan = NULL;
   char *name;
   char *link;
   char buf[IRC_BUFSIZE+1] = {0};
@@ -1316,6 +1321,8 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       MyFree(chan);
       db_list_done(first);
     }
+    else
+      MyFree(chan);
   }
   else if(!nick->priv)
     reply_user(service, service, client, NS_INFO_EMAIL, nick->email);

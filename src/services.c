@@ -302,9 +302,6 @@ services_die(const char *msg, int rboot)
 {
   ilog(L_NOTICE, "Dying: %s", msg);
 
-  cleanup_channel();
-  /*cleanup_parser();
-  cleanup_log();*/
   cleanup_channel_modes();
   cleanup_conf();
 #ifdef HAVE_RUBY
@@ -323,6 +320,7 @@ services_die(const char *msg, int rboot)
     MyFree(me.uplink->server);
  
   cleanup_client();
+  cleanup_channel();
   cleanup_interface();
   unregister_callback(iorecv_cb);
   unregister_callback(connected_cb);

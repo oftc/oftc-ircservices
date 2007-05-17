@@ -690,7 +690,7 @@ static void
 m_access_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ChanAccess *access;
+  struct ChanAccess *access = NULL;
   struct Channel *chptr;
   struct RegChannel *regchptr;
   void *handle, *first;
@@ -704,6 +704,7 @@ m_access_list(struct Service *service, struct Client *client,
   if (handle == NULL)
   {
     reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
+    free_chanaccess(access);
     return;
   }
 
@@ -737,7 +738,6 @@ m_access_list(struct Service *service, struct Client *client,
   }
 
   free_chanaccess(access);
-
   db_list_done(first);
   reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
 
@@ -1102,7 +1102,7 @@ static void
 m_akick_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ServiceBan *akick;
+  struct ServiceBan *akick = NULL;
   void *handle, *first;
   int i = 1;
   struct Channel *chptr;

@@ -480,6 +480,8 @@ m_akill_list(struct Service *service, struct Client *client,
   if(first)
     db_list_done(first);
 
+  free_serviceban(akill);
+
   reply_user(service, service, client, OS_AKILL_LIST_END);
 }
 
