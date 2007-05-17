@@ -112,6 +112,7 @@ LIBIO_EXTERN struct Callback *fdlimit_cb;
 
 #ifdef IN_MISC_C
 extern void fdlist_init(void);
+extern void fdlist_cleanup();
 #endif
 LIBIO_EXTERN fde_t *lookup_fd(int);
 LIBIO_EXTERN void fd_open(fde_t *, int, int, const char *);

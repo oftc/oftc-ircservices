@@ -47,6 +47,15 @@ init_channel(void)
   topic_heap = BlockHeapCreate("topic", TOPICLEN+1 + USERHOST_REPLYLEN, TOPIC_HEAP_SIZE);
 }
 
+void
+cleanup_channel()
+{
+  BlockHeapDestroy(channel_heap);
+  BlockHeapDestroy(ban_heap);
+  BlockHeapDestroy(member_heap);
+  BlockHeapDestroy(topic_heap);
+}
+
 struct Channel *
 make_channel(const char *chname)
 {

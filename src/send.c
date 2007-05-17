@@ -110,6 +110,9 @@ sendto_server(struct Client *to, const char *pattern, ...)
   char buffer[IRC_BUFSIZE];
   int len;
 
+  if(to == NULL)
+    return;
+
   if (to->from != NULL)
     to = to->from;
   if (IsDead(to->server))

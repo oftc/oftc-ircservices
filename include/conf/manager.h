@@ -64,6 +64,7 @@ struct ConfSection {
 };
 
 void init_conf(void);
+void cleanup_conf(void);
 void yyerror(const char *);
 int yylex(void);
 int conf_yy_input(char *, int);

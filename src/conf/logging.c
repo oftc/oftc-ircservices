@@ -103,7 +103,7 @@ conf_log_level(void *list, void *logtype)
   for (i = 0; i < 7; i++)
     if (!irccmp(value, levels[i].name))
     {
-      if((int)logtype == 0)
+      if((long)logtype == 0)
         set_gnotice_log_level(levels[i].level);
       else
         set_file_log_level(levels[i].level);
@@ -144,4 +144,13 @@ init_logging(void)
 
   add_conf_field(s, "gnotice_log_level", CT_LIST, conf_log_level, (void*)0);
   add_conf_field(s, "file_log_level", CT_LIST, conf_log_level, (void*)1);
+}
+
+void
+cleanup_logging()
+{
+  struct ConfSection *s = find_conf_section("logging");
+
+  delete_conf_section(s);
+  MyFree(s);
 }

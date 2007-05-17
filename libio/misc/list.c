@@ -38,6 +38,12 @@ init_dlink_nodes(void)
   dnode_heap = BlockHeapCreate("dlink node", sizeof(dlink_node), DNODE_HEAP_SIZE);
 }
 
+void
+cleanup_dlink_nodes()
+{
+  BlockHeapDestroy(dnode_heap);
+}
+
 /* make_dlink_node()
  *
  * inputs       - NONE

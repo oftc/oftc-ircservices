@@ -1067,6 +1067,12 @@ init_channel_modes(void)
                                         get_channel_access);
 }
 
+void
+cleanup_channel_modes()
+{
+  unregister_callback(channel_access_cb);
+}
+
 /* void set_channel_mode(struct Client *client_p, struct Client *source_p,
  *               struct Channel *chptr, int parc, char **parv,
  *               char *chname)

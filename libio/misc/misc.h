@@ -57,6 +57,7 @@ LIBIO_EXTERN char *ssl_get_cipher(SSL *);
 #endif
 LIBIO_EXTERN void set_time(void);
 LIBIO_EXTERN void libio_init(int);
+LIBIO_EXTERN void libio_cleanup();
 LIBIO_EXTERN void setup_corefile(void);
 
 LIBIO_EXTERN char *servcrypt(const char *, const char *);

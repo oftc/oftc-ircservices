@@ -193,6 +193,7 @@ int main(int argc, char *argv[])
   setup_signals();
   memset(&me, 0, sizeof(me));
 
+  libio_init(!ServicesState.foreground);
   iorecv_cb = register_callback("iorecv", iorecv_default);
   connected_cb = register_callback("server connected", server_connected);
   iosend_cb = register_callback("iosend", iosend_default);
@@ -200,7 +201,6 @@ int main(int argc, char *argv[])
   OpenSSL_add_all_digests();
  
   init_interface();
-  libio_init(!ServicesState.foreground);
   check_pidfile(ServicesState.pidfile);
   init_log(ServicesState.logfile);
 
@@ -302,18 +302,16 @@ services_die(const char *msg, int rboot)
 {
   ilog(L_NOTICE, "Dying: %s", msg);
 
-  /*cleanup_channel();
-  cleanup_conf();
-  cleanup_client();
-  cleanup_parser();
-  cleanup_channel_modes();
+  cleanup_channel();
+  /*cleanup_parser();
   cleanup_log();*/
+  cleanup_channel_modes();
+  cleanup_conf();
 #ifdef HAVE_RUBY
   cleanup_ruby();
 #endif
   cleanup_db();
   cleanup_modules();
-  cleanup_interface();
 
   EVP_cleanup();
 
@@ -321,6 +319,15 @@ services_die(const char *msg, int rboot)
   exit_client(&me, &me, "Services shutting down");
   send_queued_all();
 
+  if(me.uplink != NULL)
+    MyFree(me.uplink->server);
+ 
+  cleanup_client();
+  cleanup_interface();
+  unregister_callback(iorecv_cb);
+  unregister_callback(connected_cb);
+  unregister_callback(iosend_cb);
+  libio_cleanup();
   exit(rboot);
 }
 

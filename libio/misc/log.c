@@ -154,6 +154,13 @@ init_log(const char *filename)
 }
 
 void
+cleanup_log()
+{
+  if(logFile != NULL)
+    fbclose(logFile);
+}
+
+void
 reopen_log(const char *filename)
 {
   if (logFile != NULL)

@@ -481,6 +481,7 @@ void
 cleanup_modules(void)
 {
   dlink_node *ptr, *nptr;
+  struct ConfSection *s = find_conf_section("modules");
 
   DLINK_FOREACH_SAFE(ptr, nptr, loaded_modules.head)
   {
@@ -488,5 +489,16 @@ cleanup_modules(void)
 
     unload_module(mod);
   }
+
+  DLINK_FOREACH_SAFE(ptr, nptr, mod_paths.head)
+  {
+    MyFree(ptr->data);
+    dlinkDelete(ptr, &mod_paths);
+    free_dlink_node(ptr);
+  }
+
+  delete_conf_section(s);
+  MyFree(s);
+
   lt_dlexit();
 }

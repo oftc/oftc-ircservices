@@ -136,6 +136,12 @@ init_comm(void)
   init_netio();
 }
 
+void
+cleanup_comm()
+{
+  unregister_callback(setup_socket_cb);
+}
+
 /*
  * stolen from squid - its a neat (but overused! :) routine which we
  * can use to see whether we can ignore this errno or not. It is

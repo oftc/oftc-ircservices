@@ -55,19 +55,34 @@ register_callback(const char *name, CBFUNC *func)
     if ((cb = find_callback(name)) != NULL)
     {
       if (func != NULL)
-        dlinkAddTail(func, MyMalloc(sizeof(dlink_node)), &cb->chain);
+        dlinkAddTail(func, make_dlink_node(), &cb->chain);
       return (cb);
     }
 
   cb = MyMalloc(sizeof(struct Callback));
   if (func != NULL)
-    dlinkAdd(func, MyMalloc(sizeof(dlink_node)), &cb->chain);
+    dlinkAdd(func, make_dlink_node(), &cb->chain);
   if (name != NULL)
   {
     DupString(cb->name, name);
     dlinkAdd(cb, &cb->node, &callback_list);
   }
   return (cb);
+}
+
+void
+unregister_callback(struct Callback *cb)
+{
+  dlink_node *ptr, *nptr;
+
+  DLINK_FOREACH_SAFE(ptr, nptr, cb->chain.head)
+  {
+    dlinkDelete(ptr, &cb->chain);
+    free_dlink_node(ptr);
+  }
+
+  MyFree(cb->name);
+  MyFree(cb);
 }
 
 /*
@@ -85,6 +100,9 @@ execute_callback(struct Callback *cb, ...)
 {
   void *res;
   va_list args;
+
+  if(cb == NULL)
+    return NULL;
 
   cb->called++;
   cb->last = CurrentTime;
@@ -167,7 +185,7 @@ find_callback(const char *name)
 dlink_node *
 install_hook(struct Callback *cb, CBFUNC *hook)
 {
-  dlink_node *node = MyMalloc(sizeof(dlink_node));
+  dlink_node *node = make_dlink_node();
 
   dlinkAdd(hook, node, &cb->chain);
   return (node);
@@ -190,5 +208,5 @@ uninstall_hook(struct Callback *cb, CBFUNC *hook)
   dlink_node *ptr = dlinkFind(&cb->chain, hook);
 
   dlinkDelete(ptr, &cb->chain);
-  MyFree(ptr);
+  free_dlink_node(ptr);
 }

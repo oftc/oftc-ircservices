@@ -148,6 +148,7 @@ struct Client
 } Client;
 
 void init_client();
+void cleanup_client();
 struct Client *make_client(struct Client*);
 struct Server *make_server(struct Client*);
 struct Client *find_person(const struct Client *, const char *);

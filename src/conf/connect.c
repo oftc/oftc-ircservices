@@ -93,3 +93,15 @@ init_connect(void)
   add_conf_field(s, "protocol", CT_STRING, NULL, &Connect.protocol);
   add_conf_field(s, "password", CT_STRING, NULL, &Connect.password);
 }
+
+void
+cleanup_connect()
+{
+  struct ConfSection *s = find_conf_section("connect");
+  delete_conf_section(s);
+  MyFree(s);
+  MyFree(Connect.host);
+  MyFree(Connect.name);
+  MyFree(Connect.password);
+  MyFree(Connect.protocol);
+}

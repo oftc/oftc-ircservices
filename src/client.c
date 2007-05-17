@@ -116,6 +116,12 @@ init_client()
   client_heap = BlockHeapCreate("client", sizeof(struct Client), CLIENT_HEAP_SIZE);
 }
 
+void
+cleanup_client()
+{
+  BlockHeapDestroy(client_heap);
+}
+
 struct Client *
 make_client(struct Client *from)
 {

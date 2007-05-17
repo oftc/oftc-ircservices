@@ -246,6 +246,8 @@ init_db()
 
   Database.yada = yada_init(dbstr, 0);
 
+  MyFree(dbstr);
+
   snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
   if(db_log_fb == NULL)
   {
@@ -260,9 +262,20 @@ init_db()
 void
 cleanup_db()
 {
-  Database.yada->disconnect(Database.yada);
-  MyFree(Database.yada->dbstr);
-//  Database.yada->destroy(Database.yada);
+  int i;
+
+  if(Database.yada != NULL)
+  {
+    Database.yada->disconnect(Database.yada);
+    for(i = 0; i < QUERY_COUNT; i++)
+    {
+      query_t *query = &queries[i];
+      Free(query->rc);
+    }
+
+    Database.yada->destroy(Database.yada);
+  }
+  fbclose(db_log_fb);
 }
 
 void

@@ -88,3 +88,17 @@ init_database(void)
   add_conf_field(s, "hostname", CT_STRING, NULL, &Database.hostname);
   add_conf_field(s, "port", CT_NUMBER, NULL, &Database.port);
 }
+
+void
+cleanup_database()
+{
+  struct ConfSection *s = find_conf_section("database");
+
+  delete_conf_section(s);
+  MyFree(s);
+  MyFree(Database.driver);
+  MyFree(Database.dbname);
+  MyFree(Database.username);
+  MyFree(Database.password);
+  MyFree(Database.hostname);
+}

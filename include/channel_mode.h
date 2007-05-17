@@ -120,6 +120,7 @@ struct Channel;
 EXTERN struct Callback *channel_access_cb;
 
 void init_channel_modes(void);
+void cleanup_channel_modes();
 void set_chcap_usage_counts(struct Client *);
 void unset_chcap_usage_counts(struct Client *);
 

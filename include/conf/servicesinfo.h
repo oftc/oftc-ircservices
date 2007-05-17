@@ -46,6 +46,7 @@ EXTERN struct ServicesInfoConf ServicesInfo;
 
 #ifdef IN_CONF_C
 void init_servicesinfo(void);
+void cleanup_servicesinfo(void);
 #endif
 
 #endif /* INCLUDED_conf_servicesinfo_h */

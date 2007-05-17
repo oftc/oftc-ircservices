@@ -205,3 +205,13 @@ init_servicesinfo(void)
 
   s->after = after_servicesinfo;
 }
+
+void
+cleanup_servicesinfo()
+{
+  struct ConfSection *s = find_conf_section("servicesinfo");
+
+  delete_conf_section(s);
+  MyFree(s);
+  MyFree(ServicesInfo.hmac_secret);
+}

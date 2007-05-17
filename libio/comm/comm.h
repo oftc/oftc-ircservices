@@ -66,6 +66,7 @@ LIBIO_EXTERN int comm_accept(fde_t *, struct irc_ssaddr *);
 LIBIO_EXTERN void comm_setselect(fde_t *, unsigned int, PF *, void *, time_t);
 #ifdef IN_MISC_C
 extern void init_comm(void);
+extern void cleanup_comm(void);
 #endif
 LIBIO_EXTERN void comm_select(void);
 LIBIO_EXTERN int check_can_use_v6(void);

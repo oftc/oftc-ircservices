@@ -374,14 +374,24 @@ libio_init(int daemonn)
 
   set_time();
   eventInit();
-  fdlist_init();
-  init_comm();
 #if USE_BLOCK_ALLOC
   initBlockHeap();
 #endif
   init_dlink_nodes();
   dbuf_init();
+  fdlist_init();
+  init_comm();
 #ifndef _WIN32
-  init_resolver();
+ init_resolver();
 #endif
+}
+
+void
+libio_cleanup()
+{
+  fdlist_cleanup();
+  cleanup_comm();
+  dbuf_cleanup();
+  cleanup_dlink_nodes();
+  cleanup_log();
 }
