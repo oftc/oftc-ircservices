@@ -1028,10 +1028,18 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   db_query(rc, query, param);
 
   if(rc == NULL || brc == NULL)
+  {
+    if(brc != NULL)
+      Free(brc);
     return NULL;
+  }
 
   if(Fetch(rc, brc) == 0)
+  {
+    Free(brc);
+    Free(rc);
     return NULL;
+  }
 
   result = MyMalloc(sizeof(struct DBResult));
 

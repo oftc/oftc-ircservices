@@ -829,7 +829,10 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
   first = ptr = db_list_first(type, id, (void**)&entry);
 
   if(ptr == NULL)
+  {
+    MyFree(entry);
     return FALSE;
+  }
 
   while(ptr != NULL)
   {
