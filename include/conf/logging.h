@@ -35,6 +35,7 @@ EXTERN struct LoggingConf Logging;
 
 #ifdef IN_CONF_C
 void init_logging(void);
+void cleanup_logging(void);
 #endif
 
 #endif /* INCLUDED_conf_logging_h */

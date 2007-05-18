@@ -65,6 +65,20 @@ init_conf(void)
   init_mail();
 }
 
+void
+cleanup_conf()
+{
+  cleanup_service();
+  cleanup_mail();
+  cleanup_connect();
+  cleanup_database();
+  cleanup_logging();
+  cleanup_servicesinfo();
+  unregister_callback(reset_conf);
+  unregister_callback(verify_conf);
+  unregister_callback(switch_conf_pass);
+}
+
 /*
  * parse_error()
  *

@@ -235,6 +235,8 @@ init_db()
   Database.yada = yada_init(dbstr, 0);
   MyFree(dbstr);
 
+  MyFree(dbstr);
+
   snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
   if(db_log_fb == NULL)
   {
@@ -249,8 +251,19 @@ init_db()
 void
 cleanup_db()
 {
-  Database.yada->disconnect(Database.yada);
-//  Database.yada->destroy(Database.yada);
+  int i;
+
+  if(Database.yada != NULL)
+  {
+    Database.yada->disconnect(Database.yada);
+    for(i = 0; i < QUERY_COUNT; i++)
+    {
+      query_t *query = &queries[i];
+      Free(query->rc);
+    }
+    Database.yada->destroy(Database.yada);
+  }
+  fbclose(db_log_fb);
 }
 
 void
@@ -996,10 +1009,18 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   db_query(rc, query, param);
 
   if(rc == NULL || brc == NULL)
+  {
+    if(brc != NULL)
+      Free(brc);
     return NULL;
+  }
 
   if(Fetch(rc, brc) == 0)
+  {
+    Free(brc);
+    Free(rc);
     return NULL;
+  }
 
   result = MyMalloc(sizeof(struct DBResult));
 

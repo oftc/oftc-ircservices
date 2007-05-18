@@ -37,6 +37,7 @@ EXTERN struct MailConf Mail;
 
 #ifdef IN_CONF_C
 void init_mail(void);
+void cleanup_mail(void);
 #endif
 
 #endif /* INCLUDED_conf_mail_h */

@@ -32,6 +32,12 @@ dbuf_init(void)
   dbuf_heap = BlockHeapCreate("dbuf", sizeof(struct dbuf_block), DBUF_HEAP_SIZE);
 }
 
+void
+dbuf_cleanup()
+{
+  BlockHeapDestroy(dbuf_heap);
+}
+
 static struct dbuf_block *
 dbuf_alloc(struct dbuf_queue *qptr)
 {

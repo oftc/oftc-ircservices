@@ -41,6 +41,7 @@ EXTERN struct DatabaseConf Database;
 
 #ifdef IN_CONF_C
 void init_database(void);
+void cleanup_database(void);
 #endif
 
 #endif /* INCLUDED_conf_database_h */

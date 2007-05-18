@@ -33,6 +33,7 @@ extern struct ConfParserContext conf_curctx;
 extern int yyparse(); /* defined in y.tab.c */
 extern int lineno;
 int scount = 0; /* used by yyparse(), etc */
+extern int yylex_destroy(void);
 
 int
 conf_fbgets(char *lbuf, int max_size, FBFILE *fb)
@@ -70,7 +71,9 @@ read_services_conf(int cold)
   conf_curctx.lineno = 0;
   conf_linebuf[0] = 0;
   yyparse();
+  yylex_destroy();
 
   execute_callback(verify_conf);
   conf_pass = 0;
+  fbclose(conf_curctx.f);
 }

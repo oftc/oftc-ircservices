@@ -47,6 +47,34 @@ init_channel(void)
   topic_heap = BlockHeapCreate("topic", TOPICLEN+1 + USERHOST_REPLYLEN, TOPIC_HEAP_SIZE);
 }
 
+void
+cleanup_channel()
+{
+  if(channel_heap != NULL)
+  {
+    BlockHeapDestroy(channel_heap);
+    channel_heap = NULL;
+  }
+  
+  if(ban_heap != NULL)
+  {
+    BlockHeapDestroy(ban_heap);
+    ban_heap = NULL;
+  }
+
+  if(member_heap != NULL)
+  {
+    BlockHeapDestroy(member_heap);
+    member_heap = NULL;
+  }
+
+  if(topic_heap != NULL)
+  {
+    BlockHeapDestroy(topic_heap);
+    topic_heap = NULL;
+  }
+}
+
 struct Channel *
 make_channel(const char *chname)
 {
@@ -152,6 +180,7 @@ destroy_channel(struct Channel *chptr)
   free_channel_list(&chptr->banlist);
   free_channel_list(&chptr->exceptlist);
   free_channel_list(&chptr->invexlist);
+  free_channel_list(&chptr->quietlist);
 
   free_topic(chptr);
 

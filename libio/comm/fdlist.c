@@ -48,6 +48,12 @@ fdlist_init(void)
 }
 
 void
+fdlist_cleanup()
+{
+  unregister_callback(fdlimit_cb);
+}
+
+void
 recalc_fdlimit(void *unused)
 {
 #ifdef _WIN32

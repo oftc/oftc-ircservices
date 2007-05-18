@@ -297,6 +297,9 @@ CLEANUP_MODULE
   mod_del_cmd(&stats_msgtab);
   mod_del_cmd(&topic_msgtab);
   mod_del_cmd(&tburst_msgtab);
+  mod_del_cmd(&notice_msgtab);
+  mod_del_cmd(&kick_msgtab);
+  mod_del_cmd(&kill_msgtab);
 }
 
 /** Introduce a new server; currently only useful for connect and jupes

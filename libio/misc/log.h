@@ -38,6 +38,7 @@ LIBIO_EXTERN void *user_log_fb;
 #endif
 
 LIBIO_EXTERN void init_log(const char *);
+LIBIO_EXTERN void cleanup_log();
 LIBIO_EXTERN void reopen_log(const char *);
 LIBIO_EXTERN void set_gnotice_log_level(const int);
 LIBIO_EXTERN int get_gnotice_log_level(void);

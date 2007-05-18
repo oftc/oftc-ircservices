@@ -78,6 +78,9 @@ after_service()
   service = (struct ServiceConf *)MyMalloc(sizeof(struct ServiceConf));
   DupString(service->name, tmpservice.name);
   DupString(service->module, tmpservice.module);
+  MyFree(tmpservice.name);
+  MyFree(tmpservice.module);
+  tmpservice.name = tmpservice.module = NULL;
   dlinkAdd(service, &service->node, &service_confs);
 }
 
@@ -101,4 +104,24 @@ init_service(void)
   add_conf_field(s, "module", CT_STRING, NULL, &tmpservice.module);
 
   s->after = after_service;
+}
+
+void
+cleanup_service()
+{
+  dlink_node *ptr, *nptr;
+  struct ConfSection *s = find_conf_section("service");
+
+  DLINK_FOREACH_SAFE(ptr, nptr, service_confs.head)
+  {
+    struct ServiceConf *service = (struct ServiceConf *)ptr->data;
+
+    MyFree(service->name);
+    MyFree(service->module);
+    dlinkDelete(ptr, &service_confs);
+    MyFree(service);
+  }
+
+  delete_conf_section(s);
+  MyFree(s);
 }

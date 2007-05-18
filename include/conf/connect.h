@@ -37,6 +37,7 @@ EXTERN struct ConnectConf Connect;
 
 #ifdef IN_CONF_C
 void init_connect(void);
+void cleanup_connect(void);
 #endif
 
 #endif /* INCLUDED_conf_connect_h */

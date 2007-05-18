@@ -98,7 +98,6 @@ init_interface()
   on_quit_cb          = register_callback("Propagate QUIT", NULL);
   on_umode_change_cb  = register_callback("Propagate UMODE", NULL);
   on_cmode_change_cb  = register_callback("Propagate CMODE", NULL);
-  on_quit_cb          = register_callback("Propagate SQUIT", NULL);
   on_identify_cb      = register_callback("Identify Callback", NULL);
   on_newuser_cb       = register_callback("New user coming to us", NULL);
   on_channel_created_cb = register_callback("Channel is being created", NULL);
@@ -116,6 +115,42 @@ void
 cleanup_interface()
 {
   BlockHeapDestroy(services_heap);
+  unregister_callback(send_newuser_cb);
+  unregister_callback(send_privmsg_cb);
+  unregister_callback(send_notice_cb);
+  unregister_callback(send_gnotice_cb);
+  unregister_callback(send_umode_cb);
+  unregister_callback(send_cloak_cb);
+  unregister_callback(send_nick_cb);
+  unregister_callback(send_akill_cb);
+  unregister_callback(send_unakill_cb);
+  unregister_callback(send_kick_cb);
+  unregister_callback(send_cmode_cb);
+  unregister_callback(send_invite_cb);
+  unregister_callback(send_topic_cb);
+  unregister_callback(send_kill_cb);
+  unregister_callback(send_resv_cb);
+  unregister_callback(send_unresv_cb);
+  unregister_callback(send_newserver_cb);
+  unregister_callback(send_join_cb);
+  unregister_callback(send_part_cb);
+  unregister_callback(send_nosuchsrv_cb);
+  unregister_callback(on_nick_change_cb);
+  unregister_callback(on_join_cb);
+  unregister_callback(on_part_cb);
+  unregister_callback(on_quit_cb);
+  unregister_callback(on_umode_change_cb);
+  unregister_callback(on_cmode_change_cb);
+  unregister_callback(on_identify_cb);
+  unregister_callback(on_newuser_cb);
+  unregister_callback(on_channel_created_cb);
+  unregister_callback(on_channel_destroy_cb);
+  unregister_callback(on_topic_change_cb);
+  unregister_callback(on_privmsg_cb);
+  unregister_callback(on_notice_cb);
+  unregister_callback(on_burst_done_cb);
+
+  unload_languages(ServicesLanguages);
 }
 
 struct Service *
@@ -794,7 +829,10 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
   first = ptr = db_list_first(type, id, (void**)&entry);
 
   if(ptr == NULL)
+  {
+    MyFree(entry);
     return FALSE;
+  }
 
   while(ptr != NULL)
   {

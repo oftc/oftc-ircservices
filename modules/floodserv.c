@@ -208,6 +208,9 @@ setup_channel(struct Channel *chptr)
       regchan->gqueue = mqueue_new(chptr->chname, MQUEUE_GLOB, FS_GMSG_COUNT,
         FS_GMSG_TIME, 0);
   }
+
+  if(regchan != NULL && regchan != chptr->regchan)
+    free_regchan(regchan);
 }
 
 static void

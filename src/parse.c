@@ -817,18 +817,18 @@ do_serv_help_messages(struct Service *service, struct Client *client)
 }
 
 static void
-recurse_clear_messages(struct ServiceMessageTree *mtree)
+recurse_clear_messages(struct ServiceMessageTree *mtree) 
 {
   int i;
 
-  if (mtree->msg != NULL && !(mtree->msg->flags & SFLG_ALIAS))
-  {
-    serv_del_msg_element(mtree, mtree->msg->cmd);
-  }
   for (i = 0; i < MAXPTRLEN; i++)
   {
     if (mtree->pointers[i] != NULL)
+    {
       recurse_clear_messages(mtree->pointers[i]);
+      MyFree(mtree->pointers[i]);
+      mtree->pointers[i] = NULL;
+    }
   }
 }
 
@@ -841,7 +841,11 @@ serv_clear_messages(struct Service *service)
   for (i = 0; i < MAXPTRLEN; i++)
   {
     if (mtree->pointers[i] != NULL)
+    {
       recurse_clear_messages(mtree->pointers[i]);
+      MyFree(mtree->pointers[i]);
+      mtree->pointers[i] = NULL;
+    }
   }
 }
 

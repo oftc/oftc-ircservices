@@ -41,6 +41,7 @@ struct Callback
 LIBIO_EXTERN dlink_list callback_list;  /* listing/debugging purposes */
 
 LIBIO_EXTERN struct Callback *register_callback(const char *, CBFUNC *);
+LIBIO_EXTERN void unregister_callback(struct Callback *);
 LIBIO_EXTERN void *execute_callback(struct Callback *, ...);
 LIBIO_EXTERN struct Callback *find_callback(const char *);
 LIBIO_EXTERN dlink_node *install_hook(struct Callback *, CBFUNC *);

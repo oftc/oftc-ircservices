@@ -33,6 +33,7 @@ typedef struct _dlink_list dlink_list;
 
 #ifdef IN_MISC_C
 extern void init_dlink_nodes(void);
+extern void cleanup_dlink_nodes(void);
 #endif
 LIBIO_EXTERN void free_dlink_node(dlink_node *);
 LIBIO_EXTERN dlink_node *make_dlink_node(void);

@@ -35,6 +35,7 @@ EXTERN dlink_list service_confs;
 
 #ifdef IN_CONF_C
 void init_service(void);
+void cleanup_service(void);
 #endif
 
 #endif /* INCLUDED_conf_service_h */

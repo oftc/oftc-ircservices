@@ -5,6 +5,7 @@
 
 struct Channel *make_channel(const char *);
 void init_channel();
+void cleanup_channel();
 void remove_ban(struct Ban *bptr, dlink_list *list);
 struct Membership *find_channel_link(struct Client *, struct Channel *);
 void add_user_to_channel(struct Channel *, struct Client *, unsigned int, int);

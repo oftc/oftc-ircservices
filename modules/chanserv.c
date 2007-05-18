@@ -700,7 +700,7 @@ static void
 m_access_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ChanAccess *access;
+  struct ChanAccess *access = NULL;
   struct Channel *chptr;
   struct RegChannel *regchptr;
   void *handle, *first;
@@ -714,6 +714,9 @@ m_access_list(struct Service *service, struct Client *client,
   if (handle == NULL)
   {
     reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
+    free_chanaccess(access);
+    if(chptr == NULL)
+      free_regchan(regchptr);
     return;
   }
 
@@ -747,7 +750,6 @@ m_access_list(struct Service *service, struct Client *client,
   }
 
   free_chanaccess(access);
-
   db_list_done(first);
   reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
 
@@ -1112,7 +1114,7 @@ static void
 m_akick_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ServiceBan *akick;
+  struct ServiceBan *akick = NULL;
   void *handle, *first;
   int i = 1;
   struct Channel *chptr;
@@ -1172,6 +1174,9 @@ m_akick_del(struct Service *service, struct Client *client,
     ret = db_list_del(DELETE_AKICK_MASK, regchptr->id, parv[2]);
   else
     ret = db_list_del(DELETE_AKICK_ACCOUNT, regchptr->id, parv[2]);
+
+  if(chptr == NULL)
+    free_regchan(regchptr);
 
   reply_user(service, service, client, CS_AKICK_DEL, ret);
 }
@@ -1695,6 +1700,8 @@ m_set_flag(struct Service *service, struct Client *client,
   {
     reply_user(service, service, client, CS_SET_VALUE, flagname,
         on ? "ON" : "OFF", channel);
+    if(chptr == NULL)
+      free_regchan(regchptr);
     return -1;
   }
 
