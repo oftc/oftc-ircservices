@@ -76,3 +76,8 @@
 	Bugfix point release.  Bug(s) fixed:
 	- Fix core caused by tring to print channel name from a null struct.
 	- Fix chanserv access notices to be more helpful.
+2007-05-18 - 1.0.13
+	Bugfix point release.  Bug(s) fixed:
+	- Fix a 64 bit compilation issue.
+	- Fix various additional memory leaks.
+	- Reenable closing of module handles which sneaked in during debugging.
