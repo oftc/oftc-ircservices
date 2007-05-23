@@ -1331,15 +1331,6 @@ free_serviceban(struct ServiceBan *ban)
   MyFree(ban);
 }
 
-void
-free_chanaccess(struct ChanAccess *access)
-{
-  if(access == NULL)
-    return;
-	ilog(L_DEBUG, "Freeing chanaccess %p for channel %d", access, access->channel);
-	MyFree(access);
-}
-
 int 
 check_nick_pass(struct Nick *nick, const char *password)
 {

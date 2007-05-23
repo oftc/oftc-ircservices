@@ -397,7 +397,7 @@ handle_services_command(struct ServiceMessage *pmptr,
       else
       {
         level = access->level;
-        free_chanaccess(access);
+        MyFree(access);
       }
 
       if(from->access == SUDO_FLAG)
