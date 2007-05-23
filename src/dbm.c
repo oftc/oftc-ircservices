@@ -235,8 +235,6 @@ init_db()
   Database.yada = yada_init(dbstr, 0);
   MyFree(dbstr);
 
-  MyFree(dbstr);
-
   snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
   if(db_log_fb == NULL)
   {

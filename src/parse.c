@@ -412,7 +412,7 @@ handle_services_command(struct ServiceMessage *pmptr,
       else
         reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN_ID, mptr->cmd,
             regchptr->channel);
-      if(regchptr != chptr->regchan)
+      if(chptr == NULL || regchptr != chptr->regchan)
         free_regchan(regchptr);
       return;
     }
