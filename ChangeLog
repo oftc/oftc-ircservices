@@ -87,3 +87,4 @@
 	- Allow NULL hostname to be specified for database{} connection to use the
 		system default to the database driver. (#21)
 	- Set Precedence: junk on outgoing mail. (#2)
+	- Add floodserv flag to chanserv's info. (#30)

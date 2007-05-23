@@ -543,6 +543,9 @@ m_info(struct Service *service, struct Client *client,
   reply_user(service, service, client, CS_INFO_OPTION, "LEAVEOPS",
       regchptr->leaveops ? "ON" : "OFF");
 
+  reply_user(service, service, client, CS_INFO_OPTION, "FLOODSERV",
+      regchptr->floodserv ? "ON" : "OFF");
+
   free_regchan(regchptr);
 }
 
