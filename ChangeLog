@@ -88,5 +88,6 @@
 		system default to the database driver. (#21)
 	- Set Precedence: junk on outgoing mail. (#2)
 	- Add floodserv flag to chanserv's info. (#30)
+	- Fix another bug in channel modes causing a desync. (#28)
 	- Removed stray tab in HELP_SET_PRIVATE_LONG. (#27)
 	- Add status command to nickserv. (#3)

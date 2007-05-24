@@ -570,12 +570,6 @@ chm_quiet(struct Client *client_p, struct Client *source_p,
 {
   char *mask = NULL;
 
-  if (alev < CHACCESS_HALFOP)
-  {
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
-
   if (dir == MODE_QUERY || parc <= *parn)
     return;
 
