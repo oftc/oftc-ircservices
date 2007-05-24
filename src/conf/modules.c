@@ -487,7 +487,8 @@ cleanup_modules(void)
   {
     struct Module *mod = ptr->data;
 
-    unload_module(mod);
+    if(!ServicesState.keepmodules)
+      unload_module(mod);
   }
 
   DLINK_FOREACH_SAFE(ptr, nptr, mod_paths.head)

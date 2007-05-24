@@ -17,6 +17,7 @@ struct ServicesState_t
   int foreground;
   int printversion;
   int debugmode;
+  int keepmodules;
 };
 
 EXTERN struct ServicesState_t ServicesState;

@@ -48,7 +48,9 @@ static struct lgetopt myopts[] = {
   {"version",    &ServicesState.printversion,
    YESNO, "Print version and exit"},
   {"debugmode",  &ServicesState.debugmode,
-      YESNO, "Set debug mode and disable all interaction"},
+   YESNO, "Set debug mode and disable all interaction"},
+  {"keepmodules", &ServicesState.keepmodules,
+   YESNO, "Stops modules from being unloaded.  Helps debugging memory leaks"},
   {"help", NULL, USAGE, "Print this text"},
   {NULL, NULL, STRING, NULL},
 };
