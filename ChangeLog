@@ -88,3 +88,4 @@
 		system default to the database driver. (#21)
 	- Set Precedence: junk on outgoing mail. (#2)
 	- Add floodserv flag to chanserv's info. (#30)
+	- Removed stray tab in HELP_SET_PRIVATE_LONG. (#27)
