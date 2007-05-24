@@ -63,6 +63,7 @@ static void m_regain(struct Service *,struct Client *, int, char *[]);
 static void m_sudo(struct Service *, struct Client *, int, char *[]);
 static void m_sendpass(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
+static void m_status(struct Service *, struct Client *, int, char*[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -220,6 +221,11 @@ static struct ServiceMessage list_msgtab = {
   NS_HELP_LIST_LONG, m_list
 };
 
+static struct Service Message status_msgtab = {
+  NULL, "STATUS", 0, 1, 1, 0, USER_FLAG, NS_HELP_STATUS_SHORT,
+  NS_HELP_STATUS_LONG, m_status
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -248,6 +254,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &cloakstring_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &sendpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &list_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &status_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -1694,6 +1701,11 @@ ns_on_nick_change(va_list args)
     /* XXX Use unidentify event */
     send_umode(nickserv, user, "-R");
 
+    if(IsSentCert(user))
+    {
+      ClearSentCert(user);
+    }
+
     if(user->nickname)
     {
       oldid = user->nickname->id;
@@ -1887,8 +1899,45 @@ ns_on_certfp(va_list args)
       free_nick(user->nickname);
     user->nickname = nick;
     identify_user(user);
+    SetSentCert(user);
     reply_user(nickserv, nickserv, user, NS_IDENTIFY_CERT, user->name);
   }
   
   return pass_callback(ns_certfp_hook, user);
+}
+
+static void *
+m_status(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Client *target;
+  char *name = parv[1];         //already checked # params
+
+  if(target = find_client(name) != NULL)
+  {
+    if(IsSentCert(target))
+    {
+      reply_user(service, service, client, name, NS_STATUS_SSL);
+      return;  
+    }
+    else if(IsOnAccess(target))
+    {
+      reply_user(service, service, client, name, NS_STATUS_ACCESS);
+      return;  
+    }
+    else if(IsIdentified(target))
+    {
+      reply_user(service, service, client, name, NS_STATUS_PASS);
+      return;  
+    }
+    else
+    {
+      reply_user(service, service, client, name, NS_STATUS_NOTREG);
+      return;  
+    }
+  }
+  else
+  {
+    reply_user(service, service, client, name, NS_STATUS_OFFLINE);
+    return;  
+  }
 }

@@ -636,3 +636,13 @@ NS_LIST_END
 	End of LIST. %d matches found.
 NS_INVALID_CLOAK
 	The cloakstring %s is invalid.
+NS_STATUS_SSL
+	4 (online, identified by SSL certificate)
+NS_STATUS_ACCESS
+	3 (online, identified by access list)
+NS_STATUS_PASS
+	2 (online, identified by password)
+NS_STATUS_NOTREG
+	1 (online, not identified)
+NS_STATUS_OFFLINE
+	0 (not online)
