@@ -291,7 +291,7 @@ unload_module(struct Module *mod)
   }
 #endif
 
-  if (mod != NULL && mod->handle != NULL)
+  if (mod != NULL && mod->handle != NULL && !ServicesState.keepmodules)
     modunload(mod->handle);
 #endif
 }
@@ -487,8 +487,7 @@ cleanup_modules(void)
   {
     struct Module *mod = ptr->data;
 
-    if(!ServicesState.keepmodules)
-      unload_module(mod);
+    unload_module(mod);
   }
 
   DLINK_FOREACH_SAFE(ptr, nptr, mod_paths.head)

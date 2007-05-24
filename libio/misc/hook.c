@@ -204,7 +204,9 @@ install_hook(struct Callback *cb, CBFUNC *hook)
 void
 uninstall_hook(struct Callback *cb, CBFUNC *hook)
 {
-  /* let it core if not found */
+  if(cb == NULL)
+    return;
+
   dlink_node *ptr = dlinkFind(&cb->chain, hook);
 
   dlinkDelete(ptr, &cb->chain);
