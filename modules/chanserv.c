@@ -85,6 +85,8 @@ static void m_clear_users(struct Service *, struct Client *, int, char *[]);
 
 static void m_op(struct Service *, struct Client *, int, char *[]);
 static void m_deop(struct Service *, struct Client *, int, char *[]);
+static void m_voice(struct Service *, struct Client *, int, char *[]);
+static void m_devoice(struct Service *, struct Client *, int, char *[]);
 static void m_invite(struct Service *, struct Client *, int, char *[]);
 static void m_unban(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
@@ -202,6 +204,16 @@ static struct ServiceMessage deop_msgtab = {
   CS_HELP_DEOP_SHORT, CS_HELP_DEOP_LONG, m_deop
 };
 
+static struct ServiceMessage voice_msgtab = {
+  NULL, "VOICE", 0, 1, 2, SFLG_CHANARG, MEMBER_FLAG, 
+  CS_HELP_VOICE_SHORT, CS_HELP_VOICE_LONG, m_voice
+};
+
+static struct ServiceMessage devoice_msgtab = {
+  NULL, "DEVOICE", 0, 1, 2, SFLG_CHANARG, MEMBER_FLAG, 
+  CS_HELP_DEVOICE_SHORT, CS_HELP_DEVOICE_LONG, m_devoice
+};
+
 static struct ServiceMessage unban_msgtab = {
   NULL, "UNBAN", 0, 1, 1, SFLG_CHANARG, MEMBER_FLAG, 
   CS_HELP_UNBAN_SHORT, CS_HELP_UNBAN_LONG, m_unban
@@ -269,6 +281,8 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &info_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &op_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &deop_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &voice_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &devoice_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &clear_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &unban_msgtab);
@@ -531,9 +545,6 @@ m_info(struct Service *service, struct Client *client,
   reply_user(service, service, client, CS_INFO_OPTION, "EXPIREBANS",
       regchptr->expirebans ? "ON" : "OFF");
 
-  reply_user(service, service, client, CS_INFO_OPTION, "EXPIREBANS",
-      regchptr->expirebans ? "ON" : "OFF");
-
   reply_user(service, service, client, CS_INFO_OPTION, "AUTOOP",
       regchptr->autoop ? "ON" : "OFF");
 
@@ -611,11 +622,12 @@ m_access_add(struct Service *service, struct Client *client,
           regchptr->channel);
       if(chptr == NULL)
         free_regchan(regchptr);
-      free_chanaccess(oldaccess);
+      MyFree(oldaccess);
+      MyFree(access);
       return;
     }
     db_list_del_index(DELETE_CHAN_ACCESS, access->account, access->channel);
-    free_chanaccess(oldaccess);
+    MyFree(oldaccess);
   }
  
   if(db_list_add(CHACCESS_LIST, access))
@@ -632,7 +644,7 @@ m_access_add(struct Service *service, struct Client *client,
   if (chptr == NULL)
     free_regchan(regchptr);
 
-  free_chanaccess(access);
+  MyFree(access);
 }
 
 
@@ -671,10 +683,11 @@ m_access_del(struct Service *service, struct Client *client,
         regchptr->channel);
     if(chptr == NULL)
       free_regchan(regchptr);
-    free_chanaccess(access);
+    MyFree(access);
     return;
   }
-  free_chanaccess(access);
+
+  MyFree(access);
 
   if(db_list_del_index(DELETE_CHAN_ACCESS, nickid, regchptr->id))
   {
@@ -707,7 +720,7 @@ m_access_list(struct Service *service, struct Client *client,
   if (handle == NULL)
   {
     reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
-    free_chanaccess(access);
+    MyFree(access);
     if(chptr == NULL)
       free_regchan(regchptr);
     return;
@@ -737,12 +750,12 @@ m_access_list(struct Service *service, struct Client *client,
     nick = db_get_nickname_from_id(access->account);
     reply_user(service, service, client, CS_ACCESS_LIST, i++, nick, level);
 
-    free_chanaccess(access);
+    MyFree(access);
     MyFree(nick);
     handle = db_list_next(handle, CHACCESS_LIST, (void **)&access);
   }
 
-  free_chanaccess(access);
+  MyFree(access);
   db_list_done(first);
   reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
 
@@ -1368,6 +1381,8 @@ m_op(struct Service *service, struct Client *client, int parc, char *parv[])
     op_user(service, chptr, target);
     reply_user(service, service, client, CS_OP, target->name, parv[1]);
   }
+  else
+    reply_user(service, service, client, CS_ALREADY_OP, target->name, parv[1]);
 }
 
 static void
@@ -1403,6 +1418,104 @@ m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
     deop_user(service, chptr, target);
     reply_user(service, service, client, CS_DEOP, target->name, parv[1]);
   }
+  else
+    reply_user(service, service, client, CS_NOT_OP, target->name, parv[1]);
+}
+
+static void
+m_voice(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Channel    *chptr;
+  struct RegChannel *regchptr;
+  struct Client     *target;
+  struct Membership *ms;
+  struct ChanAccess *access;
+
+  chptr = hash_find_channel(parv[1]);
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+
+  regchptr = chptr->regchan;
+  access = db_find_chanaccess(regchptr->id, client->nickname->id);
+
+  if(parv[2] == NULL)
+    target = client;
+  else if(access->level < CHANOP_FLAG)
+  {
+    reply_user(service, service, client, CS_NO_VOICE_OTHERS, parv[1]);
+    MyFree(access);
+    return;
+  }
+  else
+    target = find_client(parv[2]);
+
+  MyFree(access);
+
+  if(target == NULL || (ms = find_channel_link(target, chptr)) == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_ON_CHAN, parv[2], parv[1]);
+    return;
+  }
+
+  if(!has_member_flags(ms, CHFL_VOICE))
+  {
+    voice_user(service, chptr, target);
+    reply_user(service, service, client, CS_VOICE, target->name, parv[1]);
+  }
+  else
+    reply_user(service, service, client, CS_ALREADY_VOICE, target->name, parv[1]);
+}
+
+static void
+m_devoice(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Channel    *chptr;
+  struct RegChannel *regchptr;
+  struct Client     *target;
+  struct Membership *ms;
+  struct ChanAccess *access;
+
+  chptr = hash_find_channel(parv[1]);
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+
+  regchptr = chptr->regchan;
+  access = db_find_chanaccess(regchptr->id, client->nickname->id);
+
+  if(parv[2] == NULL)
+    target = client;
+  else if(access->level < CHANOP_FLAG)
+  {
+    reply_user(service, service, client, CS_NO_DEVOICE_OTHERS, parv[1]);
+    MyFree(access);
+    return;
+  }
+  else
+    target = find_client(parv[2]);
+
+  MyFree(access);
+
+  if(target == NULL || (ms = find_channel_link(target, chptr)) == NULL)
+  {
+    reply_user(service, service, client, CS_NOT_ON_CHAN, parv[2], parv[1]);
+    return;
+  }
+
+  if(has_member_flags(ms, CHFL_VOICE))
+  {
+    devoice_user(service, chptr, target);
+    reply_user(service, service, client, CS_DEVOICE, target->name, parv[1]);
+  }
+  else
+    reply_user(service, service, client, CS_NOT_VOICE, target->name, parv[1]);
 }
 
 static void
@@ -1893,8 +2006,7 @@ cs_on_client_join(va_list args)
     else
       level = access->level;
 
-    if(access != NULL)
-      free_chanaccess(access);
+    MyFree(access);
   }
 
   if(regchptr->restricted && level < MEMBER_FLAG)

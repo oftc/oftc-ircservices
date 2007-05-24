@@ -143,7 +143,6 @@ int valid_wild_card(const char *);
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
 void free_serviceban(struct ServiceBan *);
-void free_chanaccess(struct ChanAccess *);
 
 unsigned int get_mode_from_letter(char);
 void get_modestring(unsigned int, char *, int);

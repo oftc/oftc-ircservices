@@ -102,10 +102,9 @@ CS_HELP_SET_AUTOLIMIT_LONG
 CS_HELP_SET_EXPIREBANS_SHORT
 	%s: Set whether bans automatically expire.
 CS_HELP_SET_EXPIREBANS_LONG
-	Usage: SET channel EXPIREBANS [interval]
+	Usage: SET channel EXPIREBANS [ON|OFF]
 	
-	If this option is non zero, channel bans will be removed at the interval
-	specified.
+	If this option is non zero, channel bans will be removed every hour.
 CS_HELP_SET_FLOODSERV_SHORT
 	%s: Set whether FloodServ monitors channel.
 CS_HELP_SET_FLOODSERV_LONG
@@ -207,6 +206,14 @@ CS_HELP_DEOP_LONG
 	
 	Removes your channel operator status on the channel. If a nickname is
 	specified it removes their operator status instead.
+CS_HELP_DEVOICE_SHORT
+	%s: Remove channel voice status.
+CS_HELP_DEVOICE_LONG
+	Usage: DEVOICE channel [nickname]
+	
+	Removes your channel voice status on the channel. If a nickname is
+	specified it removes their voice status instead. You must have access of
+	CHANOP or higher to be able to use other nicks.
 CS_HELP_INFO_SHORT
 	%s: Show channel information.
 CS_HELP_INFO_LONG
@@ -219,6 +226,13 @@ CS_HELP_OP_LONG
 	Usage: OP channel [nickname]
 	
 	Grants channel operator status to you or, if specified, another user.
+CS_HELP_VOICE_SHORT
+	%s: Grant channel voice operator status.
+CS_HELP_VOICE_LONG
+	Usage: VOICE channel [nickname]
+	
+	Grants channel voice status to you or, if specified, another user. You must
+	have CHANOP or higher access to specify another user.
 CS_HELP_UNBAN_SHORT
 	%s: Unban yourself on a channel.
 CS_HELP_UNBAN_LONG
@@ -413,8 +427,26 @@ CS_NOT_ON_CHAN
 	User %s not on channel %s
 CS_OP
 	User %s given ops on %s.
+CS_VOICE
+	User %s given voice on %s.
 CS_DEOP
 	User %s deopped on %s.
+CS_DEVOICE
+	User %s devoiced on %s.
+CS_ALREADY_OP
+	User %s is already an operator on channel %s.
+CS_ALREADY_VOICE
+	User %s is already voiced on channel %s.
+CS_NOT_OP
+	User %s is not an operator on channel %s.
+CS_NOT_VOICE
+	User %s is not voiced on channel %s.
+CS_NO_VOICE_OTHERS
+	You do not have access to voice others on %s. You need CHANOP or higher 
+	access.
+CS_NO_DEVOICE_OTHERS
+	You do not have access to devoice others on %s. You need CHANOP or
+	higher access.
 CS_NICK_NOT_ONLINE
 	User %s is not online.
 CS_ALREADY_ON_CHAN
