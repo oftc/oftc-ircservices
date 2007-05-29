@@ -489,6 +489,7 @@ m_info(struct Service *service, struct Client *client,
   void *first, *listptr;  
   char buf[IRC_BUFSIZE+1] = {0};
   char *nick;
+  struct ChanAccess *access = NULL;
 
   if(db_is_chan_forbid(parv[1]))
   {
@@ -497,15 +498,29 @@ m_info(struct Service *service, struct Client *client,
   }
   
   regchptr = db_find_chan(parv[1]);
+
+  if(client->nickname)
+    access = db_find_chanaccess(regchptr->id, client->nickname->id);
   
   reply_user(service, service, client, CS_INFO_CHAN_START, regchptr->channel);
   reply_time(service, client, CS_INFO_REGTIME_FULL, regchptr->regtime);
-  reply_user(service, service, client, CS_INFO_CHAN, regchptr->description, 
-      regchptr->url == NULL ? "Not Set" : regchptr->url, 
-      regchptr->email == NULL ? "Not Set" : regchptr->email, 
-      regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
-      regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg,
-      regchptr->mlock == NULL ? "Not Set" : regchptr->mlock);
+  if(IsOper(client) || (access != NULL && access->level >= MEMBER_FLAG))
+  {
+    reply_user(service, service, client, CS_INFO_CHAN_MEMBER,
+        regchptr->description, 
+        regchptr->url == NULL ? "Not Set" : regchptr->url, 
+        regchptr->email == NULL ? "Not Set" : regchptr->email, 
+        regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
+        regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg,
+        regchptr->mlock == NULL ? "Not Set" : regchptr->mlock);
+  }
+  else
+  {
+    reply_user(service, service, client, CS_INFO_CHAN_NMEMBER,
+        regchptr->description, 
+        regchptr->url == NULL ? "Not Set" : regchptr->url, 
+        regchptr->email == NULL ? "Not Set" : regchptr->email);
+  }
 
   if((listptr = db_list_first(CHMASTER_LIST, regchptr->id, 
           (void**)&nick)) != NULL)
@@ -556,6 +571,9 @@ m_info(struct Service *service, struct Client *client,
 
   reply_user(service, service, client, CS_INFO_OPTION, "FLOODSERV",
       regchptr->floodserv ? "ON" : "OFF");
+
+  if(access != NULL)
+    MyFree(access);
 
   free_regchan(regchptr);
 }
