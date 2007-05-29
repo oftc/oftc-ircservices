@@ -360,6 +360,13 @@ NS_HELP_LIST_LONG
 	specified. If you specify FORBID, only forbidden nicknames will be shown.
 	The forbid option is restricted to IRC Operators. Results will be limited to
 	50 matches, so try to be specified with your pattern.
+NS_HELP_STATUS_SHORT
+	%s: Shows the identified status of a nickname
+NS_HELP_STATUS_LONG
+	Usage: STATUS nick
+	
+	Shows the identified status of a nickname, determining if they were identified
+	via password, access list, ssl cert or otherwise.
 NS_ALREADY_REG
 	Nickname %s is already registered. If this is your nickname you may try
 	IDENTIFY instead. If this is not your nickname then it may have been

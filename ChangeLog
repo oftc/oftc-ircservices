@@ -91,3 +91,4 @@
 	- Fix another bug in channel modes causing a desync. (#28)
 	- Removed stray tab in HELP_SET_PRIVATE_LONG. (#27)
 	- Add status command to nickserv. (#3)
+	- Fix nickserv status.

@@ -221,7 +221,7 @@ static struct ServiceMessage list_msgtab = {
   NS_HELP_LIST_LONG, m_list
 };
 
-static struct Service Message status_msgtab = {
+static struct ServiceMessage status_msgtab = {
   NULL, "STATUS", 0, 1, 1, 0, USER_FLAG, NS_HELP_STATUS_SHORT,
   NS_HELP_STATUS_LONG, m_status
 };
@@ -1906,38 +1906,38 @@ ns_on_certfp(va_list args)
   return pass_callback(ns_certfp_hook, user);
 }
 
-static void *
+static void
 m_status(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Client *target;
   char *name = parv[1];         //already checked # params
 
-  if(target = find_client(name) != NULL)
+  if((target = find_client(name)) != NULL)
   {
     if(IsSentCert(target))
     {
-      reply_user(service, service, client, name, NS_STATUS_SSL);
+      reply_user(service, service, client, NS_STATUS_SSL, name);
       return;  
     }
     else if(IsOnAccess(target))
     {
-      reply_user(service, service, client, name, NS_STATUS_ACCESS);
+      reply_user(service, service, client, NS_STATUS_ACCESS, name);
       return;  
     }
     else if(IsIdentified(target))
     {
-      reply_user(service, service, client, name, NS_STATUS_PASS);
+      reply_user(service, service, client, NS_STATUS_PASS, name);
       return;  
     }
     else
     {
-      reply_user(service, service, client, name, NS_STATUS_NOTREG);
+      reply_user(service, service, client, NS_STATUS_NOTREG, name);
       return;  
     }
   }
   else
   {
-    reply_user(service, service, client, name, NS_STATUS_OFFLINE);
+    reply_user(service, service, client, NS_STATUS_OFFLINE, name);
     return;  
   }
 }
