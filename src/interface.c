@@ -1129,6 +1129,8 @@ set_mode_lock(struct Service *service, const char *channel,
             return FALSE;
           }
         }
+        else
+          l = -1;
         break;
       case 'k':
         if(dir)
@@ -1141,6 +1143,8 @@ set_mode_lock(struct Service *service, const char *channel,
             }
             strlcpy(key, parv[para++], sizeof(key));
           }
+        else
+          k = -1;
         break;
     }
   }
@@ -1156,6 +1160,11 @@ set_mode_lock(struct Service *service, const char *channel,
   get_modestring(setmodes, setstr, MODEBUFLEN/2);
   get_modestring(delmodes, delstr, MODEBUFLEN/2);
 
+  if(l < 0)
+    strlcat(delstr, "l", MODEBUFLEN/2);
+
+  if(k < 0)
+    strlcat(delstr, "k", MODEBUFLEN/2);
   /* If we've been asked to update the db, then we should do so. */
   if(value != NULL)
   {
@@ -1190,12 +1199,15 @@ set_mode_lock(struct Service *service, const char *channel,
     }
 
     snprintf(mlockbuf, MODEBUFLEN, "%s%s%s%s%s%s",
-        s || l || k ? "+": "", 
+        s || l > 0 || k > 0 ? "+": "", 
         s ? setstr : "", 
         lk,
         d ? "-" : "",
         d ? delstr : "",
-        l || k ? parabuf : "");
+        l > 0 || k > 0? parabuf : "");
+
+    if(regchptr->autolimit && l < 0)
+      regchptr->autolimit = 0;
 
     if(!db_set_string(SET_CHAN_MLOCK, regchptr->id, 
           *mlockbuf == '\0' ? NULL : mlockbuf))
@@ -1235,6 +1247,20 @@ set_mode_lock(struct Service *service, const char *channel,
   c = delstr;
   while(*c != '\0')
   {
+    if(*c == 'l')
+    {
+      chptr->mode.limit = 0;
+      c++;
+      continue;
+    }
+
+    if(*c == 'k')
+    {
+      chptr->mode.key[0] = '\0';
+      c++;
+      continue;
+    }
+
     mode = get_mode_from_letter(*c);
     if(mode <= 0)
     {
@@ -1250,12 +1276,18 @@ set_mode_lock(struct Service *service, const char *channel,
   get_modestring(delmodes, delstr, MODEBUFLEN/2);
   chptr->mode.mode |= setmodes;
   chptr->mode.mode &= ~delmodes;
-  if(l)
+
+  if(l > 0)
     chptr->mode.limit = limit;
-  if(k)
+  else if (l < 0)
+    strlcat(delstr, "l", MODEBUFLEN/2);
+
+  if(k > 0)
     strcpy(chptr->mode.key, key);
- 
-  /* 
+  else
+    strlcat(delstr, "k", MODEBUFLEN/2);
+
+  /*
    * Set up the modestring and parameter(s) and set them. This could probably
    * be written a little better.
    */

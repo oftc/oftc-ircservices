@@ -487,6 +487,10 @@ CS_DEOP_REGISTERED
 	and you are not a CHANOP on its access list.
 CS_BAD_MLOCK
 	'%c' is not a valid mode letter.
+CS_MLOCK_CONFLICT_LIMIT
+  ChanServ has detected a conflict with your MLOCK and AUTOLIMIT settings.
+  As a result AUTOLIMIT has been turned OFF. If you wish to have AUTOLIMIT
+  turned ON you must not include -l in your MLOCK.
 CS_NEED_LIMIT
 	You must provide a positive limit when using 'l' with MLOCK.
 CS_NEED_KEY

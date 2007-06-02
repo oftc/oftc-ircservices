@@ -239,7 +239,7 @@ del_id(struct Channel *chptr, char *banid, int type)
 }
 
 /* XXX This needs to come from the protocol module!! */
-static const struct mode_letter
+/*static const struct mode_letter
 {
   const unsigned int mode;
   const unsigned char letter;
@@ -252,7 +252,8 @@ static const struct mode_letter
   { MODE_TOPICLIMIT, 't' },
   { MODE_NOCOLOR,    'c' },
   { 0, '\0' }
-};
+};*/
+static const struct ModeList *flags;
 
 /* channel_modes()
  *

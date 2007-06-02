@@ -99,6 +99,7 @@ static void m_access_list(struct Service *, struct Client *, int, char *[]);
 static int m_set_flag(struct Service *, struct Client *, char *, char *, int, char *);
 static int m_set_string(struct Service *, struct Client *, const char *, 
     const char *, unsigned int, const char *, char **, int);
+static void m_delete_autolimit(struct Channel *chptr);
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, CHIDENTIFIED_FLAG, 
@@ -903,6 +904,7 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
   struct Channel *chptr;
   struct RegChannel *regchptr;
   char value[IRC_BUFSIZE+1];
+  char limit_cache;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
@@ -918,15 +920,27 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
     return;
   }
 
+  limit_cache = regchptr->autolimit;
   if(set_mode_lock(service, parv[1], client, value, &regchptr->mlock))
   {
+    if(limit_cache != regchptr->autolimit)
+    {
+      m_set_flag(service, client, parv[1], "OFF", SET_CHAN_AUTOLIMIT, "AUTOLIMIT");
+      if(chptr != NULL)
+        m_delete_autolimit(chptr);
+      reply_user(service, service, client, CS_MLOCK_CONFLICT_LIMIT);
+    }
+
     reply_user(service, service, client, CS_SET_SUCCESS, "MLOCK",
         regchptr->mlock == NULL ? "Not set" : regchptr->mlock, 
         regchptr->channel);
   }
   else
+  {
     reply_user(service, service, client, CS_SET_FAILED, "MLOCK", 
         value, parv[1]);
+    regchptr->autolimit = limit_cache;
+  }
 
   if(chptr == NULL)
     free_regchan(regchptr);
@@ -990,6 +1004,7 @@ m_set_autolimit(struct Service *service, struct Client *client,
 {
   struct Channel *chptr = hash_find_channel(parv[1]);
 
+  /*TODO XXX FIXME Setting AUTOLIMIT and having -l/+l MLOCK will fight each other*/
   m_set_flag(service, client, parv[1], parv[2], SET_CHAN_AUTOLIMIT, "AUTOLIMIT");
   if(chptr != NULL && chptr->regchan != NULL && chptr->regchan->autolimit)
   {
@@ -998,11 +1013,17 @@ m_set_autolimit(struct Service *service, struct Client *client,
   }
   else if(chptr != NULL && chptr->regchan != NULL)
   {
-    dlink_node *ptr;
-
-    if((ptr = dlinkFindDelete(&channel_limit_list, chptr)) != NULL)
-      free_dlink_node(ptr);
+    m_delete_autolimit(chptr);
   }
+}
+
+static void
+m_delete_autolimit(struct Channel *chptr)
+{
+  dlink_node *ptr;
+
+  if((ptr = dlinkFindDelete(&channel_limit_list, chptr)) != NULL)
+    free_dlink_node(ptr);
 }
   
 static void
