@@ -1170,7 +1170,7 @@ set_mode_lock(struct Service *service, const char *channel,
   {
     char *lk = "";
 
-    k = l = s = d = FALSE;
+    s = d = FALSE;
 
     if(*setstr != '\0')
       s = TRUE;
@@ -1207,7 +1207,7 @@ set_mode_lock(struct Service *service, const char *channel,
         l > 0 || k > 0? parabuf : "");
 
     if(regchptr->autolimit && l < 0)
-      regchptr->autolimit = 0;
+      regchptr->autolimit = FALSE;
 
     if(!db_set_string(SET_CHAN_MLOCK, regchptr->id, 
           *mlockbuf == '\0' ? NULL : mlockbuf))
