@@ -93,3 +93,4 @@
 	- Add status command to nickserv. (#3)
 	- Fix nickserv status.
 	- Only show topic, entry message, and mlock to opers or members. (#38 maybe #31)
+	- set #channel floodserv should show on/off properly. (#29)
