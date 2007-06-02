@@ -86,3 +86,4 @@
 	- Fix another bug in channel modes causing a desync. (#28)
 	- Only show topic, entry message, and mlock to opers or members. (#38 maybe #31)
 	- set #channel floodserv should show on/off properly. (#29)
+	- floodserv shouldn't insert an AKILL twice. (#37)
