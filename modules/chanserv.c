@@ -1700,6 +1700,7 @@ m_set_flag(struct Service *service, struct Client *client,
         break;
       case SET_CHAN_FLOODSERV:
         on = regchptr->floodserv;
+        break;
       default:
         on = FALSE;
         break;
