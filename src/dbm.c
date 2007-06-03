@@ -56,9 +56,11 @@ query_t queries[QUERY_COUNT] = {
   { DELETE_ACCOUNT, "DELETE FROM account WHERE id=?d", NULL, EXECUTE },
   { INSERT_NICKACCESS, "INSERT INTO account_access (account_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
+  /* XXX: ORDER BY missing here */
   { GET_NICKACCESS, "SELECT id, entry FROM account_access WHERE account_id=?d", NULL, QUERY },
   { GET_ADMINS, "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
-    "account.primary_nick = nickname.id ORDER BY nick", NULL, QUERY },
+    "account.primary_nick = nickname.id ORDER BY lower(nick)", NULL, QUERY },
+  /* XXX: ORDER BY missing here */
   { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
     NULL, QUERY },
   { GET_CHAN_ACCESSES, "SELECT channel_access.id, channel_access.channel_id, "
@@ -154,6 +156,7 @@ query_t queries[QUERY_COUNT] = {
     "time, duration) VALUES (?d, ?d, ?d, ?v, ?d, ?d)", NULL, EXECUTE },
   { INSERT_AKICK_MASK, "INSERT INTO channel_akick (channel_id, setter, reason, mask, "
     "time, duration) VALUES (?d, ?d, ?v, ?v, ?d, ?d)", NULL, EXECUTE },
+  /* XXX: ORDER BY missing here */
   { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, reason, time, duration FROM "
     "channel_akick WHERE channel_id=?d", NULL, QUERY },
   { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
@@ -209,6 +212,7 @@ query_t queries[QUERY_COUNT] = {
       "WHERE id=?d", NULL, EXECUTE },
   { INSERT_NICKCERT, "INSERT INTO account_fingerprint (account_id, fingerprint) "
     "VALUES(?d, ?v)", NULL, EXECUTE },
+  /* XXX: ORDER BY missing here */
   { GET_NICKCERT, "SELECT id, fingerprint FROM account_fingerprint WHERE "
     "account_id=?d", NULL, QUERY },
   { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
