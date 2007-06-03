@@ -110,6 +110,7 @@ query_t queries[QUERY_COUNT] = {
   { DELETE_NICKACCESS, "DELETE FROM account_access WHERE account_id=?d AND entry=?v", NULL,
     EXECUTE },
   { DELETE_ALL_NICKACCESS, "DELETE FROM account_access WHERE account_id=?d", NULL, EXECUTE },
+  /* XXX: Please get rid of or fix to not be horrible */
   { DELETE_NICKACCESS_IDX, "DELETE FROM account_access WHERE id = "
           "(SELECT id FROM account_access AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM account_access AS b WHERE b.id < a.id AND "
@@ -159,6 +160,7 @@ query_t queries[QUERY_COUNT] = {
   /* XXX: ORDER BY missing here */
   { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, reason, time, duration FROM "
     "channel_akick WHERE channel_id=?d", NULL, QUERY },
+  /* XXX: Please get rid of or fix to not be horrible */
   { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
           "(SELECT id FROM channel_akick AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
@@ -171,11 +173,13 @@ query_t queries[QUERY_COUNT] = {
   { DELETE_AKILL, "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
   { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=4",
     NULL, QUERY },
+  /* XXX: ORDER BY missing here */
   { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=?d", NULL, QUERY },
   { GET_NICK_CHAN_INFO, "SELECT channel, level FROM "
     "channel, channel_access WHERE "
       "channel.id=channel_access.channel_id AND channel_access.account_id=?d "
       "ORDER BY lower(channel.channel)", NULL, QUERY },
+  /* XXX: ORDER BY missing here */
   { GET_CHAN_MASTERS, "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
     "AND level=4 AND channel_access.account_id=account.id AND "
       "account.primary_nick=nickname.id", NULL, QUERY },
@@ -198,12 +202,18 @@ query_t queries[QUERY_COUNT] = {
   { GET_SENT_MAIL, "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
     QUERY },
   { DELETE_EXPIRED_SENT_MAIL, "DELETE FROM sent_mail WHERE sent + ?d < ?d", NULL, EXECUTE },
+  /* XXX: ORDER BY missing here */
   { GET_NICKS, "SELECT nick FROM account, nickname WHERE account.id=nickname.account_id AND "
        "account.flag_private='f'", NULL, QUERY },
+  /* XXX: ORDER BY missing here */
   { GET_NICKS_OPER, "SELECT nick FROM nickname", NULL, QUERY },
+  /* XXX: ORDER BY missing here */
   { GET_FORBIDS, "SELECT nick FROM forbidden_nickname", NULL, QUERY },
+  /* XXX: ORDER BY missing here */
   { GET_CHANNELS, "SELECT channel FROM channel WHERE flag_private='f'", NULL, QUERY },
+  /* XXX: ORDER BY missing here */
   { GET_CHANNELS_OPER, "SELECT channel FROM channel", NULL, QUERY },
+  /* XXX: ORDER BY missing here */
   { GET_CHANNEL_FORBID_LIST, "SELECT channel FROM forbidden_channel", NULL, QUERY },
   { SAVE_NICK, "UPDATE account SET url=?v, email=?v, cloak=?v, flag_enforce=?B, "
     "flag_secure=?B, flag_verified=?B, flag_cloak_enabled=?B, "
@@ -217,6 +227,7 @@ query_t queries[QUERY_COUNT] = {
     "account_id=?d", NULL, QUERY },
   { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
     "account_id=?d AND fingerprint=?v", NULL, EXECUTE },
+  /* XXX: Please get rid of or fix to not be horrible */
   { DELETE_NICKCERT_IDX, "DELETE FROM account_fimgerprint WHERE id = "
           "(SELECT id FROM account_fingerprint AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM account_fingerprint AS b WHERE b.id < a.id AND "
