@@ -87,3 +87,4 @@
 	- Only show topic, entry message, and mlock to opers or members. (#38 maybe #31)
 	- set #channel floodserv should show on/off properly. (#29)
 	- floodserv shouldn't insert an AKILL twice. (#37)
+	- Remove stray tab from chanserv access add help.
