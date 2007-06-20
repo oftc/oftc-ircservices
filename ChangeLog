@@ -96,3 +96,4 @@
 	- set #channel floodserv should show on/off properly. (#29)
 	- floodserv shouldn't insert an AKILL twice. (#37)
 	- make MLOCK accept -l and -k, turn off AUTOLIMIT if -l set. (#32)
+	- Remove stray tab from chanserv access add help.
