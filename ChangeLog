@@ -88,3 +88,4 @@
 	- set #channel floodserv should show on/off properly. (#29)
 	- floodserv shouldn't insert an AKILL twice. (#37)
 	- Remove stray tab from chanserv access add help.
+	- the part cb may send a null channel don't let FS crash. (#43)
