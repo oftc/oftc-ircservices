@@ -321,12 +321,18 @@ fs_on_client_part(va_list args)
   {
     ilog(L_DEBUG, "FloodServ removed from %s by %s", channel->chname,
       source->name);
-    if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
+    /* TODO The channel may already be destroyed we need to find out why */
+    if(channel != NULL && channel->regchan != NULL
+      && channel->regchan->flood_hash != NULL)
+    {
       floodserv_free_channel(channel->regchan);
+    }
   }
   else
   {
-    if(channel->regchan != NULL && channel->regchan->flood_hash != NULL)
+    /* TODO The channel may already be destroyed we need to find out why */
+    if(channel != NULL && channel->regchan != NULL
+      && channel->regchan->flood_hash != NULL)
     {
       if(channel->members.length == 2 && IsMember(fsclient, channel))
         part_channel(fsclient, channel->chname, "");
