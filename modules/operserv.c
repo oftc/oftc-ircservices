@@ -49,7 +49,7 @@ static void m_akill_list(struct Service *, struct Client *, int, char *[]);
 static void m_akill_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage help_msgtab = {
-  NULL, "HELP", 0, 0, 2, 0, ADMIN_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
+  NULL, "HELP", 0, 0, 2, 0, OPER_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
 };
 
 static struct ServiceMessage mod_subs[] = {
@@ -99,7 +99,7 @@ static struct ServiceMessage akill_subs[] = {
 };
 
 static struct ServiceMessage akill_msgtab = {
-  akill_subs, "AKILL", 0, 2, 2, 0, ADMIN_FLAG, OS_AKILL_HELP_SHORT, 
+  akill_subs, "AKILL", 0, 2, 2, 0, OPER_FLAG, OS_AKILL_HELP_SHORT, 
   OS_AKILL_HELP_LONG, NULL
 };
 
