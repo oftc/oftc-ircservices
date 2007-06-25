@@ -259,8 +259,7 @@ cleanup_db()
       query_t *query = &queries[i];
       Free(query->rc);
     }
-    //TODO FIXME XXX this cores on exit
-    //Database.yada->destroy(Database.yada);
+    Database.yada->destroy(Database.yada);
   }
   fbclose(db_log_fb);
 }
