@@ -90,3 +90,5 @@
 	- Remove stray tab from chanserv access add help.
 	- the part cb may send a null channel don't let FS crash. (#43)
 	- opers should be allowed to see operserv help. (#41)
+	- db_find_chan and db_find_chanaccess shouldn't leak when the channel isn't
+		found or access level. (#26)

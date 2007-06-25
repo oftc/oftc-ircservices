@@ -1272,7 +1272,7 @@ struct RegChannel *
 db_find_chan(const char *channel)
 {
   yada_rc_t *rc, *brc;
-  struct RegChannel *channel_p;
+  struct RegChannel *channel_p = NULL;
   char *retchan;
 
   assert(channel != NULL);
@@ -1297,6 +1297,7 @@ db_find_chan(const char *channel)
     db_log("db_find_chan: '%s' not found.\n", channel);
     Free(brc);
     Free(rc);
+    free_regchan(channel_p);
     return NULL;
   }
 
@@ -1309,7 +1310,7 @@ db_find_chan(const char *channel)
   DupString(channel_p->topic, channel_p->topic);
   DupString(channel_p->mlock, channel_p->mlock);
 
-  db_log("db_find_chan: Found nick %s\n", channel_p->channel);
+  db_log("db_find_chan: Found chan %s\n", channel_p->channel);
 
   Free(brc);
   Free(rc);
@@ -1386,7 +1387,10 @@ db_find_chanaccess(unsigned int channel, unsigned int account)
       &access->level);
 
   if(Fetch(rc, brc) == 0)
+  {
+    MyFree(access);
     access = NULL;
+  }
 
   Free(rc);
   Free(brc);
