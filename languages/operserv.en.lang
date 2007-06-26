@@ -141,6 +141,8 @@ OS_MOD_RELOADING
 	Module %s is reloading.
 OS_MOD_UNLOAD
 	Module %s unloaded.
+OS_MOD_CANTRELOAD
+	Module %s cannot be reloaded.
 OS_MOD_LIST
 	%s %s Type: %s
 OS_MOD_LIST_END

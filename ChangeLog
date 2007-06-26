@@ -93,3 +93,4 @@
 	- db_find_chan and db_find_chanaccess shouldn't leak when the channel isn't
 		found or access level. (#26)
 	- Fix another bug in channel modes causing a desync. (#28)
+	- Don't allow operserv to be reloaded, it won't work. (#45)
