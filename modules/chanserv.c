@@ -268,7 +268,7 @@ INIT_MODULE(chanserv, "$Revision$")
   clear_serv_tree_parse(&chanserv->msg_tree);
   dlinkAdd(chanserv, &chanserv->node, &services_list);
   hash_add_service(chanserv);
-  chanserv_client = introduce_client(chanserv->name);
+  chanserv_client = introduce_client(chanserv->name, chanserv->name, TRUE);
   load_language(chanserv->languages, "chanserv.en");
 /*  load_language(chanserv, "chanserv.rude");
   load_language(chanserv, "chanserv.de");

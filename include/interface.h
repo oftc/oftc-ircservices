@@ -88,7 +88,7 @@ void init_interface();
 void cleanup_interface();
 
 struct Service *make_service(char *);
-struct Client *introduce_client(const char *);
+struct Client *introduce_client(const char *, const char*, char);
 struct Client *introduce_server(const char*, const char*);
 struct Channel *join_channel(struct Client *, struct Channel*);
 void part_channel(struct Client *, const char*, const char*);

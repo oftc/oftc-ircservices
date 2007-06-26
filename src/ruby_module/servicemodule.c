@@ -145,7 +145,7 @@ ServiceModule_service_name(VALUE self, VALUE name)
   clear_serv_tree_parse(&ruby_service->msg_tree);
   dlinkAdd(ruby_service, &ruby_service->node, &services_list);
   hash_add_service(ruby_service);
-  introduce_client(ruby_service->name);
+  introduce_client(ruby_service->name, ruby_service->name, TRUE);
 
   rb_iv_set(self, "@langpath", rb_str_new2(LANGPATH));
 

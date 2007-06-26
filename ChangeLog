@@ -109,3 +109,5 @@
 	- Add status command to nickserv. (#3)
 	- Fix nickserv status.
 	- make MLOCK accept -l and -k, turn off AUTOLIMIT if -l set. (#32)
+	- Enforced nicknames shouldn't be opers or admins, also set realname to
+		sensible things if so desired. (#34)

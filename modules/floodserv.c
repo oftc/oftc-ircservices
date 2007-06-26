@@ -70,7 +70,7 @@ INIT_MODULE(floodserv, "$Revision$")
   clear_serv_tree_parse(&floodserv->msg_tree);
   dlinkAdd(floodserv, &floodserv->node, &services_list);
   hash_add_service(floodserv);
-  fsclient = introduce_client(floodserv->name);
+  fsclient = introduce_client(floodserv->name, floodserv->name, TRUE);
   load_language(floodserv->languages, "floodserv.en");
 
   mod_add_servcmd(&floodserv->msg_tree, &help_msgtab);

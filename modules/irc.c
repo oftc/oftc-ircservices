@@ -337,7 +337,7 @@ irc_sendmsg_nick(va_list args)
   char          *umode  = va_arg(args, char *);
   
   // NICK who hop ts umode user host server info
-  sendto_server(client, "NICK %s 1 666 +%saoS %s %s %s :%s", 
+  sendto_server(client, "NICK %s 1 666 +%s %s %s %s :%s", 
     nick, umode, user, host, me.name, info);
 
   return NULL;
@@ -664,7 +664,7 @@ irc_server_connected(va_list args)
   {
     struct Service *service = ptr->data;
 
-    introduce_client(service->name);
+    introduce_client(service->name, service->name, TRUE);
   }
 
   return NULL;

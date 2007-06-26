@@ -232,7 +232,7 @@ INIT_MODULE(nickserv, "$Revision$")
   clear_serv_tree_parse(&nickserv->msg_tree);
   dlinkAdd(nickserv, &nickserv->node, &services_list);
   hash_add_service(nickserv);
-  nickserv_client = introduce_client(nickserv->name);
+  nickserv_client = introduce_client(nickserv->name, nickserv->name, TRUE);
   load_language(nickserv->languages, "nickserv.en");
 
   mod_add_servcmd(&nickserv->msg_tree, &drop_msgtab);
@@ -1666,7 +1666,7 @@ ns_on_nick_change(va_list args)
 
   if(IsEnforce(user))
   {
-    introduce_client(oldnick);
+    introduce_client(oldnick, "Enforced Nickname (/msg nickserv help regain)", FALSE);
     enforcer = find_client(oldnick);
     enforcer->release_time = CurrentTime + (1*60*60);
     dlinkAdd(enforcer, make_dlink_node(), &nick_release_list);
