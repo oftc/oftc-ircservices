@@ -81,7 +81,7 @@
 	- Fix a 64 bit compilation issue.
 	- Fix various additional memory leaks.
 	- Reenable closing of module handles which sneaked in during debugging.
-2007-??-?? - 1.0.14
+2007-06-26 - 1.0.14
 	Bugfix point release.  Bug(s) fixed:
 	- Fix another bug in channel modes causing a desync. (#28)
 	- Only show topic, entry message, and mlock to opers or members. (#38 maybe #31)
@@ -92,3 +92,4 @@
 	- opers should be allowed to see operserv help. (#41)
 	- db_find_chan and db_find_chanaccess shouldn't leak when the channel isn't
 		found or access level. (#26)
+	- Fix another bug in channel modes causing a desync. (#28)
