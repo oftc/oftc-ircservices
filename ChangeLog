@@ -76,7 +76,24 @@
 	Bugfix point release.  Bug(s) fixed:
 	- Fix core caused by tring to print channel name from a null struct.
 	- Fix chanserv access notices to be more helpful.
-
+2007-05-18 - 1.0.13
+  Bugfix point release.  Bug(s) fixed:
+  - Fix a 64 bit compilation issue.
+  - Fix various additional memory leaks.
+  - Reenable closing of module handles which sneaked in during debugging.
+2007-06-26 - 1.0.14
+  Bugfix point release.  Bug(s) fixed:
+  - Fix another bug in channel modes causing a desync. (#28)
+  - Only show topic, entry message, and mlock to opers or members. (#38 maybe #31)
+  - set #channel floodserv should show on/off properly. (#29)
+  - floodserv shouldn't insert an AKILL twice. (#37)
+  - Remove stray tab from chanserv access add help.
+  - the part cb may send a null channel don't let FS crash. (#43)
+  - opers should be allowed to see operserv help. (#41)
+  - db_find_chan and db_find_chanaccess shouldn't leak when the channel isn't
+    found or access level. (#26)
+  - Fix another bug in channel modes causing a desync. (#28)
+	- Don't allow operserv to be reloaded, it just wont work. (#45)
 2007-??-?? - 1.1.0
 	Feature/Bugfix release.
 	- Fix inconsistency in SQL statements used to deal with channel masters on
@@ -88,16 +105,7 @@
 		system default to the database driver. (#21)
 	- Set Precedence: junk on outgoing mail. (#2)
 	- Add floodserv flag to chanserv's info. (#30)
-	- Fix another bug in channel modes causing a desync. (#28)
 	- Removed stray tab in HELP_SET_PRIVATE_LONG. (#27)
 	- Add status command to nickserv. (#3)
 	- Fix nickserv status.
-	- Only show topic, entry message, and mlock to opers or members. (#38 maybe #31)
-	- set #channel floodserv should show on/off properly. (#29)
-	- floodserv shouldn't insert an AKILL twice. (#37)
 	- make MLOCK accept -l and -k, turn off AUTOLIMIT if -l set. (#32)
-	- Remove stray tab from chanserv access add help.
-	- the part cb may send a null channel don't let FS crash. (#43)
-	- opers should be allowed to see operserv help. (#41)
-	- db_find_chan and db_find_chanaccess shouldn't leak when the channel isn't
-		found or access level. (#26)

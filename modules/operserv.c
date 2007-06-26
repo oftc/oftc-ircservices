@@ -184,16 +184,16 @@ m_mod_load(struct Service *service, struct Client *client,
     return;
   }
 
-  global_notice(service, "Loading %s by request of %s",
+  ilog(L_NOTICE, "Loading %s by request of %s",
       parm, client->name);
   if (load_module(parm) == 1)
   {
-    global_notice(service, "Module %s loaded", parm);
+    ilog(L_NOTICE, "Module %s loaded", parm);
     reply_user(service, service, client, OS_MOD_LOADED, parm);
   }
   else
   {
-    global_notice(service, "Module %s could not be loaded!", parm);
+    ilog(L_NOTICE, "Module %s could not be loaded!", parm);
     reply_user(service, service, client, OS_MOD_LOADFAIL, parm);
   }
 }
@@ -208,25 +208,31 @@ m_mod_reload(struct Service *service, struct Client *client,
 
   mbn = basename(parm);
   module = find_module(mbn, 0);
+  if(irccmp(module->name, service->name) == 0)
+  {
+    ilog(L_NOTICE, "%s tried to reload %s.  Can't be done because it's me!",
+        client->name, service->name);
+    reply_user(service, service, client, OS_MOD_CANTRELOAD, parm);
+    return;
+  }
   if (module == NULL)
   {
-    global_notice(service,
-        "Module %s reload requested by %s, but failed because not loaded",
+    ilog(L_NOTICE, "Module %s reload requested by %s, but failed because not loaded",
         parm, client->name);
     reply_user(service, service, client, OS_MOD_NOTLOADED, parm, client->name);
     return;
   }
-  global_notice(service, "Reloading %s by request of %s", parm, client->name);
+  ilog(L_NOTICE, "Reloading %s by request of %s", parm, client->name);
   reply_user(service, service, client, OS_MOD_RELOADING, parm, client->name);
   unload_module(module);
   if (load_module(parm) == 1)
   {
-    global_notice(service, "Module %s loaded", parm);
+    ilog(L_NOTICE, "Module %s loaded", parm);
     reply_user(service, service, client, OS_MOD_LOADED,parm);
   }
   else
   {
-    global_notice(service, "Module %s could not be loaded!", parm);
+    ilog(L_NOTICE, "Module %s could not be loaded!", parm);
     reply_user(service, service, client, OS_MOD_LOADFAIL, parm);
   }
 }
