@@ -1311,9 +1311,10 @@ m_stats(struct Client *client_p, struct Client *source_p,
   struct Client *target = NULL;
 
   if((target = find_server(parv[2])) == NULL)
-    execute_callback(send_nosuchsrv_cb, source_p->name, parv[2]);
+    return;
 
-  if(*parv[1] == 'z' && IsOper(source_p))
+
+  if(IsMe(target) && *parv[1] == 'z' && IsOper(source_p))
   {
     dlink_list *usage = block_heap_get_usage();
     dlink_node *ptr = NULL, *next_ptr = NULL;
@@ -1334,6 +1335,14 @@ m_stats(struct Client *client_p, struct Client *source_p,
     MyFree(usage);
     sendto_server(me.uplink, ":%s 219 %s %c :End of /STATS report",
       me.name, source_p->name, 'z');
+  }
+  else if(!IsMe(target))
+  {
+    execute_callback(send_nosuchsrv_cb, source_p->name, parv[2]);
+  }
+  else
+  {
+    /* ERR NO PERM */
   }
 }
 
