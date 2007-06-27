@@ -469,4 +469,34 @@ block_heap_get_size_elm(const BlockHeap *bh)
 {
   return bh->blocksAllocated * bh->elemsPerBlock;
 }
+
+/*
+ * returns a dlink_list of BlockHeapInfo pointers, the caller is responsible
+ * for free'ing BlockHeapInfo->name, BlockHeapInfo, and the dlink_list
+ */
+dlink_list *
+block_heap_get_usage()
+{
+  const BlockHeap *bh = NULL;
+  struct BlockHeapInfo *bi = NULL;
+  dlink_node *ptr = NULL;
+  dlink_node *next_ptr = NULL;
+  dlink_list *results = MyMalloc(sizeof(dlink_list));
+
+  DLINK_FOREACH_SAFE(ptr, next_ptr, heap_list.head)
+  {
+    bh = (BlockHeap *)ptr->data;
+    bi = MyMalloc(sizeof(struct BlockHeapInfo));
+    DupString(bi->name, bh->name);
+    bi->used_elm = block_heap_get_used_elm(bh);
+    bi->used_mem = block_heap_get_used_mem(bh);
+    bi->free_elm = block_heap_get_free_elm(bh);
+    bi->free_mem = block_heap_get_free_mem(bh);
+    bi->size_elm = block_heap_get_size_elm(bh);
+    bi->size_mem = block_heap_get_size_mem(bh);
+    dlinkAdd(bi, &bi->node, results);
+  }
+
+  return results;
+}
 #endif /* USE_BLOCK_ALLOC */

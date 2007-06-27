@@ -38,6 +38,7 @@ static void m_topic(struct Client *, struct Client *, int, char*[]);
 static void m_kill(struct Client *, struct Client *, int, char*[]);
 static void m_kick(struct Client *, struct Client *, int, char*[]);
 static void m_version(struct Client *, struct Client *, int, char*[]);
+static void m_stats(struct Client *, struct Client *, int, char*[]);
 static void m_tburst(struct Client *, struct Client *, int, char*[]);
 
 //static void do_user_modes(struct Client *client, const char *modes);
@@ -88,7 +89,7 @@ static struct Message trace_msgtab = {
 
 static struct Message stats_msgtab = {
   "STATS", 0, 0, 0, 0, 0, 0,
-  { m_ignore, m_ignore }
+  { m_stats, m_stats }
 };
 
 static struct Message whois_msgtab = {
@@ -1301,6 +1302,39 @@ m_version(struct Client *client_p, struct Client *source_p,
   }
 
   execute_callback(send_nosuchsrv_cb, source_p->name, parv[1]);
+}
+
+static void
+m_stats(struct Client *client_p, struct Client *source_p,
+  int parc, char *parv[])
+{
+  struct Client *target = NULL;
+
+  if((target = find_server(parv[2])) == NULL)
+    execute_callback(send_nosuchsrv_cb, source_p->name, parv[2]);
+
+  if(*parv[1] == 'z' && IsOper(source_p))
+  {
+    dlink_list *usage = block_heap_get_usage();
+    dlink_node *ptr = NULL, *next_ptr = NULL;
+    struct BlockHeapInfo *bi = NULL;
+
+    DLINK_FOREACH_SAFE(ptr, next_ptr, usage->head)
+    {
+      bi = (struct BlockHeapInfo *)ptr->data;
+      sendto_server(me.uplink,
+        ":%s %d %s z :%s mempool: used %u/%u free %u/%u (size %u/%u)",
+        me.name, 249, source_p->name, bi->name, bi->used_elm, bi->used_mem,
+        bi->free_elm, bi->free_mem, bi->size_elm, bi->size_mem);
+      dlinkDelete(ptr, usage);
+      MyFree(bi->name);
+      bi->name = NULL;
+      MyFree(bi);
+    }
+    MyFree(usage);
+    sendto_server(me.uplink, ":%s 219 %s %c :End of /STATS report",
+      me.name, source_p->name, 'z');
+  }
 }
 
 static void
