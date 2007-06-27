@@ -1,0 +1,29 @@
+Source: oftc-ircservices
+Section: devel
+Priority: extra
+Maintainer: Christoph Berg <myon@debian.org>
+Build-Depends: debhelper (>> 5.0.0), quilt (>= 0.40-1), libyada-dev
+Standards-Version: 3.7.2
+
+Package: oftc-ircservices
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: oftc-hybrid
+Description: IRC services as used by oftc.net
+ IRC services provide nickname registration (NickServ), channel registration
+ (ChanServ), flood detection (FloodServ), IRC operator tools (OperServ), and
+ hooks for various scripting languages for custom services.
+ .
+ http://www.oftc.net/releases/
+
+Package: oftc-ircservices-dbg
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, oftc-ircservices (= ${binary:Version})
+Description: IRC services as used by oftc.net (debugging symbols)
+ IRC services provide nickname registration (NickServ), channel registration
+ (ChanServ), flood detection (FloodServ), IRC operator tools (OperServ), and
+ hooks for various scripting languages for custom services.
+ .
+ http://www.oftc.net/releases/
+ .
+ This package contains the debugging symbols.

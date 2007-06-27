@@ -1,0 +1,10 @@
+Index: debian-oftc-ircservices/Makefile.am
+===================================================================
+--- debian-oftc-ircservices.orig/Makefile.am	2007-06-27 22:22:48.000000000 +0200
++++ debian-oftc-ircservices/Makefile.am	2007-06-27 22:23:17.000000000 +0200
+@@ -7,4 +7,4 @@ maintainer-clean-local:
+ 	rm -rf libltdl
+ 
+ install-data-local:
+-	$(INSTALL) -d ${localstatedir}/log
++	$(INSTALL) -d $(DESTDIR)${localstatedir}/log

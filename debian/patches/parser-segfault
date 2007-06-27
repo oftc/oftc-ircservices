@@ -1,0 +1,47 @@
+Index: debian-oftc-ircservices/src/conf/database.c
+===================================================================
+--- debian-oftc-ircservices.orig/src/conf/database.c	2007-06-27 23:01:40.000000000 +0200
++++ debian-oftc-ircservices/src/conf/database.c	2007-06-27 23:01:45.000000000 +0200
+@@ -53,18 +53,21 @@ reset_database(va_list args)
+ static void *
+ verify_database(va_list args)
+ {
+-  if (!Database.driver[0])
++  if (!Database.driver || !Database.driver[0])
+     parse_fatal("driver= field missing in database{} section");
+ 
+-  if (!Database.dbname[0])
++  if (!Database.dbname || !Database.dbname[0])
+     parse_fatal("dbname= field missing in database{} section");
+ 
+-  if(!Database.username[0])
++  if(!Database.username || !Database.username[0])
+     parse_fatal("username= field missing in database{} section");
+ 
+-  if(!Database.password[0])
++  if(!Database.password || !Database.password[0])
+     parse_fatal("password= field missing in database{} section");
+ 
++  if(!Database.hostname || !Database.hostname[0])
++    parse_fatal("hostname= field missing in database{} section");
++
+   return pass_callback(hverify);
+ }
+ 
+Index: debian-oftc-ircservices/src/conf/mail.c
+===================================================================
+--- debian-oftc-ircservices.orig/src/conf/mail.c	2007-06-27 23:10:56.000000000 +0200
++++ debian-oftc-ircservices/src/conf/mail.c	2007-06-27 23:11:26.000000000 +0200
+@@ -53,10 +53,10 @@ reset_mail(va_list args)
+ static void *
+ verify_mail(va_list args)
+ {
+-  if (*Mail.command == '\0')
++  if (!Mail.command || *Mail.command == '\0')
+     parse_fatal("command= field missing in mail{} section");
+ 
+-  if (*Mail.from_address == '\0')
++  if (!Mail.from_address || *Mail.from_address == '\0')
+     parse_fatal("from_address= field missing in mail{} section");
+ 
+   return pass_callback(hverify);
