@@ -46,6 +46,8 @@ EXTERN unsigned int user_modes[];
 #define UMODE_IDENTIFIED  0x100000 /* Registered with nickserv */
 #define UMODE_ALL    UMODE_SERVNOTICE
 
+#define HasID(x)		((x)->id[0] != '\0')
+
 #define IsConnecting(x)         ((x)->flags & FLAGS_CONNECTING)
 #define IsDefunct(x)            ((x)->flags & (FLAGS_DEADSOCKET|FLAGS_CLOSING))
 #define IsDead(x)               ((x)->flags & FLAGS_DEADSOCKET)
