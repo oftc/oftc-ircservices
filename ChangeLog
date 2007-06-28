@@ -120,3 +120,4 @@
 	- Enforced nicknames shouldn't be opers or admins, also set realname to
 		sensible things if so desired. (#34)
 	- STATS spy notice. (#17)
+	- FloodServ now uses BlockHeap, now you can monitor usage in STATS z

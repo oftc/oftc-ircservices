@@ -31,4 +31,7 @@ void mqueue_free(struct MessageQueue *);
 void floodmsg_free(struct FloodMsg *);
 struct FloodMsg *floodmsg_new(const char *);
 
+void init_mqueue();
+void cleanup_mqueue();
+
 #endif /* INCLUDED_mqueue_h */

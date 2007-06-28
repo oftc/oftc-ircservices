@@ -216,6 +216,7 @@ int main(int argc, char *argv[])
   init_client();
   init_parser();
   init_channel_modes();
+  init_mqueue();
 
   me.from = me.servptr = &me;
   SetServer(&me);
@@ -324,6 +325,7 @@ services_die(const char *msg, int rboot)
   cleanup_client();
   cleanup_channel();
   cleanup_interface();
+  cleanup_mqueue();
   unregister_callback(iorecv_cb);
   unregister_callback(connected_cb);
   unregister_callback(iosend_cb);

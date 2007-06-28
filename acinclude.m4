@@ -252,6 +252,16 @@ AC_DEFUN([AX_ARG_WITH_SERVICES_HEAP_SIZE],[
   AC_ARG_WITH([services-heap-size],[AC_HELP_STRING([--services-heap-size=<value>],[Set services heap size (default 64).])],[services_heap_size="$withval"],[services_heap_size="64"])
   AC_DEFINE_UNQUOTED([SERVICES_HEAP_SIZE],[$services_heap_size],[Size of the services heap.])
 ])dnl }}}
+dnl {{{ ax_arg_with_mqueue_heap_size
+AC_DEFUN([AX_ARG_WITH_MQUEUE_HEAP_SIZE],[
+  AC_ARG_WITH([mqueue-heap-size],[AC_HELP_STRING([--mqueue-size=<value>],[Set mqueue heap size (default 256).])],[mqueue_heap_size="$withval"],[mqueue_heap_size="256"])
+  AC_DEFINE_UNQUOTED([MQUEUE_HEAP_SIZE],[$mqueue_heap_size],[Size of the floodserv mqueue heap.])
+])dnl }}}
+dnl {{{ ax_arg_with_fmsg_heap_size
+AC_DEFUN([AX_ARG_WITH_FMSG_HEAP_SIZE],[
+  AC_ARG_WITH([fmsg-heap-size],[AC_HELP_STRING([--fmsg-size=<value>],[Set fmsg heap size (default 256).])],[fmsg_heap_size="$withval"],[fmsg_heap_size="256"])
+  AC_DEFINE_UNQUOTED([FMSG_HEAP_SIZE],[$fmsg_heap_size],[Size of the floodserv fmsg heap.])
+])dnl }}}
 dnl {{{ ax_arg_enable_halfops
 AC_DEFUN([AX_ARG_ENABLE_HALFOPS],[
   AC_ARG_ENABLE([halfops],[AC_HELP_STRING([--enable-halfops],[Enable halfops support.])],[halfops="$enableval"],[halfops="no"])

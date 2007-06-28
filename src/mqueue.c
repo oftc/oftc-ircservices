@@ -2,13 +2,29 @@
 
 #include "stdinc.h"
 
+static BlockHeap *mqueue_heap = NULL;
+static BlockHeap *fmsg_heap   = NULL;
+
+void
+init_mqueue()
+{
+  mqueue_heap = BlockHeapCreate("mqueue", sizeof(struct MessageQueue), MQUEUE_HEAP_SIZE);
+  fmsg_heap = BlockHeapCreate("fmsg", sizeof(struct FloodMsg), FMSG_HEAP_SIZE);
+}
+
+void
+cleanup_mqueue()
+{
+  BlockHeapDestroy(mqueue_heap);
+  BlockHeapDestroy(fmsg_heap);
+}
+
 struct MessageQueue *
 mqueue_new(const char *name, unsigned int type, int max, int msg_time,
 int lne_time)
 {
-  struct MessageQueue *queue;
+  struct MessageQueue *queue = BlockHeapAlloc(mqueue_heap);
   int i;
-  queue = MyMalloc(sizeof(struct MessageQueue));
 
   DupString(queue->name, name);
   assert(queue->name != NULL);
@@ -70,7 +86,7 @@ mqueue_free(struct MessageQueue *queue)
     MyFree(queue->entries);
     queue->entries = NULL;
 
-    MyFree(queue);
+    BlockHeapFree(mqueue_heap, queue);
   }
 }
 
@@ -81,14 +97,14 @@ floodmsg_free(struct FloodMsg *entry)
   {
     MyFree(entry->message);
     entry->message = NULL;
-    MyFree(entry);
+    BlockHeapFree(fmsg_heap, entry);
   }
 }
 
 struct FloodMsg *
 floodmsg_new(const char *message)
 {
-  struct FloodMsg *entry = MyMalloc(sizeof(struct FloodMsg));
+  struct FloodMsg *entry = BlockHeapAlloc(fmsg_heap);
   entry->time = CurrentTime;
   DupString(entry->message, message);
   return entry;
