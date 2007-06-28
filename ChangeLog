@@ -97,3 +97,4 @@
 2007-??-?? - 1.0.15
 	Bugfix point release. Bug(s) fixed:
 	- We should BlockHeapFree clients when they've exited. (#26)
+	- STATS z implementation. (#17)
