@@ -98,3 +98,6 @@
 	Bugfix point release. Bug(s) fixed:
 	- We should BlockHeapFree clients when they've exited. (#26)
 	- STATS z implementation. (#17)
+2007-??-?? - 1.0.16
+	Bugfix point release. Bug(s) fixed:
+	- Now that we properly free clients we should delete their IDs

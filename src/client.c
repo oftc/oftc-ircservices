@@ -274,6 +274,9 @@ exit_one_client(struct Client *source_p)
     free_dlink_node(lp);*/
   }
 
+  if(HasID(source_p))
+    hash_del_id(source_p);
+
   if (source_p->name[0])
   {
     hash_del_client(source_p);
