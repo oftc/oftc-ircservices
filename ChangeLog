@@ -102,3 +102,7 @@
 	Bugfix point release. Bug(s) fixed:
 	- Now that we properly free clients we should delete their IDs (Fixes
 		crash).
+2007-??-?? - 1.0.17
+	Bugfix point release. Bug(s) fixed:
+	- db_log shouldn't act like ilog, remove L_CRIT (Fixes crash on db going
+	away).

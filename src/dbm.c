@@ -369,7 +369,7 @@ db_try_reconnect()
       db_try_reconnect();                                             \
       db_log("Query failed because server went away, reconnected.");  \
     }                                                                 \
-    db_log(L_CRIT, "db_query: %d Failed: %s", __id, Database.yada->errmsg); \
+    db_log("db_query: %d Failed: %s", __id, Database.yada->errmsg);   \
   }                                                                   \
                                                                       \
   ret = __result;                                                     \
