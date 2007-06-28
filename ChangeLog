@@ -94,7 +94,7 @@
 		found or access level. (#26)
 	- Fix another bug in channel modes causing a desync. (#28)
 	- Don't allow operserv to be reloaded, it won't work. (#45)
-2007-??-?? - 1.0.15
+2007-06-28 - 1.0.15
 	Bugfix point release. Bug(s) fixed:
 	- We should BlockHeapFree clients when they've exited. (#26)
 	- STATS z implementation. (#17)
