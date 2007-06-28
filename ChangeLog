@@ -97,6 +97,7 @@
 2007-??-?? - 1.0.15
 	Bugfix point release. Bug(s) fixed:
 	- We should BlockHeapFree clients when they've exited. (#26)
+	- STATS z implementation. (#17)
 2007-??-?? - 1.1.0
 	Feature/Bugfix release.
 	- Fix inconsistency in SQL statements used to deal with channel masters on
@@ -114,4 +115,4 @@
 	- make MLOCK accept -l and -k, turn off AUTOLIMIT if -l set. (#32)
 	- Enforced nicknames shouldn't be opers or admins, also set realname to
 		sensible things if so desired. (#34)
- 	- STATS z implementation. (#17)
+	- STATS spy notice. (#17)

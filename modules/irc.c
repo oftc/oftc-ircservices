@@ -1316,6 +1316,10 @@ m_stats(struct Client *client_p, struct Client *source_p,
 
   if(IsMe(target) && *parv[1] == 'z' && IsOper(source_p))
   {
+    ilog(L_NOTICE, "STATS %c requested by %s (%s@%s) [%s]",
+      *parv[1], source_p->name, source_p->username,
+      source_p->host, source_p->servptr->name);
+
     dlink_list *usage = block_heap_get_usage();
     dlink_node *ptr = NULL, *next_ptr = NULL;
     struct BlockHeapInfo *bi = NULL;
