@@ -650,6 +650,9 @@ m_access_add(struct Service *service, struct Client *client,
         level_added);
     ilog(L_DEBUG, "%s (%s@%s) added AE %s(%d) to %s", client->name, 
         client->username, client->host, parv[2], access->level, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s Added %s to %s "
+        "access list as %s", chptr->chname, client->name, parv[2], 
+        chptr->chname, level_added); 
   }
   else
     reply_user(service, service, client, CS_ACCESS_ADDFAIL, parv[2], parv[1],
@@ -708,6 +711,8 @@ m_access_del(struct Service *service, struct Client *client,
     reply_user(service, service, client, CS_ACCESS_DELOK, parv[2], parv[1]);
     ilog(L_DEBUG, "%s (%s@%s) removed AE %s from %s", 
       client->name, client->username, client->host, parv[2], parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s Removed %s from %s "
+        "access list", chptr->chname, client->name, parv[2], chptr->chname); 
   }
   else
     reply_user(service, service, client, CS_ACCESS_DELFAIL, parv[2], parv[1]);
@@ -1394,6 +1399,8 @@ m_op(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     op_user(service, chptr, target);
     reply_user(service, service, client, CS_OP, target->name, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s OP %s", 
+        chptr->chname, client->name, target->name, chptr->chname);
   }
   else
     reply_user(service, service, client, CS_ALREADY_OP, target->name, parv[1]);
@@ -1431,6 +1438,8 @@ m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     deop_user(service, chptr, target);
     reply_user(service, service, client, CS_DEOP, target->name, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s DEOP %s", 
+        chptr->chname, client->name, target->name, chptr->chname);
   }
   else
     reply_user(service, service, client, CS_NOT_OP, target->name, parv[1]);
@@ -1479,6 +1488,8 @@ m_voice(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     voice_user(service, chptr, target);
     reply_user(service, service, client, CS_VOICE, target->name, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s VOICE %s", 
+        chptr->chname, client->name, target->name, chptr->chname); 
   }
   else
     reply_user(service, service, client, CS_ALREADY_VOICE, target->name, parv[1]);
@@ -1527,6 +1538,8 @@ m_devoice(struct Service *service, struct Client *client, int parc, char *parv[]
   {
     devoice_user(service, chptr, target);
     reply_user(service, service, client, CS_DEVOICE, target->name, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s DEVOICE %s", 
+        chptr->chname, client->name, target->name, chptr->chname); 
   }
   else
     reply_user(service, service, client, CS_NOT_VOICE, target->name, parv[1]);
@@ -1569,6 +1582,8 @@ m_invite(struct Service *service, struct Client *client, int parc, char *parv[])
 
   invite_user(service, chptr, target);
   reply_user(service, service, client, CS_INVITED, target->name, parv[1]);
+  send_chops_notice(service, chptr, "[%s ChanOps] %s INVITE %s", 
+      chptr->chname, client->name, target->name, chptr->chname); 
 }
 
 static void
@@ -1596,6 +1611,9 @@ m_unban(struct Service *service, struct Client *client, int parc, char *parv[])
     snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banp->name, banp->username,
         banp->host);
     unban_mask(service, chptr, ban);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s UNBAN %s!%s@%s", 
+        chptr->chname, client->name, banp->name, banp->username, banp->host);
+ 
     numbans++;
 
     banp = find_bmask(client, &chptr->banlist);
@@ -1644,6 +1662,9 @@ m_set_string(struct Service *service, struct Client *client,
       ilog(L_DEBUG, "%s (%s@%s) changed %s of %s to %s", 
           client->name, client->username, client->host, field, regchptr->channel, 
           value);
+      send_chops_notice(service, chptr, "[%s ChanOps] %s SET %s to %s", 
+          chptr->chname, client->name, field,
+          value == NULL ? "Not set" : value); 
     }
 
     if(value != NULL)

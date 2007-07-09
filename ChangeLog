@@ -110,3 +110,5 @@
 		didnt. (#52)
 	- Allow NULL hostname to be specified for database{} connection to use the
 		system default to the database driver. (#21)
+	- Actually implement chanserv verbose, instead of pretending that we do.
+		(#50)

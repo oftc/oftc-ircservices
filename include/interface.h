@@ -64,6 +64,7 @@ extern struct Callback *send_newserver_cb;
 extern struct Callback *send_join_cb;
 extern struct Callback *send_part_cb;
 extern struct Callback *send_nosuchsrv_cb;
+extern struct Callback *send_chops_notice_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -147,6 +148,8 @@ unsigned int get_mode_from_letter(char);
 void get_modestring(unsigned int, char *, int);
 
 char *generate_hmac(const char *);
+
+void send_chops_notice(struct Service *, struct Channel *, const char *, ...);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
