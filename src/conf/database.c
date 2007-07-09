@@ -62,9 +62,6 @@ verify_database(va_list args)
   if(!Database.username[0])
     parse_fatal("username= field missing in database{} section");
 
-  if(!Database.password[0])
-    parse_fatal("password= field missing in database{} section");
-
   return pass_callback(hverify);
 }
 

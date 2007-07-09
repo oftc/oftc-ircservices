@@ -108,3 +108,5 @@
 	away).
 	- add db_reopen_log() which i was sure already existed, but apparently
 		didnt. (#52)
+	- Allow NULL hostname to be specified for database{} connection to use the
+		system default to the database driver. (#21)
