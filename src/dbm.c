@@ -265,6 +265,25 @@ cleanup_db()
 }
 
 void
+db_reopen_log()
+{
+  char logpath[LOG_BUFSIZE+1];
+
+  if(db_log_fb != NULL)
+    fbclose(db_log_fb);
+
+  snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
+  if(db_log_fb == NULL)
+  {
+    if(Logging.sqllog[0] != '\0' && (db_log_fb = fbopen(logpath, "r")) != NULL)
+    {
+      fbclose(db_log_fb);
+      db_log_fb = fbopen(logpath, "a");
+    }
+  }
+}
+
+void
 db_log(const char *format, ...)
 {
   char *buf;

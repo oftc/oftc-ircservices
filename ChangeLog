@@ -106,3 +106,5 @@
 	Bugfix point release. Bug(s) fixed:
 	- db_log shouldn't act like ilog, remove L_CRIT (Fixes crash on db going
 	away).
+	- add db_reopen_log() which i was sure already existed, but apparently
+		didnt. (#52)
