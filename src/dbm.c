@@ -271,7 +271,10 @@ db_reopen_log()
   char logpath[LOG_BUFSIZE+1];
 
   if(db_log_fb != NULL)
+  {
     fbclose(db_log_fb);
+    db_log_fb = NULL;
+  }
 
   snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
   if(db_log_fb == NULL)
