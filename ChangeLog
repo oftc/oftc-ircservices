@@ -128,3 +128,5 @@
 		sensible things if so desired. (#34)
 	- STATS spy notice. (#17)
 	- FloodServ now uses BlockHeap, now you can monitor usage in STATS z
+	- Add various ORDER BY clauses to help with listing and delete by index.
+		(#39)

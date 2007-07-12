@@ -56,12 +56,11 @@ query_t queries[QUERY_COUNT] = {
   { DELETE_ACCOUNT, "DELETE FROM account WHERE id=?d", NULL, EXECUTE },
   { INSERT_NICKACCESS, "INSERT INTO account_access (account_id, entry) VALUES(?d, ?v)", 
     NULL, EXECUTE },
-  /* XXX: ORDER BY missing here */
-  { GET_NICKACCESS, "SELECT id, entry FROM account_access WHERE account_id=?d", NULL, QUERY },
+  { GET_NICKACCESS, "SELECT id, entry FROM account_access WHERE account_id=?d ORDER BY id", NULL, QUERY },
   { GET_ADMINS, "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
     "account.primary_nick = nickname.id ORDER BY lower(nick)", NULL, QUERY },
   /* XXX: ORDER BY missing here */
-  { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill", 
+  { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill ORDER BY akill.id",
     NULL, QUERY },
   { GET_CHAN_ACCESSES, "SELECT channel_access.id, channel_access.channel_id, "
       "channel_access.account_id, channel_access.level FROM "
@@ -110,11 +109,10 @@ query_t queries[QUERY_COUNT] = {
   { DELETE_NICKACCESS, "DELETE FROM account_access WHERE account_id=?d AND entry=?v", NULL,
     EXECUTE },
   { DELETE_ALL_NICKACCESS, "DELETE FROM account_access WHERE account_id=?d", NULL, EXECUTE },
-  /* XXX: Please get rid of or fix to not be horrible */
   { DELETE_NICKACCESS_IDX, "DELETE FROM account_access WHERE id = "
-          "(SELECT id FROM account_access AS a WHERE ?d = "
-          "(SELECT COUNT(id)+1 FROM account_access AS b WHERE b.id < a.id AND "
-          "b.account_id = ?d) AND account_id = ?d)", NULL, EXECUTE },
+          "(SELECT a.id FROM account_access AS a WHERE ?d = "
+          "(SELECT COUNT(b.id)+1 FROM account_access AS b WHERE b.id < a.id AND "
+          "b.account_id = ?d) AND a.account_id = ?d)", NULL, EXECUTE },
   { SET_NICK_LINK, "UPDATE nickname SET account_id=?d WHERE account_id=?d", NULL, EXECUTE },
   { SET_NICK_LINK_EXCLUDE, "UPDATE nickname SET account_id=?d WHERE account_id=?d AND id=?d", NULL, EXECUTE },
   { INSERT_NICK_CLONE, "INSERT INTO account (primary_nick, password, salt, url, email, cloak, " 
@@ -157,10 +155,8 @@ query_t queries[QUERY_COUNT] = {
     "time, duration) VALUES (?d, ?d, ?d, ?v, ?d, ?d)", NULL, EXECUTE },
   { INSERT_AKICK_MASK, "INSERT INTO channel_akick (channel_id, setter, reason, mask, "
     "time, duration) VALUES (?d, ?d, ?v, ?v, ?d, ?d)", NULL, EXECUTE },
-  /* XXX: ORDER BY missing here */
   { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, reason, time, duration FROM "
-    "channel_akick WHERE channel_id=?d", NULL, QUERY },
-  /* XXX: Please get rid of or fix to not be horrible */
+    "channel_akick WHERE channel_id=?d ORDER BY channel_akick.id", NULL, QUERY },
   { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
           "(SELECT id FROM channel_akick AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
@@ -173,16 +169,14 @@ query_t queries[QUERY_COUNT] = {
   { DELETE_AKILL, "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
   { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=4",
     NULL, QUERY },
-  /* XXX: ORDER BY missing here */
-  { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=?d", NULL, QUERY },
+  { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=?d ORDER BY lower(nick)", NULL, QUERY },
   { GET_NICK_CHAN_INFO, "SELECT channel, level FROM "
     "channel, channel_access WHERE "
       "channel.id=channel_access.channel_id AND channel_access.account_id=?d "
       "ORDER BY lower(channel.channel)", NULL, QUERY },
-  /* XXX: ORDER BY missing here */
   { GET_CHAN_MASTERS, "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
     "AND level=4 AND channel_access.account_id=account.id AND "
-      "account.primary_nick=nickname.id", NULL, QUERY },
+      "account.primary_nick=nickname.id ORDER BY lower(nick)", NULL, QUERY },
   { DELETE_ACCOUNT_CHACCESS, "DELETE FROM channel_access WHERE account_id=?d", NULL, EXECUTE },
   { DELETE_DUPLICATE_CHACCESS, "DELETE FROM channel_access WHERE "
       "(account_id=?d AND level <= (SELECT level FROM channel_access AS x WHERE"
@@ -202,19 +196,13 @@ query_t queries[QUERY_COUNT] = {
   { GET_SENT_MAIL, "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
     QUERY },
   { DELETE_EXPIRED_SENT_MAIL, "DELETE FROM sent_mail WHERE sent + ?d < ?d", NULL, EXECUTE },
-  /* XXX: ORDER BY missing here */
   { GET_NICKS, "SELECT nick FROM account, nickname WHERE account.id=nickname.account_id AND "
-       "account.flag_private='f'", NULL, QUERY },
-  /* XXX: ORDER BY missing here */
-  { GET_NICKS_OPER, "SELECT nick FROM nickname", NULL, QUERY },
-  /* XXX: ORDER BY missing here */
-  { GET_FORBIDS, "SELECT nick FROM forbidden_nickname", NULL, QUERY },
-  /* XXX: ORDER BY missing here */
-  { GET_CHANNELS, "SELECT channel FROM channel WHERE flag_private='f'", NULL, QUERY },
-  /* XXX: ORDER BY missing here */
-  { GET_CHANNELS_OPER, "SELECT channel FROM channel", NULL, QUERY },
-  /* XXX: ORDER BY missing here */
-  { GET_CHANNEL_FORBID_LIST, "SELECT channel FROM forbidden_channel", NULL, QUERY },
+       "account.flag_private='f' ORDER BY lower(nick)", NULL, QUERY },
+  { GET_NICKS_OPER, "SELECT nick FROM nickname ORDER BY lower(nick)", NULL, QUERY },
+  { GET_FORBIDS, "SELECT nick FROM forbidden_nickname ORDER BY lower(nick)", NULL, QUERY },
+  { GET_CHANNELS, "SELECT channel FROM channel WHERE flag_private='f' ORDER BY lower(channel)", NULL, QUERY },
+  { GET_CHANNELS_OPER, "SELECT channel FROM channel ORDER BY lower(channel)", NULL, QUERY },
+  { GET_CHANNEL_FORBID_LIST, "SELECT channel FROM forbidden_channel ORDER BY lower(channel)", NULL, QUERY },
   { SAVE_NICK, "UPDATE account SET url=?v, email=?v, cloak=?v, flag_enforce=?B, "
     "flag_secure=?B, flag_verified=?B, flag_cloak_enabled=?B, "
       "flag_admin=?B, flag_email_verified=?B, flag_private=?B, language=?d, "
@@ -222,13 +210,11 @@ query_t queries[QUERY_COUNT] = {
       "WHERE id=?d", NULL, EXECUTE },
   { INSERT_NICKCERT, "INSERT INTO account_fingerprint (account_id, fingerprint) "
     "VALUES(?d, ?v)", NULL, EXECUTE },
-  /* XXX: ORDER BY missing here */
   { GET_NICKCERT, "SELECT id, fingerprint FROM account_fingerprint WHERE "
-    "account_id=?d", NULL, QUERY },
+    "account_id=?d ORDER BY id", NULL, QUERY },
   { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
     "account_id=?d AND fingerprint=?v", NULL, EXECUTE },
-  /* XXX: Please get rid of or fix to not be horrible */
-  { DELETE_NICKCERT_IDX, "DELETE FROM account_fimgerprint WHERE id = "
+  { DELETE_NICKCERT_IDX, "DELETE FROM account_fingerprint WHERE id = "
           "(SELECT id FROM account_fingerprint AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM account_fingerprint AS b WHERE b.id < a.id AND "
           "b.account_id = ?d) AND account_id = ?d)", NULL, EXECUTE },
@@ -342,14 +328,14 @@ db_load_driver()
 
   if(Database.yada->connect(Database.yada, Database.username, 
         Database.password) == 0)
-    db_log("db: Failed to connect to database %s\n", Database.yada->errmsg);
+    db_log("db: Failed to connect to database %s", Database.yada->errmsg);
   else
-    db_log("db: Database connection succeeded.\n");
+    db_log("db: Database connection succeeded.");
 
   for(i = 0; i < QUERY_COUNT; i++)
   {
     query_t *query = &queries[i];
-    db_log("Prepare %d: %s\n", i, query->name);
+    db_log("Prepare %d: %s", i, query->name);
     if(query->name == NULL)
       continue;
     query->rc = Prepare((char*)query->name, 0);
@@ -381,7 +367,7 @@ db_try_reconnect()
       for(i = 0; i < QUERY_COUNT; i++)
       {
         query_t *query = &queries[i];
-        db_log("%d: %s\n", i, query->name);
+        db_log("%d: %s", i, query->name);
         if(query->name == NULL)
           continue;
         query->rc = Prepare((char*)query->name, 0);
@@ -406,7 +392,7 @@ db_try_reconnect()
   query_t *__query;                                                   \
                                                                       \
   __query = &queries[__id];                                           \
-  db_log("db_query: %d %s\n", __id, __query->name);                   \
+  db_log("db_query: %d %s", __id, __query->name);                     \
   assert(__query->type == QUERY);                                     \
   assert(__query->rc);                                                \
   assert(__query->index == query_id);                                 \
@@ -432,7 +418,7 @@ db_try_reconnect()
   query_t *__query;                                                   \
                                                                       \
   __query = &queries[__id];                                           \
-  db_log("db_exec: %d %s\n", __id, __query->name);                    \
+  db_log("db_exec: %d %s", __id, __query->name);                      \
   assert(__query->type == EXECUTE);                                   \
   assert(__query->rc);                                                \
                                                                       \
@@ -444,7 +430,7 @@ db_try_reconnect()
       db_try_reconnect();                                             \
       db_log("Exec failed because server went away, reconnected.");   \
     }                                                                 \
-    db_log("db_exec: %d Failed: %s\n", __id, Database.yada->errmsg);  \
+    db_log("db_exec: %d Failed: %s", __id, Database.yada->errmsg);    \
   }                                                                   \
                                                                       \
   ret = __result;                                                     \
@@ -477,7 +463,7 @@ db_find_nick(const char *nick)
 
   if(Fetch(rc, brc) == 0)
   {
-    db_log("db_find_nick: '%s' not found.\n", nick);
+    db_log("db_find_nick: '%s' not found.", nick);
     Free(brc);
     Free(rc);
     MyFree(nick_p);
@@ -497,7 +483,7 @@ db_find_nick(const char *nick)
   DupString(nick_p->last_realname, nick_p->last_realname);
   DupString(nick_p->last_quit, nick_p->last_quit);
 
-  db_log("db_find_nick: Found nick %s(asked for %s)\n", nick_p->nick, nick);
+  db_log("db_find_nick: Found nick %s(asked for %s)", nick_p->nick, nick);
 
   Free(brc);
   Free(rc);
@@ -519,7 +505,7 @@ db_get_nickname_from_id(unsigned int id)
   brc = Bind("?ps", &retnick);
   if(Fetch(rc, brc) == 0)
   {
-    db_log("db_get_nickname_from_id: %d not found.\n", id);
+    db_log("db_get_nickname_from_id: %d not found.", id);
     Free(brc);
     Free(rc);
     return NULL;
@@ -547,7 +533,7 @@ db_get_nickname_from_nickid(unsigned int id)
   brc = Bind("?ps", &retnick);
   if(Fetch(rc, brc) == 0)
   {
-    db_log("db_get_nickname_from_nickid: %d not found.\n", id);
+    db_log("db_get_nickname_from_nickid: %d not found.", id);
     Free(brc);
     Free(rc);
     return NULL;
@@ -575,7 +561,7 @@ db_get_id_from_name(const char *name, unsigned int type)
   brc = Bind("?d", &ret);
   if(Fetch(rc, brc) == 0)
   {
-    db_log("db_get_id_from_name: '%s' not found.\n", name);
+    db_log("db_get_id_from_name: '%s' not found.", name);
     Free(brc);
     Free(rc);
     return 0;
@@ -1351,7 +1337,7 @@ db_find_chan(const char *channel)
 
   if(Fetch(rc, brc) == 0)
   {
-    db_log("db_find_chan: '%s' not found.\n", channel);
+    db_log("db_find_chan: '%s' not found.", channel);
     Free(brc);
     Free(rc);
     free_regchan(channel_p);
@@ -1367,7 +1353,7 @@ db_find_chan(const char *channel)
   DupString(channel_p->topic, channel_p->topic);
   DupString(channel_p->mlock, channel_p->mlock);
 
-  db_log("db_find_chan: Found chan %s\n", channel_p->channel);
+  db_log("db_find_chan: Found chan %s", channel_p->channel);
 
   Free(brc);
   Free(rc);
@@ -1475,7 +1461,7 @@ db_find_akill(const char *mask)
 
   if(Fetch(rc, brc) == 0)
   {
-    db_log("db_find_akill: '%s' not found.\n", mask);
+    db_log("db_find_akill: '%s' not found.", mask);
     Free(brc);
     Free(rc);
     return NULL;
@@ -1484,7 +1470,7 @@ db_find_akill(const char *mask)
   DupString(akill->mask, akill->mask);
   DupString(akill->reason, akill->reason);
 
-  db_log("db_find_akill: Found akill %s(asked for %s)\n", akill->mask, mask);
+  db_log("db_find_akill: Found akill %s(asked for %s)", akill->mask, mask);
 
   Free(brc);
   Free(rc);
