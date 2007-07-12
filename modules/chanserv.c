@@ -79,6 +79,7 @@ static void m_akick_del(struct Service *, struct Client *, int, char *[]);
 static void m_akick_enforce(struct Service *, struct Client *, int, char *[]);
 
 static void m_clear_bans(struct Service *, struct Client *, int, char *[]);
+static void m_clear_quiets(struct Service *, struct Client *, int, char *[]);
 static void m_clear_ops(struct Service *, struct Client *, int, char *[]);
 static void m_clear_voices(struct Service *, struct Client *, int, char *[]);
 static void m_clear_users(struct Service *, struct Client *, int, char *[]);
@@ -89,6 +90,7 @@ static void m_voice(struct Service *, struct Client *, int, char *[]);
 static void m_devoice(struct Service *, struct Client *, int, char *[]);
 static void m_invite(struct Service *, struct Client *, int, char *[]);
 static void m_unban(struct Service *, struct Client *, int, char *[]);
+static void m_unquiet(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
 
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
@@ -220,6 +222,11 @@ static struct ServiceMessage unban_msgtab = {
   CS_HELP_UNBAN_SHORT, CS_HELP_UNBAN_LONG, m_unban
 };
 
+static struct ServiceMessage unquiet_msgtab = {
+  NULL, "UNQUIET", 0, 1, 1, SFLG_CHANARG, MEMBER_FLAG,
+  CS_HELP_UNQUIET_SHORT, CS_HELP_UNQUIET_LONG, m_unquiet
+};
+
 static struct ServiceMessage invite_msgtab = {
   NULL, "INVITE", 0, 1, 2, SFLG_CHANARG, MEMBER_FLAG,
   CS_HELP_INVITE_SHORT, CS_HELP_INVITE_LONG, m_invite
@@ -228,6 +235,8 @@ static struct ServiceMessage invite_msgtab = {
 static struct ServiceMessage clear_sub[] = {
   { NULL, "BANS", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
     CS_HELP_CLEAR_BANS_SHORT, CS_HELP_CLEAR_BANS_LONG, m_clear_bans },
+  { NULL, "QUIETS", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
+    CS_HELP_CLEAR_QUIETS_SHORT, CS_HELP_CLEAR_QUIETS_LONG, m_clear_quiets },
   { NULL, "OPS", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
     CS_HELP_CLEAR_OPS_SHORT, CS_HELP_CLEAR_OPS_LONG, m_clear_ops },
   { NULL, "VOICES", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
@@ -287,6 +296,7 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &clear_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &unban_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &unquiet_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &invite_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &sudo_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &list_msgtab);
@@ -370,6 +380,19 @@ process_expireban_list(void *param)
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
         unban_mask(chanserv, chptr, ban);
+      }
+    }
+
+    DLINK_FOREACH_SAFE(bptr, bnptr, chptr->quietlist.head)
+    {
+      struct Ban *banptr = bptr->data;
+      char ban[IRC_BUFSIZE+1];
+
+      if((CurrentTime - banptr->when) > (1*60*60))
+      {
+        snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
+            banptr->host);
+        unquiet_mask(chanserv, chptr, ban);
       }
     }
   }
@@ -1287,6 +1310,39 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
 }
 
 static void
+m_clear_quiets(struct Service *service, struct Client *client, int parc,
+    char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  dlink_node *ptr, *nptr;
+  int numbans = 0;
+
+  chptr = hash_find_channel(parv[1]);
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+  regchptr = chptr->regchan;
+
+  DLINK_FOREACH_SAFE(ptr, nptr, chptr->quietlist.head)
+  {
+    const struct Ban *banptr = ptr->data;
+    char ban[IRC_BUFSIZE+1];
+
+    snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
+        banptr->host);
+    unquiet_mask(service, chptr, ban);
+    numbans++;
+  }
+
+  reply_user(service, service, client, CS_CLEAR_QUIETS, numbans,
+      regchptr->channel);
+}
+
+static void
 m_clear_ops(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
@@ -1627,6 +1683,40 @@ m_unban(struct Service *service, struct Client *client, int parc, char *parv[])
   }
 
   reply_user(service, service, client, CS_CLEAR_BANS, numbans,
+      regchptr->channel);
+}
+
+static void
+m_unquiet(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Channel *chptr;
+  struct RegChannel *regchptr;
+  struct Ban *banp;
+  int numbans = 0;
+
+  chptr = hash_find_channel(parv[1]);
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+  regchptr = chptr->regchan;
+
+  banp = find_bmask(client, &chptr->quietlist);
+  while(banp != NULL)
+  {
+    char ban[IRC_BUFSIZE+1];
+
+    snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banp->name, banp->username,
+        banp->host);
+    unquiet_mask(service, chptr, ban);
+    numbans++;
+
+    banp = find_bmask(client, &chptr->quietlist);
+  }
+
+  reply_user(service, service, client, CS_CLEAR_QUIETS, numbans,
       regchptr->channel);
 }
 

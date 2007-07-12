@@ -249,7 +249,7 @@ AC_DEFUN([AX_ARG_WITH_TOPIC_HEAP_SIZE],[
 ])dnl }}}
 dnl {{{ ax_arg_with_services_heap_size
 AC_DEFUN([AX_ARG_WITH_SERVICES_HEAP_SIZE],[
-  AC_ARG_WITH([services-heap-size],[AC_HELP_STRING([--services-heap-size=<value>],[Set services heap size (default 64).])],[services_heap_size="$withval"],[services_heap_size="64"])
+  AC_ARG_WITH([services-heap-size],[AC_HELP_STRING([--services-heap-size=<value>],[Set services heap size (default 8).])],[services_heap_size="$withval"],[services_heap_size="8"])
   AC_DEFINE_UNQUOTED([SERVICES_HEAP_SIZE],[$services_heap_size],[Size of the services heap.])
 ])dnl }}}
 dnl {{{ ax_arg_with_mqueue_heap_size

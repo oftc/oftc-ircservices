@@ -695,6 +695,16 @@ quiet_mask(struct Service *service, struct Channel *chptr, const char *mask)
 }
 
 void
+unquiet_mask(struct Service *service, struct Channel *chptr, const char *mask)
+{
+  if(ServicesState.debugmode)
+    return;
+
+  send_cmode(service, chptr, "-q", mask);
+  del_id(chptr, (char*)mask, CHFL_QUIET);
+}
+
+void
 identify_user(struct Client *client)
 {
   struct Nick *nick = client->nickname;

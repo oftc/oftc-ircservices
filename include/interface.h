@@ -138,6 +138,7 @@ struct ServiceBan *akill_add(struct Service *, struct Client *, const char *,
 void ban_mask(struct Service *, struct Channel *, const char *);
 void unban_mask(struct Service *, struct Channel *, const char *);
 void quiet_mask(struct Service *, struct Channel *, const char *);
+void unquiet_mask(struct Service *, struct Channel *, const char *);
 int valid_wild_card(const char *);
 
 void free_nick(struct Nick *);

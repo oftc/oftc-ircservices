@@ -240,6 +240,13 @@ CS_HELP_UNBAN_LONG
 	
 	Removes all bans on a channel which match your host and are preventing you
 	from joining a channel.
+CS_HELP_UNQUIET_SHORT
+	%s: Unquiet yourself on a channel.
+CS_HELP_UNQUIET_LONG
+	Usage: UNQUIET channel
+	
+	Removes all quiets on a channel which match your host and are preventing you
+	from speaking in a channel.
 CS_HELP_INVITE_SHORT
 	%s: Invite to a channel.
 CS_HELP_INVITE_LONG
@@ -265,6 +272,13 @@ CS_HELP_CLEAR_BANS_LONG
 	This command will remove all of the bans set on a channel. It will not
 	remove any akicks which may be set. This command may be useful if you have a
 	large number of bans which need to be removed.
+CS_HELP_CLEAR_QUIETS_SHORT
+	%s: Remove all quiets on a channel.
+CS_HELP_CLEAR_QUIETS_LONG
+	Usage: CLEAR channel QUIETS
+	
+	This command will remove all of the quiets set on a channel. This command may
+	be useful if you have a large number of bans which need to be removed.
 CS_HELP_CLEAR_OPS_SHORT
 	%s: Deop all the channel operators on a channel.
 CS_HELP_CLEAR_OPS_LONG
@@ -422,6 +436,8 @@ CS_CHAN_NOT_USED
 	Unable to execute command because %s is not in use.
 CS_CLEAR_BANS
 	Removed %d bans from channel %s
+CS_CLEAR_QUIETS
+	Removed %d quiets from channel %s
 CS_CLEAR_OPS
 	Removed %d ops from channel %s
 CS_CLEAR_VOICES
