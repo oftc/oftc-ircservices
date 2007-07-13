@@ -48,12 +48,11 @@ void
 mqueue_hash_free(struct MessageQueue **hash, dlink_list *list)
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
-  struct MessageQueue *queue;
   if(hash != NULL)
   {
     DLINK_FOREACH_SAFE(ptr, next_ptr, list->head)
     {
-      queue = ptr->data;
+      struct MessageQueue *queue = ptr->data;
       if(queue->name == NULL)
       {
         ilog(L_DEBUG, "Trying to free already free'd MessageQueue");
@@ -98,6 +97,7 @@ floodmsg_free(struct FloodMsg *entry)
     MyFree(entry->message);
     entry->message = NULL;
     BlockHeapFree(fmsg_heap, entry);
+    entry = NULL;
   }
 }
 

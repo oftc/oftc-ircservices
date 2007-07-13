@@ -43,6 +43,8 @@ static void *fs_on_privmsg(va_list);
 static void floodserv_gc_routine(void *);
 static void floodserv_gc_hash(struct MessageQueue **, dlink_list *);
 
+static void floodserv_unenforce_routine(void *);
+
 static void m_help(struct Service *, struct Client *, int, char *[]);
 
 static void setup_channel(struct Channel *);
@@ -55,6 +57,8 @@ static void floodserv_free_channel(struct RegChannel *);
 
 static struct MessageQueue **global_msg_queue;
 static dlink_list global_msg_list;
+
+static dlink_list floodserv_channel_list = { NULL, NULL, 0 };
 
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, 2, SFLG_UNREGOK, CHUSER_FLAG, FS_HELP_SHORT,
@@ -90,6 +94,7 @@ INIT_MODULE(floodserv, "$Revision$")
     global_msg_queue[i] = NULL;
 
   eventAdd("floodserv gc routine", floodserv_gc_routine, NULL, FS_GC_EVENT_TIMER);
+  eventAdd("floodserv unenforce routine", floodserv_unenforce_routine, NULL, 10);
 }
 
 CLEANUP_MODULE
@@ -110,6 +115,7 @@ CLEANUP_MODULE
   unload_languages(floodserv->languages);
 
   eventDelete(floodserv_gc_routine, NULL);
+  eventDelete(floodserv_unenforce_routine, NULL);
 
   exit_client(fsclient, &me, "Service unloaded");
   hash_del_service(floodserv);
@@ -118,19 +124,52 @@ CLEANUP_MODULE
 }
 
 static void
+floodserv_unenforce_routine(void *param)
+{
+  dlink_node *ptr;
+  dlink_node *bptr, *bnptr;
+
+  ilog(L_DEBUG, "FloodServ: UNENFORCE Event");
+
+  DLINK_FOREACH(ptr, floodserv_channel_list.head)
+  {
+    struct Channel *chptr = ptr->data;
+
+    if(chptr->regchan != NULL && !chptr->regchan->expirebans)
+    {
+      DLINK_FOREACH_SAFE(bptr, bnptr, chptr->quietlist.head)
+      {
+        struct Ban *banptr = bptr->data;
+        char ban[IRC_BUFSIZE+1];
+        time_t delta = CurrentTime - banptr->when;
+        time_t maxtime = 1*60*60;
+
+        if(delta > maxtime && ircncmp(banptr->who, fsclient->name, strlen(fsclient->name)) ==0)
+        {
+          snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name,
+            banptr->username, banptr->host);
+          ilog(L_DEBUG, "FloodServ: UNENFORCE %s %d %s", chptr->chname,
+            (int)delta, ban);
+          unquiet_mask(floodserv, chptr, ban);
+        }
+      }
+    }
+  }
+}
+
+static void
 floodserv_gc_routine(void *param)
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
-  struct Channel *chptr = NULL;
 
   ilog(L_DEBUG, "FloodServ GC Routine Invoked");
 
-  DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
+  DLINK_FOREACH_SAFE(ptr, next_ptr, floodserv_channel_list.head)
   {
-    chptr = ptr->data;
+    struct Channel *chptr = chptr = ptr->data;
+
     if(chptr->regchan != NULL && chptr->regchan->floodserv
-      && chptr->regchan->flood_hash != NULL
-      && chptr->regchan->flood_list.length > FS_GC_LIST_LENGTH)
+      && chptr->regchan->flood_hash != NULL)
     {
       ilog(L_DEBUG, "FloodServ GC Iterating %s MessageQueue", chptr->chname);
       floodserv_gc_hash(chptr->regchan->flood_hash, &chptr->regchan->flood_list);
@@ -195,9 +234,13 @@ static void
 setup_channel(struct Channel *chptr)
 {
   struct RegChannel *regchan = chptr->regchan == NULL ? db_find_chan(chptr->chname) : chptr->regchan;
+  dlink_node *ptr = NULL;
 
-  if(regchan != NULL && regchan->floodserv)
+  if(regchan != NULL && regchan->floodserv &&
+    (ptr = dlinkFind(&floodserv_channel_list, chptr)) == NULL)
   {
+    dlinkAdd(chptr, make_dlink_node(), &floodserv_channel_list);
+
     if(regchan->flood_hash == NULL)
       regchan->flood_hash = new_mqueue_hash();
 
@@ -325,6 +368,9 @@ fs_on_client_part(va_list args)
     if(channel != NULL && channel->regchan != NULL
       && channel->regchan->flood_hash != NULL)
     {
+      dlink_node *ptr;
+      if((ptr = dlinkFindDelete(&floodserv_channel_list, channel)) != NULL)
+        free_dlink_node(ptr);
       floodserv_free_channel(channel->regchan);
     }
   }
@@ -358,9 +404,13 @@ static void *
 fs_on_channel_destroy(va_list args)
 {
   struct Channel *chan = va_arg(args, struct Channel *);
+  dlink_node *ptr;
 
   if(chan->regchan != NULL && chan->regchan->flood_hash != NULL)
     floodserv_free_channel(chan->regchan);
+
+  if((ptr = dlinkFindDelete(&floodserv_channel_list, chan)) != NULL)
+    free_dlink_node(ptr);
 
   return pass_callback(fs_channel_destroy_hook, chan);
 }
