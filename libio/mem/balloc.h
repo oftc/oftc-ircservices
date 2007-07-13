@@ -102,5 +102,14 @@ typedef struct BlockHeap BlockHeap;
 #define BlockHeapAlloc(x) MyMalloc((int)x)
 #define BlockHeapFree(x,y) MyFree(y)
 
+LIBIO_EXTERN size_t block_heap_get_used_mem(const BlockHeap *);
+LIBIO_EXTERN size_t block_heap_get_free_mem(const BlockHeap *);
+LIBIO_EXTERN size_t block_heap_get_size_mem(const BlockHeap *);
+LIBIO_EXTERN unsigned int block_heap_get_used_elm(const BlockHeap *);
+LIBIO_EXTERN unsigned int block_heap_get_free_elm(const BlockHeap *);
+LIBIO_EXTERN unsigned int block_heap_get_size_elm(const BlockHeap *);
+LIBIO_EXTERN const dlink_list *block_heap_get_heap_list(void);
+LIBIO_EXTERN dlink_list *block_heap_get_usage();
+
 #endif /* USE_BLOCK_ALLOC */
 #endif /* INCLUDED_libio_mem_balloc_h */
