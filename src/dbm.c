@@ -1453,9 +1453,9 @@ db_find_akill(const char *mask)
 
   if(rc == NULL)
     return NULL;
- 
+
   akill = MyMalloc(sizeof(struct ServiceBan));
- 
+
   brc = Bind("?d?ps?ps?d?d?d", &akill->id, &akill->mask, &akill->reason,
       &akill->setter, &akill->time_set, &akill->duration);
 
@@ -1464,6 +1464,7 @@ db_find_akill(const char *mask)
     db_log("db_find_akill: '%s' not found.", mask);
     Free(brc);
     Free(rc);
+    free_serviceban(akill);
     return NULL;
   }
 
