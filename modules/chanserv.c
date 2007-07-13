@@ -366,6 +366,8 @@ process_expireban_list(void *param)
   dlink_node *ptr;
   dlink_node *bptr, *bnptr;
 
+  ilog(L_DEBUG, "ChanServ ExpireBan Event");
+
   DLINK_FOREACH(ptr, channel_expireban_list.head)
   {
     struct Channel *chptr = ptr->data;
@@ -374,11 +376,15 @@ process_expireban_list(void *param)
     {
       struct Ban *banptr = bptr->data;
       char ban[IRC_BUFSIZE+1];
+      time_t delta = CurrentTime - banptr->when;
+      time_t maxtime = 1*60*60;
 
-      if((CurrentTime - banptr->when) > (1*60*60))
+      if(delta > maxtime)
       {
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
+        ilog(L_DEBUG, "ChanServ ExpireBan: BAN %s %d %s", chptr->chname,
+          (int)delta, ban);
         unban_mask(chanserv, chptr, ban);
       }
     }
@@ -387,11 +393,15 @@ process_expireban_list(void *param)
     {
       struct Ban *banptr = bptr->data;
       char ban[IRC_BUFSIZE+1];
+      time_t delta = CurrentTime - banptr->when;
+      time_t maxtime = 1*60*60;
 
-      if((CurrentTime - banptr->when) > (1*60*60))
+      if(delta > maxtime)
       {
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
+        ilog(L_DEBUG, "ChanServ ExpireBan: QUIET %s %d %s", chptr->chname,
+          (int)delta, ban);
         unquiet_mask(chanserv, chptr, ban);
       }
     }
