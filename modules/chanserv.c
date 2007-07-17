@@ -82,6 +82,7 @@ static void m_clear_bans(struct Service *, struct Client *, int, char *[]);
 static void m_clear_quiets(struct Service *, struct Client *, int, char *[]);
 static void m_clear_ops(struct Service *, struct Client *, int, char *[]);
 static void m_clear_voices(struct Service *, struct Client *, int, char *[]);
+static void m_clear_modes(struct Service *, struct Client *, int, char *[]);
 static void m_clear_users(struct Service *, struct Client *, int, char *[]);
 
 static void m_op(struct Service *, struct Client *, int, char *[]);
@@ -241,6 +242,8 @@ static struct ServiceMessage clear_sub[] = {
     CS_HELP_CLEAR_OPS_SHORT, CS_HELP_CLEAR_OPS_LONG, m_clear_ops },
   { NULL, "VOICES", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG, 
     CS_HELP_CLEAR_VOICES_SHORT, CS_HELP_CLEAR_VOICES_LONG, m_clear_voices },
+  { NULL, "MODES", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
+    CS_HELP_CLEAR_MODES_SHORT, CS_HELP_CLEAR_MODES_LONG, m_clear_modes },
   { NULL, "USERS", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_CLEAR_USERS_SHORT, CS_HELP_CLEAR_USERS_LONG, m_clear_users },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
@@ -1416,6 +1419,52 @@ m_clear_voices(struct Service *service, struct Client *client, int parc,
   }
   reply_user(service, service, client, CS_CLEAR_VOICES, voicecount, 
       regchptr->channel);
+}
+
+static void
+m_clear_modes(struct Service *service, struct Client *client, int parc,
+    char *parv[])
+{
+  struct Channel *chptr;
+  char mbuf[MODEBUFLEN+1];
+  char buf[MODEBUFLEN+1] = "-";
+
+  chptr = hash_find_channel(parv[1]);
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+
+  get_modestring(chptr->mode.mode, mbuf, MODEBUFLEN);
+
+  ilog(L_DEBUG, "ChanServ CLEAR MODES: %s has %s", chptr->chname, mbuf);
+
+  strlcat(buf, mbuf, MODEBUFLEN);
+
+  if(chptr->mode.key[0] != '\0')
+  {
+    strlcat(buf, "k", MODEBUFLEN);
+    chptr->mode.key[0] = '\0';
+  }
+
+  if(chptr->mode.limit > 0)
+  {
+    strlcat(buf, "l", MODEBUFLEN);
+    chptr->mode.limit = 0;
+  }
+
+  ilog(L_DEBUG, "ChanServ CLEAR MODES: %s removing %s", chptr->chname, buf);
+
+  send_cmode(service, chptr, buf, "");
+  chptr->mode.mode &= ~chptr->mode.mode;
+
+  ilog(L_DEBUG, "ChanServ CLEAR MODES: %s setting MLOCK %s", chptr->chname,
+    chptr->regchan->mlock);
+  set_mode_lock(service, chptr->chname, NULL, chptr->regchan->mlock, NULL);
+
+  reply_user(service, service, client, CS_CLEAR_MODES, chptr->chname);
 }
 
 static void

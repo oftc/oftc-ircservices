@@ -976,13 +976,13 @@ static struct ChannelMode ModeTable[255] =
   {chm_nosuch, NULL},                             /* J */
   {chm_nosuch, NULL},                             /* K */
   {chm_nosuch, NULL},                             /* L */
-  {chm_nosuch, NULL},                             /* M */
+  {chm_simple, (void*)MODE_REGONLYTALK},          /* M */
   {chm_nosuch, NULL},                             /* N */
   {chm_nosuch, NULL},                             /* O */
   {chm_nosuch, NULL},                             /* P */
   {chm_nosuch, NULL},                             /* Q */
-  {chm_nosuch, NULL},                             /* R */
-  {chm_nosuch, NULL},                             /* S */
+  {chm_simple, (void*)MODE_REGONLY},              /* R */
+  {chm_simple, (void*)MODE_SSLONLY},              /* S */
   {chm_nosuch, NULL},                             /* T */
   {chm_nosuch, NULL},                             /* U */
   {chm_nosuch, NULL},                             /* V */

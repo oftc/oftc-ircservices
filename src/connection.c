@@ -65,6 +65,8 @@ connect_server()
   struct Client *client = make_client(NULL);
   struct Server *server = make_server(client);
   struct Module *protomod;
+  char modes[MODEBUFLEN+1] = "";
+  int i, j = 0;
 
   protomod = find_module(Connect.protocol, NO);
   if(protomod == NULL)
@@ -75,8 +77,15 @@ connect_server()
   }
 
   ServerModeList = (struct ModeList *)modsym(protomod->handle, "ModeList");
-  ilog(L_DEBUG, "Loaded server mode list %p %c %d", ServerModeList, 
-      ServerModeList[0].letter, ServerModeList[0].mode);
+  for(i = 0; ServerModeList[i].letter != '\0'; i++)
+  {
+    modes[j++] = ServerModeList[i].letter;
+    if(j > MODEBUFLEN)
+      break;
+  }
+  modes[j] = '\0';
+
+  ilog(L_DEBUG, "Loaded server mode list %p %s %d", ServerModeList, modes, j);
 
   strlcpy(server->pass, Connect.password, sizeof(server->pass));
   strlcpy(client->name, Connect.name, sizeof(client->name));

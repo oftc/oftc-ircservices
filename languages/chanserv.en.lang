@@ -292,6 +292,13 @@ CS_HELP_CLEAR_VOICES_LONG
 	Usage CLEAR channel VOICES
 	
 	Remove channel voice status from all the channel members who have it.
+CS_HELP_CLEAR_MODES_SHORT
+	%s: Reset channel to MLOCK
+CS_HELP_CLEAR_MODES_LONG
+	Usage CLEAR channel MODES
+	
+	Reset the channel modes to MLOCK, useful if you've locked yourself out of a
+	channel with +k or -l
 CS_HELP_CLEAR_USERS_SHORT
 	%s: Remove all users from the channel.
 CS_HELP_CLEAR_USERS_LONG
@@ -444,6 +451,8 @@ CS_CLEAR_VOICES
 	Removed %d voices from channel %s
 CS_CLEAR_USERS
 	Removed all(%d) users from channel %s
+CS_CLEAR_MODES
+	Reset modes to MLOCK on %s
 CS_NOT_ON_CHAN
 	User %s not on channel %s
 CS_OP

@@ -1179,6 +1179,9 @@ set_mode_lock(struct Service *service, const char *channel,
 
   if(k < 0)
     strlcat(delstr, "k", MODEBUFLEN/2);
+
+  ilog(L_DEBUG, "MLOCK -%s+%s", delstr, setstr);
+
   /* If we've been asked to update the db, then we should do so. */
   if(value != NULL)
   {
@@ -1298,7 +1301,7 @@ set_mode_lock(struct Service *service, const char *channel,
 
   if(k > 0)
     strcpy(chptr->mode.key, key);
-  else
+  else if (l < 0)
     strlcat(delstr, "k", MODEBUFLEN/2);
 
   /*

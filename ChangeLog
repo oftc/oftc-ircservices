@@ -133,3 +133,4 @@
 	- Add CLEAR QUIETS, UNQUIET, and remove quiets in EXPIREBANS. (#25)
 	- FloodServ clears up +q's on it's own, FloodServ GC iterates only FS
 		channels more often and all valid channels. (#6)
+	- ChanServ CLEAR MODES implemented. (#33)
