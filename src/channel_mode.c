@@ -524,14 +524,6 @@ chm_invex(struct Client *client_p, struct Client *source_p,
 {
   char *mask = NULL;
 
-  if (alev < CHACCESS_HALFOP)
-  {
-    if (!(*errors & SM_ERR_NOOPS))
-      ilog(L_DEBUG, "Invex from non chop");
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
-
   mask = nuh_mask[*parn];
   memcpy(mask, parv[*parn], sizeof(nuh_mask[*parn]));
   ++*parn;
@@ -835,12 +827,6 @@ chm_limit(struct Client *client_p, struct Client *source_p,
   int i, limit;
   char *lstr;
 
-  if (alev < CHACCESS_HALFOP)
-  {
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
-
   if (dir == MODE_QUERY)
     return;
 
@@ -895,12 +881,6 @@ chm_key(struct Client *client_p, struct Client *source_p,
 {
   int i;
   char *key;
-
-  if (alev < CHACCESS_HALFOP)
-  {
-    *errors |= SM_ERR_NOOPS;
-    return;
-  }
 
   if (dir == MODE_QUERY)
     return;
@@ -1088,6 +1068,7 @@ set_channel_mode(struct Client *client_p, struct Client *source_p, struct Channe
   int alevel = 0, errors = 0;
   char *ml = parv[0], c;
   int table_position;
+  char *oldparam;
 
   mode_count = 0;
   mode_limit = 0;
@@ -1113,13 +1094,14 @@ set_channel_mode(struct Client *client_p, struct Client *source_p, struct Channe
           table_position = 0;
         else
           table_position = c - 'A' + 1;
-       ModeTable[table_position].func(client_p, source_p, chptr,
+        oldparam = parv[parn];
+        ModeTable[table_position].func(client_p, source_p, chptr,
                                        parc, &parn,
                                        parv, &errors, alevel, dir, c,
                                        ModeTable[table_position].d,
                                        chname);
        if(dir == MODE_ADD || dir == MODE_DEL)
-         execute_callback(on_cmode_change_cb, source_p, chptr, dir, c, parv[parn]);
+         execute_callback(on_cmode_change_cb, source_p, chptr, dir, c, oldparam);
        break;
     }
   }

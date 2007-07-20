@@ -108,6 +108,10 @@
 	away).
 	- add db_reopen_log() which i was sure already existed, but apparently
 		didnt. (#52)
+2007-07-?? - 1.0.18
+	Bugfix point release. Bug(s) fixed:
+	- Don't check access level on channel mode change, just do what the server
+		tells us. Also fix a bug in the mode callback. (#32)
 
 2007-??-?? - 1.1.0
 	Feature/Bugfix release.
@@ -128,6 +132,8 @@
 		sensible things if so desired. (#34)
 	- STATS spy notice. (#17)
 	- FloodServ now uses BlockHeap, now you can monitor usage in STATS z
+	- Actually implement chanserv verbose, instead of pretending that we do.
+		(#50)
 	- Add various ORDER BY clauses to help with listing and delete by index.
 		(#39)
 	- Add CLEAR QUIETS, UNQUIET, and remove quiets in EXPIREBANS. (#25)
