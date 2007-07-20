@@ -112,3 +112,7 @@
 		system default to the database driver. (#21)
 	- Actually implement chanserv verbose, instead of pretending that we do.
 		(#50)
+2007-07-?? - 1.0.18
+	Bugfix point release. Bug(s) fixed:
+	- Don't check access level on channel mode change, just do what the server
+		tells us. Also fix a bug in the mode callback. (#32)
