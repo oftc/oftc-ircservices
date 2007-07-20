@@ -41,7 +41,8 @@ static void *fs_on_channel_destroy(va_list);
 static void *fs_on_privmsg(va_list);
 
 static void floodserv_gc_routine(void *);
-static void floodserv_gc_hash(struct MessageQueue **, dlink_list *);
+static void floodserv_gc_hash(struct MessageQueue **, dlink_list *,
+  const char *);
 
 static void floodserv_unenforce_routine(void *);
 
@@ -166,21 +167,16 @@ floodserv_gc_routine(void *param)
 
     if(chptr->regchan != NULL && chptr->regchan->floodserv
       && chptr->regchan->flood_hash != NULL)
-    {
-      ilog(L_DEBUG, "FloodServ GC Iterating %s MessageQueue", chptr->chname);
-      floodserv_gc_hash(chptr->regchan->flood_hash, &chptr->regchan->flood_list);
-    }
+      floodserv_gc_hash(chptr->regchan->flood_hash, &chptr->regchan->flood_list,
+        chptr->chname);
   }
 
   if(global_msg_queue != NULL)
-  {
-    ilog(L_DEBUG, "FloodServ GC Iterating Global Queue");
-    floodserv_gc_hash(global_msg_queue, &global_msg_list);
-  }
+    floodserv_gc_hash(global_msg_queue, &global_msg_list, "GLOBAL");
 }
 
 static void
-floodserv_gc_hash(struct MessageQueue **hash, dlink_list *list)
+floodserv_gc_hash(struct MessageQueue **hash, dlink_list *list, const char *name)
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
   struct MessageQueue *queue = NULL;
@@ -192,7 +188,7 @@ floodserv_gc_hash(struct MessageQueue **hash, dlink_list *list)
     age = CurrentTime - queue->last_used;
     if(age >= FS_GC_EXPIRE_TIME)
     {
-      ilog(L_DEBUG, "FloodServ GC Freeing %s age: %d", queue->name, age);
+      ilog(L_DEBUG, "FloodServ GC Freeing %s in %s age: %d", queue->name, name, age);
       hash_del_mqueue(hash, queue);
       dlinkDelete(ptr, list);
       mqueue_free(queue);

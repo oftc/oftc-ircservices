@@ -142,3 +142,4 @@
 	- ChanServ CLEAR MODES implemented. (#33)
 	- FloodServ uses much less memory on startup, use dlink_list instead of
 		array
+	- Make FloodServ debug message less frequent but just as helpful
