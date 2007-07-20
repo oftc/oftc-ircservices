@@ -24,21 +24,14 @@ mqueue_new(const char *name, unsigned int type, int max, int msg_time,
 int lne_time)
 {
   struct MessageQueue *queue = BlockHeapAlloc(mqueue_heap);
-  int i;
 
   DupString(queue->name, name);
   assert(queue->name != NULL);
 
-  queue->last = max - 1;
   queue->max  = max;
   queue->msg_enforce_time = msg_time;
   queue->lne_enforce_time = lne_time;
   queue->type = type;
-
-  queue->entries = MyMalloc(sizeof(struct FloodMsg *) * queue->max);
-
-  for(i = 0; i < queue->max; ++i)
-    queue->entries[i] = NULL;
 
   assert(queue->name != NULL);
   return queue;
@@ -70,20 +63,19 @@ mqueue_hash_free(struct MessageQueue **hash, dlink_list *list)
 void
 mqueue_free(struct MessageQueue *queue)
 {
-  int i;
   if(queue != NULL)
   {
+    dlink_node *ptr = NULL, *nptr = NULL;
+
     MyFree(queue->name);
     queue->name = NULL;
 
-    for(i = 0; i < queue->max; ++i)
+    DLINK_FOREACH_SAFE(ptr, nptr, queue->entries.head)
     {
-      floodmsg_free(queue->entries[i]);
-      queue->entries[i] = NULL;
+      struct FloodMsg *data = ptr->data;
+      dlinkDelete(ptr, &queue->entries);
+      floodmsg_free(data);
     }
-
-    MyFree(queue->entries);
-    queue->entries = NULL;
 
     BlockHeapFree(mqueue_heap, queue);
   }

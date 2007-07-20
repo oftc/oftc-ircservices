@@ -7,16 +7,18 @@ struct FloodMsg
 {
   time_t time;
   char *message;
+  struct FloodMsg *hnext;
+  struct FloodMsg *next;
+  dlink_node node;
 };
 
 struct MessageQueue
 {
   char *name;
-  int last;
   int max;
   int msg_enforce_time;
   int lne_enforce_time;
-  struct FloodMsg **entries;
+  dlink_list entries;
   unsigned int type;
   time_t last_used;
   struct MessageQueue *hnext;

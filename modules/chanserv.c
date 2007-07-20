@@ -369,8 +369,6 @@ process_expireban_list(void *param)
   dlink_node *ptr;
   dlink_node *bptr, *bnptr;
 
-  ilog(L_DEBUG, "ChanServ ExpireBan Event");
-
   DLINK_FOREACH(ptr, channel_expireban_list.head)
   {
     struct Channel *chptr = ptr->data;

@@ -129,8 +129,6 @@ floodserv_unenforce_routine(void *param)
   dlink_node *ptr;
   dlink_node *bptr, *bnptr;
 
-  ilog(L_DEBUG, "FloodServ: UNENFORCE Event");
-
   DLINK_FOREACH(ptr, floodserv_channel_list.head)
   {
     struct Channel *chptr = ptr->data;
@@ -162,8 +160,6 @@ floodserv_gc_routine(void *param)
 {
   dlink_node *ptr = NULL, *next_ptr = NULL;
 
-  ilog(L_DEBUG, "FloodServ GC Routine Invoked");
-
   DLINK_FOREACH_SAFE(ptr, next_ptr, floodserv_channel_list.head)
   {
     struct Channel *chptr = chptr = ptr->data;
@@ -181,8 +177,6 @@ floodserv_gc_routine(void *param)
     ilog(L_DEBUG, "FloodServ GC Iterating Global Queue");
     floodserv_gc_hash(global_msg_queue, &global_msg_list);
   }
-
-  ilog(L_DEBUG, "FloodServ GC Done");
 }
 
 static void
@@ -260,24 +254,19 @@ static void
 mqueue_add_message(struct MessageQueue *queue, const char *message)
 {
   struct FloodMsg *entry = NULL;
-  int i;
 
   assert(queue->name != NULL);
 
-  if(queue->last == 0 && queue->entries[0] != NULL)
+  if(queue->entries.length >= queue->max)
   {
-    entry = queue->entries[queue->max-1];
-    for(i = queue->max - 1; i > 0; --i)
-      queue->entries[i] = queue->entries[i - 1];
+    entry = queue->entries.head->data;
+    dlinkDelete(queue->entries.head, &queue->entries);
     floodmsg_free(entry);
-    queue->entries[0] = NULL;
   }
 
-  queue->entries[queue->last] = floodmsg_new(message);
-  queue->last_used = CurrentTime;
+  dlinkAddTail(floodmsg_new(message), make_dlink_node(), &queue->entries);
 
-  if(queue->last > 0)
-    --queue->last;
+  queue->last_used = CurrentTime;
 }
 
 static int
@@ -285,13 +274,14 @@ mqueue_enforce(struct MessageQueue *queue)
 {
   struct FloodMsg *oldest = NULL, *newest = NULL, *tmp = NULL;
   time_t age = 0;
-  int i = 0;
   int enforce = 1;
 
-  oldest = queue->entries[queue->max-1];
-  newest = queue->entries[0];
+  oldest = queue->entries.tail->data;
+  newest = queue->entries.head->data;
 
-  if(queue->last != 0 || oldest == NULL || newest == NULL)
+  if(queue->entries.length < queue->max
+    || oldest == NULL || newest == NULL
+    || oldest == newest)
     return MQUEUE_NONE;
 
   assert(newest != oldest);
@@ -303,9 +293,11 @@ mqueue_enforce(struct MessageQueue *queue)
 
   if(age <= queue->msg_enforce_time)
   {
-    for(i = 0; i < queue->max; ++i)
+    dlink_node *ptr = NULL;
+
+    DLINK_FOREACH(ptr, queue->entries.head)
     {
-      tmp = queue->entries[i];
+      tmp = ptr->data;
       if(ircncmp(newest->message, tmp->message, IRC_BUFSIZE) != 0)
       {
         enforce = 0;
