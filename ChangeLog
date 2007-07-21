@@ -116,3 +116,4 @@
 	Bugfix point release. Bug(s) fixed:
 	- Don't check access level on channel mode change, just do what the server
 		tells us. Also fix a bug in the mode callback. (#32)
+	- Multiple word descriptions might be nice on channel registration. (#54)
