@@ -274,6 +274,9 @@ exit_one_client(struct Client *source_p)
     free_dlink_node(lp);*/
   }
 
+  if(HasID(source_p))
+    hash_del_id(source_p);
+
   if (source_p->name[0])
   {
     hash_del_client(source_p);
@@ -292,6 +295,14 @@ exit_one_client(struct Client *source_p)
     dlinkDelete(&source_p->node, &global_client_list);
 
   ilog(L_DEBUG, "exited: %s", source_p->name);
+
+  /* XXX TODO FIXME
+   * We probably want to free the uplink if for whatever reason we get
+   * disconnected, though should be infrequent enough we can live for
+   * the time being with the leak */
+  /* Be sure to free clients and don't let the heap grow endlessly */
+  if(source_p != me.uplink)
+    BlockHeapFree(client_heap, source_p);
 }
 
 /*

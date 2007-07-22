@@ -81,3 +81,39 @@
 	- Fix a 64 bit compilation issue.
 	- Fix various additional memory leaks.
 	- Reenable closing of module handles which sneaked in during debugging.
+2007-06-26 - 1.0.14
+	Bugfix point release.  Bug(s) fixed:
+	- Fix another bug in channel modes causing a desync. (#28)
+	- Only show topic, entry message, and mlock to opers or members. (#38 maybe #31)
+	- set #channel floodserv should show on/off properly. (#29)
+	- floodserv shouldn't insert an AKILL twice. (#37)
+	- Remove stray tab from chanserv access add help.
+	- the part cb may send a null channel don't let FS crash. (#43)
+	- opers should be allowed to see operserv help. (#41)
+	- db_find_chan and db_find_chanaccess shouldn't leak when the channel isn't
+		found or access level. (#26)
+	- Fix another bug in channel modes causing a desync. (#28)
+	- Don't allow operserv to be reloaded, it won't work. (#45)
+2007-06-28 - 1.0.15
+	Bugfix point release. Bug(s) fixed:
+	- We should BlockHeapFree clients when they've exited. (#26)
+	- STATS z implementation. (#17)
+2007-06-28 - 1.0.16
+	Bugfix point release. Bug(s) fixed:
+	- Now that we properly free clients we should delete their IDs (Fixes
+		crash).
+2007-07-09 - 1.0.17
+	Bugfix point release. Bug(s) fixed:
+	- db_log shouldn't act like ilog, remove L_CRIT (Fixes crash on db going
+	away).
+	- add db_reopen_log() which i was sure already existed, but apparently
+		didnt. (#52)
+	- Allow NULL hostname to be specified for database{} connection to use the
+		system default to the database driver. (#21)
+	- Actually implement chanserv verbose, instead of pretending that we do.
+		(#50)
+2007-07-?? - 1.0.18
+	Bugfix point release. Bug(s) fixed:
+	- Don't check access level on channel mode change, just do what the server
+		tells us. Also fix a bug in the mode callback. (#32)
+	- Multiple word descriptions might be nice on channel registration. (#54)

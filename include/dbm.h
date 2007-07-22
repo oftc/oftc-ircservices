@@ -223,4 +223,6 @@ int db_is_mailsent(unsigned int, const char *);
 
 int db_save_nick(struct Nick *);
 
+void db_reopen_log();
+
 #endif /* INCLUDED_dbm_h */

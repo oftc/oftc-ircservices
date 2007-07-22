@@ -226,15 +226,14 @@ init_db()
     len += strlen(Database.hostname);
   len += strlen(port);
   len += strlen(":::");
+  len += strlen(Database.dbname);
   len++;
 
   dbstr = MyMalloc(len);
-  snprintf(dbstr, len-1, "%s:%s:%s:%s", Database.driver, 
+  snprintf(dbstr, len, "%s:%s:%s:%s", Database.driver, 
       Database.hostname == NULL ? "" : Database.hostname, port, Database.dbname);
 
   Database.yada = yada_init(dbstr, 0);
-  MyFree(dbstr);
-
   MyFree(dbstr);
 
   snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
@@ -264,6 +263,28 @@ cleanup_db()
     Database.yada->destroy(Database.yada);
   }
   fbclose(db_log_fb);
+}
+
+void
+db_reopen_log()
+{
+  char logpath[LOG_BUFSIZE+1];
+
+  if(db_log_fb != NULL)
+  {
+    fbclose(db_log_fb);
+    db_log_fb = NULL;
+  }
+
+  snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
+  if(db_log_fb == NULL)
+  {
+    if(Logging.sqllog[0] != '\0' && (db_log_fb = fbopen(logpath, "r")) != NULL)
+    {
+      fbclose(db_log_fb);
+      db_log_fb = fbopen(logpath, "a");
+    }
+  }
 }
 
 void
@@ -371,7 +392,7 @@ db_try_reconnect()
       db_try_reconnect();                                             \
       db_log("Query failed because server went away, reconnected.");  \
     }                                                                 \
-    db_log(L_CRIT, "db_query: %d Failed: %s", __id, Database.yada->errmsg); \
+    db_log("db_query: %d Failed: %s", __id, Database.yada->errmsg);   \
   }                                                                   \
                                                                       \
   ret = __result;                                                     \
@@ -1274,7 +1295,7 @@ struct RegChannel *
 db_find_chan(const char *channel)
 {
   yada_rc_t *rc, *brc;
-  struct RegChannel *channel_p;
+  struct RegChannel *channel_p = NULL;
   char *retchan;
 
   assert(channel != NULL);
@@ -1299,6 +1320,7 @@ db_find_chan(const char *channel)
     db_log("db_find_chan: '%s' not found.\n", channel);
     Free(brc);
     Free(rc);
+    free_regchan(channel_p);
     return NULL;
   }
 
@@ -1311,7 +1333,7 @@ db_find_chan(const char *channel)
   DupString(channel_p->topic, channel_p->topic);
   DupString(channel_p->mlock, channel_p->mlock);
 
-  db_log("db_find_chan: Found nick %s\n", channel_p->channel);
+  db_log("db_find_chan: Found chan %s\n", channel_p->channel);
 
   Free(brc);
   Free(rc);
@@ -1388,7 +1410,10 @@ db_find_chanaccess(unsigned int channel, unsigned int account)
       &access->level);
 
   if(Fetch(rc, brc) == 0)
+  {
+    MyFree(access);
     access = NULL;
+  }
 
   Free(rc);
   Free(brc);

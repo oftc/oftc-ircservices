@@ -297,7 +297,7 @@ CS_HELP_ACCESS_ADD_LONG
 	CHANOP - Channel operator level access. Enables the user to perform channel
 	operator functions. OP/DEOP, AKICK management etc.
 	MEMBER - Recognises the user as a member of the channel. Allows users to
-	request voice for themselves. Gives them access	to the channel when it is 
+	request voice for themselves. Gives them access to the channel when it is 
 	invite only and allows them to view channel settings.
 CS_HELP_ACCESS_DEL_SHORT
 	%s: Remove a nickname from the channel access list.
@@ -377,13 +377,18 @@ CS_NOT_EXIST
 	channel does not exist. XXX
 CS_INFO_CHAN_START
 	Channel Information for %s
-CS_INFO_CHAN
+CS_INFO_CHAN_MEMBER
 	    Description: %s
 	            URL: %s
 	         e-mail: %s
 	          Topic: %s
 	  Entry Message: %s
 	      Mode Lock: %s
+	
+CS_INFO_CHAN_NMEMBER
+	    Description: %s
+	            URL: %s
+	         e-mail: %s
 	
 CS_INFO_OPTION
 	    %s is %s

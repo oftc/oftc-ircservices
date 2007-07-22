@@ -65,6 +65,16 @@ struct BlockHeap {
 
 typedef struct BlockHeap BlockHeap;
 
+struct BlockHeapInfo {
+  dlink_node node;
+  char *name;
+  size_t used_mem;
+  size_t free_mem;
+  size_t size_mem;
+  unsigned int used_elm;
+  unsigned int free_elm;
+  unsigned int size_elm;
+};
 
 LIBIO_EXTERN int        BlockHeapFree(BlockHeap *, void *);
 LIBIO_EXTERN void *     BlockHeapAlloc(BlockHeap *);
@@ -82,6 +92,7 @@ LIBIO_EXTERN unsigned int block_heap_get_used_elm(const BlockHeap *);
 LIBIO_EXTERN unsigned int block_heap_get_free_elm(const BlockHeap *);
 LIBIO_EXTERN unsigned int block_heap_get_size_elm(const BlockHeap *);
 LIBIO_EXTERN const dlink_list *block_heap_get_heap_list(void);
+LIBIO_EXTERN dlink_list *block_heap_get_usage();
 
 #else /* not USE_BLOCK_ALLOC */
 

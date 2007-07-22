@@ -379,6 +379,7 @@ m_register(struct Service *service, struct Client *client,
 {
   struct Channel    *chptr;
   struct RegChannel *regchptr;
+  char desc[IRC_BUFSIZE+1];
 
   assert(parv[1]);
 
@@ -431,7 +432,8 @@ m_register(struct Service *service, struct Client *client,
 
   regchptr = MyMalloc(sizeof(struct RegChannel));
   strlcpy(regchptr->channel, parv[1], sizeof(regchptr->channel));
-  DupString(regchptr->description, parv[2]);
+  join_params(desc, parc-1, &parv[2]);
+  DupString(regchptr->description, desc);
 
   if (db_register_chan(regchptr, client->nickname->id))
   {
@@ -488,6 +490,7 @@ m_info(struct Service *service, struct Client *client,
   void *first, *listptr;  
   char buf[IRC_BUFSIZE+1] = {0};
   char *nick;
+  struct ChanAccess *access = NULL;
 
   if(db_is_chan_forbid(parv[1]))
   {
@@ -496,15 +499,29 @@ m_info(struct Service *service, struct Client *client,
   }
   
   regchptr = db_find_chan(parv[1]);
+
+  if(client->nickname)
+    access = db_find_chanaccess(regchptr->id, client->nickname->id);
   
   reply_user(service, service, client, CS_INFO_CHAN_START, regchptr->channel);
   reply_time(service, client, CS_INFO_REGTIME_FULL, regchptr->regtime);
-  reply_user(service, service, client, CS_INFO_CHAN, regchptr->description, 
-      regchptr->url == NULL ? "Not Set" : regchptr->url, 
-      regchptr->email == NULL ? "Not Set" : regchptr->email, 
-      regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
-      regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg,
-      regchptr->mlock == NULL ? "Not Set" : regchptr->mlock);
+  if(IsOper(client) || (access != NULL && access->level >= MEMBER_FLAG))
+  {
+    reply_user(service, service, client, CS_INFO_CHAN_MEMBER,
+        regchptr->description, 
+        regchptr->url == NULL ? "Not Set" : regchptr->url, 
+        regchptr->email == NULL ? "Not Set" : regchptr->email, 
+        regchptr->topic == NULL ? "Not Set" : regchptr->topic, 
+        regchptr->entrymsg == NULL ? "Not Set" : regchptr->entrymsg,
+        regchptr->mlock == NULL ? "Not Set" : regchptr->mlock);
+  }
+  else
+  {
+    reply_user(service, service, client, CS_INFO_CHAN_NMEMBER,
+        regchptr->description, 
+        regchptr->url == NULL ? "Not Set" : regchptr->url, 
+        regchptr->email == NULL ? "Not Set" : regchptr->email);
+  }
 
   if((listptr = db_list_first(CHMASTER_LIST, regchptr->id, 
           (void**)&nick)) != NULL)
@@ -552,6 +569,9 @@ m_info(struct Service *service, struct Client *client,
 
   reply_user(service, service, client, CS_INFO_OPTION, "LEAVEOPS",
       regchptr->leaveops ? "ON" : "OFF");
+
+  if(access != NULL)
+    MyFree(access);
 
   free_regchan(regchptr);
 }
@@ -618,11 +638,12 @@ m_access_add(struct Service *service, struct Client *client,
           regchptr->channel);
       if(chptr == NULL)
         free_regchan(regchptr);
-      free_chanaccess(oldaccess);
+      MyFree(oldaccess);
+      MyFree(access);
       return;
     }
     db_list_del_index(DELETE_CHAN_ACCESS, access->account, access->channel);
-    free_chanaccess(oldaccess);
+    MyFree(oldaccess);
   }
  
   if(db_list_add(CHACCESS_LIST, access))
@@ -631,6 +652,9 @@ m_access_add(struct Service *service, struct Client *client,
         level_added);
     ilog(L_DEBUG, "%s (%s@%s) added AE %s(%d) to %s", client->name, 
         client->username, client->host, parv[2], access->level, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s Added %s to %s "
+        "access list as %s", chptr->chname, client->name, parv[2], 
+        chptr->chname, level_added); 
   }
   else
     reply_user(service, service, client, CS_ACCESS_ADDFAIL, parv[2], parv[1],
@@ -639,7 +663,7 @@ m_access_add(struct Service *service, struct Client *client,
   if (chptr == NULL)
     free_regchan(regchptr);
 
-  free_chanaccess(access);
+  MyFree(access);
 }
 
 
@@ -678,16 +702,19 @@ m_access_del(struct Service *service, struct Client *client,
         regchptr->channel);
     if(chptr == NULL)
       free_regchan(regchptr);
-    free_chanaccess(access);
+    MyFree(access);
     return;
   }
-  free_chanaccess(access);
+
+  MyFree(access);
 
   if(db_list_del_index(DELETE_CHAN_ACCESS, nickid, regchptr->id))
   {
     reply_user(service, service, client, CS_ACCESS_DELOK, parv[2], parv[1]);
     ilog(L_DEBUG, "%s (%s@%s) removed AE %s from %s", 
       client->name, client->username, client->host, parv[2], parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s Removed %s from %s "
+        "access list", chptr->chname, client->name, parv[2], chptr->chname); 
   }
   else
     reply_user(service, service, client, CS_ACCESS_DELFAIL, parv[2], parv[1]);
@@ -714,7 +741,7 @@ m_access_list(struct Service *service, struct Client *client,
   if (handle == NULL)
   {
     reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
-    free_chanaccess(access);
+    MyFree(access);
     if(chptr == NULL)
       free_regchan(regchptr);
     return;
@@ -744,12 +771,12 @@ m_access_list(struct Service *service, struct Client *client,
     nick = db_get_nickname_from_id(access->account);
     reply_user(service, service, client, CS_ACCESS_LIST, i++, nick, level);
 
-    free_chanaccess(access);
+    MyFree(access);
     MyFree(nick);
     handle = db_list_next(handle, CHACCESS_LIST, (void **)&access);
   }
 
-  free_chanaccess(access);
+  MyFree(access);
   db_list_done(first);
   reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
 
@@ -1374,6 +1401,8 @@ m_op(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     op_user(service, chptr, target);
     reply_user(service, service, client, CS_OP, target->name, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s OP %s", 
+        chptr->chname, client->name, target->name, chptr->chname);
   }
   else
     reply_user(service, service, client, CS_ALREADY_OP, target->name, parv[1]);
@@ -1411,6 +1440,8 @@ m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     deop_user(service, chptr, target);
     reply_user(service, service, client, CS_DEOP, target->name, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s DEOP %s", 
+        chptr->chname, client->name, target->name, chptr->chname);
   }
   else
     reply_user(service, service, client, CS_NOT_OP, target->name, parv[1]);
@@ -1441,13 +1472,13 @@ m_voice(struct Service *service, struct Client *client, int parc, char *parv[])
   else if(access->level < CHANOP_FLAG)
   {
     reply_user(service, service, client, CS_NO_VOICE_OTHERS, parv[1]);
-    free_chanaccess(access);
+    MyFree(access);
     return;
   }
   else
     target = find_client(parv[2]);
 
-  free_chanaccess(access);
+  MyFree(access);
 
   if(target == NULL || (ms = find_channel_link(target, chptr)) == NULL)
   {
@@ -1459,6 +1490,8 @@ m_voice(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     voice_user(service, chptr, target);
     reply_user(service, service, client, CS_VOICE, target->name, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s VOICE %s", 
+        chptr->chname, client->name, target->name, chptr->chname); 
   }
   else
     reply_user(service, service, client, CS_ALREADY_VOICE, target->name, parv[1]);
@@ -1489,13 +1522,13 @@ m_devoice(struct Service *service, struct Client *client, int parc, char *parv[]
   else if(access->level < CHANOP_FLAG)
   {
     reply_user(service, service, client, CS_NO_DEVOICE_OTHERS, parv[1]);
-    free_chanaccess(access);
+    MyFree(access);
     return;
   }
   else
     target = find_client(parv[2]);
 
-  free_chanaccess(access);
+  MyFree(access);
 
   if(target == NULL || (ms = find_channel_link(target, chptr)) == NULL)
   {
@@ -1507,6 +1540,8 @@ m_devoice(struct Service *service, struct Client *client, int parc, char *parv[]
   {
     devoice_user(service, chptr, target);
     reply_user(service, service, client, CS_DEVOICE, target->name, parv[1]);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s DEVOICE %s", 
+        chptr->chname, client->name, target->name, chptr->chname); 
   }
   else
     reply_user(service, service, client, CS_NOT_VOICE, target->name, parv[1]);
@@ -1549,6 +1584,8 @@ m_invite(struct Service *service, struct Client *client, int parc, char *parv[])
 
   invite_user(service, chptr, target);
   reply_user(service, service, client, CS_INVITED, target->name, parv[1]);
+  send_chops_notice(service, chptr, "[%s ChanOps] %s INVITE %s", 
+      chptr->chname, client->name, target->name, chptr->chname); 
 }
 
 static void
@@ -1576,6 +1613,9 @@ m_unban(struct Service *service, struct Client *client, int parc, char *parv[])
     snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banp->name, banp->username,
         banp->host);
     unban_mask(service, chptr, ban);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s UNBAN %s!%s@%s", 
+        chptr->chname, client->name, banp->name, banp->username, banp->host);
+ 
     numbans++;
 
     banp = find_bmask(client, &chptr->banlist);
@@ -1624,6 +1664,9 @@ m_set_string(struct Service *service, struct Client *client,
       ilog(L_DEBUG, "%s (%s@%s) changed %s of %s to %s", 
           client->name, client->username, client->host, field, regchptr->channel, 
           value);
+      send_chops_notice(service, chptr, "[%s ChanOps] %s SET %s to %s", 
+          chptr->chname, client->name, field,
+          value == NULL ? "Not set" : value); 
     }
 
     if(value != NULL)
@@ -1680,6 +1723,7 @@ m_set_flag(struct Service *service, struct Client *client,
         break;
       case SET_CHAN_FLOODSERV:
         on = regchptr->floodserv;
+        break;
       default:
         on = FALSE;
         break;
@@ -2000,8 +2044,7 @@ cs_on_client_join(va_list args)
     else
       level = access->level;
 
-    if(access != NULL)
-      free_chanaccess(access);
+    MyFree(access);
   }
 
   if(regchptr->restricted && level < MEMBER_FLAG)
