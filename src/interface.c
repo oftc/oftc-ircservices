@@ -878,7 +878,8 @@ check_list_entry(unsigned int type, unsigned int id, const char *value)
   return FALSE;
 }
 
-int enforce_matching_serviceban(struct Service *service, struct Channel *chptr, 
+int 
+enforce_matching_serviceban(struct Service *service, struct Channel *chptr, 
     struct Client *client)
 {
   struct ServiceBan *sban;
