@@ -16,3 +16,12 @@ CREATE TABLE sent_mail (
   email           VARCHAR(255) NOT NULL,
   sent            INTEGER NOT NULL
 );
+
+DROP TABLE jupes CASCADE;
+CREATE TABLE jupes (
+  id              SERIAL PRIMARY KEY,
+  name            VARCHAR(255) NOT NULL,
+  reason          VARCHAR(255) NOT NULL,
+  setter          INTEGER REFERENCES account(id) ON DELETE SET NULL
+);
+CREATE UNIQUE INDEX jupes_name_idx ON jupes (lower(name));

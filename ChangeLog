@@ -148,3 +148,5 @@
 	- Part callback should always fire before destroy callback, move remove_user
 		after part callback is fired.
 	- FloodServ shouldn't keep yet another list for the channels it's joined to
+	- Redo JupeServ as part of OperServ, persistent saving to db and reloaded on
+		reconnect, also SQUIT deletes from the db.

@@ -163,3 +163,33 @@ OS_AKILL_TOO_WILD
 	AKILLs must contain at least %d non wild characters.
 OS_AKILL_ALREADY
 	Mask %s is already on the AKILL list.
+OS_JUPES_HELP_SHORT
+	%s: Lists and manages currently active JUPES
+OS_JUPES_HELP_LONG
+	Lists and manages currently active JUPES
+OS_JUPES_ADD_HELP_SHORT
+	%s: ADD a new JUPE
+OS_JUPES_ADD_HELP_LONG
+	ADD a new JUPE
+OS_JUPES_LIST_HELP_SHORT
+	%s: LIST all active JUPES
+OS_JUPES_LIST_HELP_LONG
+	LIST all active JUPES
+OS_JUPES_DEL_HELP_SHORT
+	%s: DEL an active JUPE
+OS_JUPES_DEL_HELP_LONG
+	DEL an active JUPE
+OS_JUPES_ALREADY
+	Server %s has already been jupitered %s
+OS_JUPES_ADDED
+	Server %s now jupitered becase: %s
+OS_JUPES_ADD_FAILED
+	Failed to add jupe for %s
+OS_JUPES_DELETED
+	Server %s is no longer jupitered
+OS_JUPES_DEL_FAILED
+	Failed to remove jupe for %s
+OS_JUPES_LIST
+	%d: %s [%s] by %s
+OS_JUPES_LIST_END
+	End of JUPES list

@@ -64,6 +64,7 @@ extern struct Callback *send_newserver_cb;
 extern struct Callback *send_join_cb;
 extern struct Callback *send_part_cb;
 extern struct Callback *send_nosuchsrv_cb;
+extern struct Callback *send_squit_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -83,6 +84,7 @@ extern struct Callback *on_burst_done_cb;
 extern struct Callback *on_certfp_cb;
 extern struct Callback *on_nick_drop_cb;
 extern struct Callback *on_chan_drop_cb;
+extern struct Callback *on_db_init_cb;
 
 extern struct ModeList *ServerModeList;
 
@@ -92,6 +94,7 @@ void cleanup_interface();
 struct Service *make_service(char *);
 struct Client *introduce_client(const char *, const char*, char);
 struct Client *introduce_server(const char*, const char*);
+void squit_server(const char *, const char *);
 struct Channel *join_channel(struct Client *, struct Channel*);
 void part_channel(struct Client *, const char*, const char*);
 size_t strtime(struct Client *, time_t, char *);
@@ -146,6 +149,7 @@ int valid_wild_card(const char *);
 void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
 void free_serviceban(struct ServiceBan *);
+void free_jupeentry(struct JupeEntry *);
 
 unsigned int get_mode_from_letter(char);
 void get_modestring(unsigned int, char *, int);

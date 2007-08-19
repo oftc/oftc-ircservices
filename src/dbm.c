@@ -219,6 +219,13 @@ query_t queries[QUERY_COUNT] = {
           "b.account_id = ?d) AND account_id = ?d)", NULL, EXECUTE },
   { DELETE_ALL_NICKACCESS, "DELETE FROM account_fingerprint WHERE "
     "account_id=?d", NULL, EXECUTE },
+  { INSERT_JUPE, "INSERT INTO jupes (setter, name, reason) VALUES(?d, ?v, ?v)",
+    NULL, EXECUTE },
+  { GET_JUPES, "SELECT id, name, reason, setter FROM jupes ORDER BY id", NULL, QUERY },
+  { DELETE_JUPES_NAME, "DELETE FROM jupes WHERE lower(name) = lower(?v)", NULL,
+    EXECUTE },
+  { FIND_JUPE, "SELECT id, name, reason, setter FROM jupes WHERE "
+    "lower(name) = lower(?v)", NULL, QUERY },
 };
 
 void
@@ -344,6 +351,8 @@ db_load_driver()
 
   eventAdd("Expire sent mail", expire_sentmail, NULL, 60); 
   eventAdd("Expire akills", expire_akills, NULL, 60); 
+
+  execute_callback(on_db_init_cb);
 }
 
 void
@@ -886,6 +895,7 @@ db_list_add(unsigned int type, const void *value)
   struct AccessEntry *aeval = (struct AccessEntry *)value;
   struct ChanAccess *caval  = (struct ChanAccess *)value;
   struct ServiceBan *banval = (struct ServiceBan *)value;
+  struct JupeEntry *jval    = (struct JupeEntry *)value;
   unsigned int id;
   int ret = 0;
 
@@ -925,6 +935,9 @@ db_list_add(unsigned int type, const void *value)
       db_exec(ret, INSERT_CHANACCESS, caval->account, caval->channel,
           caval->level);
       break;
+    case JUPES_LIST:
+      db_exec(ret, INSERT_JUPE, jval->setter, jval->name, jval->reason);
+      break;
     default:
       assert(1 == 0);
       break;
@@ -946,6 +959,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   struct ServiceBan *banval;
   struct DBResult *result;
   struct InfoChanList *info;
+  struct JupeEntry *jval;
   unsigned int query, level;
   
   switch(type)
@@ -961,6 +975,12 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       aeval = MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
       brc = Bind("?d?ps", &aeval->id, &aeval->value);
+      break;
+    case JUPES_LIST:
+      query = GET_JUPES;
+      jval = MyMalloc(sizeof(struct JupeEntry));
+      *entry = jval;
+      brc = Bind("?d?ps?ps?d", &jval->id, &jval->name, &jval->reason, &jval->setter);
       break;
     case ADMIN_LIST:
       query = GET_ADMINS;
@@ -1082,6 +1102,11 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     DupString(banval->reason, banval->reason);
     banval->type = AKICK_BAN;
   }
+  else if(type == JUPES_LIST)
+  {
+    DupString(jval->name, jval->name);
+    DupString(jval->reason, jval->reason);
+  }
   else if(type == NICKCHAN_LIST)
   {
     switch(level)
@@ -1109,6 +1134,7 @@ db_list_next(void *result, unsigned int type, void **entry)
   struct ChanAccess *caval;
   struct ServiceBan *banval;
   struct InfoChanList *info;
+  struct JupeEntry *jval;
   char *strval = (char*)*entry; 
   unsigned int level;
  
@@ -1120,6 +1146,12 @@ db_list_next(void *result, unsigned int type, void **entry)
       *entry = aeval;
       Free(res->brc);
       res->brc = Bind("?d?ps", &aeval->id, &aeval->value);
+      break;
+    case JUPES_LIST:
+      jval = MyMalloc(sizeof(struct JupeEntry));
+      *entry = jval;
+      Free(res->brc);
+      res->brc = Bind("?d?ps?ps?d", &jval->id, &jval->name, &jval->reason, &jval->setter);
       break;
     case ADMIN_LIST:
     case NICKLINK_LIST:
@@ -1180,6 +1212,11 @@ db_list_next(void *result, unsigned int type, void **entry)
     banval->type = AKICK_BAN;
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
+  }
+  else if(type == JUPES_LIST)
+  {
+    DupString(jval->name, jval->name);
+    DupString(jval->reason, jval->reason);
   }
   else if(type == NICKCHAN_LIST)
   {
@@ -1481,6 +1518,43 @@ db_find_akill(const char *mask)
   Free(rc);
 
   return akill;
+}
+
+struct JupeEntry *
+db_find_jupe(const char *name)
+{
+  yada_rc_t *rc, *brc;
+  struct JupeEntry *jupe;
+
+  assert(name != NULL);
+
+  db_query(rc, FIND_JUPE, name);
+
+  if(rc == NULL)
+    return NULL;
+
+  jupe = MyMalloc(sizeof(struct JupeEntry));
+
+  brc = Bind("?d?ps?ps?d", &jupe->id, &jupe->name, &jupe->reason, &jupe->setter);
+
+  if(Fetch(rc, brc) == 0)
+  {
+    db_log("db_find_jupe: '%s' not found.", name);
+    Free(brc);
+    Free(rc);
+    free_jupeentry(jupe);
+    return NULL;
+  }
+
+  DupString(jupe->name, jupe->name);
+  DupString(jupe->reason, jupe->reason);
+
+  db_log("db_find_jupe: Found jupe %s [%s]", jupe->name, jupe->reason);
+
+  Free(brc);
+  Free(rc);
+
+  return jupe;
 }
 
 int

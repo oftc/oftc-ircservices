@@ -19,6 +19,14 @@ struct ChanAccess
   unsigned int level;
 };
 
+struct JupeEntry
+{
+  unsigned int id;
+  unsigned int setter;
+  char *name;
+  char *reason;
+};
+
 struct DBResult
 {
   yada_rc_t *rc;
@@ -49,7 +57,8 @@ enum db_list_type
   CHAN_LIST_OPER,
   CHAN_FORBID_LIST,
   EXPIRING_AKILL_LIST,
-  CERT_LIST
+  CERT_LIST,
+  JUPES_LIST
 };
 
 enum db_queries
@@ -154,6 +163,10 @@ enum db_queries
   DELETE_NICKCERT,
   DELETE_NICKCERT_IDX,
   DELETE_ALL_NICKCERT,
+  INSERT_JUPE,
+  GET_JUPES,
+  DELETE_JUPES_NAME,
+  FIND_JUPE,
   QUERY_COUNT
 };
 
@@ -214,6 +227,7 @@ struct Nick *db_find_nick(const char *);
 struct RegChannel *db_find_chan(const char *);
 struct ServiceBan *db_find_akill(const char *);
 struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
+struct JupeEntry  *db_find_jupe(const char *);
 
 int   db_list_add(unsigned int, const void *);
 void *db_list_first(unsigned int, unsigned int, void **);

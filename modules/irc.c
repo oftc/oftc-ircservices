@@ -59,6 +59,7 @@ static void *irc_sendmsg_server(va_list);
 static void *irc_sendmsg_join(va_list);
 static void *irc_server_connected(va_list);
 static void *irc_sendmsg_nosuchsrv(va_list);
+static void *irc_sendmsg_squit(va_list);
 static void *part_one_client(va_list);
 static char modebuf[MODEBUFLEN];
 static char parabuf[MODEBUFLEN];
@@ -214,6 +215,7 @@ static dlink_node *newserver_hook;
 static dlink_node *join_hook;
 static dlink_node *part_hook;
 static dlink_node *nosuchsrv_hook;
+static dlink_node *squit_hook;
 
 struct ModeList ModeList[] = {
   { MODE_NOPRIVMSGS,  'n' },
@@ -244,6 +246,7 @@ INIT_MODULE(irc, "$Revision$")
   join_hook       = install_hook(send_join_cb, irc_sendmsg_join);
   part_hook       = install_hook(send_part_cb, part_one_client);
   nosuchsrv_hook  = install_hook(send_nosuchsrv_cb, irc_sendmsg_nosuchsrv);
+  squit_hook      = install_hook(send_squit_cb, irc_sendmsg_squit);
   mod_add_cmd(&ping_msgtab);
   mod_add_cmd(&server_msgtab);
   mod_add_cmd(&nick_msgtab);
@@ -578,6 +581,7 @@ irc_sendmsg_quit(struct Client *client, char *nick, char *reason)
 {
   sendto_server(client, ":%s QUIT :%s", nick, reason);
 }
+#endif
 
 /** SQuit a Server
  * @param
@@ -585,12 +589,17 @@ irc_sendmsg_quit(struct Client *client, char *nick, char *reason)
  * target Server to be squit
  * reason Why the squit?
  */
-static void
-irc_sendmsg_squit(struct Client *client, char *source, char *target, char *reason)
+static void *
+irc_sendmsg_squit(va_list args)
 {
-  sendto_server(client, ":%s SQUIT %s :%s", source, target, reason);
+  struct Client *source = va_arg(args, struct Client *);
+  const char *target    = va_arg(args, const char *);
+  const char *reason    = va_arg(args, const char *);
+
+  sendto_server(me.uplink, ":%s SQUIT %s :%s", source->name, target, reason);
+
+  return NULL;
 }
-#endif
 
 /** Send a PING to a remote client
  * @param
@@ -666,6 +675,14 @@ irc_server_connected(va_list args)
     struct Service *service = ptr->data;
 
     introduce_client(service->name, service->name, TRUE);
+  }
+
+  ptr = NULL;
+
+  DLINK_FOREACH(ptr, me.server_list.head)
+  {
+    struct Client *server = ptr->data;
+    introduce_server(server->name, server->info);
   }
 
   return NULL;
@@ -1198,7 +1215,6 @@ m_squit(struct Client *client, struct Client *source, int parc, char *parv[])
     comment[REASONLEN] = '\0';
 
   exit_client(target, source, comment);
-//  chain_squit(client, source, comment);
 
   if(target == me.uplink)
     me.uplink = NULL;

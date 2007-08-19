@@ -545,6 +545,14 @@ oftc_server_connected(va_list args)
     introduce_client(service->name, service->name, TRUE);
   }
 
+  ptr = NULL;
+
+  DLINK_FOREACH(ptr, me.server_list.head)
+  {
+    struct Client *server = ptr->data;
+    introduce_server(server->name, server->info);
+  }
+
   return NULL;
 }
 

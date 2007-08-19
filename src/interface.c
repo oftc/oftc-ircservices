@@ -46,6 +46,7 @@ struct Callback *send_newserver_cb;
 struct Callback *send_join_cb;
 struct Callback *send_part_cb;
 struct Callback *send_nosuchsrv_cb;
+struct Callback *send_squit_cb;
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -64,6 +65,7 @@ struct Callback *on_privmsg_cb;
 struct Callback *on_notice_cb;
 struct Callback *on_burst_done_cb;
 struct Callback *on_certfp_cb;
+struct Callback *on_db_init_cb;
 
 struct Callback *on_nick_drop_cb;
 struct Callback *on_chan_drop_cb;
@@ -96,12 +98,14 @@ init_interface()
   send_join_cb        = register_callback("Send JOIN", NULL);
   send_part_cb        = register_callback("Send PART", NULL);
   send_nosuchsrv_cb   = register_callback("Send No such server", NULL);
+  send_squit_cb       = register_callback("Send SQUIT Message", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
   on_quit_cb          = register_callback("Propagate QUIT", NULL);
   on_umode_change_cb  = register_callback("Propagate UMODE", NULL);
   on_cmode_change_cb  = register_callback("Propagate CMODE", NULL);
+  on_squit_cb         = register_callback("Propagate SQUIT", NULL);
   on_identify_cb      = register_callback("Identify Callback", NULL);
   on_newuser_cb       = register_callback("New user coming to us", NULL);
   on_channel_created_cb = register_callback("Channel is being created", NULL);
@@ -114,6 +118,7 @@ init_interface()
   on_certfp_cb        = register_callback("Client certificate recieved for this user", NULL);
   on_nick_drop_cb     = register_callback("Nick Dropped", NULL);
   on_chan_drop_cb     = register_callback("Chan Dropped", NULL);
+  on_db_init_cb       = register_callback("On Database Init", NULL);
 
   load_language(ServicesLanguages, "services.en");
 }
@@ -142,6 +147,7 @@ cleanup_interface()
   unregister_callback(send_join_cb);
   unregister_callback(send_part_cb);
   unregister_callback(send_nosuchsrv_cb);
+  unregister_callback(send_squit_cb);
   unregister_callback(on_nick_change_cb);
   unregister_callback(on_join_cb);
   unregister_callback(on_part_cb);
@@ -220,26 +226,37 @@ introduce_client(const char *name, const char *gecos, char isservice)
 struct Client*
 introduce_server(const char *name, const char *gecos)
 {
-  struct Client *client;
+  struct Client *client = find_server(name);
+  ilog(L_DEBUG, "Introducing Server %s [%s]", name, gecos);
 
-  if((client = find_server(name)) != NULL)
-    return client;
+  if(client == NULL)
+  {
+    ilog(L_DEBUG, "Server %s not found", name);
+    client = make_client(&me);
+    SetServer(client);
 
-  client = make_client(&me);
+    client->servptr = &me;
+    dlinkAdd(client, &client->lnode, &client->servptr->server_list);
 
-  client->status |= STAT_SERVER;
+    client->tsinfo = CurrentTime;
 
-  client->servptr = &me;
-  dlinkAdd(client, &client->lnode, &client->servptr->server_list);
+    strlcpy(client->name, name, sizeof(client->name));
+    strlcpy(client->info, gecos, sizeof(client->info));
+    hash_add_client(client);
 
-  client->tsinfo = CurrentTime;
+    dlinkAdd(client, &client->node, &global_client_list);
+  }
 
-  strlcpy(client->name, name, sizeof(client->name));
-  strlcpy(client->info, gecos, sizeof(client->info));
-  hash_add_client(client);
 
   if(me.uplink != NULL)
+  {
+    ilog(L_DEBUG, "Sending New Server %s [%s]", client->name, client->info);
     execute_callback(send_newserver_cb, client);
+  }
+  else
+  {
+    ilog(L_DEBUG, "Waiting to introduce %s until connected", client->name);
+  }
 
   return client;
 }
@@ -258,6 +275,17 @@ join_channel(struct Client *service, struct Channel *channel)
     ilog(L_DEBUG, "Trying to join to a null channel pointer");
 
   return channel;
+}
+
+void
+squit_server(const char *server, const char *reason)
+{
+  struct Client *serv = find_server(server);
+  if(serv != NULL)
+  {
+    execute_callback(send_squit_cb, &me, server, reason);
+    exit_client(serv, &me, reason);
+  }
 }
 
 void
@@ -1384,6 +1412,17 @@ free_serviceban(struct ServiceBan *ban)
   MyFree(ban->mask);
   MyFree(ban->reason);
   MyFree(ban);
+}
+
+void
+free_jupeentry(struct JupeEntry *entry)
+{
+	ilog(L_DEBUG, "Freeing JupeEntry %p for %s", entry, entry->name);
+	MyFree(entry->name);
+	MyFree(entry->reason);
+  entry->name = NULL;
+  entry->reason = NULL;
+	MyFree(entry);
 }
 
 int 
