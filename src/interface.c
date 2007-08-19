@@ -65,6 +65,9 @@ struct Callback *on_notice_cb;
 struct Callback *on_burst_done_cb;
 struct Callback *on_certfp_cb;
 
+struct Callback *on_nick_drop_cb;
+struct Callback *on_chan_drop_cb;
+
 struct LanguageFile ServicesLanguages[LANG_LAST];
 struct ModeList *ServerModeList;
 
@@ -109,6 +112,8 @@ init_interface()
   on_burst_done_cb    = register_callback("Notification that burst is complete", 
       NULL);
   on_certfp_cb        = register_callback("Client certificate recieved for this user", NULL);
+  on_nick_drop_cb     = register_callback("Nick Dropped", NULL);
+  on_chan_drop_cb     = register_callback("Chan Dropped", NULL);
 
   load_language(ServicesLanguages, "services.en");
 }
@@ -152,6 +157,8 @@ cleanup_interface()
   unregister_callback(on_notice_cb);
   unregister_callback(on_burst_done_cb);
   unregister_callback(on_certfp_cb);
+  unregister_callback(on_nick_drop_cb);
+  unregister_callback(on_chan_drop_cb);
 
   unload_languages(ServicesLanguages);
 }

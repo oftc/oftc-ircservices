@@ -81,6 +81,8 @@ extern struct Callback *on_privmsg_cb;
 extern struct Callback *on_notice_cb;
 extern struct Callback *on_burst_done_cb;
 extern struct Callback *on_certfp_cb;
+extern struct Callback *on_nick_drop_cb;
+extern struct Callback *on_chan_drop_cb;
 
 extern struct ModeList *ServerModeList;
 

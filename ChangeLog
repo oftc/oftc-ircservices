@@ -143,3 +143,8 @@
 	- FloodServ uses much less memory on startup, use dlink_list instead of
 		array
 	- Make FloodServ debug message less frequent but just as helpful
+	- Make FloodServ leave channels when he's the last one in it or if it's
+		dropped. (#55)
+	- Part callback should always fire before destroy callback, move remove_user
+		after part callback is fired.
+	- FloodServ shouldn't keep yet another list for the channels it's joined to

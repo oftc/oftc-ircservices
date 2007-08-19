@@ -28,7 +28,6 @@
 
 #define LOG_BUFSIZE 2048
 
-struct Callback *on_nick_drop_cb;
 static FBFILE *db_log_fb;
 
 static void expire_sentmail(void *);
@@ -836,7 +835,9 @@ db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid)
 
   if(TransCommit() != 0)
     return FALSE;
- 
+
+  execute_callback(on_nick_drop_cb, accid, nickid, priid);
+
   return TRUE;
 }
 
@@ -1411,6 +1412,9 @@ db_delete_chan(const char *chan)
 
   if(ret == -1)
     return FALSE;
+
+  execute_callback(on_chan_drop_cb, chan);
+
   return TRUE;
 }
 
