@@ -371,6 +371,7 @@ handle_nick_change(struct Service *service, struct Client *client,
     send_nick_change(service, client, name);
   }
 
+  dlinkFindDelete(&nick_enforce_list, client);
   SetIdentified(client);
 }
 
@@ -1679,10 +1680,21 @@ ns_on_nick_change(va_list args)
     struct Client *client = user->release_to;
     struct Client *target;
 
-    if((target = find_client(client->nickname->nick)) != NULL)
+    /* in the "real world" it is possible that a user gets deidenfitied in the
+     * mean time, check they are still eligible for this nick.
+     */
+    if(client->nickname != NULL)
     {
-      if(target != client)
-        kill_user(nickserv, target, "This nickname is registered and protected");
+      if((target = find_client(client->nickname->nick)) != NULL)
+      {
+        if(target != client)
+          kill_user(nickserv, target, "This nickname is registered and protected");
+      }
+      send_nick_change(nickserv, client, user->release_name);
+      user->release_to = NULL;
+      memset(user->release_name, 0, sizeof(user->release_name));
+      db_set_string(SET_NICK_LAST_REALNAME, client->nickname->id, client->info);
+      identify_user(client);
     }
     send_nick_change(nickserv, client, user->release_name);
     user->release_to = NULL;
