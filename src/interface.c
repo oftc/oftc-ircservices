@@ -513,8 +513,8 @@ akill_add(struct Service *service, struct Client *client, const char* mask,
     return NULL;
   }
 
-  ilog(L_NOTICE, "%s Added an akill on %s. Expires %d [%s]", client->name,
-      akill->mask, duration, reason);
+  ilog(L_NOTICE, "%s Added an akill on %s. Expires %s [%s]", client->name,
+      akill->mask, smalldate(duration), reason);
 
   send_akill(service, client->name, akill);
 
