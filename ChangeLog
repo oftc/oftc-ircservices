@@ -154,3 +154,5 @@
 	- FloodServ shouldn't keep yet another list for the channels it's joined to
 	- Redo JupeServ as part of OperServ, persistent saving to db and reloaded on
 		reconnect, also SQUIT deletes from the db.
+	- Do an snote when someone removes an akill.  Also fix a memory leak when
+		someone removes an akill. (#48)

@@ -556,6 +556,11 @@ m_akill_del(struct Service *service, struct Client *client,
   
   ret = db_list_del(DELETE_AKILL, 0, parv[1]);
   remove_akill(service, akill);
+  ilog(L_NOTICE, "%s removed akill on %s.  Akill was set %s and would have "
+      "expired %s. (%s)", client->name, akill->mask, 
+      smalldate(akill->time_set), smalldate(akill->time_set + akill->duration),
+      akill->reason);
+  free_serviceban(akill);
   reply_user(service, service, client, OS_AKILL_DEL, ret);
 }
 
