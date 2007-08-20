@@ -31,6 +31,7 @@ static void *oftc_sendmsg_svscloak(va_list);
 static void *oftc_sendmsg_svsnick(va_list);
 //static void *oftc_sendmsg_svsjoin(va_list);
 static void *oftc_identify(va_list);
+static void *oftc_chops_notice(va_list);
 
 static dlink_node *oftc_gnotice_hook;
 static dlink_node *oftc_umode_hook;
@@ -39,6 +40,7 @@ static dlink_node *oftc_svsnick_hook;
 //static dlink_node *oftc_svsjoin_hook;
 static dlink_node *oftc_identify_hook;
 static dlink_node *oftc_connected_hook;
+static dlink_node *oftc_chops_notice_hook;
 
 static void m_pass(struct Client *, struct Client *, int, char *[]);
 static void m_server(struct Client *, struct Client *, int, char *[]);
@@ -133,6 +135,7 @@ INIT_MODULE(oftc, "$Revision$")
 //  oftc_svsjoin_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsjoin);
   oftc_svsnick_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsnick);
   oftc_identify_hook  = install_hook(on_identify_cb, oftc_identify);
+  oftc_chops_notice_hook = install_hook(send_chops_notice_cb, oftc_chops_notice);
   mod_add_cmd(&gnotice_msgtab);
   mod_add_cmd(&pass_msgtab);
   mod_add_cmd(&server_msgtab);
@@ -622,4 +625,30 @@ oftc_sendmsg_svsnick(va_list args)
   sendto_server(uplink, ":%s SVSNICK %s :%s", me.name, user->name, newnick);
   
   return pass_callback(oftc_svsnick_hook, uplink, user, newnick);
+}
+
+static void *
+oftc_chops_notice(va_list args)
+{
+  struct Client *uplink = va_arg(args, struct Client *);
+  struct Service *source = va_arg(args, struct Service *);
+  struct Channel *chptr = va_arg(args, struct Channel *);
+  char          *notice = va_arg(args, char *);
+  dlink_node *ptr;
+  struct Membership *ms;
+  struct Client *target;
+
+  DLINK_FOREACH(ptr, chptr->members.head)
+  {
+    ms = ptr->data;
+    target = ms->client_p;
+
+    if ((ms->flags & CHFL_CHANOP) == 0)
+      continue;
+
+    sendto_server(uplink, ":%s NOTICE %s :%s", source->name, target->name, 
+        notice);
+  }
+
+  return pass_callback(oftc_chops_notice_hook, uplink, source, chptr, notice);
 }

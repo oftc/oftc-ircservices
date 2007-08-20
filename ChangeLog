@@ -112,6 +112,8 @@
 	Bugfix point release. Bug(s) fixed:
 	- Don't check access level on channel mode change, just do what the server
 		tells us. Also fix a bug in the mode callback. (#32)
+	- Actually implement chanserv verbose, instead of pretending that we do.
+		(#50)
 	- Multiple word descriptions might be nice on channel registration. (#54)
 2007-??-?? - 1.1.0
 	Feature/Bugfix release.

@@ -46,7 +46,9 @@ struct Callback *send_newserver_cb;
 struct Callback *send_join_cb;
 struct Callback *send_part_cb;
 struct Callback *send_nosuchsrv_cb;
+struct Callback *send_chops_notice_cb;
 struct Callback *send_squit_cb;
+
 static BlockHeap *services_heap  = NULL;
 
 struct Callback *on_nick_change_cb;
@@ -98,6 +100,7 @@ init_interface()
   send_join_cb        = register_callback("Send JOIN", NULL);
   send_part_cb        = register_callback("Send PART", NULL);
   send_nosuchsrv_cb   = register_callback("Send No such server", NULL);
+  send_chops_notice_cb = register_callback("Send NOTICE to channel ops", NULL);
   send_squit_cb       = register_callback("Send SQUIT Message", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
@@ -147,6 +150,7 @@ cleanup_interface()
   unregister_callback(send_join_cb);
   unregister_callback(send_part_cb);
   unregister_callback(send_nosuchsrv_cb);
+  unregister_callback(send_chops_notice_cb);
   unregister_callback(send_squit_cb);
   unregister_callback(on_nick_change_cb);
   unregister_callback(on_join_cb);
@@ -515,6 +519,24 @@ akill_add(struct Service *service, struct Client *client, const char* mask,
   send_akill(service, client->name, akill);
 
   return akill;
+}
+
+void
+send_chops_notice(struct Service *service, struct Channel *chptr, 
+    const char *format, ...)
+{
+  va_list ap;
+  char *buf;
+
+  if(chptr == NULL || chptr->regchan == NULL || !chptr->regchan->verbose)
+    return;
+
+  va_start(ap, format);
+  vasprintf(&buf, format, ap);
+  va_end(ap);
+
+  execute_callback(send_chops_notice_cb, me.uplink, service, chptr, buf);
+  MyFree(buf);
 }
 
 void
