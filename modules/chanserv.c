@@ -1750,9 +1750,9 @@ m_unban(struct Service *service, struct Client *client, int parc, char *parv[])
 
     snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banp->name, banp->username,
         banp->host);
-    unban_mask(service, chptr, ban);
     send_chops_notice(service, chptr, "[%s ChanOps] %s UNBAN %s!%s@%s", 
         chptr->chname, client->name, banp->name, banp->username, banp->host);
+    unban_mask(service, chptr, ban);
  
     numbans++;
 

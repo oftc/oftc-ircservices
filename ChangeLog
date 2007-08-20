@@ -114,6 +114,7 @@
 		tells us. Also fix a bug in the mode callback. (#32)
 	- Actually implement chanserv verbose, instead of pretending that we do.
 		(#50)
+	- Fix a crash when verbose is enabled and one tries to unban (#59)
 	- Multiple word descriptions might be nice on channel registration. (#54)
 2007-??-?? - 1.1.0
 	Feature/Bugfix release.
