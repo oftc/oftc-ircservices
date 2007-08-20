@@ -459,9 +459,11 @@ irc_sendmsg_unakill(va_list args)
   char name[NICKLEN];
   char user[USERLEN + 1];
   char host[HOSTLEN + 1];
+  char banmask[IRC_BUFSIZE+1];
   struct split_nuh_item nuh;
 
-  nuh.nuhmask  = mask;
+  ircsprintf(banmask, "%s", mask);
+  nuh.nuhmask = banmask;
   nuh.nickptr  = name;
   nuh.userptr  = user;
   nuh.hostptr  = host;

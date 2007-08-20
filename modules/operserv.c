@@ -547,6 +547,7 @@ m_akill_del(struct Service *service, struct Client *client,
 {
   int ret = 0;
   struct ServiceBan *akill;
+  char *expire_time, *set_time;
 
   if((akill = db_find_akill(parv[1])) == NULL)
   {
@@ -556,10 +557,23 @@ m_akill_del(struct Service *service, struct Client *client,
   
   ret = db_list_del(DELETE_AKILL, 0, parv[1]);
   remove_akill(service, akill);
-  ilog(L_NOTICE, "%s removed akill on %s.  Akill was set %s and would have "
-      "expired %s. (%s)", client->name, akill->mask, 
-      smalldate(akill->time_set), smalldate(akill->time_set + akill->duration),
-      akill->reason);
+  if(ret)
+  {
+    /* XXX Have to copy the string since smalldate uses a static buffer! */
+    DupString(set_time, smalldate(akill->time_set));
+    if(akill->duration > 0)
+      DupString(expire_time, smalldate(akill->time_set + akill->duration));
+    else
+      expire_time = "never";
+
+    ilog(L_NOTICE, "%s removed akill on %s.  Akill was set %s and would have "
+        "expired %s. (%s)", client->name, akill->mask, set_time, expire_time,
+        akill->reason);
+
+    if(akill->duration > 0)
+      MyFree(expire_time);
+    MyFree(set_time);
+  }
   free_serviceban(akill);
   reply_user(service, service, client, OS_AKILL_DEL, ret);
 }
