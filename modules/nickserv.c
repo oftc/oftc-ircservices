@@ -142,7 +142,7 @@ static struct ServiceMessage cloakstring_msgtab = {
 }; 
 
 static struct ServiceMessage cert_sub[] = {
-  { NULL, "ADD", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_CERT_ADD_SHORT, 
+  { NULL, "ADD", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_CERT_ADD_SHORT, 
     NS_HELP_CERT_ADD_LONG, m_cert_add },
   { NULL, "LIST", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_CERT_LIST_SHORT, 
     NS_HELP_CERT_LIST_LONG, m_cert_list },
@@ -1038,10 +1038,26 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
   struct Nick *nick = client->nickname;
   struct AccessEntry access;
 
-  /* XXX Cert validation */
-
   access.id = nick->id;
-  access.value = parv[1];
+  if(parv[1] == NULL)
+  {
+    if(*client->certfp == '\0')
+    {
+      reply_user(service, service, client, NS_CERT_YOUHAVENONE);
+      return;
+    }
+    else
+    {
+      if(strlen(parv[1]) != 40)
+      {
+        reply_user(service, service, client, NS_CERT_INVALID, parv[1]);
+        return;
+      }
+      access.value = client->certfp;
+    }
+  }
+  else
+    access.value = parv[1];
   
   if(db_list_add(CERT_LIST, (void *)&access))
     reply_user(service, service, client, NS_CERT_ADD, parv[1]);

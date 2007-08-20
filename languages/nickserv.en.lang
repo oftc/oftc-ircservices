@@ -116,14 +116,17 @@ NS_HELP_CERT_LONG
 NS_HELP_CERT_ADD_SHORT
 	%s
 NS_HELP_CERT_ADD_LONG
-	Usage: CERT ADD fingerprint
+	Usage: CERT ADD [fingerprint]
 	
 	Add an access entry to your client certificate list. If you connect to IRC with 
 	SSL, and provide the client certificate with a fingerprint on your
-	certificate list  you will be automatically identified to your nickname 
-	without having to use the IDENTIFY command.
+	certificate list you will be automatically identified to your nickname 
+	without having to use the IDENTIFY command. If you are currently connected
+	via SSL and have provided a valid client certificate, you may omit the
+	fingerprint parameter.
 	
 	Example:
+			CERT ADD
 	    CERT ADD 994EB294C15F4EE647FB5A426C11444E697B1814
 NS_HELP_CERT_LIST_SHORT
 	%s
@@ -462,6 +465,9 @@ NS_CERT_INVALID
 	CERT list entry %s is not a valid fingerprint. Please try again with
 	a valid fingerprint. Fingerprints may only contain the letters a-z and the
 	numbers 0-9.
+NS_CERT_YOUHAVENONE
+	You are not connected via SSL or have not provided a valid client
+	certificate. You must provide a fingerprint to add.
 NS_CERT_START
 	CERT list:
 NS_CERT_ENTRY
