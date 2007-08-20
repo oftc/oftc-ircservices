@@ -1049,7 +1049,10 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
     {
       if(sban->type == AKICK_BAN)
       {
-        ban_mask(service, chptr, sban->mask);
+        char banmask[IRC_BUFSIZE+1];
+
+        ircsprintf(banmask, "%s", sban->mask);
+        ban_mask(service, chptr, banmask);
         kick_user(service, chptr, client->name, sban->reason);
       }
       else if(sban->type == AKILL_BAN)
