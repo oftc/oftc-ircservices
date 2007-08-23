@@ -117,6 +117,11 @@
 	- Fix a crash when verbose is enabled and one tries to unban (#59)
 	- Multiple word descriptions might be nice on channel registration. (#54)
 	- Expirebans causing core by overflowing the ban mask buffer. (#56)
+2007-08-20 - 1.0.19
+  Bugfix point release. Bug(s) fixed:
+  - Fix a core caused by network latency and a user being guested while
+	  guesting their old nick
+	- Check if the module is null before trying to compare it's name.
 2007-??-?? - 1.1.0
 	Feature/Bugfix release.
 	- Fix inconsistency in SQL statements used to deal with channel masters on

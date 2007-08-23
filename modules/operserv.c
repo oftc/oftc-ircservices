@@ -258,18 +258,18 @@ m_mod_reload(struct Service *service, struct Client *client,
 
   mbn = basename(parm);
   module = find_module(mbn, 0);
-  if(irccmp(module->name, service->name) == 0)
-  {
-    ilog(L_NOTICE, "%s tried to reload %s.  Can't be done because it's me!",
-        client->name, service->name);
-    reply_user(service, service, client, OS_MOD_CANTRELOAD, parm);
-    return;
-  }
   if (module == NULL)
   {
     ilog(L_NOTICE, "Module %s reload requested by %s, but failed because not loaded",
         parm, client->name);
     reply_user(service, service, client, OS_MOD_NOTLOADED, parm, client->name);
+    return;
+  }
+  if(irccmp(module->name, service->name) == 0)
+  {
+    ilog(L_NOTICE, "%s tried to reload %s.  Can't be done because it's me!",
+        client->name, service->name);
+    reply_user(service, service, client, OS_MOD_CANTRELOAD, parm);
     return;
   }
   ilog(L_NOTICE, "Reloading %s by request of %s", parm, client->name);
