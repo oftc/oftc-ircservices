@@ -46,9 +46,6 @@ ClientStruct_NameSet(VALUE self, VALUE value)
 
   Check_Type(value, T_STRING);
 
-  if(strlen(cvalue) > HOSTLEN)
-    rb_raise(rb_eArgError, "Failed setting Client.name %s too long", cvalue);
-
   strlcpy(client->name, cvalue, sizeof(client->name));
   return value;
 }
@@ -67,9 +64,6 @@ ClientStruct_HostSet(VALUE self, VALUE value)
   const char* cvalue;
 
   Check_Type(value, T_STRING);
-
-  if(strlen(cvalue) > HOSTLEN)
-    rb_raise(rb_eArgError, "Failed setting Client.host %s too long", cvalue);
 
   strlcpy(client->host, cvalue, sizeof(client->host));
   return value;
@@ -90,9 +84,6 @@ ClientStruct_IDSet(VALUE self, VALUE value)
 
   Check_Type(value, T_STRING);
 
-  if(strlen(cvalue) > IDLEN)
-    rb_raise(rb_eArgError, "Failed setting Client.id %s too long", cvalue);
-
   strlcpy(client->id, cvalue, sizeof(client->id));
   return value;
 }
@@ -112,9 +103,6 @@ ClientStruct_InfoSet(VALUE self, VALUE value)
 
   Check_Type(value, T_STRING);
 
-  if(strlen(cvalue) > REALLEN)
-    rb_raise(rb_eArgError, "Failed setting Client.info %s too long", cvalue);
-
   strlcpy(client->info, cvalue, sizeof(client->info));
   return value;
 }
@@ -133,9 +121,6 @@ ClientStruct_UsernameSet(VALUE self, VALUE value)
   const char* cvalue;
 
   Check_Type(value, T_STRING);
-
-  if(strlen(cvalue) > USERLEN)
-    rb_raise(rb_eArgError, "Failed setting Client.username %s too long", cvalue);
 
   strlcpy(client->username, cvalue, sizeof(client->username));
   return value;

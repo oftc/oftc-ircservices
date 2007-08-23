@@ -20,6 +20,8 @@ static VALUE ServiceModule_chain_language(VALUE, VALUE);
 static VALUE ServiceModule_channels_each(VALUE);
 static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
 static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
+static VALUE ServiceModule_load_language(VALUE, VALUE);
+static VALUE ServiceModule_lm(VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -383,11 +385,23 @@ ServiceModule_regchan_by_name(VALUE self, VALUE name)
     return Qnil;
 }
 
+static VALUE
+ServiceModule_load_language(VALUE self, VALUE file)
+{
+  return Qnil;
+}
+
+static VALUE
+ServiceModule_lm(VALUE self, VALUE mid)
+{
+  return 1;
+}
+
 void
 Init_ServiceModule(void)
 {
-  VALUE cServiceBase = rb_path2class("ServiceBase");
-  cServiceModule = rb_define_class("ServiceModule", cServiceBase);
+  //VALUE cServiceBase = rb_path2class("ServiceBase");
+  cServiceModule = rb_define_class("ServiceModule", rb_cObject);
 
   rb_define_const(cServiceModule, "UMODE_HOOK",  INT2NUM(RB_HOOKS_UMODE));
   rb_define_const(cServiceModule, "CMODE_HOOK",  INT2NUM(RB_HOOKS_CMODE));
@@ -440,6 +454,8 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "akill_add", ServiceModule_akill_add, 3);
 
   rb_define_method(cServiceModule, "regchan_by_name?", ServiceModule_regchan_by_name, 1);
+  rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
+  rb_define_method(cServiceModule, "lm", ServiceModule_lm, 1);
 }
 
 static void

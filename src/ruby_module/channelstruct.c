@@ -41,9 +41,6 @@ ChannelStruct_NameSet(VALUE self, VALUE name)
 
   cvalue = StringValueCStr(name);
 
-  if(strlen(cvalue) > CHANNELLEN)
-    rb_raise(rb_eArgError, "Failed Setting Channel.chname %s too long", cvalue);
-
   strlcpy(channel->chname, cvalue, sizeof(channel->chname));
   return name;
 }
@@ -176,8 +173,7 @@ rb_cchannel2rbchannel(struct Channel *channel)
   if(channel == NULL)
   {
     ilog(L_CRIT, "Evil channel pointer is NULL");
-    rb_raise(rb_eArgError, "Failed to create ChannelStruct: NULL Pointer");
-    return 0;
+    return Qnil;
   }
 
   rbchannel = Data_Wrap_Struct(rb_cObject, 0, 0, channel);
