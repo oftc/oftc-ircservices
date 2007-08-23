@@ -123,3 +123,4 @@
   Bugfix point release. Bug(s) fixed:
   - Fix a core caused by network latency and a user being guested while
 	  guesting their old nick
+	- Check if the module is null before trying to compare it's name.
