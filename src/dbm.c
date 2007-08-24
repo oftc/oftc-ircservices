@@ -208,11 +208,11 @@ query_t queries[QUERY_COUNT] = {
       "last_host=?v, last_realname=?v, last_quit_msg=?v, last_quit_time=?d "
       "WHERE id=?d", NULL, EXECUTE },
   { INSERT_NICKCERT, "INSERT INTO account_fingerprint (account_id, fingerprint) "
-    "VALUES(?d, ?v)", NULL, EXECUTE },
+    "VALUES(?d, upper(?v))", NULL, EXECUTE },
   { GET_NICKCERT, "SELECT id, fingerprint FROM account_fingerprint WHERE "
     "account_id=?d ORDER BY id", NULL, QUERY },
   { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
-    "account_id=?d AND fingerprint=?v", NULL, EXECUTE },
+    "account_id=?d AND fingerprint=upper(?v)", NULL, EXECUTE },
   { DELETE_NICKCERT_IDX, "DELETE FROM account_fingerprint WHERE id = "
           "(SELECT id FROM account_fingerprint AS a WHERE ?d = "
           "(SELECT COUNT(id)+1 FROM account_fingerprint AS b WHERE b.id < a.id AND "

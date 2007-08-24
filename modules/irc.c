@@ -493,13 +493,13 @@ irc_sendmsg_topic(va_list args)
 
   if(topic == NULL)
   {
-    sendto_server(uplink, ":%s TBURST 1 %s %lu %s", me.name, chptr->chname,
+    sendto_server(uplink, ":%s TOPIC %s :", source->name, chptr->chname,
         CurrentTime, setter->name);
   }
   else
   {
-    sendto_server(uplink, ":%s TBURST 1 %s %lu %s :%s", me.name, chptr->chname,
-        CurrentTime, setter->name, topic);
+    sendto_server(uplink, ":%s TOPIC %s :%s", source->name, chptr->chname,
+        topic);
   }
 
   return NULL;

@@ -211,9 +211,9 @@ introduce_client(const char *name, const char *gecos, char isservice)
   if(me.uplink != NULL)
   {
     if(isservice)
-      umode = "aoS";
+      umode = "oP";
     else
-      umode = "";
+      umode = "P";
 
     execute_callback(send_newuser_cb, me.uplink, name, "services", me.name,
       gecos, umode);
