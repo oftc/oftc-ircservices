@@ -222,7 +222,7 @@ NS_HELP_SET_PRIVATE_SHORT
 	%s
 NS_HELP_SET_PRIVATE_LONG
 	Usage SET PRIVATE [(ON|OFF)]
-		
+	
 	Enables the private flag on your nickname which prevents your e-mail address
 	being shown in an INFO request, and also prevents your nickname showing in a
 	LIST.
