@@ -437,9 +437,12 @@ NS_DROP_AUTH_FAIL
 	not the first time you have seen this message, please contact network
 	support.
 NS_NICK_DROPFAIL
-	DROP failed on Nickname %s. This may have been an internal error, please
+	DROP failed on nickname %s. This may have been an internal error, please
 	try again shortly. If this is not the first time you have seen this message
 	please contact network support.
+NS_DROP_FAIL_MASTERLESS
+	Unable to DROP nickname %s. Channel %s would be left with no
+	masters. Drop this channel first, or assign someone else as master.
 NS_ACCESS_ADD
 	ACCESS list entry %s added.
 NS_ACCESS_ADDFAIL

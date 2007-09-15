@@ -1560,3 +1560,67 @@ valid_wild_card(const char *arg)
 
   return 0;
 }
+
+char *
+check_masterless_channels(unsigned int accid)
+{
+  struct InfoChanList *chan;
+  void *listptr, *first;
+
+  first = listptr = NULL;
+
+  if((listptr = db_list_first(NICKCHAN_LIST, accid, (void**)&chan)) != NULL)
+  {
+    first = listptr;
+
+    while(listptr != NULL)
+    {
+      if(db_get_num_channel_accesslist_entries(chan->channel_id) == 1)
+      {
+        char *nick = db_get_nickname_from_id(accid);
+        struct Channel *chptr;
+
+        ilog(L_NOTICE, "Dropping channel %s because its access list would be "
+            "left empty by drop of nickname %s", chan->channel, nick);
+        MyFree(nick);
+        db_delete_chan(chan->channel);
+
+        chptr = hash_find_channel(chan->channel);
+        if(chptr != NULL)
+        {
+          if(chptr->regchan != NULL)
+          {
+            free_regchan(chptr->regchan);
+            chptr->regchan = NULL;
+          }
+        }
+
+        MyFree(chan);
+        listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
+        continue;
+      }
+      if(chan->ilevel == MASTER_FLAG && db_get_num_masters(chan->channel_id) <= 1)
+      {
+        char *cname;
+        
+        DupString(cname, chan->channel);
+        db_list_done(listptr);
+
+        MyFree(chan);
+        return cname;
+      }
+      MyFree(chan);
+      listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
+    }
+    MyFree(chan);
+    db_list_done(first);
+  }
+  else
+  {
+    MyFree(chan);
+    if(listptr != NULL)
+      db_list_done(listptr);
+  }
+
+  return 0;
+}
