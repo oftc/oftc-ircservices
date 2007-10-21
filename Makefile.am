@@ -7,4 +7,5 @@ maintainer-clean-local:
 	rm -rf libltdl
 
 install-data-local:
-	$(INSTALL) -d ${localstatedir}/log
+	$(INSTALL) -d $(DESTDIR)${localstatedir}/log
+	$(INSTALL) -d $(DESTDIR)${localstatedir}/run

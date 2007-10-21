@@ -4,13 +4,14 @@
 #define INCLUDED_defines_h
 
 #define LOGDIR      LOCALSTATEDIR "/log/"
+#define PIDDIR      LOCALSTATEDIR "/run/"
 #define AUTOMODPATH LIBDIR "/" PACKAGE "/autoload/"
 #define MODPATH     LIBDIR "/" PACKAGE "/"
 #define LANGPATH    DATADIR "/" PACKAGE "/"
 #define CPATH       SYSCONFDIR "/services.conf"
 #define DPATH       PREFIX "/"
-#define LPATH       LOGDIR "/services.log"
-#define PPATH       SYSCONFDIR "/services.pid"
+#define LPATH       LOGDIR "services.log"
+#define PPATH       PIDDIR "services.pid"
 
 #define SENDMAIL_PATH "/usr/sbin/sendmail -t"
 
