@@ -1060,23 +1060,22 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
       reply_user(service, service, client, NS_CERT_YOUHAVENONE);
       return;
     }
-    else
-    {
-      if(strlen(parv[1]) != 40)
-      {
-        reply_user(service, service, client, NS_CERT_INVALID, parv[1]);
-        return;
-      }
-      access.value = client->certfp;
-    }
+    access.value = client->certfp;
   }
   else
+  {
+    if(strlen(parv[1]) != 40)
+    {
+      reply_user(service, service, client, NS_CERT_INVALID, parv[1]);
+      return;
+    }
     access.value = parv[1];
-  
+  }
+
   if(db_list_add(CERT_LIST, (void *)&access))
-    reply_user(service, service, client, NS_CERT_ADD, parv[1]);
+    reply_user(service, service, client, NS_CERT_ADD, access.value);
   else
-    reply_user(service, service, client, NS_CERT_ADDFAIL, parv[1]);
+    reply_user(service, service, client, NS_CERT_ADDFAIL, access.value);
 }
 
 static void
