@@ -233,7 +233,8 @@ int main(int argc, char *argv[])
 #ifdef USE_SHARED_MODULES
   if(chdir(MODPATH))
   {
-    ilog(L_DEBUG, "Could not load core modules. Terminating!");
+    ilog(L_ERROR, "Could not load core modules from %s: %s",
+         MODPATH, strerror(errno));
     exit(EXIT_FAILURE);
   }
 

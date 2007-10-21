@@ -98,12 +98,12 @@ do_parse_error(int fatal, const char *fmt, va_list args)
 
   if (conf_pass != 0)
   {
-    ilog(L_DEBUG, "\"%s\", line %u: %s: %s",
+    ilog(L_WARN, "\"%s\", line %u: %s: %s",
       conf_curctx.filename, conf_curctx.lineno+1, msg, newbuf);
   }
   else
   {
-    ilog(L_DEBUG, "Conf %s: %s",
+    ilog(L_WARN, "Conf %s: %s",
       fatal ? "FATAL" : "ERROR", msg);
   }
 }

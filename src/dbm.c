@@ -252,6 +252,11 @@ init_db()
       Database.hostname == NULL ? "" : Database.hostname, port, Database.dbname);
 
   Database.yada = yada_init(dbstr, 0);
+  if(!Database.yada)
+  {
+    ilog(L_NOTICE, "yada error: %s", strerror(errno));
+    services_die("Could not initialise database driver.", 0);
+  }
 
   MyFree(dbstr);
 
@@ -334,7 +339,11 @@ db_load_driver()
 
   if(Database.yada->connect(Database.yada, Database.username, 
         Database.password) == 0)
-    db_log("db: Failed to connect to database %s", Database.yada->errmsg);
+  {
+    db_log("db: Failed to connect to database: %s", Database.yada->errmsg);
+    ilog(L_CRIT, "Failed to connect to database: %s", Database.yada->errmsg);
+    services_die("Failed to connect to database.", 0);
+  }
   else
     db_log("db: Database connection succeeded.");
 
