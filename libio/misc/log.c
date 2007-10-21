@@ -103,10 +103,11 @@ write_log(const char *message)
   if (logFile == NULL)
     return;
 
+  nbytes = snprintf(buf, sizeof(buf),
 #ifdef _WIN32
-  nbytes = snprintf(buf, sizeof(buf), "[%s] %s\r\n",
+                    "[%s] %s\r\n",
 #else
-  nbytes = snprintf(buf, sizeof(buf), "[%s] %s\n",
+                    "[%s] %s\n",
 #endif
                     smalldate(CurrentTime), message);
   fbputs(buf, logFile, nbytes);
@@ -146,7 +147,7 @@ init_log(const char *filename)
 {
   open_log(filename);
 #ifdef USE_SYSLOG
-  openlog("ircd", LOG_PID | LOG_NDELAY, LOG_FACILITY);
+  openlog(PACKAGE, LOG_PID | LOG_NDELAY, LOG_FACILITY);
 #endif
 #ifndef SYSLOG_USERS
   eventAddIsh("user_log_resync", user_log_resync, NULL, 60);
