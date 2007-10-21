@@ -93,7 +93,7 @@ query_t queries[QUERY_COUNT] = {
   { SET_NICK_PASSWORD, "UPDATE account SET password=?v WHERE id=?d", NULL, EXECUTE },
   { SET_NICK_URL, "UPDATE account SET url=?v WHERE id=?d", NULL, EXECUTE },
   { SET_NICK_EMAIL, "UPDATE account SET email=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_CLOAK, "UPDATE account SET cloak=?v WHERE id=?d", NULL, EXECUTE },
+  { SET_NICK_CLOAK, "UPDATE account SET cloak=lower(?v) WHERE id=?d", NULL, EXECUTE },
   { SET_NICK_LAST_QUIT, "UPDATE account SET last_quit_msg=?v WHERE id=?d", NULL, EXECUTE },
   { SET_NICK_LAST_HOST, "UPDATE account SET last_host=?v WHERE id=?d", NULL, EXECUTE },
   { SET_NICK_LAST_REALNAME, "UPDATE account SET last_realname=?v where id=?d", NULL, EXECUTE },
