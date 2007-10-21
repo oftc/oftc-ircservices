@@ -296,14 +296,14 @@ AC_DEFUN([AX_ARG_ENABLE_EFENCE],[
 dnl {{{ ax_arg_enable_syslog
 AC_DEFUN([AX_ARG_ENABLE_SYSLOG],[
   AC_CHECK_HEADERS([syslog.h, sys/syslog.h])
-  AC_ARG_ENABLE([syslog],[AC_HELP_STRING([--enable-syslog="EVENTS"],[Enable syslog for events: user, oper (space separated in quotes; default: disabled).])],[syslog="$enableval"],[syslog="no"])
+  AC_ARG_ENABLE([syslog],[AC_HELP_STRING([--enable-syslog="EVENTS"],[Enable syslog for events: users oper (space separated in quotes; default: disabled).])],[syslog="$enableval"],[syslog="no"])
   if test "$enableval" != "no" ; then
-    for option in "$enableval" ; do
+    for option in $enableval ; do
       case "$option" in
         users) AC_DEFINE([SYSLOG_USERS],[1],[Send user log stuff to syslog.]) ;;
         oper) AC_DEFINE([SYSLOG_OPER],[1],[Send oper log stuff to syslog.]) ;;
         yes) : ;;
-        *) AC_MSG_WARN([invalid value for --enable-syslog: $option]) ;;
+        *) AC_MSG_ERROR([invalid value for --enable-syslog: $option]) ;;
       esac
     done
     AC_DEFINE([USE_SYSLOG],[1],[Define to 1 if you want to use syslog.])
