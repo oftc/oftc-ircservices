@@ -157,6 +157,8 @@ void get_modestring(unsigned int, char *, int);
 
 char *generate_hmac(const char *);
 
+char *check_masterless_channels(unsigned int);
+
 void send_chops_notice(struct Service *, struct Channel *, const char *, ...);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];

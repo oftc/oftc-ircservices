@@ -169,7 +169,7 @@ query_t queries[QUERY_COUNT] = {
   { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=4",
     NULL, QUERY },
   { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=?d ORDER BY lower(nick)", NULL, QUERY },
-  { GET_NICK_CHAN_INFO, "SELECT channel, level FROM "
+  { GET_NICK_CHAN_INFO, "SELECT channel.id, channel, level FROM "
     "channel, channel_access WHERE "
       "channel.id=channel_access.channel_id AND channel_access.account_id=?d "
       "ORDER BY lower(channel.channel)", NULL, QUERY },
@@ -226,6 +226,10 @@ query_t queries[QUERY_COUNT] = {
     EXECUTE },
   { FIND_JUPE, "SELECT id, name, reason, setter FROM jupes WHERE "
     "lower(name) = lower(?v)", NULL, QUERY },
+  { COUNT_CHANNEL_ACCESS_LIST, "SELECT COUNT(*) FROM channel_access "
+    "JOIN account ON channel_access.account_id=account.id "
+    "JOIN nickname ON account.primary_nick=nickname.id WHERE channel_id=?d",
+    NULL, QUERY },
 };
 
 void
@@ -969,7 +973,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   struct DBResult *result;
   struct InfoChanList *info;
   struct JupeEntry *jval;
-  unsigned int query, level;
+  unsigned int query;
   
   switch(type)
   {
@@ -1031,7 +1035,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
 
       info = MyMalloc(sizeof(struct InfoChanList));
       *entry = info;
-      brc = Bind("?ps?d", &info->channel, &level);
+      brc = Bind("?d?ps?d", &info->channel_id, &info->channel, &info->ilevel);
       break;
     case CHMASTER_LIST:
       query = GET_CHAN_MASTERS;
@@ -1118,7 +1122,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   }
   else if(type == NICKCHAN_LIST)
   {
-    switch(level)
+    switch(info->ilevel)
     {
       case MASTER_FLAG:
         info->level = "MASTER";
@@ -1573,6 +1577,28 @@ db_get_num_masters(unsigned int chanid)
   int count;
 
   db_query(rc, GET_CHAN_MASTER_COUNT, chanid);
+
+  if(rc == NULL)
+    return 0;
+
+  brc = Bind("?d", &count);
+
+  if(Fetch(rc, brc) == 0)
+    count = 0;
+
+  Free(brc);
+  Free(rc);
+
+  return count;
+}
+
+int
+db_get_num_channel_accesslist_entries(unsigned int chanid)
+{
+  yada_rc_t *rc, *brc;
+  int count;
+
+  db_query(rc, COUNT_CHANNEL_ACCESS_LIST, chanid);
 
   if(rc == NULL)
     return 0;

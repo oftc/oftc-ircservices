@@ -35,6 +35,8 @@ struct DBResult
 
 struct InfoChanList
 {
+  int channel_id;
+  int ilevel;
   char *channel;
   char *level;
 };
@@ -167,15 +169,18 @@ enum db_queries
   GET_JUPES,
   DELETE_JUPES_NAME,
   FIND_JUPE,
+  COUNT_CHANNEL_ACCESS_LIST,
   QUERY_COUNT
 };
 
-enum query_types {
+enum query_types 
+{
   QUERY,
   EXECUTE
 };
 
-typedef struct query {
+typedef struct query 
+{
   int index;
   const char *name;
   yada_rc_t *rc;
@@ -237,6 +242,7 @@ int   db_list_del(unsigned int, unsigned int, const char *);
 int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 
 int db_get_num_masters(unsigned int);
+int db_get_num_channel_accesslist_entries(unsigned int);
 
 int db_add_sentmail(unsigned int, const char *);
 int db_is_mailsent(unsigned int, const char *);

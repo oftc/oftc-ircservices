@@ -446,6 +446,7 @@ m_drop(struct Service *service, struct Client *client,
   struct Client *target;
   struct Nick *nick = db_find_nick(client->name);
   char *target_nick = NULL;
+  char *channel;
 
   assert(nick != NULL);
 
@@ -520,6 +521,19 @@ m_drop(struct Service *service, struct Client *client,
   /* Authentication passed(possibly because they're using sudo), go ahead and
    * drop
    */
+
+  /*
+   * If a channel will end up a masterless with this drop, do not allow it.
+   * This sort of violates the nickserv shouldnt deal with channels policy,
+   * but it's a little naive not to realise the bond.
+   */
+  if((channel = check_masterless_channels(client->nickname->id)) != NULL)
+  {
+    reply_user(service, service, client, NS_DROP_FAIL_MASTERLESS, client->name,
+        channel);
+    MyFree(channel);
+    return;
+  }
 
   if(db_delete_nick(client->nickname->id, client->nickname->pri_nickid,
         client->nickname->nickid)) 
