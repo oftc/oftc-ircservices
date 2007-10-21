@@ -53,13 +53,13 @@ reset_database(va_list args)
 static void *
 verify_database(va_list args)
 {
-  if (Database.driver == NULL)
+  if (EmptyString(Database.driver))
     parse_fatal("driver= field missing in database{} section");
 
-  if (Database.dbname == NULL)
+  if (EmptyString(Database.dbname))
     parse_fatal("dbname= field missing in database{} section");
 
-  if (Database.username == NULL)
+  if (EmptyString(Database.username))
     parse_fatal("username= field missing in database{} section");
 
   return pass_callback(hverify);
