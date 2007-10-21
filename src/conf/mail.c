@@ -53,10 +53,10 @@ reset_mail(va_list args)
 static void *
 verify_mail(va_list args)
 {
-  if (*Mail.command == '\0')
+  if (Mail.command == NULL)
     parse_fatal("command= field missing in mail{} section");
 
-  if (*Mail.from_address == '\0')
+  if (Mail.from_address == NULL)
     parse_fatal("from_address= field missing in mail{} section");
 
   return pass_callback(hverify);

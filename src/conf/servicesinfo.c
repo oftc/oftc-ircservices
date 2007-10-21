@@ -59,10 +59,10 @@ reset_servicesinfo(va_list args)
 static void *
 verify_servicesinfo(va_list args)
 {
-  if (!me.name[0])
+  if (me.name == NULL)
     parse_fatal("name= field missing in servicesinfo{} section");
 
-  if (!me.info[0])
+  if (me.info == NULL)
     parse_fatal("description= field missing in servicesinfo{} section");
 
   if(!ServicesInfo.hmac_secret)
