@@ -635,10 +635,10 @@ kick_user(struct Service *service, struct Channel *chptr, const char *client,
     return;
   }
 
-  remove_user_from_channel(ms);
-
   execute_callback(send_kick_cb, me.uplink, service->name, chptr->chname, 
       client, reason);
+
+  remove_user_from_channel(ms);
 }
 
 static void 
