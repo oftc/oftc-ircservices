@@ -354,7 +354,7 @@ handle_nick_change(struct Service *service, struct Client *client,
     }
     else if(target != client)
     {
-      target->release_to = client;
+      target->release_to = client->name;
       strlcpy(target->release_name, name, NICKLEN);
       guest_user(target);
       reply_user(service, service, client, message, name);
@@ -1706,13 +1706,13 @@ ns_on_nick_change(va_list args)
   /* This user was using a nick wanted elsewhere, release it now */
   if(user->release_to != NULL)
   {
-    struct Client *client = user->release_to;
+    struct Client *client = find_client(user->release_to);
     struct Client *target;
 
     /* in the "real world" it is possible that a user gets deidenfitied in the
      * mean time, check they are still eligible for this nick.
      */
-    if(client->nickname != NULL)
+    if(client != NULL && client->nickname != NULL)
     {
       if((target = find_client(client->nickname->nick)) != NULL)
       {
