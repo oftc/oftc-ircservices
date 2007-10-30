@@ -1140,8 +1140,7 @@ db_list_next(void *result, unsigned int type, void **entry)
   struct InfoChanList *info;
   struct JupeEntry *jval;
   char *strval = (char*)*entry; 
-  unsigned int level;
- 
+
   switch(type)
   {
     case ACCESS_LIST:
@@ -1196,7 +1195,7 @@ db_list_next(void *result, unsigned int type, void **entry)
       info = MyMalloc(sizeof(struct InfoChanList));
       *entry = info;
       Free(res->brc);
-      res->brc = Bind("?ps?d", &info->channel, &level);
+      res->brc = Bind("?d?ps?d", &info->channel_id, &info->channel, &info->ilevel);
       break;
     default:
       assert(0 == 1);
@@ -1224,7 +1223,7 @@ db_list_next(void *result, unsigned int type, void **entry)
   }
   else if(type == NICKCHAN_LIST)
   {
-    switch(level)
+    switch(info->ilevel)
     {
       case MASTER_FLAG:
         info->level = "MASTER";

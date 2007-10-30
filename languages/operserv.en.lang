@@ -44,9 +44,9 @@ OS_MOD_HELP_LONG
 OS_RAW_HELP_SHORT
 	%s: Execute a RAW server command (USE WITH CAUTION).
 OS_RAW_HELP_LONG
-	Sends a command to the server directly.  This command can cause damage to
-	the IRC network, do not use it if you do not know what you are doing, and
-	even if you do, BE CAREFUL.
+	Sends a command to the server directly.  This command can cause damage to
+	the IRC network, do not use it if you do not know what you are doing, and
+	even if you do, BE CAREFUL.
 OS_ADMIN_HELP_SHORT
 	%s: Manage services admins.
 OS_ADMIN_HELP_LONG
