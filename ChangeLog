@@ -167,3 +167,7 @@
 	- Don't use ServiceBase it breaks rubys gc bad. (#19)
 	- Do some stuff to make sure we dont end up with orphaned channels
 	  when we drop nicks. (#61)
+
+2007-10-31 - 1.1.1+weasel
+	Bugfixes:
+	- Fix a core when enforcing akicks.
