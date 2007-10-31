@@ -165,3 +165,7 @@
 	- Make use of the +P umode in oftc 1.6.
 	- Don't rb_raise in places we can't recover from
 	- Don't use ServiceBase it breaks rubys gc bad. (#19)
+
+2007-10-31 - 1.1.1+weasel
+	Bugfixes:
+	- Fix a core when enforcing akicks.

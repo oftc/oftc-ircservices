@@ -985,9 +985,10 @@ enforce_akick(struct Service *service, struct Channel *chptr,
     struct ServiceBan *akick)
 {
   dlink_node *ptr;
+  dlink_node *next_ptr;
   int numkicks = 0;
 
-  DLINK_FOREACH(ptr, chptr->members.head)
+  DLINK_FOREACH_SAFE(ptr, next_ptr, chptr->members.head)
   {
     struct Membership *ms = ptr->data;
     struct Client *client = ms->client_p;
