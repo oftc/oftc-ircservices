@@ -900,7 +900,6 @@ db_list_add(unsigned int type, const void *value)
   struct ChanAccess *caval  = (struct ChanAccess *)value;
   struct ServiceBan *banval = (struct ServiceBan *)value;
   struct JupeEntry *jval    = (struct JupeEntry *)value;
-  unsigned int id;
   int ret = 0;
 
   switch(type)
@@ -928,7 +927,7 @@ db_list_add(unsigned int type, const void *value)
       }
       else if(banval->mask != NULL)
       {
-        db_exec(ret, INSERT_AKICK_MASK, id, banval->setter, 
+        db_exec(ret, INSERT_AKICK_MASK, banval->channel, banval->setter, 
             banval->reason, banval->mask, banval->time_set, 
             banval->duration);
       }
