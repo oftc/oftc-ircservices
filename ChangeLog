@@ -112,8 +112,8 @@
 	Bugfix point release. Bug(s) fixed:
 	- Don't check access level on channel mode change, just do what the server
 		tells us. Also fix a bug in the mode callback. (#32)
-	- Actually implement chanserv verbose, instead of pretending that we do.
-		(#50)
+	- Actually implement chanserv verbose, instead of pretending that we
+		do.  (#50)
 	- Fix a crash when verbose is enabled and one tries to unban (#59)
 	- Multiple word descriptions might be nice on channel registration. (#54)
 	- Expirebans causing core by overflowing the ban mask buffer. (#56)
@@ -141,10 +141,10 @@
 		sensible things if so desired. (#34)
 	- STATS spy notice. (#17)
 	- FloodServ now uses BlockHeap, now you can monitor usage in STATS z
-	- Actually implement chanserv verbose, instead of pretending that we do.
-		(#50)
-	- Add various ORDER BY clauses to help with listing and delete by index.
-		(#39)
+	- Actually implement chanserv verbose, instead of pretending that we
+		do.  (#50)
+	- Add various ORDER BY clauses to help with listing and delete by
+		index.  (#39)
 	- Add CLEAR QUIETS, UNQUIET, and remove quiets in EXPIREBANS. (#25)
 	- FloodServ clears up +q's on it's own, FloodServ GC iterates only FS
 		channels more often and all valid channels. (#6)
