@@ -1786,7 +1786,17 @@ ns_on_nick_change(va_list args)
   }
  
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
-  if(check_list_entry(ACCESS_LIST, nick_p->id, userhost))
+
+  if(*user->certfp != '\0' && check_list_entry(CERT_LIST, nick_p->id, user->certfp))
+  {
+    if(user->nickname != NULL)
+      free_nick(user->nickname);
+    user->nickname = nick_p;
+    identify_user(user);
+    SetSentCert(user);
+    reply_user(nickserv, nickserv, user, NS_IDENTIFY_CERT, user->name);
+  }
+  else if(check_list_entry(ACCESS_LIST, nick_p->id, userhost))
   {
     ilog(L_DEBUG, "%s changed nick to %s(found access entry)", oldnick, 
         user->name);
