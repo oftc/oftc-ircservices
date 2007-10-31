@@ -83,9 +83,6 @@ NickStruct_NickSet(VALUE self, VALUE value)
 
   cvalue = StringValueCStr(value);
 
-  if(strlen(cvalue) > NICKLEN)
-    rb_raise(rb_eArgError, "Failed Setting Nick.nick %s too long", cvalue);
-
   strlcpy(nick->nick, cvalue, sizeof(nick->nick));
 
   return value;
@@ -107,9 +104,6 @@ NickStruct_PassSet(VALUE self, VALUE value)
   Check_Type(value, T_STRING);
 
   cvalue = StringValueCStr(value);
-
-  if(strlen(cvalue) > PASSLEN)
-    rb_raise(rb_eArgError, "Failed setting Nick.pass %s too long", cvalue);
 
   strlcpy(nick->pass, cvalue, sizeof(nick->pass));
 
@@ -133,9 +127,6 @@ NickStruct_SaltSet(VALUE self, VALUE value)
 
   cvalue = StringValueCStr(value);
 
-  if(strlen(cvalue) > SALTLEN)
-    rb_raise(rb_eArgError, "Failed setting Nick.salt %s too long", cvalue);
-
   strlcpy(nick->salt, cvalue, sizeof(nick->salt));
 
   return value;
@@ -157,9 +148,6 @@ NickStruct_CloakSet(VALUE self, VALUE value)
   Check_Type(value, T_STRING);
 
   cvalue = StringValueCStr(value);
-
-  if(strlen(cvalue) > HOSTLEN)
-    rb_raise(rb_eArgError, "Failed setting Nick.cloak %s too long", cvalue);
 
   strlcpy(nick->cloak, cvalue, sizeof(nick->cloak));
 

@@ -78,9 +78,6 @@ RegChannel_NameSet(VALUE self, VALUE value)
 
   cvalue = StringValueCStr(value);
 
-  if(strlen(cvalue) > CHANNELLEN)
-    rb_raise(rb_eArgError, "Failed setting RegChannel.channel %s too long", cvalue);
-
   strlcpy(channel->channel, StringValueCStr(value), sizeof(channel->channel));
 
   return value;
@@ -328,6 +325,8 @@ Init_RegChannel(void)
 {
   cRegChannel = rb_define_class("RegChannel", rb_cObject);
 
+  rb_gc_register_address(&cRegChannel);
+
   rb_define_method(cRegChannel, "initialize", RegChannel_Initialize, 1);
   rb_define_method(cRegChannel, "id", RegChannel_Id, 0);
   rb_define_method(cRegChannel, "id=", RegChannel_IdSet, 1);
@@ -388,6 +387,9 @@ rb_cregchan2rbregchan(struct RegChannel *channel)
     ilog(L_DEBUG, "RUBY ERROR: Ruby Failed To Create RegChannelStruct");
     return Qnil;
   }
+
+  rb_gc_register_address(&real_channel);
+  rb_gc_register_address(&rbchannel);
 
   return real_channel;
 }

@@ -163,3 +163,5 @@
 		someone removes an akill. (#48)
 	- Add CERT command for authentication with client certificate fingerprints.
 	- Make use of the +P umode in oftc 1.6.
+	- Don't rb_raise in places we can't recover from
+	- Don't use ServiceBase it breaks rubys gc bad. (#19)
