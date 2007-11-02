@@ -171,3 +171,7 @@
 2007-10-31 - 1.1.1+weasel
 	Bugfixes:
 	- Fix a core when enforcing akicks.
+
+2007-??-?? - 1.1.2
+	Bugfixes:
+	- Remove clients from the enforce list when identified by CERTFP (#82)
