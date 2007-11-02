@@ -141,10 +141,10 @@
 		sensible things if so desired. (#34)
 	- STATS spy notice. (#17)
 	- FloodServ now uses BlockHeap, now you can monitor usage in STATS z
-	- Actually implement chanserv verbose, instead of pretending that we do.
-		(#50)
-	- Add various ORDER BY clauses to help with listing and delete by index.
-		(#39)
+	- Actually implement chanserv verbose, instead of pretending that we
+		 do. (#50)
+	- Add various ORDER BY clauses to help with listing and delete by
+		 index. (#39)
 	- Add CLEAR QUIETS, UNQUIET, and remove quiets in EXPIREBANS. (#25)
 	- FloodServ clears up +q's on it's own, FloodServ GC iterates only FS
 		channels more often and all valid channels. (#6)
@@ -169,3 +169,7 @@
 2007-10-31 - 1.1.1+weasel
 	Bugfixes:
 	- Fix a core when enforcing akicks.
+
+2007-??-?? - 1.1.2
+	Bugfixes:
+	- Remove clients from the enforce list when identified by CERTFP (#82)

@@ -1949,6 +1949,7 @@ ns_on_certfp(va_list args)
     if(user->nickname != NULL)
       free_nick(user->nickname);
     user->nickname = nick;
+    dlinkFindDelete(&nick_enforce_list, user);
     identify_user(user);
     SetSentCert(user);
     reply_user(nickserv, nickserv, user, NS_IDENTIFY_CERT, user->name);
