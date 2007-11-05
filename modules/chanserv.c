@@ -1465,9 +1465,13 @@ m_clear_modes(struct Service *service, struct Client *client, int parc,
   send_cmode(service, chptr, buf, "");
   chptr->mode.mode &= ~chptr->mode.mode;
 
-  ilog(L_DEBUG, "ChanServ CLEAR MODES: %s setting MLOCK %s", chptr->chname,
-    chptr->regchan->mlock);
-  set_mode_lock(service, chptr->chname, NULL, chptr->regchan->mlock, NULL);
+  /* Only set_mode_lock if MLOCK is on */
+  if(chptr->regchan->mlock != NULL)
+  {
+    ilog(L_DEBUG, "ChanServ CLEAR MODES: %s setting MLOCK %s", chptr->chname,
+      chptr->regchan->mlock);
+    set_mode_lock(service, chptr->chname, NULL, chptr->regchan->mlock, NULL);
+  }
 
   reply_user(service, service, client, CS_CLEAR_MODES, chptr->chname);
 }

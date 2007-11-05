@@ -175,3 +175,4 @@
 2007-??-?? - 1.1.2
 	Bugfixes:
 	- Remove clients from the enforce list when identified by CERTFP (#82)
+	- Don't CLEAR MODES on channels with MLOCK notset
