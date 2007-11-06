@@ -37,3 +37,7 @@ nicknames
 o Bugfixes including some core-causing ones.
 o Fix autogen.sh to work on more platforms.
 o Actually fix ruby this time (the change was not merged until now)
+
+1.1.3
+-----
+o Fix bug allowing certificates to attempt to be added more than once
