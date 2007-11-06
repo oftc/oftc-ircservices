@@ -1097,14 +1097,15 @@ m_cert_list(struct Service *service, struct Client *client, int parc,
 
   nick = client->nickname;
 
-  reply_user(service, service, client, NS_CERT_START);
  
   if((listptr = db_list_first(CERT_LIST, nick->id, (void**)&entry)) == NULL)
   {
+    reply_user(service, service, client, NS_CERT_EMPTY);
     MyFree(entry);
     return;
   }
 
+  reply_user(service, service, client, NS_CERT_START);
   first = listptr;
 
   while(listptr != NULL)
