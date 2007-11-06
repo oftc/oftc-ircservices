@@ -1051,6 +1051,7 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
 {
   struct Nick *nick = client->nickname;
   struct AccessEntry access;
+  char *cert;
 
   access.id = nick->id;
   if(parv[1] == NULL)
@@ -1070,6 +1071,13 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
       return;
     }
     access.value = parv[1];
+  }
+
+  if((cert = db_find_certfp(nick->id, access.value)) != NULL)
+  {
+    reply_user(service, service, client, NS_CERT_EXISTS, access.value);
+    MyFree(cert);
+    return;
   }
 
   if(db_list_add(CERT_LIST, (void *)&access))

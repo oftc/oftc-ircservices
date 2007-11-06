@@ -209,7 +209,7 @@ query_t queries[QUERY_COUNT] = {
       "WHERE id=?d", NULL, EXECUTE },
   { INSERT_NICKCERT, "INSERT INTO account_fingerprint (account_id, fingerprint) "
     "VALUES(?d, upper(?v))", NULL, EXECUTE },
-  { GET_NICKCERT, "SELECT id, fingerprint FROM account_fingerprint WHERE "
+  { GET_NICKCERTS, "SELECT id, fingerprint FROM account_fingerprint WHERE "
     "account_id=?d ORDER BY id", NULL, QUERY },
   { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
     "account_id=?d AND fingerprint=upper(?v)", NULL, EXECUTE },
@@ -226,6 +226,8 @@ query_t queries[QUERY_COUNT] = {
     EXECUTE },
   { FIND_JUPE, "SELECT id, name, reason, setter FROM jupes WHERE "
     "lower(name) = lower(?v)", NULL, QUERY },
+  { GET_NICKCERT, "SELECT fingerprint FROM account_fingerprint WHERE "
+    "fingerprint=upper(?v) AND account_id=?d", QUERY },
   { COUNT_CHANNEL_ACCESS_LIST, "SELECT COUNT(*) FROM channel_access "
     "JOIN account ON channel_access.account_id=account.id "
     "JOIN nickname ON account.primary_nick=nickname.id WHERE channel_id=?d",
@@ -984,7 +986,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       brc = Bind("?d?ps", &aeval->id, &aeval->value);
       break;
     case CERT_LIST:
-      query = GET_NICKCERT;
+      query = GET_NICKCERTS;
       aeval = MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
       brc = Bind("?d?ps", &aeval->id, &aeval->value);
@@ -1645,6 +1647,30 @@ db_is_mailsent(unsigned int accid, const char *email)
   
   Free(brc);
   Free(rc);
+  return ret;
+}
+
+char *
+db_find_certfp(unsigned int accid, const char *certfp)
+{
+  yada_rc_t *rc, *brc;
+  char *temp, *ret;
+  
+  db_query(rc, GET_NICKCERT, certfp, accid);
+
+  if(rc == NULL)
+    return NULL;
+
+  brc = Bind("?ps", &temp);
+
+  if(Fetch(rc, brc) == 0)
+    ret = NULL;
+  else
+    DupString(ret, temp);
+
+  Free(brc);
+  Free(rc);
+
   return ret;
 }
 
