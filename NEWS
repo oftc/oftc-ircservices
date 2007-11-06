@@ -40,4 +40,5 @@ o Actually fix ruby this time (the change was not merged until now)
 
 1.1.3
 -----
-o Fix bug allowing certificates to attempt to be added more than once
+o Fix bug allowing certificates to attempt to be added more than once.
+o Add a more informative message to empty cert lists on CERT LIST command.
