@@ -537,7 +537,7 @@ CS_NOREG_FORBID
 CS_CHAN_NOT_FORBID
 	Channel %s was not forbidden.
 CS_UNFORBID_OK
-	Channel %s is now forbidden and may not be used.
+	Channel %s is no longer forbidden and may be used.
 CS_UNFORBID_FAIL
 	Channel %s failed to be removed from the forbidden list. Likely cause is an
 	internal database error.
