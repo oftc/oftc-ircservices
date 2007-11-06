@@ -67,6 +67,8 @@ fi
 
 run $LIBTOOLIZE $LIBTOOLIZE_FLAGS
 run $ACLOCAL $ACLOCAL_FLAGS
+# brokkkkkkkkkkkkkkkkkken libltdl in debian unstable
+sed -i -e 's/install-sh ltmain.sh missing mkinstalldirs/install-sh ltmain.sh missing/' libltdl/Makefile.in
 run $AUTOHEADER
 run $AUTOMAKE $AUTOMAKE_FLAGS
 run $AUTOCONF
