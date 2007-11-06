@@ -161,7 +161,7 @@ enum db_queries
   GET_CHANNEL_FORBID_LIST,
   SAVE_NICK,
   INSERT_NICKCERT,
-  GET_NICKCERT,
+  GET_NICKCERTS,
   DELETE_NICKCERT,
   DELETE_NICKCERT_IDX,
   DELETE_ALL_NICKCERT,
@@ -170,6 +170,7 @@ enum db_queries
   DELETE_JUPES_NAME,
   FIND_JUPE,
   COUNT_CHANNEL_ACCESS_LIST,
+  GET_NICKCERT,
   QUERY_COUNT
 };
 
@@ -243,6 +244,8 @@ int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 
 int db_get_num_masters(unsigned int);
 int db_get_num_channel_accesslist_entries(unsigned int);
+
+char *db_find_certfp(unsigned int, const char *);
 
 int db_add_sentmail(unsigned int, const char *);
 int db_is_mailsent(unsigned int, const char *);

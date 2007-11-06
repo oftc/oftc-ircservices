@@ -473,6 +473,8 @@ NS_CERT_INVALID
 NS_CERT_YOUHAVENONE
 	You are not connected via SSL or have not provided a valid client
 	certificate. You must provide a fingerprint to add.
+NS_CERT_EXISTS
+	Certificate fingerprint %s is already added to your account.
 NS_CERT_START
 	CERT list:
 NS_CERT_ENTRY
