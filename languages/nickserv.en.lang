@@ -479,6 +479,8 @@ NS_CERT_START
 	CERT list:
 NS_CERT_ENTRY
 	%d  %s
+NS_CERT_EMPTY
+	No certificates found.
 NS_CERT_DEL
 	%d CERT entries deleted.
 NS_REGAIN_SUCCESS
