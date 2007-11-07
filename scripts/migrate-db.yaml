@@ -1,7 +1,0 @@
----
-source_str: "dbi:Mysql:dbname="
-source_user: nil
-source_pass: nil
-dest_str: "dbi:Pg:dbname="
-dest_user: nil
-dest_pass: nil
