@@ -226,12 +226,12 @@ query_t queries[QUERY_COUNT] = {
     EXECUTE },
   { FIND_JUPE, "SELECT id, name, reason, setter FROM jupes WHERE "
     "lower(name) = lower(?v)", NULL, QUERY },
-  { GET_NICKCERT, "SELECT fingerprint FROM account_fingerprint WHERE "
-    "fingerprint=upper(?v) AND account_id=?d", QUERY },
-  { COUNT_CHANNEL_ACCESS_LIST, "SELECT COUNT(*) FROM channel_access "
+ { COUNT_CHANNEL_ACCESS_LIST, "SELECT COUNT(*) FROM channel_access "
     "JOIN account ON channel_access.account_id=account.id "
     "JOIN nickname ON account.primary_nick=nickname.id WHERE channel_id=?d",
     NULL, QUERY },
+  { GET_NICKCERT, "SELECT fingerprint FROM account_fingerprint WHERE "
+    "fingerprint=upper(?v) AND account_id=?d", QUERY },
 };
 
 void
