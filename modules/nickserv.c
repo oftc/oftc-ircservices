@@ -1330,7 +1330,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       client->access >= OPER_FLAG)
   {
     reply_user(service, service, client, NS_INFO_EMAIL, nick->email);
-    reply_user(service, service, client, NS_LANGUAGE_SET,
+    reply_user(service, service, client, NS_INFO_LANGUAGE,
         service->languages[nick->language].name, nick->language); 
 
     reply_user(service, service, client, NS_INFO_OPTION, "ENFORCE", nick->enforce ? "ON" :
