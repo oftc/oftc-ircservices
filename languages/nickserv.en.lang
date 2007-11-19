@@ -556,6 +556,8 @@ NS_INFO_SEENTIME_NODAY
 	        Last seen: %s (%02d:%02d:%02d ago)
 NS_INFO_SEENTIME_UNKNOWN
 	        Last seen: Unknown
+NS_INFO_LANGUAGE
+	         Language: %s (%d)
 NS_INFO_EMAIL
 	   E-mail address: %s
 NS_INFO_ONLINE
