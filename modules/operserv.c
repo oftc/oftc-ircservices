@@ -31,11 +31,11 @@
 static struct Service *operserv = NULL;
 
 static dlink_node *os_newuser_hook;
-static dlink_node *os_db_init_hook;
+static dlink_node *os_burst_done_hook;
 static dlink_node *os_quit_hook;
 
 static void *os_on_newuser(va_list);
-static void *os_on_db_init(va_list);
+static void *os_on_burst_done(va_list);
 static void *os_on_quit(va_list);
 
 static void m_help(struct Service *, struct Client *, int, char *[]);
@@ -51,9 +51,9 @@ static void m_admin_del(struct Service *, struct Client *, int, char *[]);
 static void m_akill_add(struct Service *, struct Client *, int, char *[]);
 static void m_akill_list(struct Service *, struct Client *, int, char *[]);
 static void m_akill_del(struct Service *, struct Client *, int, char *[]);
-static void m_jupes_add(struct Service *, struct Client *, int, char *[]);
-static void m_jupes_list(struct Service *, struct Client *, int, char *[]);
-static void m_jupes_del(struct Service *, struct Client *, int, char *[]);
+static void m_jupe_add(struct Service *, struct Client *, int, char *[]);
+static void m_jupe_list(struct Service *, struct Client *, int, char *[]);
+static void m_jupe_del(struct Service *, struct Client *, int, char *[]);
 
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, 2, 0, OPER_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
@@ -115,19 +115,19 @@ static struct ServiceMessage set_msgtab = {
   m_operserv_notimp
 };
 
-static struct ServiceMessage jupes_subs[] = {
-  { NULL, "ADD", 0, 1, 3, SFLG_NOMAXPARAM, OPER_FLAG, OS_JUPES_ADD_HELP_SHORT,
-    OS_JUPES_ADD_HELP_LONG, m_jupes_add },
-  { NULL, "LIST", 0, 0, 0, 0, OPER_FLAG, OS_JUPES_LIST_HELP_SHORT,
-    OS_JUPES_LIST_HELP_LONG, m_jupes_list },
-  { NULL, "DEL", 0, 1, 1, 0, OPER_FLAG, OS_JUPES_DEL_HELP_SHORT,
-    OS_JUPES_DEL_HELP_LONG, m_jupes_del },
+static struct ServiceMessage jupe_subs[] = {
+  { NULL, "ADD", 0, 1, 3, SFLG_NOMAXPARAM, OPER_FLAG, OS_JUPE_ADD_HELP_SHORT,
+    OS_JUPE_ADD_HELP_LONG, m_jupe_add },
+  { NULL, "LIST", 0, 0, 0, 0, OPER_FLAG, OS_JUPE_LIST_HELP_SHORT,
+    OS_JUPE_LIST_HELP_LONG, m_jupe_list },
+  { NULL, "DEL", 0, 1, 1, 0, OPER_FLAG, OS_JUPE_DEL_HELP_SHORT,
+    OS_JUPE_DEL_HELP_LONG, m_jupe_del },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
 };
 
-static struct ServiceMessage jupes_msgtab = {
-  jupes_subs, "JUPES", 0, 2, 2, 0, OPER_FLAG, OS_JUPES_HELP_SHORT,
-  OS_JUPES_HELP_LONG, NULL
+static struct ServiceMessage jupe_msgtab = {
+  jupe_subs, "JUPE", 0, 2, 2, 0, OPER_FLAG, OS_JUPE_HELP_SHORT,
+  OS_JUPE_HELP_LONG, NULL
 };
 
 INIT_MODULE(operserv, "$Revision$")
@@ -141,7 +141,7 @@ INIT_MODULE(operserv, "$Revision$")
   load_language(operserv->languages, "operserv.en");
 
   os_newuser_hook = install_hook(on_newuser_cb, os_on_newuser);
-  os_db_init_hook = install_hook(on_db_init_cb, os_on_db_init);
+  os_burst_done_hook = install_hook(on_burst_done_cb, os_on_burst_done);
   os_quit_hook = install_hook(on_quit_cb, os_on_quit);
 
   mod_add_servcmd(&operserv->msg_tree, &help_msgtab);
@@ -151,13 +151,13 @@ INIT_MODULE(operserv, "$Revision$")
   mod_add_servcmd(&operserv->msg_tree, &akill_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
-  mod_add_servcmd(&operserv->msg_tree, &jupes_msgtab);
+  mod_add_servcmd(&operserv->msg_tree, &jupe_msgtab);
 }
 
 CLEANUP_MODULE
 {
   uninstall_hook(on_newuser_cb, os_on_newuser);
-  uninstall_hook(on_db_init_cb, os_on_db_init);
+  uninstall_hook(on_burst_done_cb, os_on_burst_done);
   uninstall_hook(on_quit_cb, os_on_quit);
 
   serv_clear_messages(operserv);
@@ -167,26 +167,41 @@ CLEANUP_MODULE
 }
 
 static void *
-os_on_db_init(va_list param)
+os_on_burst_done(va_list param)
 {
   struct JupeEntry *jupe;
   void *handle, *first;
+  struct Client *target;
+  int ret;
 
-  first = handle = db_list_first(JUPES_LIST, 0, (void**)&jupe);
+  first = handle = db_list_first(JUPE_LIST, 0, (void**)&jupe);
   while(handle != NULL)
   {
-    introduce_server(jupe->name, jupe->reason);
-    ilog(L_DEBUG, "JUPE %s [%s]", jupe->name, jupe->reason);
+    if((target = find_client(jupe->name)) != NULL && IsServer(target))
+    {
+      ilog(L_DEBUG, "JUPE Server %s already exists, removing jupe", jupe->name);
+      ret = db_list_del(DELETE_JUPE_NAME, 0, jupe->name);
+      if(ret <= 0)
+      {
+        ilog(L_INFO, "Failed to remove existing jupe for existing server %s", jupe->name);
+      }
+    }
+    else
+    {
+      introduce_server(jupe->name, jupe->reason);
+      ilog(L_DEBUG, "JUPE %s [%s]", jupe->name, jupe->reason);
+    }
+
     free_jupeentry(jupe);
     jupe = NULL;
-    handle = db_list_next(handle, JUPES_LIST, (void**)&jupe);
+    handle = db_list_next(handle, JUPE_LIST, (void**)&jupe);
   }
   if(first)
     db_list_done(first);
 
   free_jupeentry(jupe);
 
-  return pass_callback(os_db_init_hook, param);
+  return pass_callback(os_burst_done_hook, param);
 }
 
 static void
@@ -598,17 +613,24 @@ os_on_newuser(va_list args)
 }
 
 static void
-m_jupes_add(struct Service *service, struct Client *client,
+m_jupe_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
+  struct Client *target = find_client(parv[1]);
   struct JupeEntry *entry = db_find_jupe(parv[1]);
   char reason[IRC_BUFSIZE+1] = "Jupitered: No Reason";
   int ret = 0;
 
   if(entry != NULL)
   {
-    reply_user(service, service, client, OS_JUPES_ALREADY, entry->name, entry->reason);
+    reply_user(service, service, client, OS_JUPE_ALREADY, entry->name, entry->reason);
     free_jupeentry(entry);
+    return;
+  }
+
+  if(target != NULL && IsServer(target))
+  {
+    reply_user(service, service, client, OS_JUPE_SERVER_EXISTS, parv[1]);
     return;
   }
 
@@ -622,17 +644,17 @@ m_jupes_add(struct Service *service, struct Client *client,
 
   entry->setter = client->nickname->id;
 
-  ret = db_list_add(JUPES_LIST, entry);
+  ret = db_list_add(JUPE_LIST, entry);
 
   if(ret)
   {
     introduce_server(entry->name, entry->reason);
-    reply_user(service, service, client, OS_JUPES_ADDED, entry->name, entry->reason);
+    reply_user(service, service, client, OS_JUPE_ADDED, entry->name, entry->reason);
     ilog(L_NOTICE, "%s Jupitered %s [%s]", client->name, entry->name, entry->reason);
   }
   else
   {
-    reply_user(service, service, client, OS_JUPES_ADD_FAILED, entry->name);
+    reply_user(service, service, client, OS_JUPE_ADD_FAILED, entry->name);
     ilog(L_NOTICE, "%s Failed to Jupiter %s", client->name, entry->name);
   }
 
@@ -640,7 +662,7 @@ m_jupes_add(struct Service *service, struct Client *client,
 }
 
 static void
-m_jupes_list(struct Service *service, struct Client *client,
+m_jupe_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct JupeEntry *jupe;
@@ -648,12 +670,12 @@ m_jupes_list(struct Service *service, struct Client *client,
 
   int i = 1;
 
-  first = handle = db_list_first(JUPES_LIST, 0, (void**)&jupe);
+  first = handle = db_list_first(JUPE_LIST, 0, (void**)&jupe);
   while(handle != NULL)
   {
     char *setter = db_get_nickname_from_id(jupe->setter);
 
-    reply_user(service, service, client, OS_JUPES_LIST, i++, jupe->name,
+    reply_user(service, service, client, OS_JUPE_LIST, i++, jupe->name,
       jupe->reason, setter);
 
     if(jupe->setter > 0)
@@ -665,36 +687,30 @@ m_jupes_list(struct Service *service, struct Client *client,
       jupe = NULL;
     }
 
-    handle = db_list_next(handle, JUPES_LIST, (void**)&jupe);
+    handle = db_list_next(handle, JUPE_LIST, (void**)&jupe);
   }
 
   if(first)
     db_list_done(first);
 
-  reply_user(service, service, client, OS_JUPES_LIST_END);
+  reply_user(service, service, client, OS_JUPE_LIST_END);
 
   free_jupeentry(jupe);
 }
 
 static void
-m_jupes_del(struct Service *service, struct Client *client,
+m_jupe_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  int ret;
-
-  ret = db_list_del(DELETE_JUPES_NAME, 0, parv[1]);
-
-  squit_server(parv[1], "UnJupitered");
-
-  if(ret > 0)
+  struct Client *target = find_client(parv[1]);
+  if(target != NULL && IsServer(target))
   {
-    ilog(L_NOTICE, "%s Removed Jupiter for %s", client->name, parv[1]);
-    reply_user(service, service, client, OS_JUPES_DELETED, parv[1]);
+    squit_server(parv[1], "UnJupitered");
+    reply_user(service, service, client, OS_JUPE_DELETED, parv[1]);
   }
   else
   {
-    ilog(L_NOTICE, "%s Failed to remove Jupiter for %s", client->name, parv[1]);
-    reply_user(service, service, client, OS_JUPES_DEL_FAILED, parv[1]);
+    reply_user(service, service, client, OS_JUPE_DEL_FAILED, parv[1]);
   }
 }
 
@@ -707,7 +723,7 @@ os_on_quit(va_list param)
 
   if(IsServer(server) && IsMe(server->servptr))
   {
-    ret = db_list_del(DELETE_JUPES_NAME, 0, server->name);
+    ret = db_list_del(DELETE_JUPE_NAME, 0, server->name);
 
     if(ret > 0)
     {
