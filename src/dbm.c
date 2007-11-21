@@ -221,8 +221,8 @@ query_t queries[QUERY_COUNT] = {
     "account_id=?d", NULL, EXECUTE },
   { INSERT_JUPE, "INSERT INTO jupes (setter, name, reason) VALUES(?d, ?v, ?v)",
     NULL, EXECUTE },
-  { GET_JUPES, "SELECT id, name, reason, setter FROM jupes ORDER BY id", NULL, QUERY },
-  { DELETE_JUPES_NAME, "DELETE FROM jupes WHERE lower(name) = lower(?v)", NULL,
+  { GET_JUPE, "SELECT id, name, reason, setter FROM jupes ORDER BY id", NULL, QUERY },
+  { DELETE_JUPE_NAME, "DELETE FROM jupes WHERE lower(name) = lower(?v)", NULL,
     EXECUTE },
   { FIND_JUPE, "SELECT id, name, reason, setter FROM jupes WHERE "
     "lower(name) = lower(?v)", NULL, QUERY },
@@ -950,7 +950,7 @@ db_list_add(unsigned int type, const void *value)
       db_exec(ret, INSERT_CHANACCESS, caval->account, caval->channel,
           caval->level);
       break;
-    case JUPES_LIST:
+    case JUPE_LIST:
       db_exec(ret, INSERT_JUPE, jval->setter, jval->name, jval->reason);
       break;
     default:
@@ -991,8 +991,8 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = aeval;
       brc = Bind("?d?ps", &aeval->id, &aeval->value);
       break;
-    case JUPES_LIST:
-      query = GET_JUPES;
+    case JUPE_LIST:
+      query = GET_JUPE;
       jval = MyMalloc(sizeof(struct JupeEntry));
       *entry = jval;
       brc = Bind("?d?ps?ps?d", &jval->id, &jval->name, &jval->reason, &jval->setter);
@@ -1117,7 +1117,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     DupString(banval->reason, banval->reason);
     banval->type = AKICK_BAN;
   }
-  else if(type == JUPES_LIST)
+  else if(type == JUPE_LIST)
   {
     DupString(jval->name, jval->name);
     DupString(jval->reason, jval->reason);
@@ -1161,7 +1161,7 @@ db_list_next(void *result, unsigned int type, void **entry)
       Free(res->brc);
       res->brc = Bind("?d?ps", &aeval->id, &aeval->value);
       break;
-    case JUPES_LIST:
+    case JUPE_LIST:
       jval = MyMalloc(sizeof(struct JupeEntry));
       *entry = jval;
       Free(res->brc);
@@ -1227,7 +1227,7 @@ db_list_next(void *result, unsigned int type, void **entry)
     DupString(banval->mask, banval->mask);
     DupString(banval->reason, banval->reason);
   }
-  else if(type == JUPES_LIST)
+  else if(type == JUPE_LIST)
   {
     DupString(jval->name, jval->name);
     DupString(jval->reason, jval->reason);
