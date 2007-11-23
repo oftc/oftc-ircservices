@@ -1275,11 +1275,12 @@ m_akick_enforce(struct Service *service, struct Client *client,
   struct RegChannel *regchptr;
   int numkicks = 0;
   dlink_node *ptr;
+  dlink_node *next_ptr;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  DLINK_FOREACH(ptr, chptr->members.head)
+  DLINK_FOREACH_SAFE(ptr, next_ptr, chptr->members.head)
   {
     struct Membership *ms = ptr->data;
     struct Client *client = ms->client_p;
