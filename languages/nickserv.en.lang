@@ -498,6 +498,9 @@ NS_REGAIN_NOTONLINE
 NS_LINK_NOMASTER
 	Master nickname %s not registered. The nickname you want to link to must
 	be registered with nickname services.
+NS_LINK_NOSLAVE
+	Slave nickname %s not registered. The nickname you want to link to must
+	be registered with nickname services.
 NS_LINK_BADPASS
 	Incorrect password for master nickname %s. You must supply the correct
 	password for the master nickname in order to link to it.

@@ -64,6 +64,7 @@ static void m_sudo(struct Service *, struct Client *, int, char *[]);
 static void m_sendpass(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
 static void m_status(struct Service *, struct Client *, int, char*[]);
+static void m_enslave(struct Service *, struct Client *, int, char*[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -226,6 +227,11 @@ static struct ServiceMessage status_msgtab = {
   NS_HELP_STATUS_LONG, m_status
 };
 
+static struct ServiceMessage enslave_msgtab = {
+  NULL, "ENSLAVE", 0, 2, 2, 0, IDENTIFIED_FLAG, NS_HELP_LINK_SHORT, 
+  NS_HELP_LINK_LONG, m_enslave
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -255,6 +261,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &sendpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &list_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &status_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &enslave_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -1670,6 +1677,48 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
   db_list_done(first);
 
   reply_user(service, service, client, NS_LIST_END, count);
+}
+
+static void
+m_enslave(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  struct Nick *nick, *slave_nick;
+
+  nick = client->nickname;
+  if((slave_nick = db_find_nick(parv[1])) == NULL)
+  {
+    reply_user(service, service, client, NS_LINK_NOSLAVE, parv[1]);
+    return;
+  }
+
+  if(slave_nick->id == nick->id)
+  {
+    free_nick(slave_nick);
+    reply_user(service, service, client, NS_LINK_NOSELF);
+    return;
+  }
+
+  if(!check_nick_pass(slave_nick, parv[2]))
+  {
+    free_nick(slave_nick);
+    reply_user(service, service, client, NS_LINK_BADPASS, parv[1]);
+    return;
+  }
+
+  if(!db_link_nicks(nick->id, slave_nick->id))
+  {
+    free_nick(slave_nick);
+    reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
+    return;
+  }
+
+  reply_user(service, service, client, NS_LINK_OK, parv[1], nick->nick);
+  
+  free_nick(slave_nick);
+  free_nick(nick);
+
+  client->nickname = db_find_nick(parv[1]);
+  assert(client->nickname != NULL);
 }
 
 static void*
