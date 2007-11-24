@@ -378,9 +378,8 @@ process_expireban_list(void *param)
       struct Ban *banptr = bptr->data;
       char ban[IRC_BUFSIZE+1];
       time_t delta = CurrentTime - banptr->when;
-      time_t maxtime = 1*60*60;
-
-      if(delta > maxtime)
+      
+      if(delta > chptr->regchan->expirebans_interval)
       {
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
@@ -395,9 +394,8 @@ process_expireban_list(void *param)
       struct Ban *banptr = bptr->data;
       char ban[IRC_BUFSIZE+1];
       time_t delta = CurrentTime - banptr->when;
-      time_t maxtime = 1*60*60;
 
-      if(delta > maxtime)
+      if(delta > chptr->regchan->expirebans_interval)
       {
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
@@ -1072,8 +1070,33 @@ m_set_expirebans(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr = hash_find_channel(parv[1]);
+  struct RegChannel *regchptr;
+  int interval;
+  char *flag;
 
-  m_set_flag(service, client, parv[1], parv[2], SET_CHAN_EXPIREBANS, 
+  regchptr = (chptr == NULL) ? db_find_chan(parv[1]) : chptr->regchan;
+  interval = regchptr->expirebans_interval; 
+
+  if(parv[2] != NULL)
+  {
+    interval = atoi(parv[2]);
+    if(interval > 0)
+      flag = "ON";
+    else if(interval == 0)
+    {
+      flag = "OFF";
+      interval = regchptr->expirebans_interval;
+    }
+    else
+    {
+      flag = parv[2];
+      interval = regchptr->expirebans_interval;
+    }
+  }
+  else
+    flag = NULL;
+
+  m_set_flag(service, client, parv[1], flag, SET_CHAN_EXPIREBANS, 
       "EXPIREBANS");
   if(chptr != NULL && chptr->regchan != NULL && chptr->regchan->expirebans)
     dlinkAdd(chptr, make_dlink_node(), &channel_expireban_list);
@@ -1084,6 +1107,16 @@ m_set_expirebans(struct Service *service, struct Client *client,
     if((ptr = dlinkFindDelete(&channel_expireban_list, chptr)) != NULL)
       free_dlink_node(ptr);
   }
+
+  if(parv[2] != NULL)
+    db_set_number(SET_EXPIREBANS_INTERVAL, regchptr->id, interval);
+
+  reply_user(service, service, client, CS_EXPIREBANS_INTERVAL, interval);
+
+  regchptr->expirebans_interval = interval;
+
+  if(chptr == NULL)
+    free_regchan(regchptr);
 }
 
 static void
@@ -1901,6 +1934,9 @@ m_set_flag(struct Service *service, struct Client *client,
       case SET_CHAN_FLOODSERV:
         on = regchptr->floodserv;
         break;
+      case SET_CHAN_EXPIREBANS:
+        on = regchptr->expirebans;
+        break;
       default:
         on = FALSE;
         break;
@@ -1959,6 +1995,9 @@ m_set_flag(struct Service *service, struct Client *client,
         break;
       case SET_CHAN_LEAVEOPS:
         regchptr->leaveops = on;
+        break;
+      case SET_CHAN_EXPIREBANS:
+        regchptr->expirebans = on;
         break;
     }
     if (chptr == NULL)

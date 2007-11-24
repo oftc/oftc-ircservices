@@ -543,3 +543,5 @@ CS_UNFORBID_FAIL
 	internal database error.
 CS_FS_NOT_LOADED
 	FloodServ is not currently connected; when it returns it will join %s.
+CS_EXPIREBANS_INTERVAL
+	Expirebans interval set to %d.

@@ -1,9 +1,35 @@
 Release Notes
 =============
 
-1.0.0
+1.2.0
 -----
-o Initial release. 
+o Make the EXPIREBANS paramter more than just simple ON/OFF.  You can now
+specify a interval in seconds to customise it however you want.  The default
+is now 5 hours. (Database change required!)
+
+1.1.4 - UNRELEASED
+-----
+o OperServe JUPES is now JUPE.
+o Don't try to JUPE existing servers anymore.
+o Remove existing JUPEs on services restart if server is already connected.
+o fix a segfault when enforcing akicks.
+
+1.1.3
+-----
+o Fix bug allowing certificates to attempt to be added more than once.
+o Add a more informative message to empty cert lists on CERT LIST command.
+
+1.1.2
+-----
+o Bugfixes including some core-causing ones.
+o Fix autogen.sh to work on more platforms.
+o Actually fix ruby this time (the change was not merged until now)
+
+1.1.1
+-----
+
+o Minor Bugfixes
+o Added auto identification based on client certificate when you change nicknames
 
 1.1.0
 -----
@@ -14,8 +40,7 @@ o We now set precedence: junk on mail we send out
 o Lots of database query cleanups/reindexes/reordering
 o Add FloodServ status to channel information
 o Implement STATS z support
-o FloodServ now uses the Block Heap, so it's memory usage can be tracked more
-easily
+o FloodServ now uses the Block Heap, so it's memory usage can be tracked more easily
 o Add CLEAR QUIETS, UNQUIET and make EXPIREBANS also expire quiets
 o FloodServ now automatically removes +qs that it sets.
 o Add JupeServ
@@ -25,27 +50,6 @@ o Make use of oftc-hybrid 1.6's umode +T
 o Fixes to ensure we do not end up with orphan channels
 o Fix the ruby subsystem to not fall over so much
 
-1.1.1
+1.0.0
 -----
-
-o Minor Bugfixes
-o Added auto identification based on client certificate when you change
-nicknames
-
-1.1.2
------
-o Bugfixes including some core-causing ones.
-o Fix autogen.sh to work on more platforms.
-o Actually fix ruby this time (the change was not merged until now)
-
-1.1.3
------
-o Fix bug allowing certificates to attempt to be added more than once.
-o Add a more informative message to empty cert lists on CERT LIST command.
-
-1.1.4 - UNRELEASED
------
-o OperServe JUPES is now JUPE.
-o Don't try to JUPE existing servers anymore.
-o Remove existing JUPEs on services restart if server is already connected.
-o fix a segfault when enforcing akicks.
+o Initial release. 
