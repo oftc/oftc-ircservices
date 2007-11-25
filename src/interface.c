@@ -622,6 +622,9 @@ void
 kick_user(struct Service *service, struct Channel *chptr, const char *client, 
     const char *reason)
 {
+  struct Membership *ms;
+  struct Client *ptr = find_client(client);
+
   if(ServicesState.debugmode)
     return;
 

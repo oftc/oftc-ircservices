@@ -159,7 +159,7 @@ static struct ServiceMessage set_msgtab = {
 static struct ServiceMessage access_sub[6] = {
   { NULL, "ADD", 0, 3, 3, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_ACCESS_ADD_SHORT, CS_HELP_ACCESS_ADD_LONG, m_access_add },
-  { NULL, "DEL", 0, 2, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
+  { NULL, "DEL", 0, 2, 2, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG, 
     CS_HELP_ACCESS_DEL_SHORT, CS_HELP_ACCESS_DEL_LONG, m_access_del },
   { NULL, "LIST", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, CHUSER_FLAG, 
     CS_HELP_ACCESS_LIST_SHORT, CS_HELP_ACCESS_LIST_LONG, m_access_list },
@@ -710,7 +710,7 @@ m_access_del(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  struct ChanAccess *access;
+  struct ChanAccess *access, *myaccess;
   unsigned int nickid;
 
   chptr = hash_find_channel(parv[1]);
@@ -728,9 +728,23 @@ m_access_del(struct Service *service, struct Client *client,
   if(access == NULL)
   {
     reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
+    if(chptr == NULL)
+      free_regchan(regchptr);
+    return;
+  }
+
+  if(nickid != client->nickname->id)
+  {
+    myaccess = db_find_chanaccess(regchptr->id, client->nickname->id);
+    if(myaccess->level != MASTER_FLAG)
+    {
+      reply_user(service, NULL, client, SERV_NO_ACCESS_CHAN, "DEL",
+          regchptr->channel);
       if(chptr == NULL)
         free_regchan(regchptr);
-    return;
+      MyFree(access);
+      return;
+    }
   }
 
   if(access->level == MASTER_FLAG && db_get_num_masters(regchptr->id) <= 1)
