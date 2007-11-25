@@ -625,8 +625,17 @@ kick_user(struct Service *service, struct Channel *chptr, const char *client,
   if(ServicesState.debugmode)
     return;
 
+  if((ms = find_channel_link(ptr, chptr)) == NULL)
+  {
+    ilog(L_CRIT, "Tried to remove %s from channel %s they werent on",
+        ptr->name, chptr->chname);
+    return;
+  }
+
   execute_callback(send_kick_cb, me.uplink, service->name, chptr->chname, 
       client, reason);
+
+  remove_user_from_channel(ms);
 }
 
 static void 

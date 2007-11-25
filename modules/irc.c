@@ -1016,6 +1016,12 @@ nextnick:
    * - Dianora
    */
 
+  /* There is a slight possibility the join callback above gets rid of the
+   * channel, make sure it still exists */
+
+  if((chptr = hash_find_channel(parv[2])) == NULL)
+    return;
+
   if(isnew)
     execute_callback(on_channel_created_cb, chptr);
 
@@ -1145,8 +1151,11 @@ m_part(struct Client *client, struct Client *source, int parc, char *parv[])
 
   while (name)
   {
-    execute_callback(on_part_cb, client, source, hash_find_channel(name), 
-        reason);
+    struct Channel *chan;
+
+    chan = hash_find_channel(name);
+    if(chan != NULL)
+      execute_callback(on_part_cb, client, source, chan, reason);
     execute_callback(send_part_cb, client, source, name, reason);
     name = strtoken(&p, NULL, ",");
   }
