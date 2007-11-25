@@ -601,7 +601,7 @@ m_identify(struct Service *service, struct Client *client,
     return;
   }
 
-  if(!check_nick_pass(nick, parv[1]))
+  if(!check_nick_pass(client, parv[1]))
   {
     free_nick(nick);
     if(++client->num_badpass > 5)
@@ -1144,7 +1144,7 @@ m_cert_del(struct Service *service, struct Client *client, int parc,
 static void
 m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  struct Nick *nick;
+  struct Nick *nick, *tmp;
 
   if(find_client(parv[1]) == NULL)
   {
@@ -1165,12 +1165,17 @@ m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if((parc == 2 && !check_nick_pass(nick, parv[2])))
+  tmp = client->nickname;
+  client->nickname = nick;
+
+  if((parc == 2 && !check_nick_pass(client, parv[2])))
   {
     free_nick(nick);
+    client->nickname = tmp;
     reply_user(service, service, client, NS_REGAIN_FAILED, parv[1]);   
     return;
   }
+  client->nickname = tmp;
   
   if(client->nickname != NULL)
     free_nick(client->nickname);
@@ -1183,7 +1188,7 @@ m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_link(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  struct Nick *nick, *master_nick;
+  struct Nick *nick, *master_nick, *tmp;
 
   nick = client->nickname;
   if((master_nick = db_find_nick(parv[1])) == NULL)
@@ -1199,12 +1204,18 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(!check_nick_pass(master_nick, parv[2]))
+  tmp = client->nickname;
+  client->nickname = master_nick;
+
+  if(!check_nick_pass(client, parv[2]))
   {
+    client->nickname = tmp;
     free_nick(master_nick);
     reply_user(service, service, client, NS_LINK_BADPASS, parv[1]);
     return;
   }
+
+  client->nickname = tmp;
 
   if(!db_link_nicks(master_nick->id, nick->id))
   {
@@ -1682,7 +1693,7 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_enslave(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  struct Nick *nick, *slave_nick;
+  struct Nick *nick, *slave_nick, *tmp;
 
   nick = client->nickname;
   if((slave_nick = db_find_nick(parv[1])) == NULL)
@@ -1698,7 +1709,10 @@ m_enslave(struct Service *service, struct Client *client, int parc, char *parv[]
     return;
   }
 
-  if(!check_nick_pass(slave_nick, parv[2]))
+  tmp = client->nickname;
+  client->nickname = slave_nick;
+
+  if(!check_nick_pass(client, parv[2]))
   {
     free_nick(slave_nick);
     reply_user(service, service, client, NS_LINK_BADPASS, parv[1]);

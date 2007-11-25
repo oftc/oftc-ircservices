@@ -1453,14 +1453,21 @@ free_jupeentry(struct JupeEntry *entry)
 }
 
 int 
-check_nick_pass(struct Nick *nick, const char *password)
+check_nick_pass(struct Client *client, const char *password)
 {
+  struct Nick *nick = client->nickname;
   char fullpass[PASSLEN*2+1];
   char *pass;
   int ret;
 
   assert(nick);
   assert(nick->salt);
+
+  if(IsSentCert(client))
+  {
+    if(check_list_entry(CERT_LIST, nick->id, client->certfp))
+      return 1;
+  }
   
   snprintf(fullpass, sizeof(fullpass), "%s%s", password, nick->salt);
   
