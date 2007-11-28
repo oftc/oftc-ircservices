@@ -1465,9 +1465,8 @@ free_jupeentry(struct JupeEntry *entry)
 }
 
 int 
-check_nick_pass(struct Client *client, const char *password)
+check_nick_pass(struct Client *client, struct Nick *nick, const char *password)
 {
-  struct Nick *nick = client->nickname;
   char fullpass[PASSLEN*2+1];
   char *pass;
   int ret;
