@@ -43,9 +43,10 @@ o Actually fix ruby this time (the change was not merged until now)
 o Fix bug allowing certificates to attempt to be added more than once.
 o Add a more informative message to empty cert lists on CERT LIST command.
 
-1.1.4 - UNRELEASED
+1.1.4 
 -----
 o OperServe JUPES is now JUPE.
 o Don't try to JUPE existing servers anymore.
 o Remove existing JUPEs on services restart if server is already connected.
 o fix a segfault when enforcing akicks.
+o Clean up the nickserv info output with respect to languages.
