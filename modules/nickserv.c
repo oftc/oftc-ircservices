@@ -178,7 +178,7 @@ static struct ServiceMessage ghost_msgtab = {
 };
 
 static struct ServiceMessage link_msgtab = {
-  NULL, "LINK", 0, 2, 2, 0, IDENTIFIED_FLAG, NS_HELP_LINK_SHORT, NS_HELP_LINK_LONG,
+  NULL, "LINK", 0, 1, 2, 0, IDENTIFIED_FLAG, NS_HELP_LINK_SHORT, NS_HELP_LINK_LONG,
   m_link
 };
 

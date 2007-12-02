@@ -1474,7 +1474,7 @@ check_nick_pass(struct Client *client, struct Nick *nick, const char *password)
   assert(nick);
   assert(nick->salt);
 
-  if(IsSentCert(client))
+  if(*client->certfp != '\0')
   {
     if(check_list_entry(CERT_LIST, nick->id, client->certfp))
       return 1;
