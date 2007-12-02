@@ -228,7 +228,7 @@ static struct ServiceMessage status_msgtab = {
 };
 
 static struct ServiceMessage enslave_msgtab = {
-  NULL, "ENSLAVE", 0, 2, 2, 0, IDENTIFIED_FLAG, NS_HELP_LINK_SHORT, 
+  NULL, "ENSLAVE", 0, 1, 2, 0, IDENTIFIED_FLAG, NS_HELP_LINK_SHORT, 
   NS_HELP_LINK_LONG, m_enslave
 };
 
