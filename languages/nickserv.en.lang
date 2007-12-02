@@ -287,13 +287,16 @@ NS_HELP_SET_PRIVATE_LONG
 NS_HELP_LINK_SHORT
 	%s: Link this nickname to a master nickname.
 NS_HELP_LINK_LONG
-	Usage: LINK master_nickname password
+	Usage: LINK master_nickname [password]
 	
 	Link this nickname to a master nickname.  This effectively creates an alias
 	for your nickname to the master nickname.  When you change to this nickname
 	you will be checked against the master nickname access list and the master
 	nickname's settings will be applied to you.  To identify for this nickname
-	after linking it, you will need to use the master nickname password.
+	after linking it, you will need to use the master nickname password.  If you
+	are connecting via SSL and your client certificate fingerprint matches a
+	fingerprint on the list of the master nickname, you do not need to specify a
+	password.
 	
 	See also: HELP UNLINK
 	          HELP SET MASTER
