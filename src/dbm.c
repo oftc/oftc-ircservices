@@ -712,7 +712,7 @@ db_forbid_nick(const char *n)
 
   if((nick = db_find_nick(n)) != NULL)
   {
-    db_delete_nick(nick->id, nick->pri_nickid, nick->nickid);
+    db_delete_nick(nick->id, nick->nickid, nick->pri_nickid);
     free_nick(nick);
   }
 
