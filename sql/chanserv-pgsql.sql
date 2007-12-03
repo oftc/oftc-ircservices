@@ -36,7 +36,7 @@ CREATE INDEX channel_access_account_id_idx ON channel_access (account_id);
 DROP TABLE channel_akick;
 CREATE TABLE channel_akick(
   id                  SERIAL PRIMARY KEY,
-  channel_id          INTEGER NOT NULL REFERENCES channel(id),
+  channel_id          INTEGER NOT NULL REFERENCES channel(id) ON DELETE CASCADE,
   setter              INTEGER REFERENCES account(id) ON DELETE SET NULL,
   target              INTEGER REFERENCES account(id) ON DELETE CASCADE, -- If a nickname akick
   mask                VARCHAR(255), -- If a mask akick
