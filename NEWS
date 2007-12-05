@@ -11,7 +11,7 @@ o Make password checking CERTFP aware.  This means that link, enslave,
 identify, ghost and all related commands can now auth on certfp instead.
 o Allow users to remove themselves from channel access lists.
 
-1.1.4 - UNRELEASED
+1.1.4 
 -----
 o OperServe JUPES is now JUPE.
 o Don't try to JUPE existing servers anymore.
