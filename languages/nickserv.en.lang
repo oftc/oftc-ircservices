@@ -276,6 +276,7 @@ NS_HELP_SET_MASTER_LONG
 	
 	See Also:
 	    HELP LINK
+			HELP ENSLAVE
 NS_HELP_SET_PRIVATE_SHORT
 	%s
 NS_HELP_SET_PRIVATE_LONG
@@ -299,7 +300,24 @@ NS_HELP_LINK_LONG
 	password.
 	
 	See also: HELP UNLINK
+						HELP ENSLAVE
 	          HELP SET MASTER
+NS_HELP_ENSLAVE_SHORT
+	%s: Enslave a nickname to this master nickname.
+NS_HELP_ENSLAVE_LONG
+	Usage: ENSLAVE slave_nickname [password]
+	
+	Link the specified nickname to your master nickname.  This is the reverse
+	process of the LINK command.  You issue it on a nickname you want linked to
+	your current nickname.  Your current nickname will be the master nickname
+	and the nickname you specify will be the child or slave nickname.  If you
+	are connecting via SSL and your client certificate fingerprint matches a
+	fingerprint on the list of the specified nickname, you do not need to
+	specify a password.
+	
+	See also: HELP LINK
+						HELP UNLINK
+						HELP SET MASTER
 NS_HELP_UNLINK_SHORT
 	%s: Unlink this nickname from a master nickname.
 NS_HELP_UNLINK_LONG

@@ -228,8 +228,8 @@ static struct ServiceMessage status_msgtab = {
 };
 
 static struct ServiceMessage enslave_msgtab = {
-  NULL, "ENSLAVE", 0, 1, 2, 0, IDENTIFIED_FLAG, NS_HELP_LINK_SHORT, 
-  NS_HELP_LINK_LONG, m_enslave
+  NULL, "ENSLAVE", 0, 1, 2, 0, IDENTIFIED_FLAG, NS_HELP_ENSLAVE_SHORT, 
+  NS_HELP_ENSLAVE_LONG, m_enslave
 };
 
 INIT_MODULE(nickserv, "$Revision$")
