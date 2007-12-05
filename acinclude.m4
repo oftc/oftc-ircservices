@@ -297,7 +297,7 @@ dnl {{{ ax_arg_enable_syslog
 AC_DEFUN([AX_ARG_ENABLE_SYSLOG],[
   AC_CHECK_HEADERS([syslog.h sys/syslog.h])
   AC_ARG_ENABLE([syslog],[AC_HELP_STRING([--enable-syslog="EVENTS"],[Enable syslog for events: users oper (space separated in quotes; default: disabled).])],[syslog="$enableval"],[syslog="no"])
-  if test "$enableval" != "no" ; then
+  if test "$syslog" != "no" ; then
     for option in $enableval ; do
       case "$option" in
         users) AC_DEFINE([SYSLOG_USERS],[1],[Send user log stuff to syslog.]) ;;
