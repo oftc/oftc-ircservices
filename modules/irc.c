@@ -949,6 +949,17 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
 
     target = find_chasing(source, s, NULL);
 
+
+    /* Check the channel exists on each nick because it could go away if an
+     * on join callback removes it.  Would like a better way of doing this
+     */
+    if ((chptr = hash_find_channel(parv[2])) == NULL)
+    {
+      isnew = 1;
+      chptr = make_channel(parv[2]);
+      ilog(L_DEBUG, "Created channel %s", parv[2]);
+    } 
+
     /*
      * if the client doesnt exist, or if its fake direction/server, skip.
      * we cannot send ERR_NOSUCHNICK here because if its a UID, we cannot
