@@ -52,7 +52,7 @@ read_services_conf(int cold)
   conf_curctx.f = fbopen(ServicesState.configfile, "r");
   if(!conf_curctx.f)
   {
-    parse_error("Cannot open %s", ServicesState.configfile);
+    parse_fatal("Cannot open %s", ServicesState.configfile);
     return;
   }
 
