@@ -332,6 +332,8 @@ handle_services_command(struct ServiceMessage *pmptr,
       parv[2] = (char*)mptr->cmd;
 
       do_help(service, from, pmptr->cmd, i+1, parv);
+
+      MyFree(parv);
     }
     else
       do_help(service, from, mptr->cmd, i, hpara);
@@ -355,6 +357,8 @@ handle_services_command(struct ServiceMessage *pmptr,
       parv[2] = (char*)mptr->cmd;
 
       do_help(service, from, pmptr->cmd, i+1, parv);
+
+      MyFree(parv);
     }
     else
       do_help(service, from, mptr->cmd, 1, hpara);
