@@ -72,7 +72,7 @@ query_t queries[QUERY_COUNT] = {
   { GET_FULL_CHAN, "SELECT id, channel, description, entrymsg, reg_time, "
       "flag_private, flag_restricted, flag_topic_lock, flag_verbose, "
       "flag_autolimit, flag_expirebans, flag_floodserv, flag_autoop, "
-      "flag_autovoice, flag_leaveops, url, email, topic, mlock, expirebans_interval FROM "
+      "flag_autovoice, flag_leaveops, url, email, topic, mlock, expirebans_lifetime FROM "
       "channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
   { INSERT_CHAN, "INSERT INTO channel (channel, description, reg_time, last_used) "
     "VALUES(?v, ?v, ?d, ?d)", NULL, EXECUTE },
@@ -232,7 +232,7 @@ query_t queries[QUERY_COUNT] = {
     NULL, QUERY },
   { GET_NICKCERT, "SELECT fingerprint FROM account_fingerprint WHERE "
     "fingerprint=upper(?v) AND account_id=?d", QUERY },
-  { SET_EXPIREBANS_INTERVAL, "UPDATE channel SET expirebans_interval=?d WHERE "
+  { SET_EXPIREBANS_LIFETIME, "UPDATE channel SET expirebans_lifetime=?d WHERE "
     "id=?d", NULL, EXECUTE },
 };
 
@@ -1388,7 +1388,7 @@ db_find_chan(const char *channel)
       &channel_p->expirebans, &channel_p->floodserv, &channel_p->autoop,
       &channel_p->autovoice, &channel_p->leaveops, &channel_p->url, 
       &channel_p->email, &channel_p->topic, &channel_p->mlock, 
-      &channel_p->expirebans_interval);
+      &channel_p->expirebans_lifetime);
 
   if(Fetch(rc, brc) == 0)
   {

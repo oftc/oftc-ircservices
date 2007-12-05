@@ -379,7 +379,7 @@ process_expireban_list(void *param)
       char ban[IRC_BUFSIZE+1];
       time_t delta = CurrentTime - banptr->when;
       
-      if(delta > chptr->regchan->expirebans_interval)
+      if(delta > chptr->regchan->expirebans_lifetime)
       {
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
@@ -395,7 +395,7 @@ process_expireban_list(void *param)
       char ban[IRC_BUFSIZE+1];
       time_t delta = CurrentTime - banptr->when;
 
-      if(delta > chptr->regchan->expirebans_interval)
+      if(delta > chptr->regchan->expirebans_lifetime)
       {
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
@@ -1089,7 +1089,7 @@ m_set_expirebans(struct Service *service, struct Client *client,
   char *flag;
 
   regchptr = (chptr == NULL) ? db_find_chan(parv[1]) : chptr->regchan;
-  interval = regchptr->expirebans_interval; 
+  interval = regchptr->expirebans_lifetime; 
 
   if(parv[2] != NULL)
   {
@@ -1099,12 +1099,12 @@ m_set_expirebans(struct Service *service, struct Client *client,
     else if(interval == 0)
     {
       flag = "OFF";
-      interval = regchptr->expirebans_interval;
+      interval = regchptr->expirebans_lifetime;
     }
     else
     {
       flag = parv[2];
-      interval = regchptr->expirebans_interval;
+      interval = regchptr->expirebans_lifetime;
     }
   }
   else
@@ -1123,11 +1123,11 @@ m_set_expirebans(struct Service *service, struct Client *client,
   }
 
   if(parv[2] != NULL)
-    db_set_number(SET_EXPIREBANS_INTERVAL, regchptr->id, interval);
+    db_set_number(SET_EXPIREBANS_LIFETIME, regchptr->id, interval);
 
-  reply_user(service, service, client, CS_EXPIREBANS_INTERVAL, interval);
+  reply_user(service, service, client, CS_EXPIREBANS_LIFETIME, interval);
 
-  regchptr->expirebans_interval = interval;
+  regchptr->expirebans_lifetime = interval;
 
   if(chptr == NULL)
     free_regchan(regchptr);

@@ -102,9 +102,12 @@ CS_HELP_SET_AUTOLIMIT_LONG
 CS_HELP_SET_EXPIREBANS_SHORT
 	%s: Set whether bans automatically expire.
 CS_HELP_SET_EXPIREBANS_LONG
-	Usage: SET channel EXPIREBANS [ON|OFF]
+	Usage: SET channel EXPIREBANS [ON|OFF|lifetime]
 	
-	If this option is non-zero, channel bans will be removed every hour.
+	If set to ON, quiets(+q) and bans(+b) on the channel will be removed when
+	they reach the default lifetime.  If set to OFF, channel bans and quiets
+	will not expire.  If a lifetime is specified in seconds, this will be used
+	as the value to keep bans on a channel for.
 CS_HELP_SET_FLOODSERV_SHORT
 	%s: Set whether FloodServ monitors channel.
 CS_HELP_SET_FLOODSERV_LONG
@@ -543,5 +546,5 @@ CS_UNFORBID_FAIL
 	internal database error.
 CS_FS_NOT_LOADED
 	FloodServ is not currently connected; when it returns it will join %s.
-CS_EXPIREBANS_INTERVAL
-	Expirebans interval set to %d.
+CS_EXPIREBANS_LIFETIME
+	Expirebans lifetime set to %d.

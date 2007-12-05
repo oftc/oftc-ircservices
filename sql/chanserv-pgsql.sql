@@ -18,7 +18,7 @@ CREATE TABLE channel(
   entrymsg              VARCHAR(512),
   topic                 VARCHAR(512),
   mlock                 VARCHAR(255),
-	expirebans_interval		INTEGER NOT NULL DEFAULT 300,
+	expirebans_lifetime		INTEGER NOT NULL DEFAULT 300,
   reg_time              INTEGER NOT NULL,
   last_used             INTEGER NOT NULL
 );

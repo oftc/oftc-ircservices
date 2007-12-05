@@ -28,7 +28,7 @@ struct RegChannel
   char autoop;
   char autovoice;
   char leaveops;
-  unsigned int expirebans_interval;
+  unsigned int expirebans_lifetime;
   /* Per Host */
   struct MessageQueue **flood_hash;
   dlink_list flood_list;
