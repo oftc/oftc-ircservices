@@ -464,7 +464,10 @@ m_drop(struct Service *service, struct Client *client,
     target = find_client(target_nick);
   }
   else
+  {
     target = client;
+    target_nick = client->name;
+  }
 
   free_nick(nick);
 
@@ -536,7 +539,7 @@ m_drop(struct Service *service, struct Client *client,
    */
   if((channel = check_masterless_channels(client->nickname->id)) != NULL)
   {
-    reply_user(service, service, client, NS_DROP_FAIL_MASTERLESS, client->name,
+    reply_user(service, service, client, NS_DROP_FAIL_MASTERLESS, target_nick,
         channel);
     MyFree(channel);
     return;
@@ -566,21 +569,13 @@ m_drop(struct Service *service, struct Client *client,
   }
   else
   {
-    if(target == NULL)
-    {
-      ilog(L_NOTICE, "Error: %s!%s@%s could not DROP nick %s", 
-          client->name, client->username, client->host, target_nick);
-      reply_user(service, service, client, NS_NICK_DROPFAIL, target_nick);
-    }
-    else
-    {
-      ilog(L_NOTICE, "Error: %s!%s@%s could not DROP nick %s", 
-          client->name, client->username, client->host, target->name);
-      reply_user(service, service, client, NS_NICK_DROPFAIL, target->name);
-    }
+    ilog(L_NOTICE, "Error: %s!%s@%s could not DROP nick %s", 
+        client->name, client->username, client->host, target_nick);
+    reply_user(service, service, client, NS_NICK_DROPFAIL, target_nick);
   }
 
-  MyFree(target_nick);
+  if(target != client)
+    MyFree(target_nick);
 }
 
 static void
