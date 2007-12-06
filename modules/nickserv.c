@@ -273,6 +273,7 @@ INIT_MODULE(nickserv, "$Revision$")
 
   eventAdd("process nickserv enforce list", process_enforce_list, NULL, 10);
   eventAdd("process nickserv release list", process_release_list, NULL, 60);
+  return nickserv;
 }
 
 CLEANUP_MODULE

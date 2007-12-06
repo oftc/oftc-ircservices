@@ -99,6 +99,7 @@ INIT_MODULE(floodserv, "$Revision$")
   eventAdd("floodserv gc routine", floodserv_gc_routine, NULL, FS_GC_EVENT_TIMER);
   eventAdd("floodserv unenforce routine", floodserv_unenforce_routine, NULL, 10);
   eventAdd("floodserv cleanup channels", floodserv_cleanup_channels, NULL, 60);
+  return floodserv;
 }
 
 CLEANUP_MODULE

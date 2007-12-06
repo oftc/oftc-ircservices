@@ -148,6 +148,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&eob_msgtab);
   mod_add_cmd(&realhost_msgtab);
   mod_add_cmd(&certfp_msgtab);
+  return ModeList;
 }
 
 CLEANUP_MODULE

@@ -29,244 +29,31 @@
 #define LOG_BUFSIZE 2048
 
 static FBFILE *db_log_fb;
+static database_t *database;
 
 static void expire_sentmail(void *);
 static void expire_akills(void *);
 
-query_t queries[QUERY_COUNT] = { 
-  { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
-    "(SELECT nick FROM nickname WHERE nickname.id=account.primary_nick), "
-    "password, salt, url, email, cloak, flag_enforce, flag_secure, "
-    "flag_verified, flag_cloak_enabled, flag_admin, flag_email_verified, "
-    "flag_private, language, last_host, last_realname, "
-    "last_quit_msg, last_quit_time, account.reg_time, nickname.reg_time, "
-    "last_seen FROM account, nickname WHERE account.id = nickname.account_id AND "
-    "lower(nick) = lower(?v)", NULL, QUERY },
-  { GET_NICK_FROM_ACCID, "SELECT nick from account, nickname WHERE account.id=?d AND "
-    "account.primary_nick=nickname.id", NULL, QUERY },
-  { GET_NICK_FROM_NICKID, "SELECT nick from nickname WHERE id=?d", NULL, QUERY },
-  { GET_ACCID_FROM_NICK, "SELECT account_id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
-  { GET_NICKID_FROM_NICK, "SELECT id from nickname WHERE lower(nick)=lower(?v)", NULL, QUERY },
-  { INSERT_ACCOUNT, "INSERT INTO account (primary_nick, password, salt, email, reg_time) VALUES "
-    "(?d, ?v, ?v, ?v, ?d)", NULL, EXECUTE },
-  { INSERT_NICK, "INSERT INTO nickname (id, nick, account_id, reg_time, last_seen) VALUES "
-    "(?d, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
-  { DELETE_NICK, "DELETE FROM nickname WHERE id=?d", NULL, EXECUTE },
-  { DELETE_ACCOUNT, "DELETE FROM account WHERE id=?d", NULL, EXECUTE },
-  { INSERT_NICKACCESS, "INSERT INTO account_access (account_id, entry) VALUES(?d, ?v)", 
-    NULL, EXECUTE },
-  { GET_NICKACCESS, "SELECT id, entry FROM account_access WHERE account_id=?d ORDER BY id", NULL, QUERY },
-  { GET_ADMINS, "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
-    "account.primary_nick = nickname.id ORDER BY lower(nick)", NULL, QUERY },
-  /* XXX: ORDER BY missing here */
-  { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill ORDER BY akill.id",
-    NULL, QUERY },
-  { GET_CHAN_ACCESSES, "SELECT channel_access.id, channel_access.channel_id, "
-      "channel_access.account_id, channel_access.level FROM "
-      "channel_access JOIN account ON "
-      "channel_access.account_id=account.id JOIN nickname ON "
-      "account.primary_nick=nickname.id WHERE channel_id=?d "
-      "ORDER BY lower(nickname.nick)", NULL, QUERY },
-  { GET_CHANID_FROM_CHAN, "SELECT id from channel WHERE "
-      "lower(channel)=lower(?v)", NULL, QUERY },
-  { GET_FULL_CHAN, "SELECT id, channel, description, entrymsg, reg_time, "
-      "flag_private, flag_restricted, flag_topic_lock, flag_verbose, "
-      "flag_autolimit, flag_expirebans, flag_floodserv, flag_autoop, "
-      "flag_autovoice, flag_leaveops, url, email, topic, mlock, expirebans_lifetime FROM "
-      "channel WHERE lower(channel)=lower(?v)", NULL, QUERY },
-  { INSERT_CHAN, "INSERT INTO channel (channel, description, reg_time, last_used) "
-    "VALUES(?v, ?v, ?d, ?d)", NULL, EXECUTE },
-  { INSERT_CHANACCESS, "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
-    "(?d, ?d, ?d)", NULL, EXECUTE } ,
-  { SET_CHAN_LEVEL, "UPDATE channel_access SET level=?d WHERE account_id=?d", NULL, EXECUTE },
-  { DELETE_CHAN_ACCESS, "DELETE FROM channel_access WHERE channel_id=?d AND account_id=?d", 
-    NULL, EXECUTE },
-  { GET_CHAN_ACCESS, "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
-    "channel_id=?d AND account_id=?d", NULL, QUERY },
-  { DELETE_CHAN, "DELETE FROM channel WHERE lower(channel)=lower(?v)", NULL, EXECUTE },
-  { GET_AKILL, "SELECT id, mask, reason, setter, time, duration FROM akill WHERE mask=?v",
-    NULL, QUERY },
-  { INSERT_AKILL, "INSERT INTO akill (mask, reason, setter, time, duration) "
-      "VALUES(?v, ?v, ?d, ?d, ?d)", NULL, EXECUTE },
-  { INSERT_SERVICES_AKILL, "INSERT INTO akill (mask, reason, time, duration) "
-      "VALUES(?v, ?v, ?d, ?d)", NULL, EXECUTE },
-  { SET_NICK_PASSWORD, "UPDATE account SET password=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_URL, "UPDATE account SET url=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_EMAIL, "UPDATE account SET email=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_CLOAK, "UPDATE account SET cloak=lower(?v) WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_LAST_QUIT, "UPDATE account SET last_quit_msg=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_LAST_HOST, "UPDATE account SET last_host=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_LAST_REALNAME, "UPDATE account SET last_realname=?v where id=?d", NULL, EXECUTE },
-  { SET_NICK_LANGUAGE, "UPDATE account SET language=?d WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_LAST_QUITTIME, "UPDATE account SET last_quit_time=?d WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_LAST_SEEN, "UPDATE nickname SET last_seen=?d WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_CLOAKON, "UPDATE account SET flag_cloak_enabled=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_SECURE, "UPDATE account SET flag_secure=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_ENFORCE, "UPDATE account SET flag_enforce=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_ADMIN, "UPDATE account SET flag_admin=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_NICK_PRIVATE, "UPDATE account SET flag_private=?B WHERE id=?d", NULL, EXECUTE },
-  { DELETE_NICKACCESS, "DELETE FROM account_access WHERE account_id=?d AND entry=?v", NULL,
-    EXECUTE },
-  { DELETE_ALL_NICKACCESS, "DELETE FROM account_access WHERE account_id=?d", NULL, EXECUTE },
-  { DELETE_NICKACCESS_IDX, "DELETE FROM account_access WHERE id = "
-          "(SELECT a.id FROM account_access AS a WHERE ?d = "
-          "(SELECT COUNT(b.id)+1 FROM account_access AS b WHERE b.id < a.id AND "
-          "b.account_id = ?d) AND a.account_id = ?d)", NULL, EXECUTE },
-  { SET_NICK_LINK, "UPDATE nickname SET account_id=?d WHERE account_id=?d", NULL, EXECUTE },
-  { SET_NICK_LINK_EXCLUDE, "UPDATE nickname SET account_id=?d WHERE account_id=?d AND id=?d", NULL, EXECUTE },
-  { INSERT_NICK_CLONE, "INSERT INTO account (primary_nick, password, salt, url, email, cloak, " 
-    "flag_enforce, flag_secure, flag_verified, flag_cloak_enabled, "
-    "flag_admin, flag_email_verified, flag_private, language, last_host, "
-    "last_realname, last_quit_msg, last_quit_time, reg_time) "
-    "SELECT primary_nick, password, salt, url, email, cloak, flag_enforce, "
-    "flag_secure, flag_verified, flag_cloak_enabled, flag_admin, "
-    "flag_email_verified, flag_private, language, last_host, last_realname, "
-    "last_quit_msg, last_quit_time, reg_time FROM account WHERE id=?d", 
-    NULL, EXECUTE },
-  { GET_NEW_LINK, "SELECT id FROM nickname WHERE account_id=?d AND NOT id=?d", NULL, QUERY },
-  { SET_CHAN_DESC, "UPDATE channel SET description=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_URL, "UPDATE channel SET url=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_EMAIL, "UPDATE channel SET email=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_ENTRYMSG, "UPDATE channel SET entrymsg=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_TOPIC, "UPDATE channel SET topic=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_MLOCK, "UPDATE channel SET mlock=?v WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_PRIVATE, "UPDATE channel SET flag_private=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_RESTRICTED, "UPDATE channel SET flag_restricted=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_TOPICLOCK, "UPDATE channel SET flag_topic_lock=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_VERBOSE, "UPDATE channel SET flag_verbose=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_AUTOLIMIT, "UPDATE channel SET flag_autolimit=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_EXPIREBANS, "UPDATE channel SET flag_expirebans=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_FLOODSERV, "UPDATE channel SET flag_floodserv=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_AUTOOP, "UPDATE channel SET flag_autoop=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_AUTOVOICE, "UPDATE channel SET flag_autovoice=?B WHERE id=?d", NULL, EXECUTE },
-  { SET_CHAN_LEAVEOPS, "UPDATE channel SET flag_leaveops=?B WHERE id=?d", NULL, EXECUTE },
-  { INSERT_FORBID, "INSERT INTO forbidden_nickname (nick) VALUES (?v)", NULL, EXECUTE },
-  { GET_FORBID, "SELECT nick FROM forbidden_nickname WHERE lower(nick)=lower(?v)",
-    NULL, QUERY },
-  { DELETE_FORBID, "DELETE FROM forbidden_nickname WHERE lower(nick)=lower(?v)", 
-    NULL, EXECUTE },
-  { INSERT_CHAN_FORBID, "INSERT INTO forbidden_channel (channel) VALUES (?v)", NULL, EXECUTE },
-  { GET_CHAN_FORBID, "SELECT channel FROM forbidden_channel WHERE lower(channel)=lower(?v)",
-      NULL, QUERY },
-  { DELETE_CHAN_FORBID, "DELETE FROM forbidden_channel WHERE lower(channel)=lower(?v)", NULL,
-    EXECUTE },
-  { INSERT_AKICK_ACCOUNT, "INSERT INTO channel_akick (channel_id, target, setter, reason, "
-    "time, duration) VALUES (?d, ?d, ?d, ?v, ?d, ?d)", NULL, EXECUTE },
-  { INSERT_AKICK_MASK, "INSERT INTO channel_akick (channel_id, setter, reason, mask, "
-    "time, duration) VALUES (?d, ?d, ?v, ?v, ?d, ?d)", NULL, EXECUTE },
-  { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, reason, time, duration FROM "
-    "channel_akick WHERE channel_id=?d ORDER BY channel_akick.id", NULL, QUERY },
-  { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
-          "(SELECT id FROM channel_akick AS a WHERE ?d = "
-          "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
-          "b.channel_id = ?d) AND channel_id = ?d)", NULL, EXECUTE },
-  { DELETE_AKICK_MASK, "DELETE FROM channel_akick WHERE channel_id=?d AND mask=?v", NULL, 
-    EXECUTE },
-  { DELETE_AKICK_ACCOUNT, "DELETE FROM channel_akick WHERE channel_id=?d AND target IN (SELECT account_id "
-    "FROM nickname WHERE lower(nick)=lower(?v))", NULL, EXECUTE },
-  { SET_NICK_MASTER, "UPDATE account SET primary_nick=?d WHERE id=?d", NULL, EXECUTE },
-  { DELETE_AKILL, "DELETE FROM akill WHERE mask=?v", NULL, EXECUTE },
-  { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=?d AND level=4",
-    NULL, QUERY },
-  { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=?d ORDER BY lower(nick)", NULL, QUERY },
-  { GET_NICK_CHAN_INFO, "SELECT channel.id, channel, level FROM "
-    "channel, channel_access WHERE "
-      "channel.id=channel_access.channel_id AND channel_access.account_id=?d "
-      "ORDER BY lower(channel.channel)", NULL, QUERY },
-  { GET_CHAN_MASTERS, "SELECT nick FROM account, nickname, channel_access WHERE channel_id=?d "
-    "AND level=4 AND channel_access.account_id=account.id AND "
-      "account.primary_nick=nickname.id ORDER BY lower(nick)", NULL, QUERY },
-  { DELETE_ACCOUNT_CHACCESS, "DELETE FROM channel_access WHERE account_id=?d", NULL, EXECUTE },
-  { DELETE_DUPLICATE_CHACCESS, "DELETE FROM channel_access WHERE "
-      "(account_id=?d AND level <= (SELECT level FROM channel_access AS x WHERE"
-      " x.account_id=?d AND x.channel_id = channel_access.channel_id)) OR "
-      "(account_id=?d AND level  < (SELECT level FROM channel_access AS x WHERE"
-      " x.account_id=?d AND x.channel_id = channel_access.channel_id))", 
-      NULL, EXECUTE },
-  { MERGE_CHACCESS, "UPDATE channel_access SET account_id=?d WHERE account_id=?d", NULL, 
-    EXECUTE },
-  { GET_EXPIRED_AKILL, "SELECT akill.id, nickname.nick, mask, reason, time, duration FROM "
-    "account JOIN nickname ON "
-    "account.primary_nick=nickname.id RIGHT OUTER JOIN akill ON "
-    "akill.setter=account.id WHERE "
-    "NOT duration = 0 AND time + duration < ?d", NULL, QUERY },
-  { INSERT_SENT_MAIL, "INSERT INTO sent_mail (account_id, email, sent) VALUES "
-      "(?d, ?v, ?d)", NULL, EXECUTE },
-  { GET_SENT_MAIL, "SELECT id FROM sent_mail WHERE account_id=?d OR email=?v", NULL,
-    QUERY },
-  { DELETE_EXPIRED_SENT_MAIL, "DELETE FROM sent_mail WHERE sent + ?d < ?d", NULL, EXECUTE },
-  { GET_NICKS, "SELECT nick FROM account, nickname WHERE account.id=nickname.account_id AND "
-       "account.flag_private='f' ORDER BY lower(nick)", NULL, QUERY },
-  { GET_NICKS_OPER, "SELECT nick FROM nickname ORDER BY lower(nick)", NULL, QUERY },
-  { GET_FORBIDS, "SELECT nick FROM forbidden_nickname ORDER BY lower(nick)", NULL, QUERY },
-  { GET_CHANNELS, "SELECT channel FROM channel WHERE flag_private='f' ORDER BY lower(channel)", NULL, QUERY },
-  { GET_CHANNELS_OPER, "SELECT channel FROM channel ORDER BY lower(channel)", NULL, QUERY },
-  { GET_CHANNEL_FORBID_LIST, "SELECT channel FROM forbidden_channel ORDER BY lower(channel)", NULL, QUERY },
-  { SAVE_NICK, "UPDATE account SET url=?v, email=?v, cloak=?v, flag_enforce=?B, "
-    "flag_secure=?B, flag_verified=?B, flag_cloak_enabled=?B, "
-      "flag_admin=?B, flag_email_verified=?B, flag_private=?B, language=?d, "
-      "last_host=?v, last_realname=?v, last_quit_msg=?v, last_quit_time=?d "
-      "WHERE id=?d", NULL, EXECUTE },
-  { INSERT_NICKCERT, "INSERT INTO account_fingerprint (account_id, fingerprint) "
-    "VALUES(?d, upper(?v))", NULL, EXECUTE },
-  { GET_NICKCERTS, "SELECT id, fingerprint FROM account_fingerprint WHERE "
-    "account_id=?d ORDER BY id", NULL, QUERY },
-  { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
-    "account_id=?d AND fingerprint=upper(?v)", NULL, EXECUTE },
-  { DELETE_NICKCERT_IDX, "DELETE FROM account_fingerprint WHERE id = "
-          "(SELECT id FROM account_fingerprint AS a WHERE ?d = "
-          "(SELECT COUNT(id)+1 FROM account_fingerprint AS b WHERE b.id < a.id AND "
-          "b.account_id = ?d) AND account_id = ?d)", NULL, EXECUTE },
-  { DELETE_ALL_NICKACCESS, "DELETE FROM account_fingerprint WHERE "
-    "account_id=?d", NULL, EXECUTE },
-  { INSERT_JUPE, "INSERT INTO jupes (setter, name, reason) VALUES(?d, ?v, ?v)",
-    NULL, EXECUTE },
-  { GET_JUPE, "SELECT id, name, reason, setter FROM jupes ORDER BY id", NULL, QUERY },
-  { DELETE_JUPE_NAME, "DELETE FROM jupes WHERE lower(name) = lower(?v)", NULL,
-    EXECUTE },
-  { FIND_JUPE, "SELECT id, name, reason, setter FROM jupes WHERE "
-    "lower(name) = lower(?v)", NULL, QUERY },
- { COUNT_CHANNEL_ACCESS_LIST, "SELECT COUNT(*) FROM channel_access "
-    "JOIN account ON channel_access.account_id=account.id "
-    "JOIN nickname ON account.primary_nick=nickname.id WHERE channel_id=?d",
-    NULL, QUERY },
-  { GET_NICKCERT, "SELECT fingerprint FROM account_fingerprint WHERE "
-    "fingerprint=upper(?v) AND account_id=?d", QUERY },
-  { SET_EXPIREBANS_LIFETIME, "UPDATE channel SET expirebans_lifetime=?d WHERE "
-    "id=?d", NULL, EXECUTE },
-};
-
 void
 init_db()
 {
-  char *dbstr;
+  //char *dbstr;
   char logpath[LOG_BUFSIZE];
   char port[128] = {'\0'};
-  int len;
+  //int len;
+  char foo[128];
+
+  strcpy(foo, "pgsql.la");
 
   if(Database.port != 0)
     snprintf(port, 127, "%d", Database.port);
 
-  len = strlen(Database.driver);
-  if(Database.hostname != NULL)
-    len += strlen(Database.hostname);
-  len += strlen(port);
-  len += strlen(":::");
-  len += strlen(Database.dbname);
-  len++;
-
-  dbstr = MyMalloc(len);
-  snprintf(dbstr, len, "%s:%s:%s:%s", Database.driver, 
-      Database.hostname == NULL ? "" : Database.hostname, port, Database.dbname);
-
-  Database.yada = yada_init(dbstr, 0);
-  if(!Database.yada)
+  database = load_module(foo);
+  if(!database->connect(""))
   {
-    ilog(L_NOTICE, "yada error: %s", strerror(errno));
-    services_die("Could not initialise database driver.", 0);
+    ilog(L_CRIT, "Cannot connect to database");
+    exit(-1);
   }
-
-  MyFree(dbstr);
 
   snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
   if(db_log_fb == NULL)
@@ -343,29 +130,6 @@ db_log(const char *format, ...)
 void
 db_load_driver()
 {
-  int i;
-
-  if(Database.yada->connect(Database.yada, Database.username, 
-        Database.password) == 0)
-  {
-    db_log("db: Failed to connect to database: %s", Database.yada->errmsg);
-    ilog(L_CRIT, "Failed to connect to database: %s", Database.yada->errmsg);
-    services_die("Failed to connect to database.", 0);
-  }
-  else
-    db_log("db: Database connection succeeded.");
-
-  for(i = 0; i < QUERY_COUNT; i++)
-  {
-    query_t *query = &queries[i];
-    db_log("Prepare %d: %s", i, query->name);
-    if(query->name == NULL)
-      continue;
-    query->rc = Prepare((char*)query->name, 0);
-    if(query->rc == NULL)
-      ilog(L_CRIT, "Prepare: %d Failed: %s", i, Database.yada->errmsg);
-  }
-
   eventAdd("Expire sent mail", expire_sentmail, NULL, 60); 
   eventAdd("Expire akills", expire_akills, NULL, 60); 
 
@@ -412,53 +176,10 @@ db_try_reconnect()
 
 #define db_query(ret, query_id, args...) do                           \
 {                                                                     \
-  int __id = query_id;                                                \
-  yada_rc_t *__result;                                                \
-  query_t *__query;                                                   \
-                                                                      \
-  __query = &queries[__id];                                           \
-  db_log("db_query: %d %s", __id, __query->name);                     \
-  assert(__query->type == QUERY);                                     \
-  assert(__query->rc);                                                \
-  assert(__query->index == query_id);                                 \
-                                                                      \
-  __result = Query(__query->rc, args);                                \
-  if(__result == NULL)                                                \
-  {                                                                   \
-    if(Database.yada->error == YADA_ECONNLOST)                        \
-    {                                                                 \
-      db_try_reconnect();                                             \
-      db_log("Query failed because server went away, reconnected.");  \
-    }                                                                 \
-    db_log("db_query: %d Failed: %s", __id, Database.yada->errmsg);   \
-  }                                                                   \
-                                                                      \
-  ret = __result;                                                     \
 } while(0)
 
 #define db_exec(ret, query_id, args...) do                            \
 {                                                                     \
-  int __id = query_id;                                                \
-  int __result;                                                       \
-  query_t *__query;                                                   \
-                                                                      \
-  __query = &queries[__id];                                           \
-  db_log("db_exec: %d %s", __id, __query->name);                      \
-  assert(__query->type == EXECUTE);                                   \
-  assert(__query->rc);                                                \
-                                                                      \
-  __result = Execute(__query->rc, args);                              \
-  if(__result == -1)                                                  \
-  {                                                                   \
-    if(Database.yada->error == YADA_ECONNLOST)                        \
-    {                                                                 \
-      db_try_reconnect();                                             \
-      db_log("Exec failed because server went away, reconnected.");   \
-    }                                                                 \
-    db_log("db_exec: %d Failed: %s", __id, Database.yada->errmsg);    \
-  }                                                                   \
-                                                                      \
-  ret = __result;                                                     \
 } while(0)
 
 struct Nick *
@@ -909,10 +630,10 @@ db_set_bool(unsigned int key, unsigned int id, unsigned char value)
 int
 db_list_add(unsigned int type, const void *value)
 {
-  struct AccessEntry *aeval = (struct AccessEntry *)value;
-  struct ChanAccess *caval  = (struct ChanAccess *)value;
+  //struct AccessEntry *aeval = (struct AccessEntry *)value;
+  //struct ChanAccess *caval  = (struct ChanAccess *)value;
   struct ServiceBan *banval = (struct ServiceBan *)value;
-  struct JupeEntry *jval    = (struct JupeEntry *)value;
+//  struct JupeEntry *jval    = (struct JupeEntry *)value;
   int ret = 0;
 
   switch(type)
@@ -1710,7 +1431,7 @@ db_save_nick(struct Nick *nick)
 static void
 expire_sentmail(void *param)
 {
-  int ret;
+  //int ret;
 
   db_exec(ret, DELETE_EXPIRED_SENT_MAIL, Mail.expire_time, CurrentTime);
 }
@@ -1721,7 +1442,7 @@ expire_akills(void *param)
   yada_rc_t *rc, *brc;
   struct ServiceBan akill;
   char *setter;
-  int ret;
+  //int ret;
 
   db_query(rc, GET_EXPIRED_AKILL, CurrentTime);
   if(rc == NULL)

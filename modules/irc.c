@@ -273,6 +273,7 @@ INIT_MODULE(irc, "$Revision$")
   mod_add_cmd(&kick_msgtab);
   mod_add_cmd(&notice_msgtab);
   mod_add_cmd(&tburst_msgtab);
+  return ModeList;
 }
 
 CLEANUP_MODULE

@@ -35,7 +35,7 @@ struct Module
 {
   char *name;
   const char *version;
-  void (* modinit) (void);
+  void *(* modinit) (void);
   void (* modremove) (void);
   char *fullname;
   void *handle;
@@ -45,10 +45,10 @@ struct Module
 };
 
 #define INIT_MODULE(NAME, REV) \
-  static void _modinit(void); \
+  static void *_modinit(void); \
   static void _moddeinit(void); \
   struct Module NAME ## _module = {#NAME, REV, _modinit, _moddeinit}; \
-  static void _modinit(void)
+  static void *_modinit(void)
 
 #define CLEANUP_MODULE \
   static void _moddeinit(void)
@@ -61,7 +61,7 @@ EXTERN dlink_list loaded_modules;
 EXTERN const char *core_modules[];
 
 EXTERN struct Module *find_module(const char *, int);
-EXTERN int load_module(const char *);
+EXTERN void * load_module(const char *);
 EXTERN void unload_module(struct Module *);
 EXTERN void boot_modules(char);
 EXTERN void cleanup_modules(void);

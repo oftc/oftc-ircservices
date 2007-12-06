@@ -318,6 +318,7 @@ INIT_MODULE(chanserv, "$Revision$")
 
   eventAdd("process channel autolimits", process_limit_list, NULL, 10);
   eventAdd("process channel expirebans", process_expireban_list, NULL, 10);
+  return chanserv;
 }
 
 CLEANUP_MODULE

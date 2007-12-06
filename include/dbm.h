@@ -41,6 +41,12 @@ struct InfoChanList
   char *level;
 };
 
+typedef struct DataBaseModule
+{
+  void *connection;
+  int(*connect)(const char *connection_string);
+} database_t;
+
 enum db_list_type
 {
   ACCESS_LIST = 0,
@@ -196,7 +202,7 @@ typedef struct query
 #define Execute(m, args...) Database.yada->execute(Database.yada, m, args)
 #define Bind(m, args...) Database.yada->bind(Database.yada, m, args)
 #define Fetch(r, b) Database.yada->fetch(Database.yada, r, b)
-#define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
+//#define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
 #define Free(r) Database.yada->free(Database.yada, r)
 #define InsertID(t, c) Database.yada->insert_id(Database.yada, t, c)
 #define NextID(t, c) Database.yada->next_id(Database.yada, t, c)
@@ -254,5 +260,7 @@ int db_is_mailsent(unsigned int, const char *);
 int db_save_nick(struct Nick *);
 
 void db_reopen_log();
+void db_log(const char *, ...);
+
 
 #endif /* INCLUDED_dbm_h */

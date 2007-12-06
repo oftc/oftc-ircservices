@@ -152,6 +152,7 @@ INIT_MODULE(operserv, "$Revision$")
   mod_add_servcmd(&operserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &jupe_msgtab);
+  return operserv;
 }
 
 CLEANUP_MODULE
@@ -251,7 +252,7 @@ m_mod_load(struct Service *service, struct Client *client,
 
   ilog(L_NOTICE, "Loading %s by request of %s",
       parm, client->name);
-  if (load_module(parm) == 1)
+  if (load_module(parm) != NULL)
   {
     ilog(L_NOTICE, "Module %s loaded", parm);
     reply_user(service, service, client, OS_MOD_LOADED, parm);
@@ -290,7 +291,7 @@ m_mod_reload(struct Service *service, struct Client *client,
   ilog(L_NOTICE, "Reloading %s by request of %s", parm, client->name);
   reply_user(service, service, client, OS_MOD_RELOADING, parm, client->name);
   unload_module(module);
-  if (load_module(parm) == 1)
+  if (load_module(parm) != NULL)
   {
     ilog(L_NOTICE, "Module %s loaded", parm);
     reply_user(service, service, client, OS_MOD_LOADED,parm);
