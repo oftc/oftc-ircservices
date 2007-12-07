@@ -41,11 +41,24 @@ struct InfoChanList
   char *level;
 };
 
+typedef struct row
+{
+  int col_count;
+  char **cols;
+} row_t;
+
+typedef struct result_set
+{
+  int row_count;
+  row_t *rows;
+} result_set_t;
+
 typedef struct DataBaseModule
 {
   void *connection;
   int(*connect)(const char *);
-  void*(*execute_scalar)(int, int, int *, va_list);
+  char*(*execute_scalar)(int, int, int *, va_list);
+  result_set_t*(*execute)(int, int, int *, va_list);
 } database_t;
 
 enum db_list_type
@@ -213,6 +226,7 @@ void db_load_driver();
 void cleanup_db();
 
 char *db_execute_scalar(int, int, int*, ...);
+result_set_t *db_execute(int, int, int *, ...);
 
 int db_set_string(unsigned int, unsigned int, const char *);
 int db_set_number(unsigned int, unsigned int, unsigned long);

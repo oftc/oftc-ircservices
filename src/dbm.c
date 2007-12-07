@@ -168,6 +168,19 @@ db_execute_scalar(int query_id, int arg_count, int *error, ...)
   return result;
 }
 
+result_set_t *
+db_execute(int query_id, int arg_count, int *error, ...)
+{
+  va_list args;
+  result_set_t *results;
+
+  va_start(args, error);
+  results = database->execute(query_id, arg_count, error, args);
+  va_end(args);
+
+  return results;
+}
+
 #define db_query(ret, query_id, args...) do                           \
 {                                                                     \
 } while(0)

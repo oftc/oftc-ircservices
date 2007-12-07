@@ -30,7 +30,8 @@
 static database_t *pgsql;
 
 static int pg_connect(const char *);
-static void *pg_execute_scalar(int, int, int *, va_list); 
+static char *pg_execute_scalar(int, int, int *, va_list); 
+static result_set_t *pg_execute(int, int, int *, va_list); 
 
 static query_t queries[QUERY_COUNT] = { 
   { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
@@ -242,6 +243,7 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
 
   pgsql->connect = pg_connect;
   pgsql->execute_scalar = pg_execute_scalar;
+  pgsql->execute = pg_execute;
 
   return pgsql;
 }
@@ -307,12 +309,11 @@ static int pg_connect(const char *connection_string)
   return 1;
 }
 
-static void *pg_execute_scalar(int id, int count, int *error, va_list args)
+static PGresult *internal_execute(int id, int count, int *error, va_list args)
 {
   PGresult *result;
   const char *params[count];
   char name[TEMP_BUFSIZE];
-  char *value;
   char log_params[IRC_BUFSIZE];
   int i, ret;
 
@@ -322,8 +323,8 @@ static void *pg_execute_scalar(int id, int count, int *error, va_list args)
   }
 
   snprintf(name, sizeof(name), "Query: %d", id);
-
   join_params(log_params, count, (char**)params);
+
   result = PQexecPrepared(pgsql->connection, name, count, params, NULL,
       NULL, 0);
 
@@ -352,6 +353,19 @@ static void *pg_execute_scalar(int id, int count, int *error, va_list args)
     return NULL;
   }
 
+  return result;
+}
+
+static char *pg_execute_scalar(int id, int count, int *error, va_list args)
+{
+  PGresult *result;
+  char *value;
+
+  result = internal_execute(id, count, error, args);
+
+  if(result == NULL)
+    return NULL;
+
   if(PQgetisnull(result, 0, 0))
   {
     *error = 0;
@@ -364,4 +378,40 @@ static void *pg_execute_scalar(int id, int count, int *error, va_list args)
 
   *error = 0;
   return value;
+}
+
+static result_set_t *pg_execute(int id, int count, int *error, va_list args)
+{
+  PGresult *result;
+  result_set_t *results;
+  int num_cols;
+  int i, j;
+
+  result = internal_execute(id, count, error, args);
+
+  if(result == NULL)
+    return NULL;
+
+  results = MyMalloc(sizeof(result_set_t));
+
+  results->row_count = PQntuples(result);
+  results->rows = MyMalloc(sizeof(row_t) * results->row_count);
+
+  num_cols = PQnfields(result);
+
+  for(i = 0; i < results->row_count; i++)
+  {
+    row_t *row = &results->rows[i];
+
+    row->col_count = num_cols;
+    for(j = 0; j < row->col_count; j++)
+    {
+      if(PQgetisnull(result, i, j))
+        row->cols[j] = NULL;
+      else
+        DupString(row->cols[j], PQgetvalue(result, i, j));
+    }
+  }
+
+  return results;
 }
