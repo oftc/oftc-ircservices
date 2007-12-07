@@ -69,18 +69,10 @@ init_db()
 void
 cleanup_db()
 {
-  int i;
+  struct Module *mod;
 
-  if(Database.yada != NULL)
-  {
-    Database.yada->disconnect(Database.yada);
-    for(i = 0; i < QUERY_COUNT; i++)
-    {
-      query_t *query = &queries[i];
-      Free(query->rc);
-    }
-    Database.yada->destroy(Database.yada);
-  }
+  mod = find_module("pgsql.la", 0);
+  unload_module(mod);
   fbclose(db_log_fb);
 }
 
@@ -149,20 +141,9 @@ db_try_reconnect()
     if(Database.yada->connect(Database.yada, Database.username,
           Database.password) != 0)
     {
-      int i;
 
       ilog(L_NOTICE, "Database connection restored after %d seconds",
           num_attempts * 5);
-      for(i = 0; i < QUERY_COUNT; i++)
-      {
-        query_t *query = &queries[i];
-        db_log("%d: %s", i, query->name);
-        if(query->name == NULL)
-          continue;
-        query->rc = Prepare((char*)query->name, 0);
-        if(query->rc == NULL)
-          ilog(L_CRIT, "Prepare: %d Failed: %s", i, Database.yada->errmsg);
-      }
       return;
     }
     sleep(5);
