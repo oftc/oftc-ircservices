@@ -24,31 +24,11 @@
 
 #include "stdinc.h"
 
-struct Nick *
-nickname_find(const char *nickname)
+static struct Nick *
+row_to_nickname(row_t *row)
 {
-  result_set_t *results;
-  struct Nick *nick;
-  row_t *row;
-  int error;
+  struct Nick *nick = MyMalloc(sizeof(struct Nick));
 
-  results = db_execute(GET_FULL_NICK, 1, &error, nickname);
-  if(error)
-  {
-    ilog(L_CRIT, "Database error %d trying to find nickname %s", error,
-        nickname);
-    return NULL;
-  }
-
-  if(results == NULL)
-  {
-    ilog(L_DEBUG, "Nickname %s not found.", nickname);
-    return NULL;
-  }
-
-  row = &results->rows[0];
-
-  nick = MyMalloc(sizeof(struct Nick));
   nick->id = atoi(row->cols[0]);
   nick->pri_nickid = atoi(row->cols[1]);
   nick->nickid = atoi(row->cols[2]);
@@ -73,7 +53,33 @@ nickname_find(const char *nickname)
   nick->reg_time = atoi(row->cols[21]);
   nick->nick_reg_time = atoi(row->cols[22]);
   nick->last_seen = atoi(row->cols[23]);
-  
+ 
+  return nick;
+}
+
+struct Nick *
+nickname_find(const char *nickname)
+{
+  result_set_t *results;
+  struct Nick *nick;
+  int error;
+
+  results = db_execute(GET_FULL_NICK, 1, &error, nickname);
+  if(error)
+  {
+    ilog(L_CRIT, "Database error %d trying to find nickname %s", error,
+        nickname);
+    return NULL;
+  }
+
+  if(results == NULL)
+  {
+    ilog(L_DEBUG, "Nickname %s not found.", nickname);
+    return NULL;
+  }
+
+  nick = row_to_nickname(&results->rows[0]);
+ 
   return nick;
 }
 
