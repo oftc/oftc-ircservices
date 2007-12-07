@@ -181,6 +181,12 @@ db_execute(int query_id, int arg_count, int *error, ...)
   return results;
 }
 
+void
+db_free_result(result_set_t *result)
+{
+  database->free_result(result);
+}
+
 #define db_query(ret, query_id, args...) do                           \
 {                                                                     \
 } while(0)

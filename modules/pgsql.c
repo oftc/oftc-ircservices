@@ -41,6 +41,7 @@ static database_t *pgsql;
 static int pg_connect(const char *);
 static char *pg_execute_scalar(int, int, int *, va_list); 
 static result_set_t *pg_execute(int, int, int *, va_list); 
+static void pg_free_result(result_set_t *);
 
 static query_t queries[QUERY_COUNT] = { 
   { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
@@ -253,6 +254,7 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
   pgsql->connect = pg_connect;
   pgsql->execute_scalar = pg_execute_scalar;
   pgsql->execute = pg_execute;
+  pgsql->free_result = pg_free_result;
 
   return pgsql;
 }
@@ -444,4 +446,26 @@ static result_set_t *pg_execute(int id, int count, int *error, va_list args)
   }
 
   return results;
+}
+
+static void
+pg_free_result(result_set_t *result)
+{
+  int i, j;
+
+  if(result == NULL)
+    return;
+
+  for(i = 0; i < result->row_count; i++)
+  {
+    row_t *row = &result->rows[i];
+
+    for(j = 0; j < row->col_count; j++)
+    {
+      MyFree(row[i].cols[j]);
+    }
+    MyFree(row[i].cols);
+  }
+
+  MyFree(result);
 }

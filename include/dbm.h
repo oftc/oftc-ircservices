@@ -59,6 +59,7 @@ typedef struct DataBaseModule
   int(*connect)(const char *);
   char*(*execute_scalar)(int, int, int *, va_list);
   result_set_t*(*execute)(int, int, int *, va_list);
+  void(*free_result)(result_set_t*);
 } database_t;
 
 enum db_list_type
@@ -227,6 +228,7 @@ void cleanup_db();
 
 char *db_execute_scalar(int, int, int*, ...);
 result_set_t *db_execute(int, int, int *, ...);
+void db_free_result(result_set_t *result);
 
 int db_set_string(unsigned int, unsigned int, const char *);
 int db_set_number(unsigned int, unsigned int, unsigned long);
