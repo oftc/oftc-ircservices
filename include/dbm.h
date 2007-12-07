@@ -56,10 +56,12 @@ typedef struct result_set
 typedef struct DataBaseModule
 {
   void *connection;
+  int last_index;
   int(*connect)(const char *);
   char*(*execute_scalar)(int, int, int *, va_list);
   result_set_t*(*execute)(int, int, int *, va_list);
   void(*free_result)(result_set_t*);
+  int (*prepare)(int, const char *);
 } database_t;
 
 enum db_list_type
@@ -226,8 +228,10 @@ void init_db();
 void db_load_driver();
 void cleanup_db();
 
+int db_prepare(int, const char *);
 char *db_execute_scalar(int, int, int*, ...);
 result_set_t *db_execute(int, int, int *, ...);
+
 void db_free_result(result_set_t *result);
 
 int db_set_string(unsigned int, unsigned int, const char *);

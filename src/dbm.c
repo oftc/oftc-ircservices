@@ -155,6 +155,20 @@ db_try_reconnect()
   services_die("Could not reconnect to database.", 0);
 }
 
+int
+db_prepare(int id, const char *query)
+{
+  if(database->last_index == 0)
+    database->last_index = QUERY_COUNT;
+
+  if(id == -1)
+    id = database->last_index++;
+
+  database->prepare(id, query);
+
+  return id;
+}
+
 char *
 db_execute_scalar(int query_id, int arg_count, int *error, ...)
 {
