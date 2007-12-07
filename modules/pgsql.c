@@ -22,8 +22,17 @@
  *  $Id: irc.c 1251 2007-12-05 21:48:18Z swalsh $
  */
 
+#include <postgres.h>
+#include <libpq-fe.h>
+#include <catalog/pg_type.h>
+
+#undef PACKAGE_VERSION
+#undef PACKAGE_NAME
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+
 #include "stdinc.h"
-#include <postgresql/libpq-fe.h>
 
 #define TEMP_BUFSIZE 32
 
@@ -406,12 +415,31 @@ static result_set_t *pg_execute(int id, int count, int *error, va_list args)
     row_t *row = &results->rows[i];
 
     row->col_count = num_cols;
+    if(num_cols > 0)
+      row->cols = MyMalloc(sizeof(char**) * num_cols);
     for(j = 0; j < row->col_count; j++)
     {
       if(PQgetisnull(result, i, j))
         row->cols[j] = NULL;
       else
-        DupString(row->cols[j], PQgetvalue(result, i, j));
+      {
+        char *value = PQgetvalue(result, i, j);
+        switch(PQftype(result, j))
+        {
+          case BOOLOID:
+            if(*value == 't')
+              DupString(row->cols[j], "1");
+            else if(*value == 'f')
+              DupString(row->cols[j], "0");
+            break;
+          case TIMESTAMPOID:
+            DupString(row->cols[j], "lalaldate");
+            break;
+          default:
+            DupString(row->cols[j], value);
+            break;
+        }
+      }
     }
   }
 

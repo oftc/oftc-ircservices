@@ -1193,7 +1193,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   if(strchr(parv[2], '@') == NULL)
   {
     /* Nickname based akick */
-    if((nick = db_find_nick(parv[2])) == NULL)
+    if((nick = nickname_find(parv[2])) == NULL)
     {
       reply_user(service, service, client, CS_AKICK_NONICK, parv[2]);
       MyFree(akick);

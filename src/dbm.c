@@ -189,61 +189,6 @@ db_execute(int query_id, int arg_count, int *error, ...)
 {                                                                     \
 } while(0)
 
-struct Nick *
-db_find_nick(const char *nick)
-{
-  yada_rc_t *rc, *brc;
-  struct Nick *nick_p;
-  char *retnick, *retpass, *retcloak, *retsalt;
-
-  assert(nick != NULL);
-
-  db_query(rc, GET_FULL_NICK, nick);
-
-  if(rc == NULL)
-    return NULL;
- 
-  nick_p = MyMalloc(sizeof(struct Nick));
- 
-  brc = Bind("?d?d?d?ps?ps?ps?ps?ps?ps?B?B?B?B?B?B?B?d?ps?ps?ps?d?d?d?d",
-    &nick_p->id, &nick_p->pri_nickid, &nick_p->nickid, &retnick, 
-    &retpass, &retsalt, &nick_p->url, &nick_p->email, &retcloak, 
-    &nick_p->enforce, &nick_p->secure, &nick_p->verified, &nick_p->cloak_on, 
-    &nick_p->admin, &nick_p->email_verified, &nick_p->priv, &nick_p->language, 
-    &nick_p->last_host, &nick_p->last_realname, &nick_p->last_quit, 
-    &nick_p->last_quit_time, &nick_p->reg_time, &nick_p->nick_reg_time, 
-    &nick_p->last_seen);
-
-  if(Fetch(rc, brc) == 0)
-  {
-    db_log("db_find_nick: '%s' not found.", nick);
-    Free(brc);
-    Free(rc);
-    MyFree(nick_p);
-    return NULL;
-  }
-
-  assert(retnick != NULL);
-  strlcpy(nick_p->nick, retnick, sizeof(nick_p->nick));
-  strlcpy(nick_p->pass, retpass, sizeof(nick_p->pass));
-  strlcpy(nick_p->salt, retsalt, sizeof(nick_p->salt));
-  if(retcloak)
-    strlcpy(nick_p->cloak, retcloak, sizeof(nick_p->cloak));
-
-  DupString(nick_p->url, nick_p->url);
-  DupString(nick_p->email, nick_p->email);
-  DupString(nick_p->last_host, nick_p->last_host);
-  DupString(nick_p->last_realname, nick_p->last_realname);
-  DupString(nick_p->last_quit, nick_p->last_quit);
-
-  db_log("db_find_nick: Found nick %s(asked for %s)", nick_p->nick, nick);
-
-  Free(brc);
-  Free(rc);
-
-  return nick_p;
-}
-
 char *
 db_get_nickname_from_id(unsigned int id)
 {
@@ -438,7 +383,7 @@ db_forbid_nick(const char *n)
 
   TransBegin();
 
-  if((nick = db_find_nick(n)) != NULL)
+  if((nick = nickname_find(n)) != NULL)
   {
     db_delete_nick(nick->id, nick->nickid, nick->pri_nickid);
     free_nick(nick);

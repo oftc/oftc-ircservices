@@ -16,6 +16,7 @@ nickserv_la_SOURCES=nickserv.c
 floodserv_la_SOURCES=floodserv.c
 irc_la_SOURCES=irc.c
 oftc_la_SOURCES=oftc.c
+pgsql_la_CFLAGS=-I/usr/include/postgresql
 pgsql_la_LDFLAGS=-lpq
 pgsql_la_SOURCES=pgsql.c
 

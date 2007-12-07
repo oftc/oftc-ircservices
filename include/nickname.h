@@ -26,5 +26,6 @@
 #define INCLUDED_nickname_h
 
 int nickname_is_forbid(const char *);
+struct Nick *nickname_find(const char *);
 
 #endif

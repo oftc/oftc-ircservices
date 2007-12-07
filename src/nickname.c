@@ -24,6 +24,59 @@
 
 #include "stdinc.h"
 
+struct Nick *
+nickname_find(const char *nickname)
+{
+  result_set_t *results;
+  struct Nick *nick;
+  row_t *row;
+  int error;
+
+  results = db_execute(GET_FULL_NICK, 1, &error, nickname);
+  if(error)
+  {
+    ilog(L_CRIT, "Database error %d trying to find nickname %s", error,
+        nickname);
+    return NULL;
+  }
+
+  if(results == NULL)
+  {
+    ilog(L_DEBUG, "Nickname %s not found.", nickname);
+    return NULL;
+  }
+
+  row = &results->rows[0];
+
+  nick = MyMalloc(sizeof(struct Nick));
+  nick->id = atoi(row->cols[0]);
+  nick->pri_nickid = atoi(row->cols[1]);
+  nick->nickid = atoi(row->cols[2]);
+  strlcpy(nick->nick, row->cols[3], sizeof(nick->nick));
+  strlcpy(nick->pass, row->cols[4], sizeof(nick->pass));
+  strlcpy(nick->salt, row->cols[5], sizeof(nick->salt));
+  DupString(nick->url, row->cols[6]);
+  DupString(nick->email, row->cols[7]);
+  strlcpy(nick->cloak, row->cols[8], sizeof(nick->cloak));
+  nick->enforce = atoi(row->cols[9]);
+  nick->secure = atoi(row->cols[10]);
+  nick->verified = atoi(row->cols[11]);
+  nick->cloak_on = atoi(row->cols[12]);
+  nick->admin = atoi(row->cols[13]);
+  nick->email_verified = atoi(row->cols[14]);
+  nick->priv = atoi(row->cols[15]);
+  nick->language = atoi(row->cols[16]);
+  DupString(nick->last_host, row->cols[17]);
+  DupString(nick->last_realname, row->cols[18]);
+  DupString(nick->last_quit, row->cols[19]);
+  nick->last_quit_time = atoi(row->cols[20]);
+  nick->reg_time = atoi(row->cols[21]);
+  nick->nick_reg_time = atoi(row->cols[22]);
+  nick->last_seen = atoi(row->cols[23]);
+  
+  return nick;
+}
+
 int 
 nickname_is_forbid(const char *nickname)
 {
@@ -33,7 +86,8 @@ nickname_is_forbid(const char *nickname)
   nick = db_execute_scalar(GET_FORBID, 1, &error, nickname);
   if(error)
   {
-    ilog(L_CRIT, "Database error trying to test forbidden nickname %s", nickname);
+    ilog(L_CRIT, "Database error %d trying to test forbidden nickname %s", 
+        error, nickname);
     return 0;
   }
 

@@ -252,7 +252,6 @@ unsigned int db_unlink_nick(unsigned int, unsigned int, unsigned int);
 int db_register_chan(struct RegChannel *, unsigned int);
 int db_delete_chan(const char *);
 
-struct Nick *db_find_nick(const char *);
 struct RegChannel *db_find_chan(const char *);
 struct ServiceBan *db_find_akill(const char *);
 struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
