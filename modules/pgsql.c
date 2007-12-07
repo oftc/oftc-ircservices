@@ -323,12 +323,13 @@ static PGresult *internal_execute(int id, int count, int *error, va_list args)
   }
 
   snprintf(name, sizeof(name), "Query: %d", id);
-  join_params(log_params, count, (char**)params);
+  if(count > 0)
+    join_params(log_params, count, (char**)params);
 
   result = PQexecPrepared(pgsql->connection, name, count, params, NULL,
       NULL, 0);
 
-  db_log("Executing scalar query %d (%s) Parameters: [%s]", id, queries[i].name, log_params);
+  db_log("Executing scalar query %d (%s) Parameters: [%s]", id, queries[i].name, count > 0 ? log_params : "None");
 
   if(result == NULL)
   {
@@ -349,7 +350,7 @@ static PGresult *internal_execute(int id, int count, int *error, va_list args)
   if(PQntuples(result) == 0 || PQnfields(result) == 0)
   {
     PQclear(result);
-    *error = -1;
+    *error = 0;
     return NULL;
   }
 
@@ -395,7 +396,8 @@ static result_set_t *pg_execute(int id, int count, int *error, va_list args)
   results = MyMalloc(sizeof(result_set_t));
 
   results->row_count = PQntuples(result);
-  results->rows = MyMalloc(sizeof(row_t) * results->row_count);
+  if(results->row_count > 0)
+    results->rows = MyMalloc(sizeof(row_t) * results->row_count);
 
   num_cols = PQnfields(result);
 

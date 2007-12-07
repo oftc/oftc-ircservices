@@ -48,5 +48,6 @@
 #include "mqueue.h"
 #include "floodserv.h"
 #include "nickname.h"
+#include "akill.h"
 
 #endif /* INCLUDED_stdinc_h */

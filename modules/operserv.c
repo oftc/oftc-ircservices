@@ -608,7 +608,7 @@ os_on_newuser(va_list args)
   if(IsMe(newuser->from))
     return pass_callback(os_newuser_hook, newuser);
 
-  enforce_matching_serviceban(operserv, NULL, newuser); 
+  akill_check_client(operserv, newuser);
 
   return pass_callback(os_newuser_hook, newuser);
 }
