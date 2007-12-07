@@ -171,21 +171,22 @@ static void *
 os_on_burst_done(va_list param)
 {
   struct JupeEntry *jupe;
-  void *handle, *first;
   struct Client *target;
   int ret;
+  dlink_list list;
+  dlink_node *ptr;
 
-  first = handle = db_list_first(JUPE_LIST, 0, (void**)&jupe);
-  while(handle != NULL)
+  jupe_list(&list);
+
+  DLINK_FOREACH(ptr, list.head)
   {
     if((target = find_client(jupe->name)) != NULL && IsServer(target))
     {
       ilog(L_DEBUG, "JUPE Server %s already exists, removing jupe", jupe->name);
       ret = db_list_del(DELETE_JUPE_NAME, 0, jupe->name);
       if(ret <= 0)
-      {
-        ilog(L_INFO, "Failed to remove existing jupe for existing server %s", jupe->name);
-      }
+        ilog(L_INFO, "Failed to remove existing jupe for existing server %s", 
+            jupe->name);
     }
     else
     {
@@ -194,13 +195,7 @@ os_on_burst_done(va_list param)
     }
 
     free_jupeentry(jupe);
-    jupe = NULL;
-    handle = db_list_next(handle, JUPE_LIST, (void**)&jupe);
   }
-  if(first)
-    db_list_done(first);
-
-  free_jupeentry(jupe);
 
   return pass_callback(os_burst_done_hook, param);
 }

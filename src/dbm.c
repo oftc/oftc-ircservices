@@ -650,12 +650,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = aeval;
       brc = Bind("?d?ps", &aeval->id, &aeval->value);
       break;
-    case JUPE_LIST:
-      query = GET_JUPE;
-      jval = MyMalloc(sizeof(struct JupeEntry));
-      *entry = jval;
-      brc = Bind("?d?ps?ps?d", &jval->id, &jval->name, &jval->reason, &jval->setter);
-      break;
     case ADMIN_LIST:
       query = GET_ADMINS;
       *entry = strval;
@@ -665,14 +659,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       query = GET_NICK_LINKS;
       *entry = strval;
       brc = Bind("?ps", entry);
-      break;
-    case AKILL_LIST:
-      query = GET_AKILLS;
-
-      banval = MyMalloc(sizeof(struct ServiceBan));
-      *entry = banval;
-      brc = Bind("?d?d?ps?ps?d?d", &banval->id, &banval->setter, &banval->mask, 
-          &banval->reason, &banval->time_set, &banval->duration);
       break;
     case AKICK_LIST:
       query = GET_AKICKS;
@@ -740,6 +726,9 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
 
       *entry = strval;
       brc = Bind("?ps", entry);
+      break;
+    default:
+      assert(0 == 1);
       break;
   }
 

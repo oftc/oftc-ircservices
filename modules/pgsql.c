@@ -231,7 +231,7 @@ static query_t queries[QUERY_COUNT] = {
     "account_id=$1", NULL, EXECUTE },
   { INSERT_JUPE, "INSERT INTO jupes (setter, name, reason) VALUES($1, $2, $3)",
     NULL, EXECUTE },
-  { GET_JUPE, "SELECT id, name, reason, setter FROM jupes ORDER BY id", NULL, QUERY },
+  { GET_JUPES, "SELECT id, name, reason, setter FROM jupes ORDER BY id", NULL, QUERY },
   { DELETE_JUPE_NAME, "DELETE FROM jupes WHERE lower(name) = lower($1)", NULL,
     EXECUTE },
   { FIND_JUPE, "SELECT id, name, reason, setter FROM jupes WHERE "
@@ -340,7 +340,7 @@ static PGresult *internal_execute(int id, int count, int *error, va_list args)
   result = PQexecPrepared(pgsql->connection, name, count, params, NULL,
       NULL, 0);
 
-  db_log("Executing scalar query %d (%s) Parameters: [%s]", id, queries[i].name, count > 0 ? log_params : "None");
+  db_log("Executing query %d (%s) Parameters: [%s]", id, queries[i].name, count > 0 ? log_params : "None");
 
   if(result == NULL)
   {
