@@ -397,7 +397,7 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_is_forbid(client->name))
+  if(nickname_is_forbid(client->name))
   {
     reply_user(service, service, client, NS_NOREG_FORBID, client->name);
     return;
@@ -1252,7 +1252,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       nick = client->nickname;
     else
     {
-      if(db_is_forbid(client->name))
+      if(nickname_is_forbid(client->name))
       {
         reply_user(service, service, client, NS_NICKFORBID, client->name);
         return;
@@ -1267,7 +1267,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   }
   else
   {
-    if(db_is_forbid(parv[1]))
+    if(nickname_is_forbid(parv[1]))
     {
       reply_user(service, service, client, NS_NICKFORBID, parv[1]);
       return;
@@ -1459,7 +1459,7 @@ m_unforbid(struct Service *service, struct Client *client, int parc,
   struct Client *target;
   dlink_node *ptr;
 
-  if(!db_is_forbid(parv[1]))
+  if(!nickname_is_forbid(parv[1]))
   {
     reply_user(service, service, client, NS_UNFORBID_NOT_FORBID, parv[1]);
     return;
@@ -1810,7 +1810,7 @@ ns_on_nick_change(va_list args)
     }
   }
 
-  if(db_is_forbid(user->name))
+  if(nickname_is_forbid(user->name))
   {
     reply_user(nickserv, nickserv, user, NS_NICK_FORBID_IWILLCHANGE, user->name);
     user->enforce_time = CurrentTime + 10; /* XXX configurable? */
@@ -1898,7 +1898,7 @@ ns_on_newuser(va_list args)
 
   ilog(L_DEBUG, "New User: %s!", newuser->name);
 
-  if(db_is_forbid(newuser->name))
+  if(nickname_is_forbid(newuser->name))
   {
     reply_user(nickserv, nickserv, newuser, NS_NICK_FORBID_IWILLCHANGE, newuser->name);
     newuser->enforce_time = CurrentTime + 10; /* XXX configurable? */

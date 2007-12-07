@@ -155,6 +155,19 @@ db_try_reconnect()
   services_die("Could not reconnect to database.", 0);
 }
 
+char *
+db_execute_scalar(int query_id, int arg_count, int *error, ...)
+{
+  va_list args;
+  char *result;
+
+  va_start(args, error);
+  result = database->execute_scalar(query_id, arg_count, error, args);
+  va_end(args);
+
+  return result;
+}
+
 #define db_query(ret, query_id, args...) do                           \
 {                                                                     \
 } while(0)
@@ -430,27 +443,6 @@ db_forbid_nick(const char *n)
     return FALSE;
 
   return TRUE;
-}
-
-int 
-db_is_forbid(const char *nick)
-{
-  yada_rc_t *rc, *brc;
-  char *n;
-  int ret;
-
-  brc = Bind("?ps", &n);
-  db_query(rc, GET_FORBID, nick);
-
-  if(rc == NULL)
-    return FALSE;
-
-  ret = Fetch(rc, brc);
-  
-  Free(rc);
-  Free(brc);
-
-  return ret;
 }
 
 int 

@@ -25,9 +25,12 @@
 #include "stdinc.h"
 #include <postgresql/libpq-fe.h>
 
+#define TEMP_BUFSIZE 32
+
 static database_t *pgsql;
 
 static int pg_connect(const char *);
+static void *pg_execute_scalar(int, int, int *, va_list); 
 
 static query_t queries[QUERY_COUNT] = { 
   { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
@@ -151,7 +154,7 @@ static query_t queries[QUERY_COUNT] = {
   { INSERT_AKICK_MASK, "INSERT INTO channel_akick (channel_id, setter, reason, mask, "
     "time, duration) VALUES ($1, $2, $3, $4, $5, $6)", NULL, EXECUTE },
   { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, reason, time, duration FROM "
-    "channel_akick WHERE channel_id=?d ORDER BY channel_akick.id", NULL, QUERY },
+    "channel_akick WHERE channel_id=$1 ORDER BY channel_akick.id", NULL, QUERY },
   { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
           "(SELECT id FROM channel_akick AS a WHERE $1 = "
           "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
@@ -238,6 +241,7 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
   pgsql = MyMalloc(sizeof(database_t));
 
   pgsql->connect = pg_connect;
+  pgsql->execute_scalar = pg_execute_scalar;
 
   return pgsql;
 }
@@ -251,7 +255,7 @@ CLEANUP_MODULE
 static int pg_prepare(int id, const char *query)
 {
   PGresult *result;
-  char name[32];
+  char name[TEMP_BUFSIZE];
   int ret;
 
   snprintf(name, sizeof(name), "Query: %d", id);
@@ -301,4 +305,63 @@ static int pg_connect(const char *connection_string)
   }
 
   return 1;
+}
+
+static void *pg_execute_scalar(int id, int count, int *error, va_list args)
+{
+  PGresult *result;
+  const char *params[count];
+  char name[TEMP_BUFSIZE];
+  char *value;
+  char log_params[IRC_BUFSIZE];
+  int i, ret;
+
+  for(i = 0; i < count; i++)
+  {
+    params[i] = (const char*)va_arg(args, const char *);
+  }
+
+  snprintf(name, sizeof(name), "Query: %d", id);
+
+  join_params(log_params, count, (char**)params);
+  result = PQexecPrepared(pgsql->connection, name, count, params, NULL,
+      NULL, 0);
+
+  db_log("Executing scalar query %d (%s) Parameters: [%s]", id, queries[i].name, log_params);
+
+  if(result == NULL)
+  {
+    db_log("PG Error: %s", PQerrorMessage(pgsql->connection));
+    *error = 1;
+    return NULL;
+  }
+
+  ret = PQresultStatus(result);
+  if(ret != PGRES_TUPLES_OK)
+  {
+    db_log("PG Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
+    PQclear(result);
+    *error = ret;
+    return NULL;
+  }
+
+  if(PQntuples(result) == 0 || PQnfields(result) == 0)
+  {
+    PQclear(result);
+    *error = -1;
+    return NULL;
+  }
+
+  if(PQgetisnull(result, 0, 0))
+  {
+    *error = 0;
+    return NULL;
+  }
+
+  DupString(value, PQgetvalue(result, 0, 0));
+
+  PQclear(result);
+
+  *error = 0;
+  return value;
 }

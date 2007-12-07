@@ -44,7 +44,8 @@ struct InfoChanList
 typedef struct DataBaseModule
 {
   void *connection;
-  int(*connect)(const char *connection_string);
+  int(*connect)(const char *);
+  void*(*execute_scalar)(int, int, int *, va_list);
 } database_t;
 
 enum db_list_type
@@ -211,6 +212,8 @@ void init_db();
 void db_load_driver();
 void cleanup_db();
 
+char *db_execute_scalar(int, int, int*, ...);
+
 int db_set_string(unsigned int, unsigned int, const char *);
 int db_set_number(unsigned int, unsigned int, unsigned long);
 int db_set_bool(unsigned int, unsigned int, unsigned char);
@@ -224,7 +227,6 @@ unsigned int db_get_id_from_name(const char *, unsigned int);
 int db_set_nick_master(unsigned int, const char *);
 
 int db_forbid_nick(const char *);
-int db_is_forbid(const char *);
 int db_delete_forbid(const char *);
 int db_forbid_chan(const char *);
 int db_is_chan_forbid(const char *);
