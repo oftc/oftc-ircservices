@@ -315,34 +315,6 @@ db_delete_chan_forbid(const char *chan)
 }
 
 int 
-db_forbid_nick(const char *n)
-{
-  int ret;
-  struct Nick *nick;
-
-  db_begin_transaction();
-
-  if((nick = nickname_find(n)) != NULL)
-  {
-    db_delete_nick(nick->id, nick->nickid, nick->pri_nickid);
-    free_nick(nick);
-  }
-
-  db_exec(ret, INSERT_FORBID, n);
-
-  if(ret == -1)
-  {
-    db_rollback_transaction();
-    return FALSE;
-  }
-
-  if(db_commit_transaction() != 0)
-    return FALSE;
-
-  return TRUE;
-}
-
-int 
 db_delete_forbid(const char *nick)
 {
   int ret;
@@ -406,54 +378,6 @@ db_set_nick_master(unsigned int accid, const char *newnick)
   db_exec(ret, SET_NICK_MASTER, newnickid, accid);
   if(ret == -1)
     return FALSE;
-
-  return TRUE;
-}
-
-int
-db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid)
-{
-  int ret;
-  unsigned int newid;
-
-  db_begin_transaction();
-
-  if(priid == nickid)
-  {
-    newid = db_fix_link(accid, nickid);
-
-    if(newid == -1)
-    {
-      db_exec(ret, DELETE_NICK, nickid);
-      if(ret != -1)
-      {
-        db_exec(ret, DELETE_ACCOUNT_CHACCESS, accid);
-        if(ret != -1)
-          db_exec(ret, DELETE_ACCOUNT, accid);
-      }
-    }
-    else
-    {
-      db_exec(ret, SET_NICK_MASTER, newid, accid);
-      if(ret != -1)
-        db_exec(ret, DELETE_NICK, nickid);
-    }
-  }
-  else
-  {
-    db_exec(ret, DELETE_NICK, nickid);
-  }
-
-  if(ret == -1)
-  {
-    db_rollback_transaction();
-    return FALSE;
-  }
-
-  if(db_commit_transaction() != 0)
-    return FALSE;
-
-  execute_callback(on_nick_drop_cb, accid, nickid, priid);
 
   return TRUE;
 }

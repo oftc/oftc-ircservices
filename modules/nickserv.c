@@ -546,8 +546,7 @@ m_drop(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_delete_nick(client->nickname->id, client->nickname->nickid,
-        client->nickname->pri_nickid)) 
+  if(nickname_delete(client->nickname)) 
   {
     if(target != NULL)
     {
@@ -1434,7 +1433,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
   if(duration == -1)
     duration = 0;
 
-  if(!db_forbid_nick(resv))
+  if(!nickname_forbid(resv))
   {
     reply_user(service, service, client, NS_FORBID_FAIL, parv[1]);
     return;
