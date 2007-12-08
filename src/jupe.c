@@ -66,7 +66,7 @@ jupe_list(dlink_list *list)
 
   memset(list, 0, sizeof(dlink_list));
 
-  results = db_execute(GET_JUPES, 0, &error, "");
+  results = db_execute(GET_JUPES, &error, "");
   if(error != 0)
   {
     return 0;

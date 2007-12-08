@@ -64,7 +64,7 @@ nickname_find(const char *nickname)
   struct Nick *nick;
   int error;
 
-  results = db_execute(GET_FULL_NICK, 1, &error, "s", nickname);
+  results = db_execute(GET_FULL_NICK, &error, "s", nickname);
   if(error)
   {
     ilog(L_CRIT, "Database error %d trying to find nickname %s", error,
@@ -90,7 +90,7 @@ nickname_is_forbid(const char *nickname)
   char *nick;
   int error;
 
-  nick = db_execute_scalar(GET_FORBID, 1, &error, "s", nickname);
+  nick = db_execute_scalar(GET_FORBID, &error, "s", nickname);
   if(error)
   {
     ilog(L_CRIT, "Database error %d trying to test forbidden nickname %s", 
@@ -115,9 +115,9 @@ nickname_nick_from_id(int id, int is_accid)
   int error;
 
   if(is_accid)
-    nick = db_execute_scalar(GET_NICK_FROM_ACCID, 1, &error, "i", id);
+    nick = db_execute_scalar(GET_NICK_FROM_ACCID, &error, "i", id);
   else
-    nick = db_execute_scalar(GET_NICK_FROM_NICKID, 1, &error, "i", id);
+    nick = db_execute_scalar(GET_NICK_FROM_NICKID, &error, "i", id);
   if(error || nick == NULL)
     return NULL;
 
@@ -131,9 +131,9 @@ nickname_id_from_nick(const char *nick, int is_accid)
   char *ret;
 
   if(is_accid)
-    ret = db_execute_scalar(GET_ACCID_FROM_NICK, 1, &error, "s", nick);
+    ret = db_execute_scalar(GET_ACCID_FROM_NICK, &error, "s", nick);
   else
-    ret = db_execute_scalar(GET_NICKID_FROM_NICK, 1, &error, "s", nick);
+    ret = db_execute_scalar(GET_NICKID_FROM_NICK, &error, "s", nick);
 
   id = atoi(ret);
   MyFree(ret);
@@ -152,7 +152,7 @@ nickname_register(struct Nick *nick)
   if(nickid == -1)
     goto failure;
 
-  ret = db_execute_nonquery(INSERT_ACCOUNT, 5, "isssi", nickid, nick->pass, 
+  ret = db_execute_nonquery(INSERT_ACCOUNT, "isssi", nickid, nick->pass, 
       nick->salt, nick->email, CurrentTime);
 
   if(ret == -1)
@@ -162,7 +162,7 @@ nickname_register(struct Nick *nick)
   if(accid == -1)
     goto failure;
 
-  ret = db_execute_nonquery(INSERT_NICK, 5, "isiii", nickid, nick->nick, accid,
+  ret = db_execute_nonquery(INSERT_NICK, "isiii", nickid, nick->nick, accid,
       CurrentTime, CurrentTime);
 
   if(ret == -1)
@@ -174,7 +174,7 @@ nickname_register(struct Nick *nick)
 
   assert(tmp == nickid);
 
-  ret = db_execute_nonquery(SET_NICK_MASTER, 2, "ii", nickid, accid);
+  ret = db_execute_nonquery(SET_NICK_MASTER, "ii", nickid, accid);
   if(ret == -1)
     goto failure;
 
@@ -201,17 +201,17 @@ nickname_delete(struct Nick *nick)
   
   if(nick->nickid == nick->pri_nickid)
   {
-    char *tmp = db_execute_scalar(GET_NEW_LINK, 2, &error, "ii", 
+    char *tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii", 
         nick->id, nick->nickid);
     if(error || tmp == NULL)
     {
-      ret = db_execute_nonquery(DELETE_NICK, 1, "i", nick->nickid);
+      ret = db_execute_nonquery(DELETE_NICK, "i", nick->nickid);
       if(ret == -1)
         goto failure;
-      ret = db_execute_nonquery(DELETE_ACCOUNT_CHACCESS, 1, "i", nick->id);
+      ret = db_execute_nonquery(DELETE_ACCOUNT_CHACCESS, "i", nick->id);
       if(ret == -1)
         goto failure;
-      ret = db_execute_nonquery(DELETE_ACCOUNT, 1, "i", nick->id);
+      ret = db_execute_nonquery(DELETE_ACCOUNT, "i", nick->id);
       if(ret == -1)
         goto failure;
     }
@@ -219,14 +219,14 @@ nickname_delete(struct Nick *nick)
     {
       newid = atoi(tmp);
       MyFree(tmp);
-      ret = db_execute_nonquery(SET_NICK_MASTER, 2, "ii", newid, nick->id);
+      ret = db_execute_nonquery(SET_NICK_MASTER, "ii", newid, nick->id);
       if(ret == -1)
         goto failure;
     }
   }
   else
   {
-    ret = db_execute_nonquery(DELETE_NICK, 1, "i", nick->nickid);
+    ret = db_execute_nonquery(DELETE_NICK, "i", nick->nickid);
     if(ret == -1)
       goto failure;
   }
@@ -255,7 +255,7 @@ nickname_forbid(const char *nick)
     free_nick(nickname);
   }
 
-  ret = db_execute_nonquery(INSERT_FORBID, 1, "s", nick);
+  ret = db_execute_nonquery(INSERT_FORBID, "s", nick);
 
   if(ret == -1)
   {

@@ -170,39 +170,39 @@ db_prepare(int id, const char *query)
 }
 
 char *
-db_execute_scalar(int query_id, int arg_count, int *error, const char *format, ...)
+db_execute_scalar(int query_id, int *error, const char *format, ...)
 {
   va_list args;
   char *result;
 
   va_start(args, format);
-  result = database->execute_scalar(query_id, arg_count, error, format, args);
+  result = database->execute_scalar(query_id, error, format, args);
   va_end(args);
 
   return result;
 }
 
 result_set_t *
-db_execute(int query_id, int arg_count, int *error, const char *format, ...)
+db_execute(int query_id, int *error, const char *format, ...)
 {
   va_list args;
   result_set_t *results;
 
   va_start(args, format);
-  results = database->execute(query_id, arg_count, error, format, args);
+  results = database->execute(query_id, error, format, args);
   va_end(args);
 
   return results;
 }
 
 int
-db_execute_nonquery(int query_id, int arg_count, const char *format, ...)
+db_execute_nonquery(int query_id, const char *format, ...)
 {
   va_list args;
   int num_rows;
 
   va_start(args, format);
-  num_rows = database->execute_nonquery(query_id, arg_count, format, args);
+  num_rows = database->execute_nonquery(query_id, format, args);
   va_end(args);
 
   return num_rows;

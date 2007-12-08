@@ -39,9 +39,9 @@
 static database_t *pgsql;
 
 static int pg_connect(const char *);
-static char *pg_execute_scalar(int, int, int *, const char *, va_list); 
-static result_set_t *pg_execute(int, int, int *, const char *, va_list); 
-static int pg_execute_nonquery(int, int, const char *, va_list); 
+static char *pg_execute_scalar(int, int *, const char *, va_list); 
+static result_set_t *pg_execute(int, int *, const char *, va_list); 
+static int pg_execute_nonquery(int, const char *, va_list); 
 static int pg_prepare(int, const char *);
 static int64_t pg_insertid(const char *, const char *);
 static int64_t pg_nextid(const char *, const char *);
@@ -337,23 +337,25 @@ pg_connect(const char *connection_string)
 }
 
 static PGresult *
-internal_execute(int id, int count, int *error, const char *format, 
+internal_execute(int id, int *error, const char *format, 
     va_list args)
 {
   PGresult *result;
-  char *params[count];
+  char **params;
   char name[TEMP_BUFSIZE];
   char log_params[IRC_BUFSIZE];
-  int i, ret;
+  int ret, len, i = 0;
 
-  for(i = 0; i < count; i++)
+  len = strlen(format);
+  params = MyMalloc(sizeof(char*) * len);
+
+  for(; *format != '\0'; format++, i++)
   {
     char tmp[TEMP_BUFSIZE];
     int intarg;
     char *strarg;
 
-    assert(format[i] != '\0');
-    switch(format[i])
+    switch(*format)
     {
       case 'i':
       case 'b':
@@ -366,21 +368,22 @@ internal_execute(int id, int count, int *error, const char *format,
         DupString(params[i], strarg);
         break;
       default:
-        db_log("PG Unknown param type: %c", format[i]);
+        db_log("PG Unknown param type: %c", *format);
     }
   }
 
   snprintf(name, sizeof(name), "Query: %d", id);
-  if(count > 0)
-    join_params(log_params, count, (char**)params);
+  if(len > 0)
+    join_params(log_params, len, (char**)params);
 
-  result = PQexecPrepared(pgsql->connection, name, count, (const char**)params,
+  result = PQexecPrepared(pgsql->connection, name, len, (const char**)params,
       NULL, NULL, 0);
 
-  for(i = 0; i < count; i++)
+  for(i = 0; i < len; i++)
     MyFree(params[i]);
 
-  db_log("Executing query %d (%s) Parameters: [%s]", id, queries[id].name, count > 0 ? log_params : "None");
+  db_log("Executing query %d (%s) Parameters: [%s]", id, queries[id].name, 
+      len > 0 ? log_params : "None");
 
   if(result == NULL)
   {
@@ -405,12 +408,12 @@ internal_execute(int id, int count, int *error, const char *format,
 }
 
 static char *
-pg_execute_scalar(int id, int count, int *error, const char *format, va_list args)
+pg_execute_scalar(int id, int *error, const char *format, va_list args)
 {
   PGresult *result;
   char *value;
 
-  result = internal_execute(id, count, error, format, args);
+  result = internal_execute(id, error, format, args);
 
   if(result == NULL)
     return NULL;
@@ -430,12 +433,12 @@ pg_execute_scalar(int id, int count, int *error, const char *format, va_list arg
 }
 
 static int
-pg_execute_nonquery(int id, int count, const char *format, va_list args)
+pg_execute_nonquery(int id, const char *format, va_list args)
 {
   PGresult *result;
   int num_rows, error;
 
-  result = internal_execute(id, count, &error, format, args);
+  result = internal_execute(id, &error, format, args);
 
   if(result == NULL)
     return -1;
@@ -447,14 +450,14 @@ pg_execute_nonquery(int id, int count, const char *format, va_list args)
 }
 
 static result_set_t *
-pg_execute(int id, int count, int *error, const char *format, va_list args)
+pg_execute(int id, int *error, const char *format, va_list args)
 {
   PGresult *result;
   result_set_t *results;
   int num_cols;
   int i, j;
 
-  result = internal_execute(id, count, error, format, args);
+  result = internal_execute(id, error, format, args);
 
   if(result == NULL)
     return NULL;

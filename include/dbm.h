@@ -58,9 +58,9 @@ typedef struct DataBaseModule
   void *connection;
   int last_index;
   int(*connect)(const char *);
-  char*(*execute_scalar)(int, int, int *, const char *, va_list);
-  result_set_t*(*execute)(int, int, int *, const char *, va_list);
-  int (*execute_nonquery)(int, int, const char *, va_list);
+  char*(*execute_scalar)(int, int *, const char *, va_list);
+  result_set_t*(*execute)(int, int *, const char *, va_list);
+  int (*execute_nonquery)(int, const char *, va_list);
   void(*free_result)(result_set_t*);
   int (*prepare)(int, const char *);
   int (*begin_transaction)();
@@ -229,9 +229,9 @@ void db_load_driver();
 void cleanup_db();
 
 int db_prepare(int, const char *);
-char *db_execute_scalar(int, int, int*, const char *, ...);
-result_set_t *db_execute(int, int, int *, const char *, ...);
-int db_execute_nonquery(int, int, const char *, ...);
+char *db_execute_scalar(int, int*, const char *, ...);
+result_set_t *db_execute(int, int *, const char *, ...);
+int db_execute_nonquery(int, const char *, ...);
 
 void db_free_result(result_set_t *result);
 

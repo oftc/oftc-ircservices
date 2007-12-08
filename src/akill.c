@@ -114,7 +114,7 @@ akill_list(dlink_list *list)
   int error;
   int i;
 
-  results = db_execute(GET_AKILLS, 0, &error, "");
+  results = db_execute(GET_AKILLS, &error, "");
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "akill_check_client: database error %d", error);
