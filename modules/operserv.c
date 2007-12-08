@@ -533,7 +533,7 @@ m_akill_list(struct Service *service, struct Client *client,
   first = handle = db_list_first(AKILL_LIST, 0, (void**)&akill);
   while(handle != NULL)
   {
-    char *setter = db_get_nickname_from_id(akill->setter);
+    char *setter = nickname_nick_from_id(akill->setter);
 
     strtime(client, akill->time_set, setbuf);
     strtime(client, akill->time_set + akill->duration, durbuf);
@@ -669,7 +669,7 @@ m_jupe_list(struct Service *service, struct Client *client,
   first = handle = db_list_first(JUPE_LIST, 0, (void**)&jupe);
   while(handle != NULL)
   {
-    char *setter = db_get_nickname_from_id(jupe->setter);
+    char *setter = nickname_nick_from_id(jupe->setter);
 
     reply_user(service, service, client, OS_JUPE_LIST, i++, jupe->name,
       jupe->reason, setter);

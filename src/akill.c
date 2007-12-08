@@ -153,7 +153,7 @@ akill_check_client(struct Service *service, struct Client *client)
 
     if(akill_check_mask(client, sban->mask))
     {
-      char *setter = db_get_nickname_from_id(sban->setter);
+      char *setter = nickname_nick_from_id(sban->setter);
 
       send_akill(service, setter, sban);
       MyFree(setter);

@@ -1011,7 +1011,7 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
 
   if(sban->mask == NULL && sban->type == AKICK_BAN)
   {
-    char *nick = db_get_nickname_from_id(sban->target);
+    char *nick = nickname_nick_from_id(sban->target);
     if(ircncmp(nick, client->name, NICKLEN) == 0)
     {
       snprintf(host, HOSTLEN, "%s!*@*", nick);
@@ -1070,7 +1070,7 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
       }
       else if(sban->type == AKILL_BAN)
       {
-        char *setter = db_get_nickname_from_id(sban->setter);
+        char *setter = nickname_nick_from_id(sban->setter);
 
         send_akill(service, setter, sban);
         MyFree(setter);
@@ -1596,7 +1596,7 @@ check_masterless_channels(unsigned int accid)
     {
       if(db_get_num_channel_accesslist_entries(chan->channel_id) == 1)
       {
-        char *nick = db_get_nickname_from_id(accid);
+        char *nick = nickname_nick_from_id(accid);
         struct Channel *chptr;
 
         ilog(L_NOTICE, "Dropping channel %s because its access list would be "

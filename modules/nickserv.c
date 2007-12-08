@@ -920,7 +920,7 @@ m_set_master(struct Service *service, struct Client *client,
 
   if(parc == 0)
   {
-    char *prinick = db_get_nickname_from_id(nick->id);
+    char *prinick = nickname_nick_from_id(nick->id);
 
     reply_user(service, service, client, NS_SET_VALUE, "MASTER", prinick);
     MyFree(prinick);
@@ -1350,7 +1350,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
     if(nick->nickid != nick->pri_nickid)
     {
-      char *prinick = db_get_nickname_from_id(nick->id);
+      char *prinick = nickname_nick_from_id(nick->id);
 
       reply_user(service, service, client, NS_INFO_MASTER, prinick);
       MyFree(prinick);

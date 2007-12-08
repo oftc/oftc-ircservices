@@ -27,5 +27,6 @@
 
 int nickname_is_forbid(const char *);
 struct Nick *nickname_find(const char *);
+char *nickname_nick_from_id(int);
 
 #endif

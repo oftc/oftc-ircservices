@@ -228,34 +228,6 @@ db_free_result(result_set_t *result)
 } while(0)
 
 char *
-db_get_nickname_from_id(unsigned int id)
-{
-  yada_rc_t *rc, *brc; 
-  char *retnick; 
-
-  db_query(rc, GET_NICK_FROM_ACCID, id);
-
-  if(rc == NULL)
-    return NULL;
-
-  brc = Bind("?ps", &retnick);
-  if(Fetch(rc, brc) == 0)
-  {
-    db_log("db_get_nickname_from_id: %d not found.", id);
-    Free(brc);
-    Free(rc);
-    return NULL;
-  }
-
-  DupString(retnick, retnick);
-
-  Free(brc);
-  Free(rc);
-
-  return retnick;
-}
-
-char *
 db_get_nickname_from_nickid(unsigned int id)
 {
   yada_rc_t *rc, *brc; 

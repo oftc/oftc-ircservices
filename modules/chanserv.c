@@ -820,7 +820,7 @@ m_access_list(struct Service *service, struct Client *client,
         break;
     }
 
-    nick = db_get_nickname_from_id(access->account);
+    nick = nickname_nick_from_id(access->account);
     reply_user(service, service, client, CS_ACCESS_LIST, i++, nick, level);
 
     MyFree(access);
@@ -1266,9 +1266,9 @@ m_akick_list(struct Service *service, struct Client *client,
     if(akick->target == 0)
       who = akick->mask;
     else
-      who = db_get_nickname_from_id(akick->target);
+      who = nickname_nick_from_id(akick->target);
 
-    whoset = db_get_nickname_from_id(akick->setter);
+    whoset = nickname_nick_from_id(akick->setter);
 
     strtime(client, akick->time_set, setbuf);
 

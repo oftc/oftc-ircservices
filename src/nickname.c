@@ -106,3 +106,16 @@ nickname_is_forbid(const char *nickname)
   MyFree(nick);
   return 1;
 }
+
+char *
+nickname_nick_from_id(int id)
+{
+  char *nick;
+  int error;
+
+  nick = db_execute_scalar(GET_NICK_FROM_ACCID, 1, &error, id);
+  if(error || nick == NULL)
+    return NULL;
+
+  return nick;
+}
