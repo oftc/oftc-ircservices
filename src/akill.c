@@ -24,6 +24,22 @@
 
 #include "stdinc.h"
 
+static struct ServiceBan *
+row_to_akill(row_t *row)
+{
+  struct ServiceBan *sban;
+
+  sban = MyMalloc(sizeof(struct ServiceBan));
+  sban->id = atoi(row->cols[0]);
+  sban->setter = atoi(row->cols[1]);
+  DupString(sban->mask, row->cols[2]);
+  DupString(sban->reason, row->cols[3]);
+  sban->duration = atoi(row->cols[4]);
+  sban->type = AKILL_BAN;
+
+  return sban;
+}
+
 static int
 akill_check_mask(struct Client *client, const char *mask)
 {
@@ -74,7 +90,7 @@ akill_check_mask(struct Client *client, const char *mask)
 }
 
 int
-akill_check_client(struct Service *service, struct Client *client)
+akill_list(dlink_list *list)
 {
   result_set_t *results;
   int error;
@@ -94,15 +110,39 @@ akill_check_client(struct Service *service, struct Client *client)
 
   for(i = 0; i < results->row_count; i++)
   {
-    if(akill_check_mask(client, results->rows[i].cols[2]))
-    {
-      char *setter = db_get_nickname_from_id(atoi(results->rows[i].cols[1]));
+    row_t *row = &results->rows[i];
+    struct ServiceBan *sban = row_to_akill(row);
 
-//      send_akill(service, setter, sban);
+    dlinkAdd(sban, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+int
+akill_check_client(struct Service *service, struct Client *client)
+{
+  dlink_list list;
+  dlink_node *ptr;
+
+  akill_list(&list);
+
+  DLINK_FOREACH(ptr, list.head)
+  {
+    struct ServiceBan *sban = (struct ServiceBan *)ptr->data;
+
+    if(akill_check_mask(client, sban->mask))
+    {
+      char *setter = db_get_nickname_from_id(sban->setter);
+
+      send_akill(service, setter, sban);
       MyFree(setter);
 
       return TRUE;
     }
+    free_serviceban(sban);
   }
   return FALSE;
 }
