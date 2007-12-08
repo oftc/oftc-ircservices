@@ -41,12 +41,12 @@ static database_t *pgsql;
 static int pg_connect(const char *);
 static char *pg_execute_scalar(int, int, int *, va_list); 
 static result_set_t *pg_execute(int, int, int *, va_list); 
+static int pg_execute_nonquery(int, int, va_list); 
 static int pg_prepare(int, const char *);
 static int pg_begin_transaction();
 static int pg_commit_transaction();
 static int pg_rollback_transaction();
 static void pg_free_result(result_set_t *);
-
 
 static query_t queries[QUERY_COUNT] = { 
   { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
@@ -259,6 +259,7 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
   pgsql->connect = pg_connect;
   pgsql->execute_scalar = pg_execute_scalar;
   pgsql->execute = pg_execute;
+  pgsql->execute_nonquery = pg_execute_nonquery;
   pgsql->free_result = pg_free_result;
   pgsql->prepare = pg_prepare;
   pgsql->begin_transaction = pg_begin_transaction;
@@ -302,7 +303,8 @@ pg_prepare(int id, const char *query)
   return 1;
 }
 
-static int pg_connect(const char *connection_string)
+static int 
+pg_connect(const char *connection_string)
 {
   int i;
 
@@ -330,7 +332,8 @@ static int pg_connect(const char *connection_string)
   return 1;
 }
 
-static PGresult *internal_execute(int id, int count, int *error, va_list args)
+static PGresult *
+internal_execute(int id, int count, int *error, va_list args)
 {
   PGresult *result;
   const char *params[count];
@@ -360,7 +363,7 @@ static PGresult *internal_execute(int id, int count, int *error, va_list args)
   }
 
   ret = PQresultStatus(result);
-  if(ret != PGRES_TUPLES_OK)
+  if(ret != PGRES_TUPLES_OK && ret != PGRES_COMMAND_OK)
   {
     db_log("PG Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
     PQclear(result);
@@ -369,16 +372,13 @@ static PGresult *internal_execute(int id, int count, int *error, va_list args)
   }
 
   if(PQntuples(result) == 0 || PQnfields(result) == 0)
-  {
-    PQclear(result);
     *error = 0;
-    return NULL;
-  }
 
   return result;
 }
 
-static char *pg_execute_scalar(int id, int count, int *error, va_list args)
+static char *
+pg_execute_scalar(int id, int count, int *error, va_list args)
 {
   PGresult *result;
   char *value;
@@ -402,7 +402,25 @@ static char *pg_execute_scalar(int id, int count, int *error, va_list args)
   return value;
 }
 
-static result_set_t *pg_execute(int id, int count, int *error, va_list args)
+static int
+pg_execute_nonquery(int id, int count, va_list args)
+{
+  PGresult *result;
+  int num_rows, error;
+
+  result = internal_execute(id, count, &error, args);
+
+  if(result == NULL)
+    return -1;
+
+  num_rows = atoi(PQcmdTuples(result));
+  PQclear(result);
+
+  return num_rows;
+}
+
+static result_set_t *
+pg_execute(int id, int count, int *error, va_list args)
 {
   PGresult *result;
   result_set_t *results;
@@ -454,6 +472,8 @@ static result_set_t *pg_execute(int id, int count, int *error, va_list args)
       }
     }
   }
+  PQclear(result);
+  *error = 0;
 
   return results;
 }

@@ -195,6 +195,19 @@ db_execute(int query_id, int arg_count, int *error, ...)
   return results;
 }
 
+int
+db_execute_nonquery(int query_id, int arg_count, ...)
+{
+  va_list args;
+  int num_rows;
+
+  va_start(args, arg_count);
+  num_rows = database->execute_nonquery(query_id, arg_count, args);
+  va_end(args);
+
+  return num_rows;
+}
+
 static int
 db_begin_transaction()
 {
