@@ -26,5 +26,6 @@
 #define INCLUDED_jupe_h
 
 int jupe_list(dlink_list *);
+void free_jupe_list(dlink_list *);
 
 #endif

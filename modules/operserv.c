@@ -193,9 +193,9 @@ os_on_burst_done(va_list param)
       introduce_server(jupe->name, jupe->reason);
       ilog(L_DEBUG, "JUPE %s [%s]", jupe->name, jupe->reason);
     }
-
-    free_jupeentry(jupe);
   }
+
+  free_jupe_list(&list);
 
   return pass_callback(os_burst_done_hook, param);
 }

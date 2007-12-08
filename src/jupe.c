@@ -38,6 +38,25 @@ row_to_jupe(row_t *row)
   return jupe;
 }
 
+void
+free_jupe_list(dlink_list *list)
+{
+  dlink_node *ptr, *next;
+  struct JupeEntry *jupe;
+
+  ilog(L_DEBUG, "Freeing jupe list %p length %lu", list, 
+      dlink_list_length(list));
+
+  DLINK_FOREACH_SAFE(ptr, next, list->head)
+  {
+    jupe = (struct JupeEntry *)ptr->data;
+
+    free_jupeentry(jupe);
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
+}
+
 int
 jupe_list(dlink_list *list)
 {

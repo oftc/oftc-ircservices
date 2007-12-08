@@ -89,6 +89,24 @@ akill_check_mask(struct Client *client, const char *mask)
   return found;
 }
 
+void
+free_akill_list(dlink_list *list)
+{
+  dlink_node *ptr, *next;
+  struct ServiceBan *sban;
+
+  ilog(L_DEBUG, "Freeing akill list %p of length %lu", list, 
+      dlink_list_length(list));
+
+  DLINK_FOREACH_SAFE(ptr, next, list->head)
+  {
+    sban = (struct ServiceBan *)ptr->data;
+    free_serviceban(sban);
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
+}
+
 int
 akill_list(dlink_list *list)
 {
@@ -140,9 +158,12 @@ akill_check_client(struct Service *service, struct Client *client)
       send_akill(service, setter, sban);
       MyFree(setter);
 
+      free_akill_list(&list);
+
       return TRUE;
     }
-    free_serviceban(sban);
   }
+  
+  free_akill_list(&list);
   return FALSE;
 }
