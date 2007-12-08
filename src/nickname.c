@@ -119,3 +119,16 @@ nickname_nick_from_id(int id)
 
   return nick;
 }
+
+char *
+nickname_nick_from_nickid(int nickid)
+{
+  char *nick;
+  int error;
+
+  nick = db_execute_scalar(GET_NICK_FROM_NICKID, 1, &error, nickid);
+  if(error || nick == NULL)
+    return NULL;
+
+  return nick;
+}

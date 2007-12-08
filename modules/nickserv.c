@@ -461,7 +461,7 @@ m_drop(struct Service *service, struct Client *client,
   /* This might be being executed via sudo, find the real user of the nick */
   if(client->nickname->id != nick->id)
   {
-    target_nick = db_get_nickname_from_nickid(client->nickname->nickid);
+    target_nick = nickname_nick_from_nickid(client->nickname->nickid);
     target = find_client(target_nick);
   }
   else
