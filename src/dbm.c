@@ -195,6 +195,24 @@ db_execute(int query_id, int arg_count, int *error, ...)
   return results;
 }
 
+static int
+db_begin_transaction()
+{
+  return database->begin_transaction();
+}
+
+static int
+db_commit_transaction()
+{
+  return database->commit_transaction();
+}
+
+static int
+db_rollback_transaction()
+{
+  return database->rollback_transaction();
+}
+
 void
 db_free_result(result_set_t *result)
 {
@@ -298,7 +316,7 @@ db_register_nick(struct Nick *nick)
 
   assert(nick != NULL);
 
-  TransBegin();
+  db_begin_transaction();
 
   nickid = NextID("nickname", "id");
   db_exec(exec, INSERT_ACCOUNT, nickid, nick->pass, nick->salt, nick->email, 
@@ -317,7 +335,7 @@ db_register_nick(struct Nick *nick)
 
   if(exec != -1)
   {
-    if(TransCommit() != 0)
+    if(db_commit_transaction() != 0)
       return FALSE;
 
     nick->id = id;
@@ -328,7 +346,7 @@ db_register_nick(struct Nick *nick)
   }
   else
   {
-    TransRollback();
+    db_rollback_transaction();
     return FALSE;
   }
 }
@@ -339,7 +357,7 @@ db_forbid_chan(const char *c)
   int ret;
   struct RegChannel *chan;
 
-  TransBegin();
+  db_begin_transaction();
 
   if((chan = db_find_chan(c)) != NULL)
   {
@@ -351,11 +369,11 @@ db_forbid_chan(const char *c)
 
   if(ret == -1)
   {
-    TransRollback();
+    db_rollback_transaction();
     return FALSE;
   }
 
-  if(TransCommit() != 0)
+  if(db_commit_transaction() != 0)
     return FALSE;
 
   return TRUE;
@@ -401,7 +419,7 @@ db_forbid_nick(const char *n)
   int ret;
   struct Nick *nick;
 
-  TransBegin();
+  db_begin_transaction();
 
   if((nick = nickname_find(n)) != NULL)
   {
@@ -413,11 +431,11 @@ db_forbid_nick(const char *n)
 
   if(ret == -1)
   {
-    TransRollback();
+    db_rollback_transaction();
     return FALSE;
   }
 
-  if(TransCommit() != 0)
+  if(db_commit_transaction() != 0)
     return FALSE;
 
   return TRUE;
@@ -497,7 +515,7 @@ db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid)
   int ret;
   unsigned int newid;
 
-  TransBegin();
+  db_begin_transaction();
 
   if(priid == nickid)
   {
@@ -527,11 +545,11 @@ db_delete_nick(unsigned int accid, unsigned int nickid, unsigned int priid)
 
   if(ret == -1)
   {
-    TransRollback();
+    db_rollback_transaction();
     return FALSE;
   }
 
-  if(TransCommit() != 0)
+  if(db_commit_transaction() != 0)
     return FALSE;
 
   execute_callback(on_nick_drop_cb, accid, nickid, priid);
@@ -958,7 +976,7 @@ db_link_nicks(unsigned int master, unsigned int child)
 {
   int ret;
 
-  TransBegin();
+  db_begin_transaction();
 
   db_exec(ret, SET_NICK_LINK, master, child);
   if(ret != -1)
@@ -974,11 +992,11 @@ db_link_nicks(unsigned int master, unsigned int child)
 
   if(ret == -1)
   {
-    TransRollback();
+    db_rollback_transaction();
     return FALSE;
   }
 
-  if(TransCommit() != 0)
+  if(db_commit_transaction() != 0)
     return FALSE;
 
   return TRUE;
@@ -990,7 +1008,7 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
   int ret;
   unsigned int new_accid, new_nickid;
 
-  TransBegin();
+  db_begin_transaction();
 
   db_exec(ret, INSERT_NICK_CLONE, accid);
   if(ret != -1)
@@ -1015,11 +1033,11 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
 
   if(ret == -1)
   {
-    TransRollback();
+    db_rollback_transaction();
     return 0;
   }
   
-  if(TransCommit() != 0)
+  if(db_commit_transaction() != 0)
     return FALSE;
 
   return new_accid;
@@ -1082,21 +1100,21 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
   struct ChanAccess *access;
   int ret;
 
-  TransBegin();
+  db_begin_transaction();
 
   db_exec(ret, INSERT_CHAN, chan->channel, chan->description, CurrentTime,
       CurrentTime);
 
   if(ret == -1)
   {
-    TransRollback();
+    db_rollback_transaction();
     return FALSE;
   }
 
   chan->id = InsertID("channel", "id");
   if(chan->id <= 0)
   {
-    TransRollback();
+    db_rollback_transaction();
     return FALSE;
   }
 
@@ -1107,11 +1125,11 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
  
   if(!db_list_add(CHACCESS_LIST, access))
   {
-    TransRollback();
+    db_rollback_transaction();
     return FALSE;
   }
 
-  if(TransCommit() != 0)
+  if(db_commit_transaction() != 0)
     return FALSE;
 
   return TRUE;
@@ -1342,12 +1360,12 @@ db_save_nick(struct Nick *nick)
 {
   int ret;
 
-  TransBegin();
+  db_begin_transaction();
 
   ret = db_set_number(SET_NICK_LAST_SEEN, nick->nickid, nick->last_seen);
   if(!ret)
   {
-    TransRollback();
+    db_rollback_transaction();
     return 0;
   }
 
@@ -1358,12 +1376,12 @@ db_save_nick(struct Nick *nick)
       nick->last_quit_time, nick->id);
   if(ret == -1)
   {
-    TransRollback();
+    db_rollback_transaction();
     return 0;
   }
   else
   {
-    TransCommit();
+    db_commit_transaction();
     return 1;
   }
 }

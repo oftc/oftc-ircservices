@@ -62,6 +62,9 @@ typedef struct DataBaseModule
   result_set_t*(*execute)(int, int, int *, va_list);
   void(*free_result)(result_set_t*);
   int (*prepare)(int, const char *);
+  int (*begin_transaction)();
+  int (*commit_transaction)();
+  int (*rollback_transaction)();
 } database_t;
 
 enum db_list_type
@@ -211,9 +214,6 @@ typedef struct query
   int type;
 } query_t;
 
-#define TransBegin() Database.yada->trx(Database.yada, 0)
-#define TransCommit() Database.yada->commit(Database.yada)
-#define TransRollback() Database.yada->rollback(Database.yada, 0)
 #define Query(m, args...) Database.yada->query(Database.yada, m, args)
 #define Execute(m, args...) Database.yada->execute(Database.yada, m, args)
 #define Bind(m, args...) Database.yada->bind(Database.yada, m, args)

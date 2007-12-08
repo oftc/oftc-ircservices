@@ -41,7 +41,12 @@ static database_t *pgsql;
 static int pg_connect(const char *);
 static char *pg_execute_scalar(int, int, int *, va_list); 
 static result_set_t *pg_execute(int, int, int *, va_list); 
+static int pg_prepare(int, const char *);
+static int pg_begin_transaction();
+static int pg_commit_transaction();
+static int pg_rollback_transaction();
 static void pg_free_result(result_set_t *);
+
 
 static query_t queries[QUERY_COUNT] = { 
   { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
@@ -255,6 +260,10 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
   pgsql->execute_scalar = pg_execute_scalar;
   pgsql->execute = pg_execute;
   pgsql->free_result = pg_free_result;
+  pgsql->prepare = pg_prepare;
+  pgsql->begin_transaction = pg_begin_transaction;
+  pgsql->commit_transaction = pg_commit_transaction;
+  pgsql->rollback_transaction = pg_rollback_transaction;
 
   return pgsql;
 }
@@ -265,7 +274,8 @@ CLEANUP_MODULE
   MyFree(pgsql);
 }
 
-static int pg_prepare(int id, const char *query)
+static int 
+pg_prepare(int id, const char *query)
 {
   PGresult *result;
   char name[TEMP_BUFSIZE];
@@ -468,4 +478,22 @@ pg_free_result(result_set_t *result)
   }
 
   MyFree(result);
+}
+
+static int
+pg_begin_transaction()
+{
+  return TRUE;
+}
+
+static int
+pg_commit_transaction()
+{
+  return TRUE;
+}
+
+static int
+pg_rollback_transaction()
+{
+  return TRUE;
 }
