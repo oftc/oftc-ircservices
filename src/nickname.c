@@ -35,9 +35,11 @@ row_to_nickname(row_t *row)
   strlcpy(nick->nick, row->cols[3], sizeof(nick->nick));
   strlcpy(nick->pass, row->cols[4], sizeof(nick->pass));
   strlcpy(nick->salt, row->cols[5], sizeof(nick->salt));
-  DupString(nick->url, row->cols[6]);
+  if(row->cols[6] != NULL)
+    DupString(nick->url, row->cols[6]);
   DupString(nick->email, row->cols[7]);
-  strlcpy(nick->cloak, row->cols[8], sizeof(nick->cloak));
+  if(row->cols[8] != NULL)
+    strlcpy(nick->cloak, row->cols[8], sizeof(nick->cloak));
   nick->enforce = atoi(row->cols[9]);
   nick->secure = atoi(row->cols[10]);
   nick->verified = atoi(row->cols[11]);
@@ -46,10 +48,14 @@ row_to_nickname(row_t *row)
   nick->email_verified = atoi(row->cols[14]);
   nick->priv = atoi(row->cols[15]);
   nick->language = atoi(row->cols[16]);
-  DupString(nick->last_host, row->cols[17]);
-  DupString(nick->last_realname, row->cols[18]);
-  DupString(nick->last_quit, row->cols[19]);
-  nick->last_quit_time = atoi(row->cols[20]);
+  if(row->cols[17] != NULL)
+    DupString(nick->last_host, row->cols[17]);
+  if(row->cols[18] != NULL)
+    DupString(nick->last_realname, row->cols[18]);
+  if(row->cols[19] != NULL)
+    DupString(nick->last_quit, row->cols[19]);
+  if(row->cols[20] != NULL)
+    nick->last_quit_time = atoi(row->cols[20]);
   nick->reg_time = atoi(row->cols[21]);
   nick->nick_reg_time = atoi(row->cols[22]);
   nick->last_seen = atoi(row->cols[23]);
