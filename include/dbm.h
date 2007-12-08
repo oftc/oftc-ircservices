@@ -58,14 +58,16 @@ typedef struct DataBaseModule
   void *connection;
   int last_index;
   int(*connect)(const char *);
-  char*(*execute_scalar)(int, int, int *, va_list);
-  result_set_t*(*execute)(int, int, int *, va_list);
-  int (*execute_nonquery)(int, int, va_list);
+  char*(*execute_scalar)(int, int, int *, const char *, va_list);
+  result_set_t*(*execute)(int, int, int *, const char *, va_list);
+  int (*execute_nonquery)(int, int, const char *, va_list);
   void(*free_result)(result_set_t*);
   int (*prepare)(int, const char *);
   int (*begin_transaction)();
   int (*commit_transaction)();
   int (*rollback_transaction)();
+  int64_t (*next_id)(const char *, const char *);
+  int64_t (*insert_id)(const char *, const char *);
 } database_t;
 
 enum db_list_type
@@ -221,26 +223,30 @@ typedef struct query
 #define Fetch(r, b) Database.yada->fetch(Database.yada, r, b)
 //#define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
 #define Free(r) Database.yada->free(Database.yada, r)
-#define InsertID(t, c) Database.yada->insert_id(Database.yada, t, c)
-#define NextID(t, c) Database.yada->next_id(Database.yada, t, c)
 
 void init_db();
 void db_load_driver();
 void cleanup_db();
 
 int db_prepare(int, const char *);
-char *db_execute_scalar(int, int, int*, ...);
-result_set_t *db_execute(int, int, int *, ...);
-int db_execute_nonquery(int, int, ...);
+char *db_execute_scalar(int, int, int*, const char *, ...);
+result_set_t *db_execute(int, int, int *, const char *, ...);
+int db_execute_nonquery(int, int, const char *, ...);
 
 void db_free_result(result_set_t *result);
+
+int64_t db_nextid(const char *, const char *);
+int64_t db_insertid(const char *, const char *);
+
+int db_begin_transaction();
+int db_commit_transaction();
+int db_rollback_transaction();
 
 int db_set_string(unsigned int, unsigned int, const char *);
 int db_set_number(unsigned int, unsigned int, unsigned long);
 int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
-int db_register_nick(struct Nick *);
 int db_delete_nick(unsigned int, unsigned int, unsigned int);
 int db_set_nick_master(unsigned int, const char *);
 

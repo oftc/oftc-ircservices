@@ -433,7 +433,7 @@ m_register(struct Service *service, struct Client *client,
   DupString(nick->email, parv[2]);
   MyFree(pass);
 
-  if(db_register_nick(nick))
+  if(nickname_register(nick))
   {
     client->nickname = nick;
     identify_user(client);

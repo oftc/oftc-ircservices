@@ -64,7 +64,7 @@ nickname_find(const char *nickname)
   struct Nick *nick;
   int error;
 
-  results = db_execute(GET_FULL_NICK, 1, &error, nickname);
+  results = db_execute(GET_FULL_NICK, 1, &error, "s", nickname);
   if(error)
   {
     ilog(L_CRIT, "Database error %d trying to find nickname %s", error,
@@ -72,9 +72,10 @@ nickname_find(const char *nickname)
     return NULL;
   }
 
-  if(results == NULL)
+  if(results->row_count == 0)
   {
     ilog(L_DEBUG, "Nickname %s not found.", nickname);
+    db_free_result(results);
     return NULL;
   }
 
@@ -89,7 +90,7 @@ nickname_is_forbid(const char *nickname)
   char *nick;
   int error;
 
-  nick = db_execute_scalar(GET_FORBID, 1, &error, nickname);
+  nick = db_execute_scalar(GET_FORBID, 1, &error, "s", nickname);
   if(error)
   {
     ilog(L_CRIT, "Database error %d trying to test forbidden nickname %s", 
@@ -114,9 +115,9 @@ nickname_nick_from_id(int id, int is_accid)
   int error;
 
   if(is_accid)
-    nick = db_execute_scalar(GET_NICK_FROM_ACCID, 1, &error, id);
+    nick = db_execute_scalar(GET_NICK_FROM_ACCID, 1, &error, "i", id);
   else
-    nick = db_execute_scalar(GET_NICK_FROM_NICKID, 1, &error, id);
+    nick = db_execute_scalar(GET_NICK_FROM_NICKID, 1, &error, "i", id);
   if(error || nick == NULL)
     return NULL;
 
@@ -130,12 +131,63 @@ nickname_id_from_nick(const char *nick, int is_accid)
   char *ret;
 
   if(is_accid)
-    ret = db_execute_scalar(GET_ACCID_FROM_NICK, 1, &error, nick);
+    ret = db_execute_scalar(GET_ACCID_FROM_NICK, 1, &error, "s", nick);
   else
-    ret = db_execute_scalar(GET_NICKID_FROM_NICK, 1, &error, nick);
+    ret = db_execute_scalar(GET_NICKID_FROM_NICK, 1, &error, "s", nick);
 
   id = atoi(ret);
   MyFree(ret);
 
   return id;
+}
+
+int
+nickname_register(struct Nick *nick)
+{
+  int accid, nickid, ret, tmp;
+
+  db_begin_transaction();
+
+  nickid = db_nextid("nickname", "id");
+  if(nickid == -1)
+    goto failure;
+
+  ret = db_execute_nonquery(INSERT_ACCOUNT, 5, "isssi", nickid, nick->pass, 
+      nick->salt, nick->email, CurrentTime);
+
+  if(ret == -1)
+    goto failure;
+
+  accid = db_insertid("account", "id");
+  if(accid == -1)
+    goto failure;
+
+  ret = db_execute_nonquery(INSERT_NICK, 5, "isiii", nickid, nick->nick, accid,
+      CurrentTime, CurrentTime);
+
+  if(ret == -1)
+    goto failure;
+
+  tmp = db_insertid("nickname", "id");
+  if(tmp == -1)
+    goto failure;
+
+  assert(tmp == nickid);
+
+  ret = db_execute_nonquery(SET_NICK_MASTER, 2, "ii", nickid, accid);
+  if(ret == -1)
+    goto failure;
+
+  if(!db_commit_transaction())
+    goto failure;
+
+  nick->id = accid;
+  nick->nickid = nick->pri_nickid = nickid;
+  nick->nick_reg_time = nick->reg_time = CurrentTime;
+
+  return TRUE;
+  
+failure:
+  db_rollback_transaction();
+  return FALSE;
 }

@@ -39,10 +39,12 @@
 static database_t *pgsql;
 
 static int pg_connect(const char *);
-static char *pg_execute_scalar(int, int, int *, va_list); 
-static result_set_t *pg_execute(int, int, int *, va_list); 
-static int pg_execute_nonquery(int, int, va_list); 
+static char *pg_execute_scalar(int, int, int *, const char *, va_list); 
+static result_set_t *pg_execute(int, int, int *, const char *, va_list); 
+static int pg_execute_nonquery(int, int, const char *, va_list); 
 static int pg_prepare(int, const char *);
+static int64_t pg_insertid(const char *, const char *);
+static int64_t pg_nextid(const char *, const char *);
 static int pg_begin_transaction();
 static int pg_commit_transaction();
 static int pg_rollback_transaction();
@@ -265,6 +267,8 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
   pgsql->begin_transaction = pg_begin_transaction;
   pgsql->commit_transaction = pg_commit_transaction;
   pgsql->rollback_transaction = pg_rollback_transaction;
+  pgsql->insert_id = pg_insertid;
+  pgsql->next_id = pg_nextid;
 
   return pgsql;
 }
@@ -287,7 +291,7 @@ pg_prepare(int id, const char *query)
   result = PQprepare(pgsql->connection, name, query, 0, NULL);
   if(result == NULL)
   {
-    db_log("PG Error: %s", PQerrorMessage(pgsql->connection));
+    db_log("PG prepare Error: %s", PQerrorMessage(pgsql->connection));
     return 0;
   }
 
@@ -296,7 +300,7 @@ pg_prepare(int id, const char *query)
 
   if(ret != PGRES_COMMAND_OK)
   {
-    db_log("PG Error: %s", PQerrorMessage(pgsql->connection));
+    db_log("PG prepare Error: %s", PQerrorMessage(pgsql->connection));
     return 0;
   }
 
@@ -333,31 +337,54 @@ pg_connect(const char *connection_string)
 }
 
 static PGresult *
-internal_execute(int id, int count, int *error, va_list args)
+internal_execute(int id, int count, int *error, const char *format, 
+    va_list args)
 {
   PGresult *result;
-  const char *params[count];
+  char *params[count];
   char name[TEMP_BUFSIZE];
   char log_params[IRC_BUFSIZE];
   int i, ret;
 
   for(i = 0; i < count; i++)
   {
-    params[i] = (const char*)va_arg(args, const char *);
+    char tmp[TEMP_BUFSIZE];
+    int intarg;
+    char *strarg;
+
+    assert(format[i] != '\0');
+    switch(format[i])
+    {
+      case 'i':
+      case 'b':
+        intarg = va_arg(args, int);
+        snprintf(tmp, sizeof(tmp), "%d", intarg);
+        DupString(params[i], tmp);
+        break;
+      case 's':
+        strarg = (char*)va_arg(args, const char *);
+        DupString(params[i], strarg);
+        break;
+      default:
+        db_log("PG Unknown param type: %c", format[i]);
+    }
   }
 
   snprintf(name, sizeof(name), "Query: %d", id);
   if(count > 0)
     join_params(log_params, count, (char**)params);
 
-  result = PQexecPrepared(pgsql->connection, name, count, params, NULL,
-      NULL, 0);
+  result = PQexecPrepared(pgsql->connection, name, count, (const char**)params,
+      NULL, NULL, 0);
 
-  db_log("Executing query %d (%s) Parameters: [%s]", id, queries[i].name, count > 0 ? log_params : "None");
+  for(i = 0; i < count; i++)
+    MyFree(params[i]);
+
+  db_log("Executing query %d (%s) Parameters: [%s]", id, queries[id].name, count > 0 ? log_params : "None");
 
   if(result == NULL)
   {
-    db_log("PG Error: %s", PQerrorMessage(pgsql->connection));
+    db_log("PG execute Error: %s", PQerrorMessage(pgsql->connection));
     *error = 1;
     return NULL;
   }
@@ -365,7 +392,7 @@ internal_execute(int id, int count, int *error, va_list args)
   ret = PQresultStatus(result);
   if(ret != PGRES_TUPLES_OK && ret != PGRES_COMMAND_OK)
   {
-    db_log("PG Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
+    db_log("PG execute Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
     PQclear(result);
     *error = ret;
     return NULL;
@@ -378,17 +405,17 @@ internal_execute(int id, int count, int *error, va_list args)
 }
 
 static char *
-pg_execute_scalar(int id, int count, int *error, va_list args)
+pg_execute_scalar(int id, int count, int *error, const char *format, va_list args)
 {
   PGresult *result;
   char *value;
 
-  result = internal_execute(id, count, error, args);
+  result = internal_execute(id, count, error, format, args);
 
   if(result == NULL)
     return NULL;
 
-  if(PQgetisnull(result, 0, 0))
+  if(PQntuples(result) == 0 || PQgetisnull(result, 0, 0))
   {
     *error = 0;
     return NULL;
@@ -403,12 +430,12 @@ pg_execute_scalar(int id, int count, int *error, va_list args)
 }
 
 static int
-pg_execute_nonquery(int id, int count, va_list args)
+pg_execute_nonquery(int id, int count, const char *format, va_list args)
 {
   PGresult *result;
   int num_rows, error;
 
-  result = internal_execute(id, count, &error, args);
+  result = internal_execute(id, count, &error, format, args);
 
   if(result == NULL)
     return -1;
@@ -420,14 +447,14 @@ pg_execute_nonquery(int id, int count, va_list args)
 }
 
 static result_set_t *
-pg_execute(int id, int count, int *error, va_list args)
+pg_execute(int id, int count, int *error, const char *format, va_list args)
 {
   PGresult *result;
   result_set_t *results;
   int num_cols;
   int i, j;
 
-  result = internal_execute(id, count, error, args);
+  result = internal_execute(id, count, error, format, args);
 
   if(result == NULL)
     return NULL;
@@ -503,17 +530,132 @@ pg_free_result(result_set_t *result)
 static int
 pg_begin_transaction()
 {
+  PGresult *result;
+  int ret;
+
+  result = PQexec(pgsql->connection, "BEGIN");
+  if(result == NULL)
+    return FALSE;
+  
+  ret = PQresultStatus(result);
+  if(ret != PGRES_COMMAND_OK)
+  {
+    db_log("PG Begin Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
+    PQclear(result);
+    return FALSE;
+  }
+
+  PQclear(result);
   return TRUE;
 }
 
 static int
 pg_commit_transaction()
 {
+  PGresult *result;
+  int ret;
+
+  result = PQexec(pgsql->connection, "COMMIT");
+  if(result == NULL)
+    return FALSE;
+  
+  ret = PQresultStatus(result);
+  if(ret != PGRES_COMMAND_OK)
+  {
+    db_log("PG Commit Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
+    PQclear(result);
+    return FALSE;
+  }
+
+  PQclear(result);
   return TRUE;
 }
 
 static int
 pg_rollback_transaction()
 {
+  PGresult *result;
+  int ret;
+
+  result = PQexec(pgsql->connection, "ROLLBACK");
+  if(result == NULL)
+    return FALSE;
+  
+  ret = PQresultStatus(result);
+  if(ret != PGRES_COMMAND_OK)
+  {
+    db_log("PG Rollback Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
+    PQclear(result);
+    return FALSE;
+  }
+
+  PQclear(result);
   return TRUE;
+}
+
+static int64_t
+pg_insertid(const char *table, const char *column)
+{
+  char *pgquery;
+  PGresult *result;
+  int len, ret;
+  int64_t id;
+
+  len = strlen("SELECT currval(pg_get_serial_sequence('',''))") +
+    strlen(table) + strlen(column) + 1;
+  pgquery = MyMalloc(len);
+  snprintf(pgquery, len, "SELECT currval(pg_get_serial_sequence('%s','%s'))",
+      table, column);
+
+  result = PQexec(pgsql->connection, pgquery);
+  if(result == NULL)
+    return -1;
+
+  ret = PQresultStatus(result);
+  if(ret != PGRES_TUPLES_OK)
+  {
+    db_log("PG inset_id Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
+    PQclear(result);
+    MyFree(pgquery);
+    return FALSE;
+  }
+  id = atol(PQgetvalue(result, 0, 0));
+
+  PQclear(result);
+  MyFree(pgquery);
+  return(id);
+}
+
+static int64_t
+pg_nextid(const char *table, const char *column)
+{
+  char *pgquery;
+  PGresult *result;
+  int len, ret;
+  int64_t id;
+
+  len = strlen("SELECT nextval(pg_get_serial_sequence('',''))") +
+    strlen(table) + strlen(column) + 1;
+  pgquery = MyMalloc(len);
+  snprintf(pgquery, len, "SELECT nextval(pg_get_serial_sequence('%s','%s'))",
+      table, column);
+
+  result = PQexec(pgsql->connection, pgquery);
+  if(result == NULL)
+    return -1;
+
+  ret = PQresultStatus(result);
+  if(ret != PGRES_TUPLES_OK)
+  {
+    db_log("PG next_id Error(%d): %s", ret, PQerrorMessage(pgsql->connection));
+    PQclear(result);
+    MyFree(pgquery);
+    return FALSE;
+  }
+  id = atol(PQgetvalue(result, 0, 0));
+
+  PQclear(result);
+  MyFree(pgquery);
+  return(id);
+
 }

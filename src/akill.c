@@ -114,7 +114,7 @@ akill_list(dlink_list *list)
   int error;
   int i;
 
-  results = db_execute(GET_AKILLS, 0, &error);
+  results = db_execute(GET_AKILLS, 0, &error, "");
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "akill_check_client: database error %d", error);
@@ -142,7 +142,7 @@ akill_list(dlink_list *list)
 int
 akill_check_client(struct Service *service, struct Client *client)
 {
-  dlink_list list;
+  dlink_list list = { 0 };
   dlink_node *ptr;
 
   akill_list(&list);

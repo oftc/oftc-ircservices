@@ -170,57 +170,57 @@ db_prepare(int id, const char *query)
 }
 
 char *
-db_execute_scalar(int query_id, int arg_count, int *error, ...)
+db_execute_scalar(int query_id, int arg_count, int *error, const char *format, ...)
 {
   va_list args;
   char *result;
 
-  va_start(args, error);
-  result = database->execute_scalar(query_id, arg_count, error, args);
+  va_start(args, format);
+  result = database->execute_scalar(query_id, arg_count, error, format, args);
   va_end(args);
 
   return result;
 }
 
 result_set_t *
-db_execute(int query_id, int arg_count, int *error, ...)
+db_execute(int query_id, int arg_count, int *error, const char *format, ...)
 {
   va_list args;
   result_set_t *results;
 
-  va_start(args, error);
-  results = database->execute(query_id, arg_count, error, args);
+  va_start(args, format);
+  results = database->execute(query_id, arg_count, error, format, args);
   va_end(args);
 
   return results;
 }
 
 int
-db_execute_nonquery(int query_id, int arg_count, ...)
+db_execute_nonquery(int query_id, int arg_count, const char *format, ...)
 {
   va_list args;
   int num_rows;
 
-  va_start(args, arg_count);
-  num_rows = database->execute_nonquery(query_id, arg_count, args);
+  va_start(args, format);
+  num_rows = database->execute_nonquery(query_id, arg_count, format, args);
   va_end(args);
 
   return num_rows;
 }
 
-static int
+int
 db_begin_transaction()
 {
   return database->begin_transaction();
 }
 
-static int
+int
 db_commit_transaction()
 {
   return database->commit_transaction();
 }
 
-static int
+int
 db_rollback_transaction()
 {
   return database->rollback_transaction();
@@ -232,6 +232,18 @@ db_free_result(result_set_t *result)
   database->free_result(result);
 }
 
+int64_t
+db_nextid(const char *table, const char *column)
+{
+  return database->next_id(table, column);
+}
+
+int64_t
+db_insertid(const char *table, const char *column)
+{
+  return database->insert_id(table, column);
+}
+
 #define db_query(ret, query_id, args...) do                           \
 {                                                                     \
 } while(0)
@@ -239,48 +251,6 @@ db_free_result(result_set_t *result)
 #define db_exec(ret, query_id, args...) do                            \
 {                                                                     \
 } while(0)
-
-int
-db_register_nick(struct Nick *nick)
-{
-  int exec, id, nickid, tmpid;
-
-  assert(nick != NULL);
-
-  db_begin_transaction();
-
-  nickid = NextID("nickname", "id");
-  db_exec(exec, INSERT_ACCOUNT, nickid, nick->pass, nick->salt, nick->email, 
-      CurrentTime);
-
-  id = InsertID("account", "id");
-
-  if(exec != -1)
-    db_exec(exec, INSERT_NICK, nickid, nick->nick, id, CurrentTime, CurrentTime);
-
-  tmpid = InsertID("nickname", "id");
-  assert(tmpid == nickid);
-
-  if(exec != -1)
-    db_exec(exec, SET_NICK_MASTER, nickid, id);
-
-  if(exec != -1)
-  {
-    if(db_commit_transaction() != 0)
-      return FALSE;
-
-    nick->id = id;
-    nick->nickid = nickid;
-    nick->pri_nickid = nickid;
-    nick->nick_reg_time = nick->reg_time = CurrentTime;
-    return TRUE;
-  }
-  else
-  {
-    db_rollback_transaction();
-    return FALSE;
-  }
-}
 
 int 
 db_forbid_chan(const char *c)
@@ -944,7 +914,7 @@ db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
   db_exec(ret, INSERT_NICK_CLONE, accid);
   if(ret != -1)
   {
-    new_accid = InsertID("account", "id");
+    new_accid = db_insertid("account", "id");
     if(priid != nickid)
       db_exec(ret, SET_NICK_LINK_EXCLUDE, new_accid, accid, nickid);
   }
@@ -1042,7 +1012,7 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
     return FALSE;
   }
 
-  chan->id = InsertID("channel", "id");
+  chan->id = db_insertid("channel", "id");
   if(chan->id <= 0)
   {
     db_rollback_transaction();
