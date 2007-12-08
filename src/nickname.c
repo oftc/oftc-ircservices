@@ -108,27 +108,34 @@ nickname_is_forbid(const char *nickname)
 }
 
 char *
-nickname_nick_from_id(int id)
+nickname_nick_from_id(int id, int is_accid)
 {
   char *nick;
   int error;
 
-  nick = db_execute_scalar(GET_NICK_FROM_ACCID, 1, &error, id);
+  if(is_accid)
+    nick = db_execute_scalar(GET_NICK_FROM_ACCID, 1, &error, id);
+  else
+    nick = db_execute_scalar(GET_NICK_FROM_NICKID, 1, &error, id);
   if(error || nick == NULL)
     return NULL;
 
   return nick;
 }
 
-char *
-nickname_nick_from_nickid(int nickid)
+int
+nickname_id_from_nick(const char *nick, int is_accid)
 {
-  char *nick;
-  int error;
+  int id, error;
+  char *ret;
 
-  nick = db_execute_scalar(GET_NICK_FROM_NICKID, 1, &error, nickid);
-  if(error || nick == NULL)
-    return NULL;
+  if(is_accid)
+    ret = db_execute_scalar(GET_ACCID_FROM_NICK, 1, &error, nick);
+  else
+    ret = db_execute_scalar(GET_NICKID_FROM_NICK, 1, &error, nick);
 
-  return nick;
+  id = atoi(ret);
+  MyFree(ret);
+
+  return id;
 }

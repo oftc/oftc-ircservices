@@ -461,7 +461,7 @@ m_drop(struct Service *service, struct Client *client,
   /* This might be being executed via sudo, find the real user of the nick */
   if(client->nickname->id != nick->id)
   {
-    target_nick = nickname_nick_from_nickid(client->nickname->nickid);
+    target_nick = nickname_nick_from_id(client->nickname->nickid, FALSE);
     target = find_client(target_nick);
   }
   else
@@ -920,14 +920,14 @@ m_set_master(struct Service *service, struct Client *client,
 
   if(parc == 0)
   {
-    char *prinick = nickname_nick_from_id(nick->id);
+    char *prinick = nickname_nick_from_id(nick->id, TRUE);
 
     reply_user(service, service, client, NS_SET_VALUE, "MASTER", prinick);
     MyFree(prinick);
     return;
   }
 
-  if(db_get_id_from_name(parv[1], GET_ACCID_FROM_NICK) != nick->id)
+  if(nickname_id_from_nick(parv[1], TRUE) != nick->id)
   {
     reply_user(service, service, client, NS_MASTER_NOT_LINKED, parv[1]);
     return;
@@ -1350,7 +1350,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
     if(nick->nickid != nick->pri_nickid)
     {
-      char *prinick = nickname_nick_from_id(nick->id);
+      char *prinick = nickname_nick_from_id(nick->id, TRUE);
 
       reply_user(service, service, client, NS_INFO_MASTER, prinick);
       MyFree(prinick);

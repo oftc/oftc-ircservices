@@ -635,7 +635,7 @@ m_access_add(struct Service *service, struct Client *client,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if((account = db_get_id_from_name(parv[2], GET_ACCID_FROM_NICK)) <= 0)
+  if((account = nickname_id_from_nick(parv[2], TRUE)) <= 0)
   {
     reply_user(service, service, client, CS_REGISTER_NICK, parv[2]);
     if(chptr == NULL)
@@ -717,7 +717,7 @@ m_access_del(struct Service *service, struct Client *client,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
 
-  if((nickid = db_get_id_from_name(parv[2], GET_ACCID_FROM_NICK)) <= 0)
+  if((nickid = nickname_id_from_nick(parv[2], TRUE)) <= 0)
   {
     reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
     if(chptr == NULL)
@@ -820,7 +820,7 @@ m_access_list(struct Service *service, struct Client *client,
         break;
     }
 
-    nick = nickname_nick_from_id(access->account);
+    nick = nickname_nick_from_id(access->account, TRUE);
     reply_user(service, service, client, CS_ACCESS_LIST, i++, nick, level);
 
     MyFree(access);
@@ -1266,9 +1266,9 @@ m_akick_list(struct Service *service, struct Client *client,
     if(akick->target == 0)
       who = akick->mask;
     else
-      who = nickname_nick_from_id(akick->target);
+      who = nickname_nick_from_id(akick->target, TRUE);
 
-    whoset = nickname_nick_from_id(akick->setter);
+    whoset = nickname_nick_from_id(akick->setter, TRUE);
 
     strtime(client, akick->time_set, setbuf);
 

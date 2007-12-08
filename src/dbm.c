@@ -240,32 +240,6 @@ db_free_result(result_set_t *result)
 {                                                                     \
 } while(0)
 
-unsigned int
-db_get_id_from_name(const char *name, unsigned int type)
-{
-  yada_rc_t *rc, *brc;
-  int ret;
-
-  db_query(rc, type, name);
-
-  if(rc == NULL)
-    return 0;
-
-  brc = Bind("?d", &ret);
-  if(Fetch(rc, brc) == 0)
-  {
-    db_log("db_get_id_from_name: '%s' not found.", name);
-    Free(brc);
-    Free(rc);
-    return 0;
-  }
-
-  Free(brc);
-  Free(rc);
-  
-  return ret;  
-}
-
 int
 db_register_nick(struct Nick *nick)
 {
