@@ -1,4 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
 # Copyright (C) 2006 Luca Filipozzi
 MAINTAINERCLEANFILES=Makefile.in
 INCLUDES=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/languages
@@ -17,7 +16,7 @@ floodserv_la_SOURCES=floodserv.c
 irc_la_SOURCES=irc.c
 oftc_la_SOURCES=oftc.c
 pgsql_la_CFLAGS=-I/usr/include/postgresql
-pgsql_la_LDFLAGS=-lpq
+pgsql_la_LDLIBS=-lpq
 pgsql_la_SOURCES=pgsql.c
 
 install-exec-local:
