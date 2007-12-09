@@ -50,5 +50,6 @@
 #include "nickname.h"
 #include "akill.h"
 #include "jupe.h"
+#include "dbchannel.h"
 
 #endif /* INCLUDED_stdinc_h */

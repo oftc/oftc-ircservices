@@ -252,7 +252,7 @@ floodserv_free_channel(struct RegChannel *chptr)
 static void
 setup_channel(struct Channel *chptr)
 {
-  struct RegChannel *regchan = chptr->regchan == NULL ? db_find_chan(chptr->chname) : chptr->regchan;
+  struct RegChannel *regchan = chptr->regchan == NULL ? dbchannel_find(chptr->chname) : chptr->regchan;
 
   if(regchan != NULL && regchan->floodserv && !IsMember(fsclient, chptr))
   {

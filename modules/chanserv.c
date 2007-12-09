@@ -494,9 +494,9 @@ m_drop(struct Service *service, struct Client *client,
   assert(parv[1]);
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  if (db_delete_chan(parv[1]))
+  if(dbchannel_delete(regchptr))
   {
     reply_user(service, service, client, CS_DROPPED, parv[1]);
     ilog(L_NOTICE, "%s!%s@%s dropped channel %s", 
@@ -513,7 +513,7 @@ m_drop(struct Service *service, struct Client *client,
     reply_user(service, service, client, CS_DROP_FAILED, parv[1]);
   }
 
-  if (chptr == NULL && regchptr != NULL)
+  if(chptr == NULL && regchptr != NULL)
     free_regchan(regchptr);
 }
 
@@ -533,7 +533,7 @@ m_info(struct Service *service, struct Client *client,
     return;
   }
   
-  regchptr = db_find_chan(parv[1]);
+  regchptr = dbchannel_find(parv[1]);
 
   if(client->nickname)
     access = db_find_chanaccess(regchptr->id, client->nickname->id);
@@ -633,7 +633,7 @@ m_access_add(struct Service *service, struct Client *client,
   char *level_added = "MEMBER";
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   if((account = nickname_id_from_nick(parv[2], TRUE)) <= 0)
   {
@@ -715,7 +715,7 @@ m_access_del(struct Service *service, struct Client *client,
   unsigned int nickid;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   if((nickid = nickname_id_from_nick(parv[2], TRUE)) <= 0)
   {
@@ -787,7 +787,7 @@ m_access_list(struct Service *service, struct Client *client,
   int i = 1;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   first = handle = db_list_first(CHACCESS_LIST, regchptr->id, (void**)&access);
   if (handle == NULL)
@@ -845,7 +845,7 @@ m_set_desc(struct Service *service, struct Client *client,
   char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   join_params(value, parc-1, &parv[2]);
 
@@ -865,7 +865,7 @@ m_set_url(struct Service *service, struct Client *client,
   char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   join_params(value, parc-1, &parv[2]);
 
@@ -885,7 +885,7 @@ m_set_email(struct Service *service, struct Client *client,
   char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   join_params(value, parc-1, &parv[2]);
 
@@ -905,7 +905,7 @@ m_set_entrymsg(struct Service *service, struct Client *client,
   char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   join_params(value, parc-1, &parv[2]);
 
@@ -927,7 +927,7 @@ m_set_topic(struct Service *service, struct Client *client,
   int changetopic = FALSE;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   DupString(topic, regchptr->topic);
 
@@ -961,7 +961,7 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
   char limit_cache;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   join_params(value, parc-1, &parv[2]);
 
@@ -1089,7 +1089,7 @@ m_set_expirebans(struct Service *service, struct Client *client,
   int interval;
   char *flag;
 
-  regchptr = (chptr == NULL) ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = (chptr == NULL) ? dbchannel_find(parv[1]) : chptr->regchan;
   interval = regchptr->expirebans_lifetime; 
 
   if(parv[2] != NULL)
@@ -1186,7 +1186,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   char reason[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   akick = MyMalloc(sizeof(struct ServiceBan));
   akick->type = AKICK_BAN;
@@ -1256,7 +1256,7 @@ m_akick_list(struct Service *service, struct Client *client,
   char setbuf[TIME_BUFFER + 1];
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   first = handle = db_list_first(AKICK_LIST, regchptr->id, (void**)&akick);
   while(handle != NULL)
@@ -1299,7 +1299,7 @@ m_akick_del(struct Service *service, struct Client *client,
   int index, ret;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   index = atoi(parv[2]);
   if(index > 0)
@@ -1326,7 +1326,7 @@ m_akick_enforce(struct Service *service, struct Client *client,
   dlink_node *next_ptr;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? db_find_chan(parv[1]) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   DLINK_FOREACH_SAFE(ptr, next_ptr, chptr->members.head)
   {
@@ -1859,7 +1859,7 @@ m_set_string(struct Service *service, struct Client *client,
   struct RegChannel *regchptr;
 
   chptr = hash_find_channel(channel);
-  regchptr = chptr == NULL ? db_find_chan(channel) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
 
   if(parc < 2)
   {
@@ -1925,7 +1925,7 @@ m_set_flag(struct Service *service, struct Client *client,
   int on;
 
   chptr = hash_find_channel(channel);
-  regchptr = chptr == NULL ? db_find_chan(channel) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
 
   if (toggle == NULL)
   {
@@ -2163,7 +2163,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
   if(duration == -1)
     duration = 0;
 
-  if(!db_forbid_chan(resv))
+  if(!dbchannel_forbid(resv))
   {
     reply_user(service, service, client, CS_FORBID_FAIL, parv[1]);
     return;
@@ -2194,7 +2194,7 @@ m_unforbid(struct Service *service, struct Client *client, int parc, char *parv[
     return;
   }
 
-  if(!db_delete_chan_forbid(parv[1]))
+  if(!dbchannel_delete_forbid(parv[1]))
   {
     reply_user(service, service, client, CS_UNFORBID_FAIL, parv[1]);
     return;

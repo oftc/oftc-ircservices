@@ -247,14 +247,10 @@ int db_set_number(unsigned int, unsigned int, unsigned long);
 int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
-int db_forbid_chan(const char *);
 int db_is_chan_forbid(const char *);
-int db_delete_chan_forbid(const char *);
 
 int db_register_chan(struct RegChannel *, unsigned int);
-int db_delete_chan(const char *);
 
-struct RegChannel *db_find_chan(const char *);
 struct ServiceBan *db_find_akill(const char *);
 struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
 struct JupeEntry  *db_find_jupe(const char *);

@@ -100,7 +100,7 @@ static query_t queries[QUERY_COUNT] = {
     EXECUTE },
   { GET_CHAN_ACCESS, "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
     "channel_id=$1 AND account_id=$2", QUERY },
-  { DELETE_CHAN, "DELETE FROM channel WHERE lower(channel)=lower($1)", EXECUTE },
+  { DELETE_CHAN, "DELETE FROM channel WHERE id=$1", EXECUTE },
   { GET_AKILL, "SELECT id, mask, reason, setter, time, duration FROM akill WHERE mask=$1",
     QUERY },
   { INSERT_AKILL, "INSERT INTO akill (mask, reason, setter, time, duration) "

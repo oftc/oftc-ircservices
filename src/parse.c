@@ -373,7 +373,7 @@ handle_services_command(struct ServiceMessage *pmptr,
     chptr = hash_find_channel(hpara[1]);
     if(chptr == NULL || chptr->regchan == NULL)
     {
-      regchptr = db_find_chan(hpara[1]);
+      regchptr = dbchannel_find(hpara[1]);
       if(regchptr == NULL && !(mptr->flags & SFLG_UNREGOK))
       {
         reply_user(service, NULL, from, SERV_UNREG_CHAN, hpara[1]);

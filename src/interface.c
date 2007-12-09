@@ -1139,7 +1139,7 @@ set_mode_lock(struct Service *service, const char *channel,
   memset(key, 0, sizeof(key));
 
   chptr = hash_find_channel(channel);
-  regchptr = chptr == NULL ? db_find_chan(channel) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
 
   parv[0] = lock;
 
@@ -1602,7 +1602,7 @@ check_masterless_channels(unsigned int accid)
         ilog(L_NOTICE, "Dropping channel %s because its access list would be "
             "left empty by drop of nickname %s", chan->channel, nick);
         MyFree(nick);
-        db_delete_chan(chan->channel);
+//        dbchannel_delete(chan);
 
         chptr = hash_find_channel(chan->channel);
         if(chptr != NULL)

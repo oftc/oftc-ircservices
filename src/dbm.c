@@ -256,15 +256,15 @@ int
 db_forbid_chan(const char *c)
 {
   int ret;
-  struct RegChannel *chan;
+  //struct RegChannel *chan;
 
   db_begin_transaction();
 
-  if((chan = db_find_chan(c)) != NULL)
-  {
-    db_delete_chan(c);
-    free_regchan(chan);
-  }
+//  if((chan = db_find_chan(c)) != NULL)
+//  {
+//    db_delete_chan(c);
+//    free_regchan(chan);
+//  }
 
   db_exec(ret, INSERT_CHAN_FORBID, c);
 
@@ -275,40 +275,6 @@ db_forbid_chan(const char *c)
   }
 
   if(db_commit_transaction() != 0)
-    return FALSE;
-
-  return TRUE;
-}
-
-int 
-db_is_chan_forbid(const char *chan)
-{
-  yada_rc_t *rc, *brc;
-  char *c;
-  int ret;
-
-  brc = Bind("?ps", &c);
-  db_query(rc, GET_CHAN_FORBID, chan);
-
-  if(rc == NULL)
-    return FALSE;
-
-  ret = Fetch(rc, brc);
-  
-  Free(rc);
-  Free(brc);
-
-  return ret;
-}
-
-int 
-db_delete_chan_forbid(const char *chan)
-{
-  int ret;
-
-  db_exec(ret, DELETE_CHAN_FORBID, chan);
-
-  if(ret == -1)
     return FALSE;
 
   return TRUE;
@@ -728,57 +694,6 @@ db_list_del_index(unsigned int type, unsigned int id, unsigned int index)
   return ret;
 }
 
-struct RegChannel *
-db_find_chan(const char *channel)
-{
-  yada_rc_t *rc, *brc;
-  struct RegChannel *channel_p = NULL;
-  char *retchan;
-
-  assert(channel != NULL);
-
-  db_query(rc, GET_FULL_CHAN, channel);
-
-  if(rc == NULL)
-    return NULL;
- 
-  channel_p = MyMalloc(sizeof(struct RegChannel));
- 
-  brc = Bind("?d?ps?ps?ps?d?B?B?B?B?B?B?B?B?B?B?ps?ps?ps?ps?d",
-      &channel_p->id, &retchan, &channel_p->description, &channel_p->entrymsg, 
-      &channel_p->regtime, &channel_p->priv, &channel_p->restricted,
-      &channel_p->topic_lock, &channel_p->verbose, &channel_p->autolimit,
-      &channel_p->expirebans, &channel_p->floodserv, &channel_p->autoop,
-      &channel_p->autovoice, &channel_p->leaveops, &channel_p->url, 
-      &channel_p->email, &channel_p->topic, &channel_p->mlock, 
-      &channel_p->expirebans_lifetime);
-
-  if(Fetch(rc, brc) == 0)
-  {
-    db_log("db_find_chan: '%s' not found.", channel);
-    Free(brc);
-    Free(rc);
-    free_regchan(channel_p);
-    return NULL;
-  }
-
-  strlcpy(channel_p->channel, retchan, sizeof(channel_p->channel));
-
-  DupString(channel_p->description, channel_p->description);
-  DupString(channel_p->entrymsg, channel_p->entrymsg);
-  DupString(channel_p->url, channel_p->url);
-  DupString(channel_p->email, channel_p->email);
-  DupString(channel_p->topic, channel_p->topic);
-  DupString(channel_p->mlock, channel_p->mlock);
-
-  db_log("db_find_chan: Found chan %s", channel_p->channel);
-
-  Free(brc);
-  Free(rc);
-
-  return channel_p;
-}
-
 int
 db_register_chan(struct RegChannel *chan, unsigned int founder)
 {
@@ -816,21 +731,6 @@ db_register_chan(struct RegChannel *chan, unsigned int founder)
 
   if(db_commit_transaction() != 0)
     return FALSE;
-
-  return TRUE;
-}
-
-int
-db_delete_chan(const char *chan)
-{
-  int ret;
-
-  db_exec(ret, DELETE_CHAN, chan);
-
-  if(ret == -1)
-    return FALSE;
-
-  execute_callback(on_chan_drop_cb, chan);
 
   return TRUE;
 }

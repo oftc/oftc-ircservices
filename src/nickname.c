@@ -86,6 +86,7 @@ nickname_find(const char *nickname)
   }
 
   nick = row_to_nickname(&results->rows[0]);
+  db_free_result(results);
  
   return nick;
 }
