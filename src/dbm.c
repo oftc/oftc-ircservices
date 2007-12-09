@@ -314,74 +314,6 @@ db_delete_chan_forbid(const char *chan)
   return TRUE;
 }
 
-int 
-db_delete_forbid(const char *nick)
-{
-  int ret;
-
-  db_exec(ret, DELETE_FORBID, nick);
-
-  if(ret == -1)
-    return FALSE;
-
-  return TRUE;
-}
-
-static int
-db_fix_link(unsigned int id, unsigned int nickid)
-{
-  int new_nickid = -1;
-  yada_rc_t *rc, *brc;
-
-  brc = Bind("?d", &new_nickid);
-  db_query(rc, GET_NEW_LINK, id, nickid);
-
-  if(rc == NULL)
-    return -1;
-
-  if(Fetch(rc, brc) == 0)
-  {
-    Free(rc);
-    Free(brc);
-    return -1;
-  }
-
-  Free(rc);
-  Free(brc);
-
-  return new_nickid;
-}
-
-int
-db_set_nick_master(unsigned int accid, const char *newnick)
-{
-  int newnickid;
-  int ret;
-  yada_rc_t *rc, *brc;
-
-  brc = Bind("?d", &newnickid);
-  db_query(rc, GET_NICKID_FROM_NICK, newnick);
-
-  if(rc == NULL)
-    return FALSE;
-
-  if(Fetch(rc, brc) == 0)
-  {
-    Free(rc);
-    Free(brc);
-    return FALSE;
-  }
-
-  Free(rc);
-  Free(brc);
-
-  db_exec(ret, SET_NICK_MASTER, newnickid, accid);
-  if(ret == -1)
-    return FALSE;
-
-  return TRUE;
-}
-
 int
 db_set_string(unsigned int key, unsigned int id, const char *value)
 {
@@ -796,78 +728,6 @@ db_list_del_index(unsigned int type, unsigned int id, unsigned int index)
   return ret;
 }
 
-int    
-db_link_nicks(unsigned int master, unsigned int child)
-{
-  int ret;
-
-  db_begin_transaction();
-
-  db_exec(ret, SET_NICK_LINK, master, child);
-  if(ret != -1)
-  {
-    db_exec(ret, DELETE_DUPLICATE_CHACCESS, child, master, master, child);
-    if(ret != -1)
-    {
-      db_exec(ret, MERGE_CHACCESS, master, child);
-      if(ret != -1)
-        db_exec(ret, DELETE_ACCOUNT, child);
-    }
-  }
-
-  if(ret == -1)
-  {
-    db_rollback_transaction();
-    return FALSE;
-  }
-
-  if(db_commit_transaction() != 0)
-    return FALSE;
-
-  return TRUE;
-}
-
-unsigned int 
-db_unlink_nick(unsigned int accid, unsigned int priid, unsigned int nickid)
-{
-  int ret;
-  unsigned int new_accid, new_nickid;
-
-  db_begin_transaction();
-
-  db_exec(ret, INSERT_NICK_CLONE, accid);
-  if(ret != -1)
-  {
-    new_accid = db_insertid("account", "id");
-    if(priid != nickid)
-      db_exec(ret, SET_NICK_LINK_EXCLUDE, new_accid, accid, nickid);
-  }
-
-  if(ret != -1)
-  {
-    new_nickid = db_fix_link(accid, priid);
-    if(nickid == priid)
-    {
-      db_exec(ret, SET_NICK_MASTER, priid, accid);
-      db_exec(ret, SET_NICK_MASTER, new_nickid, new_accid);
-      db_exec(ret, SET_NICK_LINK_EXCLUDE, new_accid, accid, new_nickid);
-    }
-    else
-      db_exec(ret, SET_NICK_MASTER, nickid, new_accid);
-  }
-
-  if(ret == -1)
-  {
-    db_rollback_transaction();
-    return 0;
-  }
-  
-  if(db_commit_transaction() != 0)
-    return FALSE;
-
-  return new_accid;
-}
-
 struct RegChannel *
 db_find_chan(const char *channel)
 {
@@ -1178,37 +1038,6 @@ db_find_certfp(unsigned int accid, const char *certfp)
   Free(rc);
 
   return ret;
-}
-
-int
-db_save_nick(struct Nick *nick)
-{
-  int ret;
-
-  db_begin_transaction();
-
-  ret = db_set_number(SET_NICK_LAST_SEEN, nick->nickid, nick->last_seen);
-  if(!ret)
-  {
-    db_rollback_transaction();
-    return 0;
-  }
-
-  db_exec(ret, SAVE_NICK, nick->url, nick->email, nick->cloak,
-      nick->enforce, nick->secure, nick->verified, nick->cloak_on,
-      nick->admin, nick->email_verified, nick->priv, nick->language,
-      nick->last_host, nick->last_realname, nick->last_quit, 
-      nick->last_quit_time, nick->id);
-  if(ret == -1)
-  {
-    db_rollback_transaction();
-    return 0;
-  }
-  else
-  {
-    db_commit_transaction();
-    return 1;
-  }
 }
 
 static void

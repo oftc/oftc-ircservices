@@ -932,7 +932,7 @@ m_set_master(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_set_nick_master(nick->id, parv[1]))
+  if(nickname_set_master(nick, parv[1]))
     reply_user(service, service, client, NS_MASTER_SET_OK, parv[1]);
   else
     reply_user(service, service, client, NS_MASTER_SET_FAIL, parv[1]);
@@ -1201,7 +1201,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(!db_link_nicks(master_nick->id, nick->id))
+  if(!nickname_link(master_nick, nick))
   {
     free_nick(master_nick);
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
@@ -1222,7 +1222,7 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
 
-  if((nick->id = db_unlink_nick(nick->id, nick->pri_nickid, nick->nickid)) > 0)
+  if((nick->id = nickname_unlink(nick)) > 0)
   {
     reply_user(service, service, client, NS_UNLINK_OK, client->name);
     // In case this was a slave nick, it is now a master of itself
@@ -1464,7 +1464,7 @@ m_unforbid(struct Service *service, struct Client *client, int parc,
     return;
   }
 
-  if(db_delete_forbid(parv[1]))
+  if(nickname_delete_forbid(parv[1]))
     reply_user(service, service, client, NS_UNFORBID_OK, parv[1]);
   else
     reply_user(service, service, client, NS_UNFORBID_FAIL, parv[1]);
@@ -1700,7 +1700,7 @@ m_enslave(struct Service *service, struct Client *client, int parc, char *parv[]
     return;
   }
 
-  if(!db_link_nicks(nick->id, slave_nick->id))
+  if(!nickname_link(nick, slave_nick))
   {
     free_nick(slave_nick);
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);

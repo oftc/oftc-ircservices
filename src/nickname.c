@@ -209,7 +209,9 @@ nickname_delete(struct Nick *nick)
   {
     char *tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii", 
         nick->id, nick->nickid);
-    if(error || tmp == NULL)
+    if(error)
+      goto failure;
+    if(tmp == NULL)
     {
       ret = db_execute_nonquery(DELETE_NICK, "i", nick->nickid);
       if(ret == -1)
@@ -263,6 +265,156 @@ nickname_forbid(const char *nick)
 
   ret = db_execute_nonquery(INSERT_FORBID, "s", nick);
 
+  if(ret == -1)
+  {
+    db_rollback_transaction();
+    return FALSE;
+  }
+
+  return db_commit_transaction();
+}
+
+int 
+nickname_delete_forbid(const char *nick)
+{
+  int ret;
+
+  ret = db_execute_nonquery(DELETE_FORBID, "s", nick);
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
+}
+
+int
+nickname_set_master(struct Nick *nick, const char *master)
+{
+  int newid, ret;
+
+  newid = nickname_id_from_nick(master, FALSE);
+
+  if(newid == -1)
+    return FALSE;
+
+  ret = db_execute_nonquery(SET_NICK_MASTER, "ii", newid, nick->id);
+
+  return (ret != -1);
+}
+
+int
+nickname_link(struct Nick *master, struct Nick *child)
+{
+  int ret;
+
+  db_begin_transaction();
+
+  ret = db_execute_nonquery(SET_NICK_LINK, "ii", master->id, child->id);
+  if(ret == -1)
+    goto failure;
+
+  ret = db_execute_nonquery(DELETE_DUPLICATE_CHACCESS, "iiii", child->id,
+      master->id, master->id, child->id);
+  if(ret == -1)
+    goto failure;
+
+  ret = db_execute_nonquery(MERGE_CHACCESS, "ii", master->id, child->id);
+  if(ret == -1)
+    goto failure;
+
+  ret = db_execute_nonquery(DELETE_ACCOUNT, "i", child->id);
+  if(ret == -1)
+    goto failure;
+
+  return db_commit_transaction();
+
+failure:
+  db_rollback_transaction();
+  return FALSE;
+}
+
+int
+nickname_unlink(struct Nick *nick)
+{
+  int ret, newid, new_nickid, error;
+  char *tmp;
+
+  db_begin_transaction();
+
+  ret = db_execute_nonquery(INSERT_NICK_CLONE, "i", nick->id);
+  if(ret == -1)
+    goto failure;
+
+  newid = db_insertid("account", "id");
+  if(newid == -1)
+    goto failure;
+
+  if(nick->pri_nickid != nick->nickid)
+  {
+    ret = db_execute_nonquery(SET_NICK_LINK_EXCLUDE, "iii", newid,
+        nick->id, nick->nickid);
+    if(ret == -1)
+      goto failure;
+  }
+
+  tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii", 
+      nick->id, nick->pri_nickid);
+  if(error)
+    goto failure;
+  new_nickid = atoi(tmp);
+  MyFree(tmp);
+
+  if(nick->nickid == nick->pri_nickid)
+  {
+    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", nick->pri_nickid,
+        nick->id);
+    if(ret == -1)
+      goto failure;
+    
+    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", new_nickid, newid);
+    if(ret == -1)
+      goto failure;
+
+    ret = db_execute_nonquery(SET_NICK_LINK_EXCLUDE, "iii", newid,
+        nick->id, new_nickid);
+    if(ret == -1)
+      goto failure;
+  }
+  else
+  {
+    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", nick->nickid, newid);
+    if(ret == -1)
+      goto failure;
+  }
+
+  if(!db_commit_transaction())
+    return -1;
+
+  return newid;
+failure:
+  db_rollback_transaction();
+  return -1;
+}
+
+int
+nickname_save(struct Nick *nick)
+{
+  int ret;
+
+  db_begin_transaction();
+
+  ret = db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", nick->nickid, 
+      nick->last_seen);
+  if(ret == -1)
+  {
+    db_rollback_transaction();
+    return FALSE;
+  }
+
+  ret = db_execute_nonquery(SAVE_NICK, "sssbbbbbbbisssii", nick->url,
+      nick->email, nick->cloak, nick->enforce, nick->secure,
+      nick->verified, nick->cloak_on, nick->admin, nick->email_verified,
+      nick->priv, nick->language, nick->last_host, nick->last_realname,
+      nick->last_quit, nick->last_quit_time, nick->id);
   if(ret == -1)
   {
     db_rollback_transaction();

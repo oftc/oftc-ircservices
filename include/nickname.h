@@ -32,5 +32,10 @@ int nickname_id_from_nick(const char *, int);
 int nickname_register(struct Nick *);
 int nickname_forbid(const char *);
 int nickname_delete(struct Nick *);
+int nickname_delete_forbid(const char *);
+int nickname_set_master(struct Nick *, const char *);
+int nickname_link(struct Nick *, struct Nick *);
+int nickname_unlink(struct Nick *);
+int nickname_save(struct Nick *);
 
 #endif

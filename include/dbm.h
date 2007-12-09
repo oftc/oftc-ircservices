@@ -247,15 +247,9 @@ int db_set_number(unsigned int, unsigned int, unsigned long);
 int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
-int db_set_nick_master(unsigned int, const char *);
-
-int db_delete_forbid(const char *);
 int db_forbid_chan(const char *);
 int db_is_chan_forbid(const char *);
 int db_delete_chan_forbid(const char *);
-
-int db_link_nicks(unsigned int, unsigned int);
-unsigned int db_unlink_nick(unsigned int, unsigned int, unsigned int);
 
 int db_register_chan(struct RegChannel *, unsigned int);
 int db_delete_chan(const char *);
@@ -279,8 +273,6 @@ char *db_find_certfp(unsigned int, const char *);
 
 int db_add_sentmail(unsigned int, const char *);
 int db_is_mailsent(unsigned int, const char *);
-
-int db_save_nick(struct Nick *);
 
 void db_reopen_log();
 void db_log(const char *, ...);
