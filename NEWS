@@ -50,3 +50,8 @@ o Don't try to JUPE existing servers anymore.
 o Remove existing JUPEs on services restart if server is already connected.
 o fix a segfault when enforcing akicks.
 o Clean up the nickserv info output with respect to languages.
+
+1.1.5
+-----
+o Fix a crash bug when services tries to ban itself from channels with
+floodserv in.
