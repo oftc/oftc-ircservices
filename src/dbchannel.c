@@ -136,3 +136,33 @@ dbchannel_delete_forbid(const char *name)
 
   return TRUE;
 }
+
+int
+dbchannel_register(struct RegChannel *channel, struct Nick *founder)
+{
+  int ret;
+
+  db_begin_transaction();
+
+  ret = db_execute_nonquery(INSERT_CHAN, "ssii", channel->channel, 
+      channel->description, CurrentTime, CurrentTime);
+
+  if(ret == -1)
+    goto failure;
+
+  channel->id = db_insertid("channel", "id");
+  if(channel->id == -1)
+    goto failure;
+
+  ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", founder->id, channel->id, 
+      MASTER_FLAG);
+
+  if(ret == -1)
+    goto failure;
+
+  return db_commit_transaction();
+
+failure:
+  db_rollback_transaction();
+  return FALSE;
+}

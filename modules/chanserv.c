@@ -470,7 +470,7 @@ m_register(struct Service *service, struct Client *client,
   join_params(desc, parc-1, &parv[2]);
   DupString(regchptr->description, desc);
 
-  if (db_register_chan(regchptr, client->nickname->id))
+  if (dbchannel_register(regchptr, client->nickname))
   {
     chptr->regchan = regchptr;
     reply_user(service, service, client, CS_REG_SUCCESS, parv[1]);

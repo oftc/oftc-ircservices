@@ -252,34 +252,6 @@ db_insertid(const char *table, const char *column)
 {                                                                     \
 } while(0)
 
-int 
-db_forbid_chan(const char *c)
-{
-  int ret;
-  //struct RegChannel *chan;
-
-  db_begin_transaction();
-
-//  if((chan = db_find_chan(c)) != NULL)
-//  {
-//    db_delete_chan(c);
-//    free_regchan(chan);
-//  }
-
-  db_exec(ret, INSERT_CHAN_FORBID, c);
-
-  if(ret == -1)
-  {
-    db_rollback_transaction();
-    return FALSE;
-  }
-
-  if(db_commit_transaction() != 0)
-    return FALSE;
-
-  return TRUE;
-}
-
 int
 db_set_string(unsigned int key, unsigned int id, const char *value)
 {
@@ -692,47 +664,6 @@ db_list_del_index(unsigned int type, unsigned int id, unsigned int index)
     return 0;
 
   return ret;
-}
-
-int
-db_register_chan(struct RegChannel *chan, unsigned int founder)
-{
-  struct ChanAccess *access;
-  int ret;
-
-  db_begin_transaction();
-
-  db_exec(ret, INSERT_CHAN, chan->channel, chan->description, CurrentTime,
-      CurrentTime);
-
-  if(ret == -1)
-  {
-    db_rollback_transaction();
-    return FALSE;
-  }
-
-  chan->id = db_insertid("channel", "id");
-  if(chan->id <= 0)
-  {
-    db_rollback_transaction();
-    return FALSE;
-  }
-
-  access = MyMalloc(sizeof(struct ChanAccess));
-  access->channel = chan->id;
-  access->account = founder;
-  access->level   = MASTER_FLAG;
- 
-  if(!db_list_add(CHACCESS_LIST, access))
-  {
-    db_rollback_transaction();
-    return FALSE;
-  }
-
-  if(db_commit_transaction() != 0)
-    return FALSE;
-
-  return TRUE;
 }
 
 struct ChanAccess *

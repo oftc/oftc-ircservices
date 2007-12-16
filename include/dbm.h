@@ -249,8 +249,6 @@ char *db_get_string(const char *, unsigned int, const char *);
 
 int db_is_chan_forbid(const char *);
 
-int db_register_chan(struct RegChannel *, unsigned int);
-
 struct ServiceBan *db_find_akill(const char *);
 struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
 struct JupeEntry  *db_find_jupe(const char *);
