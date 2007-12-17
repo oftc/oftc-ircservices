@@ -24,6 +24,17 @@
 
 #include "stdinc.h"
 
+/* 
+ * row_to_nickname: 
+ *
+ * Converts a database row to a nickname struct, allocating the required 
+ * memory in the process.  Null database fields are left as NULL pointers.  
+ *
+ * See the query GET_FULL_NICK for details of the field mappings.
+ *
+ * Returns an allocated nickname.
+ *
+ */
 static struct Nick *
 row_to_nickname(row_t *row)
 {
@@ -63,6 +74,17 @@ row_to_nickname(row_t *row)
   return nick;
 }
 
+/* 
+ * nickname_find: 
+ *
+ * Searches the database for a nickname.  Returns a nickname structure for 
+ * the nick if one is found.  Allocates the storage for it, which must be 
+ * freed with free_nickname.
+ *
+ * Returns the nickname structure on success, NULL on error or if the nickname
+ * was not found.
+ *
+ */
 struct Nick *
 nickname_find(const char *nickname)
 {
@@ -91,63 +113,16 @@ nickname_find(const char *nickname)
   return nick;
 }
 
-int 
-nickname_is_forbid(const char *nickname)
-{
-  char *nick;
-  int error;
-
-  nick = db_execute_scalar(GET_FORBID, &error, "s", nickname);
-  if(error)
-  {
-    ilog(L_CRIT, "Database error %d trying to test forbidden nickname %s", 
-        error, nickname);
-    return 0;
-  }
-
-  if(nick == NULL)
-  {
-    MyFree(nick);
-    return 0;
-  }
-
-  MyFree(nick);
-  return 1;
-}
-
-char *
-nickname_nick_from_id(int id, int is_accid)
-{
-  char *nick;
-  int error;
-
-  if(is_accid)
-    nick = db_execute_scalar(GET_NICK_FROM_ACCID, &error, "i", id);
-  else
-    nick = db_execute_scalar(GET_NICK_FROM_NICKID, &error, "i", id);
-  if(error || nick == NULL)
-    return NULL;
-
-  return nick;
-}
-
-int
-nickname_id_from_nick(const char *nick, int is_accid)
-{
-  int id, error;
-  char *ret;
-
-  if(is_accid)
-    ret = db_execute_scalar(GET_ACCID_FROM_NICK, &error, "s", nick);
-  else
-    ret = db_execute_scalar(GET_NICKID_FROM_NICK, &error, "s", nick);
-
-  id = atoi(ret);
-  MyFree(ret);
-
-  return id;
-}
-
+/* 
+ * nickname_register: 
+ *
+ * Registers a nickname in the database.  Will create a new account for it.
+ *
+ * Returns TRUE on success or FALSE otherwise.  
+ *
+ * Will not update the database unless successful.
+ *
+ */
 int
 nickname_register(struct Nick *nick)
 {
@@ -199,6 +174,22 @@ failure:
   return FALSE;
 }
 
+/* 
+ * nickname_delete: 
+ *
+ * Deletes the specified nickname from the database.  
+ *
+ * Returns TRUE on success and FALSE on failure.  
+ *
+ * Will not update the database unless successful.
+ *
+ * If the account has no more nicknames on it after this one, the account will
+ * be deleted as well.  If a master is deleted, it will attempt to find a new
+ * master from the remaining links.
+ *
+ * Raises on_nick_drop callback.
+ *
+ */
 int
 nickname_delete(struct Nick *nick)
 {
@@ -250,6 +241,51 @@ failure:
   return FALSE;
 }
 
+/* 
+ * nickname_is_forbid: 
+ * 
+ * Tests a string nickname for a match in the forbid list.
+ * 
+ * Returns FALSE if not found OR if a database error occured.  
+ *
+ * Returns TRUE if a match was found and the nickname is forbidden.
+ *
+ */
+int 
+nickname_is_forbid(const char *nickname)
+{
+  char *nick;
+  int error;
+
+  nick = db_execute_scalar(GET_FORBID, &error, "s", nickname);
+  if(error)
+  {
+    ilog(L_CRIT, "Database error %d trying to test forbidden nickname %s", 
+        error, nickname);
+    return 0;
+  }
+
+  if(nick == NULL)
+  {
+    MyFree(nick);
+    return 0;
+  }
+
+  MyFree(nick);
+  return 1;
+}
+
+/* 
+ * nickname_forbid: 
+ *
+ * Adds the string nickname to the forbidden list.  
+ *
+ * Returns TRUE if successful, FALSE otherwise.  
+ *
+ * If successful, this will also result in the specified nickname being 
+ * deleted, following the same rules as nickname_delete.
+ *
+ */
 int
 nickname_forbid(const char *nick)
 {
@@ -275,6 +311,16 @@ nickname_forbid(const char *nick)
   return db_commit_transaction();
 }
 
+/* 
+ * nickname_delete_forbid: 
+ *
+ * Deletes the string nickname from the forbidden list.  
+ *
+ * Returns TRUE on success, FALSE otherwise.  
+ *
+ * The database is not updated unless successful.
+ *
+ */
 int 
 nickname_delete_forbid(const char *nick)
 {
@@ -287,6 +333,74 @@ nickname_delete_forbid(const char *nick)
   return TRUE;
 }
 
+/* 
+ * nickname_nick_from_id: 
+ *
+ * Retrieve a nickname from the database based on its id.  
+ *
+ * If is_accid is TRUE, it treats the specified id as an account is and
+ * looks for the primary nickname of the account.  
+ *
+ * If is_accid is FALSE, it treats the id specificed as a nickname and 
+ * returns that specific nickname.
+ * 
+ * Returns the nickname if successful.  Returns NULL on error, or if the
+ * nickname was actually null, which shouldnt be possible.
+ *
+ * The nickname returned is allocated and must be freed.
+ *
+ */
+char *
+nickname_nick_from_id(int id, int is_accid)
+{
+  char *nick;
+  int error;
+
+  if(is_accid)
+    nick = db_execute_scalar(GET_NICK_FROM_ACCID, &error, "i", id);
+  else
+    nick = db_execute_scalar(GET_NICK_FROM_NICKID, &error, "i", id);
+  if(error || nick == NULL)
+    return NULL;
+
+  return nick;
+}
+
+/* 
+ * nickname_id_from_nick: 
+ *
+ * Looks up the database id for the specified nickname.
+ * 
+ * Returns -1 on error, or the id of the specified nickname.  If is_accid is
+ * TRUE, this will be the nickname's account id, otherwise it will be the id
+ * of the nickname itself.
+ *
+ */
+int
+nickname_id_from_nick(const char *nick, int is_accid)
+{
+  int id, error;
+  char *ret;
+
+  if(is_accid)
+    ret = db_execute_scalar(GET_ACCID_FROM_NICK, &error, "s", nick);
+  else
+    ret = db_execute_scalar(GET_NICKID_FROM_NICK, &error, "s", nick);
+
+  id = atoi(ret);
+  MyFree(ret);
+
+  return id;
+}
+
+/*
+ * nickname_set_master: 
+ * 
+ * Sets the master nickname of an account to the nickname specified.  
+ *
+ * Returns TRUE on success, FALSE otherwise.
+ *
+ */
 int
 nickname_set_master(struct Nick *nick, const char *master)
 {
@@ -302,6 +416,18 @@ nickname_set_master(struct Nick *nick, const char *master)
   return (ret != -1);
 }
 
+/* 
+ * nickname_link:
+ *
+ * Links the child nickname to the master.  The child must not already be a
+ * master of another nickname.
+ *
+ * Returns TRUE on success, FALSE otherwise.
+ *
+ * The child account will be deleted and the channel access lists of both
+ * nicknames will be merged.
+ *
+ */
 int
 nickname_link(struct Nick *master, struct Nick *child)
 {
@@ -333,6 +459,18 @@ failure:
   return FALSE;
 }
 
+/* 
+ * nickname_unlink:
+ *
+ * Unlinks the specified nickname from its master.
+ *
+ * Returns TRUE on success, FALSE otherwise.
+ *
+ * A clone of the master account will be created and the nickname will be
+ * assigned to that account.  If a master is unlinked, a new master will be
+ * found for the remaining chain of nicknames.
+ *
+ */
 int
 nickname_unlink(struct Nick *nick)
 {
@@ -396,6 +534,16 @@ failure:
   return -1;
 }
 
+/* 
+ * nickname_save:
+ *
+ * Saves the specified nickname to the database.
+ *
+ * Returns TRUE on success or FALSE otherwise.
+ *
+ * Mainly intended to be used by scripts or external modules.
+ *
+ */
 int
 nickname_save(struct Nick *nick)
 {
