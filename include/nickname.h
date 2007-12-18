@@ -45,7 +45,7 @@ int nickname_save(struct Nick *);
 
 int nickname_accesslist_add(struct AccessEntry *);
 int nickname_accesslist_list(struct Nick *, dlink_list *);
-
+int nickname_accesslist_check(struct Nick *, const char *);
 void nickname_accesslist_free(dlink_list *);
 
 #endif

@@ -678,3 +678,28 @@ nickname_accesslist_free(dlink_list *list)
     free_dlink_node(ptr);
   }
 }
+
+int
+nickname_accesslist_check(struct Nick *nick, const char *value)
+{
+  dlink_list list = { 0 };
+  dlink_node *ptr;
+  int found = FALSE;
+
+  nickname_accesslist_list(nick, &list);
+
+  DLINK_FOREACH(ptr, list.head)
+  {
+    struct AccessEntry *entry = (struct AccessEntry *)ptr;
+
+    if(match(entry->value, value))
+    {
+      found = TRUE;
+      break;
+    }
+  }
+
+  nickname_accesslist_free(&list);
+
+  return found;
+}
