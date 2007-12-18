@@ -572,3 +572,109 @@ nickname_save(struct Nick *nick)
 
   return db_commit_transaction();
 }
+
+/* 
+ * nickname_accesslist_add:
+ *
+ * Adds the mask specified to the database attached to the specified nickname.
+ *
+ * Returns TRUE on success, FALSE otherwise.
+ *
+ */
+int
+nickname_accesslist_add(struct AccessEntry *entry)
+{
+  int ret;
+
+  ret = db_execute_nonquery(INSERT_NICKACCESS, "is", entry->id, entry->value);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
+}
+
+struct AccessEntry *
+row_to_access_entry(row_t *row)
+{
+  struct AccessEntry *entry = MyMalloc(sizeof(struct AccessEntry));
+
+  entry->id = atoi(row->cols[0]);
+  DupString(entry->value, row->cols[1]);
+
+  return entry;
+}
+
+/*
+ * nickname_accesslist_list:
+ *
+ * Return a list containing all of the access list entries for the nickname
+ * specified.
+ *
+ * Returns the number of entries on success, -1 on error.
+ *
+ * The list paramter is populated with a list of AccessEntry structures.
+ *
+ */
+int
+nickname_accesslist_list(struct Nick *nick, dlink_list *list)
+{
+  result_set_t *results;
+  int error, i;
+
+  results = db_execute(GET_NICKACCESS, &error, "i", nick->id);
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "nickname_accesslist_list: database error %d", error);
+    return -1;
+  }
+  else if(results == NULL)
+    return -1;
+
+  for(i = 0; i < results->row_count; i++)
+  {
+    row_t *row = &results->rows[i];
+    struct AccessEntry *entry = row_to_access_entry(row);
+
+    dlinkAdd(entry, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+int
+nickname_accesslist_delete(struct Nick *nick, const char *value, int index)
+{
+  int ret;
+
+  if(value == NULL)
+    ret = db_execute_nonquery(DELETE_NICKACCESS_IDX, "ii", nick->id, index);
+  else
+    ret = db_execute_nonquery(DELETE_NICKACCESS, "is", nick->id, value);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
+}
+
+void
+nickname_accesslist_free(dlink_list *list)
+{
+  dlink_node *ptr, *next;
+  struct AccessEntry *entry;
+
+  ilog(L_DEBUG, "Freeing nickname access list %p of length %lu", list,
+      dlink_list_length(list));
+
+  DLINK_FOREACH_SAFE(ptr, next, list->head)
+  {
+    entry = (struct AccessEntry *)ptr->data;
+    MyFree(entry->value);
+    MyFree(entry);
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
+}

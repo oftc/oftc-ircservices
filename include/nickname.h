@@ -25,17 +25,27 @@
 #ifndef INCLUDED_nickname_h
 #define INCLUDED_nickname_h
 
-int nickname_is_forbid(const char *);
 struct Nick *nickname_find(const char *);
-char *nickname_nick_from_id(int, int);
-int nickname_id_from_nick(const char *, int);
 int nickname_register(struct Nick *);
-int nickname_forbid(const char *);
 int nickname_delete(struct Nick *);
+
+int nickname_forbid(const char *);
 int nickname_delete_forbid(const char *);
-int nickname_set_master(struct Nick *, const char *);
+int nickname_is_forbid(const char *);
+
+
 int nickname_link(struct Nick *, struct Nick *);
 int nickname_unlink(struct Nick *);
+
+char *nickname_nick_from_id(int, int);
+int nickname_id_from_nick(const char *, int);
+int nickname_set_master(struct Nick *, const char *);
+
 int nickname_save(struct Nick *);
+
+int nickname_accesslist_add(struct AccessEntry *);
+int nickname_accesslist_list(struct Nick *, dlink_list *);
+
+void nickname_accesslist_free(dlink_list *);
 
 #endif

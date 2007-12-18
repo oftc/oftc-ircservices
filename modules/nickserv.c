@@ -989,14 +989,10 @@ m_access_add(struct Service *service, struct Client *client, int parc,
   access.id = nick->id;
   access.value = parv[1];
   
-  if(db_list_add(ACCESS_LIST, (void *)&access))
-  {
+  if(nickname_accesslist_add(&access))
     reply_user(service, service, client, NS_ACCESS_ADD, parv[1]);
-  }
   else
-  {
     reply_user(service, service, client, NS_ACCESS_ADDFAIL, parv[1]);
-  }
 }
 
 static void
@@ -1005,30 +1001,20 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 {
   struct Nick *nick;
   struct AccessEntry *entry = NULL;
-  void *first, *listptr;
+  dlink_list list = { 0 };
+  dlink_node *ptr;
   int i = 1;
 
   nick = client->nickname;
 
   reply_user(service, service, client, NS_ACCESS_START);
- 
-  if((listptr = db_list_first(ACCESS_LIST, nick->id, (void**)&entry)) == NULL)
-  {
-    MyFree(entry);
-    return;
-  }
 
-  first = listptr;
+  nickname_accesslist_list(nick, &list);
 
-  while(listptr != NULL)
-  {
+  DLINK_FOREACH(ptr, list.head)
     reply_user(service, service, client, NS_ACCESS_ENTRY, i++, entry->value);
-    MyFree(entry);
-    listptr = db_list_next(listptr, ACCESS_LIST, (void**)&entry);
-  }
 
-  MyFree(entry);
-  db_list_done(first);
+  nickname_accesslist_free(&list);
 }
 
 static void

@@ -302,9 +302,6 @@ db_list_add(unsigned int type, const void *value)
 
   switch(type)
   {
-    case ACCESS_LIST:
-      db_exec(ret, INSERT_NICKACCESS, aeval->id, aeval->value);
-      break;
     case CERT_LIST:
       db_exec(ret, INSERT_NICKCERT, aeval->id, aeval->value);
       break;
@@ -365,12 +362,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   
   switch(type)
   {
-    case ACCESS_LIST:
-      query = GET_NICKACCESS;
-      aeval = MyMalloc(sizeof(struct AccessEntry));
-      *entry = aeval;
-      brc = Bind("?d?ps", &aeval->id, &aeval->value);
-      break;
     case CERT_LIST:
       query = GET_NICKCERTS;
       aeval = MyMalloc(sizeof(struct AccessEntry));
@@ -529,7 +520,6 @@ db_list_next(void *result, unsigned int type, void **entry)
 
   switch(type)
   {
-    case ACCESS_LIST:
     case CERT_LIST:
       aeval = MyMalloc(sizeof(struct AccessEntry));
       *entry = aeval;
