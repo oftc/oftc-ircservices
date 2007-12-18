@@ -23,6 +23,21 @@
  */
 
 #include "stdinc.h"
+#include "client.h"
+#include "chanserv.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "msg.h"
+#include "interface.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "conf/modules.h"
+#include "conf/servicesinfo.h"
+#include "hash.h"
+#include "dbchannel.h"
+#include "nickname.h"
+#include "nickserv.h"
 
 static struct Service *chanserv = NULL;
 static struct Client *chanserv_client = NULL;

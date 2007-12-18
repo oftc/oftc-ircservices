@@ -27,6 +27,9 @@
  */
 
 #include "stdinc.h"
+#include "packet.h"
+#include "client.h"
+#include "parse.h"
 
 struct Callback *iorecv_cb = NULL;
 struct Callback *iosend_cb = NULL;

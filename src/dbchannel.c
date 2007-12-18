@@ -23,6 +23,14 @@
  */
 
 #include "stdinc.h"
+#include "dbm.h"
+#include "nickserv.h"
+#include "dbchannel.h"
+#include "chanserv.h"
+#include "parse.h"
+#include "language.h"
+#include "interface.h"
+#include "msg.h"
 
 static struct RegChannel *
 row_to_dbchannel(row_t *row)

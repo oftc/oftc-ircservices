@@ -24,7 +24,14 @@
 
 #include "stdinc.h"
 #include "conf/conf.h"
-#include <yada.h>
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "nickserv.h"
+#include "chanserv.h"
+#include "interface.h"
+#include "msg.h"
+#include "send.h"
 
 #define LOG_BUFSIZE 2048
 

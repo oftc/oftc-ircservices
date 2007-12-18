@@ -27,6 +27,22 @@
  */
 
 #include "stdinc.h"
+#include "client.h"
+#include "chanserv.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "msg.h"
+#include "interface.h"
+#include "conf/modules.h"
+#include "conf/servicesinfo.h"
+#include "operserv.h"
+#include "nickserv.h"
+#include "nickname.h"
+#include "jupe.h"
+#include "akill.h"
+#include "send.h"
+#include "hash.h"
 
 static struct Service *operserv = NULL;
 

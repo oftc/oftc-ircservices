@@ -28,6 +28,17 @@
 
 
 #include "stdinc.h"
+#include "client.h"
+#include "hash.h"
+#include "send.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "parse.h"
+#include "language.h"
+#include "dbm.h"
+#include "interface.h"
+#include "msg.h"
+#include "nickserv.h"
 
 dlink_list global_client_list;
 dlink_list global_server_list;

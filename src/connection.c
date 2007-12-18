@@ -27,6 +27,16 @@
  */
 
 #include "stdinc.h"
+#include "parse.h"
+#include "packet.h"
+#include "client.h"
+#include "channel_mode.h"
+#include "conf/modules.h"
+#include "conf/connect.h"
+#include "dbm.h"
+#include "chanserv.h"
+#include "language.h"
+#include "interface.h"
 
 static CNCB serv_connect_callback;
 struct Callback *connected_cb;

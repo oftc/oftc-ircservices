@@ -23,6 +23,21 @@
  */
 
 #include "stdinc.h"
+#include "chanserv.h"
+#include "client.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "msg.h"
+#include "interface.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "conf/modules.h"
+#include "hash.h"
+#include "dbchannel.h"
+#include "nickname.h"
+#include "floodserv.h"
+#include "mqueue.h"
 
 static struct Service *floodserv = NULL;
 static struct Client  *fsclient  = NULL;

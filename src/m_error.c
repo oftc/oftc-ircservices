@@ -27,6 +27,14 @@
  */
 
 #include "stdinc.h"
+#include "parse.h"
+#include "language.h"
+#include "dbm.h"
+#include "nickserv.h"
+#include "chanserv.h"
+#include "interface.h"
+#include "msg.h"
+#include "client.h"
 
 struct Message error_msgtab = {
  "ERROR", 0, 0, 1, 0, 0, 0,

@@ -27,6 +27,9 @@
  */
 
 #include "stdinc.h"
+#include "send.h"
+#include "client.h"
+#include "packet.h"
 
 static void send_message(struct Client *, char *, int);
 

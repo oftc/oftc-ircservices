@@ -23,6 +23,13 @@
  */
 
 #include "stdinc.h"
+#include "jupe.h"
+#include "dbm.h"
+#include "chanserv.h"
+#include "language.h"
+#include "parse.h"
+#include "nickserv.h"
+#include "interface.h"
 
 static struct JupeEntry *
 row_to_jupe(row_t *row)

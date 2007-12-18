@@ -27,6 +27,15 @@
  */
 
 #include "stdinc.h"
+#include "hash.h"
+#include "client.h"
+#include "mqueue.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "dbm.h"
+#include "parse.h"
+#include "language.h"
+#include "interface.h"
 
 /*static BlockHeap *service_heap = NULL;
 static BlockHeap *namehost_heap = NULL;

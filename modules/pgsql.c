@@ -33,6 +33,13 @@
 #undef PACKAGE_TARNAME
 
 #include "stdinc.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "chanserv.h"
+#include "nickname.h"
+#include "interface.h"
+#include "conf/modules.h"
 
 #define TEMP_BUFSIZE 32
 

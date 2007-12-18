@@ -23,9 +23,29 @@
  */
 
 #include "stdinc.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "nickserv.h"
+#include "chanserv.h"
+#include "interface.h"
+#include "crypt.h"
+#include "msg.h"
+#include "hash.h"
+#include "client.h"
+#include "conf/servicesinfo.h"
+#include "conf/mail.h"
+#include "mqueue.h"
+#include "hostmask.h"
+#include "nickname.h"
+#include "dbchannel.h"
+#include "channel_mode.h"
+#include "channel.h"
+
 #include <openssl/hmac.h>
 
 dlink_list services_list = { 0 };
+
 struct Callback *send_newuser_cb;
 struct Callback *send_privmsg_cb;
 struct Callback *send_notice_cb;

@@ -23,6 +23,13 @@
  */
 
 #include "stdinc.h"
+#include "dbm.h"
+#include "nickname.h"
+#include "nickserv.h"
+#include "parse.h"
+#include "language.h"
+#include "chanserv.h"
+#include "interface.h"
 
 /* 
  * row_to_nickname: 

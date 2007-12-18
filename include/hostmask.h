@@ -49,22 +49,6 @@ EXTERN int match_ipv4(const struct irc_ssaddr *, const struct irc_ssaddr *, int)
 EXTERN void mask_addr(struct irc_ssaddr *, int);
 EXTERN int parse_netmask(const char *, struct irc_ssaddr *, int *);
 
-EXTERN void add_conf_by_address(int, struct AccessItem *);
-EXTERN void delete_one_address_conf(const char *, struct AccessItem *);
-EXTERN void report_Klines(struct Client *, int);
-EXTERN void report_auth(struct Client *);
-
-EXTERN char *make_iline_prefix(struct Client *, struct AccessItem *);
-EXTERN struct AccessItem *find_address_conf(const char *, const char *,
-                                            struct irc_ssaddr *, int, char *);
-EXTERN struct AccessItem *find_kline_conf(const char *, const char *,
-                                          struct irc_ssaddr *, int);
-EXTERN struct AccessItem *find_gline_conf(const char *, const char *,
-                                          struct irc_ssaddr *, int);
-EXTERN struct AccessItem *find_dline_conf(const struct irc_ssaddr *, int);
-EXTERN struct AccessItem *find_conf_by_address(const char *, const struct irc_ssaddr *,
-                                               int, int, const char *, const char *);
-
 /* Hashtable stuff... */
 #define ATABLE_SIZE 0x1000
 

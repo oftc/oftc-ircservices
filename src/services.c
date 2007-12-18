@@ -26,6 +26,18 @@
 #include "conf.h"
 #include "conf/conf.h"
 #include "ruby_module.h"
+#include "parse.h"
+#include "chanserv.h"
+#include "dbm.h"
+#include "nickserv.h"
+#include "language.h"
+#include "interface.h"
+#include "client.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "packet.h"
+#include "mqueue.h"
+#include "send.h"
 
 #include <signal.h>
 #include <sys/wait.h>

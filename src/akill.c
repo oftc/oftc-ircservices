@@ -23,6 +23,15 @@
  */
 
 #include "stdinc.h"
+#include "language.h"
+#include "parse.h"
+#include "dbm.h"
+#include "nickserv.h"
+#include "chanserv.h"
+#include "interface.h"
+#include "client.h"
+#include "hostmask.h"
+#include "nickname.h"
 
 static struct ServiceBan *
 row_to_akill(row_t *row)
