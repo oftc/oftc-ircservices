@@ -25,6 +25,13 @@
 #ifndef INCLUDED_nickname_h
 #define INCLUDED_nickname_h
 
+struct AccessEntry
+{
+  unsigned int id;
+  char *value;
+};
+
+
 struct Nick *nickname_find(const char *);
 int nickname_register(struct Nick *);
 int nickname_delete(struct Nick *);
@@ -46,11 +53,13 @@ int nickname_save(struct Nick *);
 int nickname_accesslist_add(struct AccessEntry *);
 int nickname_accesslist_list(struct Nick *, dlink_list *);
 int nickname_accesslist_check(struct Nick *, const char *);
+int nickname_accesslist_delete(struct Nick *, const char *, int);
 void nickname_accesslist_free(dlink_list *);
 
 int nickname_cert_add(struct AccessEntry *);
 int nickname_cert_list(struct Nick *, dlink_list *);
 int nickname_cert_check(struct Nick *, const char *);
+int nickname_cert_delete(struct Nick *, const char *, int);
 void nickname_certlist_free(dlink_list *);
 
 #endif

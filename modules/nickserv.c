@@ -1040,10 +1040,7 @@ m_access_del(struct Service *service, struct Client *client, int parc,
   int index, ret;
 
   index = atoi(parv[1]);
-  if(index > 0)
-    ret = db_list_del_index(DELETE_NICKACCESS_IDX, nick->id, index);
-  else
-    ret = db_list_del(DELETE_NICKACCESS, nick->id, parv[1]);
+  ret = nickname_accesslist_delete(nick, parv[1], index);
   
   reply_user(service, service, client, NS_ACCESS_DEL, ret);
 }
@@ -1124,10 +1121,7 @@ m_cert_del(struct Service *service, struct Client *client, int parc,
   int index, ret;
 
   index = atoi(parv[1]);
-  if(index > 0)
-    ret = db_list_del_index(DELETE_NICKCERT_IDX, nick->id, index);
-  else
-    ret = db_list_del(DELETE_NICKCERT, nick->id, parv[1]);
+  ret = nickname_cert_delete(nick, parv[1], index);
   
   reply_user(service, service, client, NS_CERT_DEL, ret);
 }

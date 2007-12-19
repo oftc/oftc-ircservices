@@ -3,14 +3,6 @@
 #ifndef INCLUDED_dbm_h
 #define INCLUDED_dbm_h
 
-#include <yada.h>
-
-struct AccessEntry 
-{
-  unsigned int id;
-  char *value;
-};
-
 struct ChanAccess
 {
   unsigned int id;
@@ -25,12 +17,6 @@ struct JupeEntry
   unsigned int setter;
   char *name;
   char *reason;
-};
-
-struct DBResult
-{
-  yada_rc_t *rc;
-  yada_rc_t *brc;
 };
 
 struct InfoChanList

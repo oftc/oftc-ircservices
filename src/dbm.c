@@ -358,7 +358,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   char *strval = (char*)*entry; 
   struct ChanAccess *caval;
   struct ServiceBan *banval;
-  struct DBResult *result;
   struct InfoChanList *info;
   struct JupeEntry *jval;
   unsigned int query;
@@ -463,11 +462,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     return NULL;
   }
 
-  result = MyMalloc(sizeof(struct DBResult));
-
-  result->rc = rc;
-  result->brc = brc;
-  
   if(type == AKILL_LIST)
   {
     DupString(banval->mask, banval->mask);
@@ -500,14 +494,12 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
         break;
     }
   }
-
-  return (void*)result;
+  return NULL;
 }
 
 void *
 db_list_next(void *result, unsigned int type, void **entry)
 {
-  struct DBResult *res = (struct DBResult *)result;
   struct ChanAccess *caval;
   struct ServiceBan *banval;
   struct InfoChanList *info;
@@ -519,8 +511,6 @@ db_list_next(void *result, unsigned int type, void **entry)
     case JUPE_LIST:
       jval = MyMalloc(sizeof(struct JupeEntry));
       *entry = jval;
-      Free(res->brc);
-      res->brc = Bind("?d?ps?ps?d", &jval->id, &jval->name, &jval->reason, &jval->setter);
       break;
     case ADMIN_LIST:
     case NICKLINK_LIST:
@@ -532,43 +522,26 @@ db_list_next(void *result, unsigned int type, void **entry)
     case CHAN_LIST_OPER:
     case CHAN_FORBID_LIST:
       *entry = strval;
-      Free(res->brc);
-      res->brc = Bind("?ps", entry);
       break;
     case AKILL_LIST:
       banval = MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
-      Free(res->brc);
-      res->brc = Bind("?d?d?ps?ps?d?d", &banval->id, &banval->setter, &banval->mask, 
-          &banval->reason, &banval->time_set, &banval->duration);
      break;
     case AKICK_LIST:
       banval = MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
-      Free(res->brc);
-      res->brc = Bind("?d?ps?d?d?ps?ps?d?d", &banval->id, &banval->channel,
-          &banval->target, &banval->setter, &banval->mask, 
-          &banval->reason, &banval->time_set, &banval->duration);
       break;
     case CHACCESS_LIST:
       caval = MyMalloc(sizeof(struct ChanAccess));
       *entry = caval;
-      Free(res->brc);
-      res->brc = Bind("?d?d?d?d", &caval->id, &caval->channel, &caval->account,
-          &caval->level);
       break;
     case NICKCHAN_LIST:
       info = MyMalloc(sizeof(struct InfoChanList));
       *entry = info;
-      Free(res->brc);
-      res->brc = Bind("?d?ps?d", &info->channel_id, &info->channel, &info->ilevel);
       break;
     default:
       assert(0 == 1);
   }
-
-  if(Fetch(res->rc, res->brc) == 0)
-    return NULL;
 
   if(type == AKILL_LIST)
   {
@@ -602,19 +575,12 @@ db_list_next(void *result, unsigned int type, void **entry)
         break;
     }
   }
-
-  return result;
+  return NULL;
 }
 
 void
 db_list_done(void *result)
 {
-  struct DBResult *res = (struct DBResult *)result;
-
-  Free(res->brc);
-  Free(res->rc);
-
-  MyFree(res);
 }
 
 int
