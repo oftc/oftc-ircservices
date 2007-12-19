@@ -72,8 +72,7 @@ typedef struct DataBaseModule
 
 enum db_list_type
 {
-  ACCESS_LIST = 0,
-  ADMIN_LIST,
+  ADMIN_LIST = 0,
   AKILL_LIST,
   AKILL_SERVICES_LIST,
   CHACCESS_LIST,
@@ -88,7 +87,6 @@ enum db_list_type
   CHAN_LIST_OPER,
   CHAN_FORBID_LIST,
   EXPIRING_AKILL_LIST,
-  CERT_LIST,
   JUPE_LIST
 };
 

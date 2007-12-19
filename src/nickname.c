@@ -710,3 +710,91 @@ nickname_accesslist_check(struct Nick *nick, const char *value)
 
   return found;
 }
+
+int
+nickname_cert_list(struct Nick *nick, dlink_list *list)
+{
+  result_set_t *results;
+  int error, i;
+
+  results = db_execute(GET_NICKCERTS, &error, "i", nick->id);
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "nickname_cert_list: database error %d", error);
+    return -1;
+  }
+  else if(results == NULL)
+    return -1;
+
+  for(i = 0; i < results->row_count; i++)
+  {
+    row_t *row = &results->rows[i];
+    struct AccessEntry *entry = row_to_access_entry(row);
+
+    dlinkAdd(entry, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+int
+nickname_cert_delete(struct Nick *nick, const char *value, int index)
+{
+  int ret;
+
+  if(value == NULL)
+    ret = db_execute_nonquery(DELETE_NICKCERT_IDX, "ii", nick->id, index);
+  else
+    ret = db_execute_nonquery(DELETE_NICKCERT, "is", nick->id, value);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
+}
+
+void
+nickname_certlist_free(dlink_list *list)
+{
+  dlink_node *ptr, *next;
+  struct AccessEntry *entry;
+
+  ilog(L_DEBUG, "Freeing nickname cert list %p of length %lu", list,
+      dlink_list_length(list));
+
+  DLINK_FOREACH_SAFE(ptr, next, list->head)
+  {
+    entry = (struct AccessEntry *)ptr->data;
+    MyFree(entry->value);
+    MyFree(entry);
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
+}
+
+int
+nickname_cert_check(struct Nick *nick, const char *value)
+{
+  dlink_list list = { 0 };
+  dlink_node *ptr;
+  int found = FALSE;
+
+  nickname_cert_list(nick, &list);
+
+  DLINK_FOREACH(ptr, list.head)
+  {
+    struct AccessEntry *entry = (struct AccessEntry *)ptr;
+
+    if(match(entry->value, value))
+    {
+      found = TRUE;
+      break;
+    }
+  }
+
+  nickname_certlist_free(&list);
+
+  return found;
+}

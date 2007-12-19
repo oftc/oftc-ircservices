@@ -923,42 +923,6 @@ replace_string(char *str, const char *value)
   return ptr;
 }
 
-int
-check_list_entry(unsigned int type, unsigned int id, const char *value)
-{
-  struct AccessEntry *entry = NULL;
-  void *ptr, *first;
-
-  first = ptr = db_list_first(type, id, (void**)&entry);
-
-  if(ptr == NULL)
-  {
-    MyFree(entry);
-    return FALSE;
-  }
-
-  while(ptr != NULL)
-  {
-    if(match(entry->value, value))
-    {
-      ilog(L_DEBUG, "check_list_entry: Found match: %s %s", entry->value, 
-          value);
-      MyFree(entry);
-      db_list_done(first);
-      return TRUE;
-    }
-    
-    ilog(L_DEBUG, "check_list_entry: Not Found match: %s %s", entry->value, 
-        value);
-    MyFree(entry);
-    entry = NULL;
-    ptr = db_list_next(ptr, type, (void**)&entry);
-  }
-  MyFree(entry);
-  db_list_done(first);
-  return FALSE;
-}
-
 int 
 enforce_matching_serviceban(struct Service *service, struct Channel *chptr, 
     struct Client *client)
@@ -1496,7 +1460,7 @@ check_nick_pass(struct Client *client, struct Nick *nick, const char *password)
 
   if(*client->certfp != '\0')
   {
-    if(check_list_entry(CERT_LIST, nick->id, client->certfp))
+    if(nickname_cert_check(nick, client->certfp))
       return 1;
   }
   

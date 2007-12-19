@@ -309,9 +309,6 @@ db_list_add(unsigned int type, const void *value)
 
   switch(type)
   {
-    case CERT_LIST:
-      db_exec(ret, INSERT_NICKCERT, aeval->id, aeval->value);
-      break;
     case AKILL_LIST:
       db_exec(ret, INSERT_AKILL, banval->mask, banval->reason, 
           banval->setter, banval->time_set, banval->duration);
@@ -359,7 +356,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
 {
   yada_rc_t *rc, *brc;
   char *strval = (char*)*entry; 
-  struct AccessEntry *aeval;
   struct ChanAccess *caval;
   struct ServiceBan *banval;
   struct DBResult *result;
@@ -369,12 +365,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
   
   switch(type)
   {
-    case CERT_LIST:
-      query = GET_NICKCERTS;
-      aeval = MyMalloc(sizeof(struct AccessEntry));
-      *entry = aeval;
-      brc = Bind("?d?ps", &aeval->id, &aeval->value);
-      break;
     case ADMIN_LIST:
       query = GET_ADMINS;
       *entry = strval;
@@ -518,7 +508,6 @@ void *
 db_list_next(void *result, unsigned int type, void **entry)
 {
   struct DBResult *res = (struct DBResult *)result;
-  struct AccessEntry *aeval;
   struct ChanAccess *caval;
   struct ServiceBan *banval;
   struct InfoChanList *info;
@@ -527,12 +516,6 @@ db_list_next(void *result, unsigned int type, void **entry)
 
   switch(type)
   {
-    case CERT_LIST:
-      aeval = MyMalloc(sizeof(struct AccessEntry));
-      *entry = aeval;
-      Free(res->brc);
-      res->brc = Bind("?d?ps", &aeval->id, &aeval->value);
-      break;
     case JUPE_LIST:
       jval = MyMalloc(sizeof(struct JupeEntry));
       *entry = jval;

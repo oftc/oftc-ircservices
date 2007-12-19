@@ -1053,10 +1053,9 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Nick *nick = client->nickname;
-  struct AccessEntry access;
-  char *cert;
+  char *certfp;
+  struct AccessEntry access = { 0 };
 
-  access.id = nick->id;
   if(parv[1] == NULL)
   {
     if(*client->certfp == '\0')
@@ -1064,7 +1063,7 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
       reply_user(service, service, client, NS_CERT_YOUHAVENONE);
       return;
     }
-    access.value = client->certfp;
+    certfp = client->certfp;
   }
   else
   {
@@ -1073,17 +1072,17 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
       reply_user(service, service, client, NS_CERT_INVALID, parv[1]);
       return;
     }
-    access.value = parv[1];
+    certfp = parv[1];
   }
 
-  if((cert = db_find_certfp(nick->id, access.value)) != NULL)
+  if(nickname_cert_check(nick, certfp))
   {
-    reply_user(service, service, client, NS_CERT_EXISTS, access.value);
-    MyFree(cert);
+    reply_user(service, service, client, NS_CERT_EXISTS, certfp);
     return;
   }
-
-  if(db_list_add(CERT_LIST, (void *)&access))
+  access.id = nick->id;
+  access.value = certfp;
+  if(nickname_cert_add(&access))
     reply_user(service, service, client, NS_CERT_ADD, access.value);
   else
     reply_user(service, service, client, NS_CERT_ADDFAIL, access.value);
@@ -1095,30 +1094,26 @@ m_cert_list(struct Service *service, struct Client *client, int parc,
 {
   struct Nick *nick;
   struct AccessEntry *entry = NULL;
-  void *first, *listptr;
+  dlink_list list = { 0 };
+  dlink_node *ptr;
   int i = 1;
 
   nick = client->nickname;
 
- 
-  if((listptr = db_list_first(CERT_LIST, nick->id, (void**)&entry)) == NULL)
-  {
-    reply_user(service, service, client, NS_CERT_EMPTY);
-    MyFree(entry);
-    return;
-  }
+  nickname_cert_list(nick, &list);
 
   reply_user(service, service, client, NS_CERT_START);
-  first = listptr;
 
-  while(listptr != NULL)
+  DLINK_FOREACH(ptr, list.head)
   {
-    reply_user(service, service, client, NS_CERT_ENTRY, i++, entry->value);
-    MyFree(entry);
-    listptr = db_list_next(listptr, CERT_LIST, (void**)&entry);
-  }
+    entry = (struct AccessEntry *)ptr->data;
 
-  db_list_done(first);
+    reply_user(service, service, client, NS_CERT_ENTRY, i++, entry->value);
+    MyFree(entry->value);
+    MyFree(entry);
+  }
+  
+  nickname_certlist_free(&list);
 }
 
 static void
@@ -1841,7 +1836,7 @@ ns_on_nick_change(va_list args)
  
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
 
-  if(*user->certfp != '\0' && check_list_entry(CERT_LIST, nick_p->id, user->certfp))
+  if(*user->certfp != '\0' && nickname_cert_check(nick_p, user->certfp))
   {
     if(user->nickname != NULL)
       free_nick(user->nickname);
@@ -1998,7 +1993,7 @@ ns_on_certfp(va_list args)
     return pass_callback(ns_certfp_hook, user);
   }
 
-  if(check_list_entry(CERT_LIST, nick->id, user->certfp))
+  if(nickname_cert_check(nick, user->certfp))
   {
     if(user->nickname != NULL)
       free_nick(user->nickname);
