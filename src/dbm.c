@@ -827,30 +827,6 @@ db_is_mailsent(unsigned int accid, const char *email)
   return ret;
 }
 
-char *
-db_find_certfp(unsigned int accid, const char *certfp)
-{
-  yada_rc_t *rc, *brc;
-  char *temp, *ret;
-  
-  db_query(rc, GET_NICKCERT, certfp, accid);
-
-  if(rc == NULL)
-    return NULL;
-
-  brc = Bind("?ps", &temp);
-
-  if(Fetch(rc, brc) == 0)
-    ret = NULL;
-  else
-    DupString(ret, temp);
-
-  Free(brc);
-  Free(rc);
-
-  return ret;
-}
-
 static void
 expire_sentmail(void *param)
 {

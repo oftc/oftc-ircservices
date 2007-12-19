@@ -261,8 +261,6 @@ int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 int db_get_num_masters(unsigned int);
 int db_get_num_channel_accesslist_entries(unsigned int);
 
-char *db_find_certfp(unsigned int, const char *);
-
 int db_add_sentmail(unsigned int, const char *);
 int db_is_mailsent(unsigned int, const char *);
 
