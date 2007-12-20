@@ -59,8 +59,6 @@ typedef struct DataBaseModule
 enum db_list_type
 {
   ADMIN_LIST = 0,
-  AKILL_LIST,
-  AKILL_SERVICES_LIST,
   CHACCESS_LIST,
   AKICK_LIST,
   NICKLINK_LIST,
@@ -233,7 +231,6 @@ char *db_get_string(const char *, unsigned int, const char *);
 
 int db_is_chan_forbid(const char *);
 
-struct ServiceBan *db_find_akill(const char *);
 struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
 struct JupeEntry  *db_find_jupe(const char *);
 

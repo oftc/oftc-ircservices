@@ -309,14 +309,6 @@ db_list_add(unsigned int type, const void *value)
 
   switch(type)
   {
-    case AKILL_LIST:
-      db_exec(ret, INSERT_AKILL, banval->mask, banval->reason, 
-          banval->setter, banval->time_set, banval->duration);
-      break;
-    case AKILL_SERVICES_LIST:
-      db_exec(ret, INSERT_SERVICES_AKILL, banval->mask, banval->reason,
-          banval->time_set, banval->duration);
-      break;
     case AKICK_LIST:
       if(banval->target != 0)
       {
@@ -462,19 +454,7 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     return NULL;
   }
 
-  if(type == AKILL_LIST)
-  {
-    DupString(banval->mask, banval->mask);
-    DupString(banval->reason, banval->reason);
-    banval->type = AKILL_BAN;
-  }
-  else if(type == AKICK_LIST)
-  {
-    DupString(banval->mask, banval->mask);
-    DupString(banval->reason, banval->reason);
-    banval->type = AKICK_BAN;
-  }
-  else if(type == JUPE_LIST)
+  if(type == JUPE_LIST)
   {
     DupString(jval->name, jval->name);
     DupString(jval->reason, jval->reason);
@@ -523,10 +503,6 @@ db_list_next(void *result, unsigned int type, void **entry)
     case CHAN_FORBID_LIST:
       *entry = strval;
       break;
-    case AKILL_LIST:
-      banval = MyMalloc(sizeof(struct ServiceBan));
-      *entry = banval;
-     break;
     case AKICK_LIST:
       banval = MyMalloc(sizeof(struct ServiceBan));
       *entry = banval;
@@ -543,13 +519,7 @@ db_list_next(void *result, unsigned int type, void **entry)
       assert(0 == 1);
   }
 
-  if(type == AKILL_LIST)
-  {
-    banval->type = AKILL_BAN;
-    DupString(banval->mask, banval->mask);
-    DupString(banval->reason, banval->reason);
-  }
-  else if(type == AKICK_LIST)
+  if(type == AKICK_LIST)
   {
     banval->type = AKICK_BAN;
     DupString(banval->mask, banval->mask);
@@ -637,44 +607,6 @@ db_find_chanaccess(unsigned int channel, unsigned int account)
   Free(brc);
 
   return access;
-}
-
-struct ServiceBan *
-db_find_akill(const char *mask)
-{
-  yada_rc_t *rc, *brc;
-  struct ServiceBan *akill;
-
-  assert(mask != NULL);
-
-  db_query(rc, GET_AKILL, mask);
-
-  if(rc == NULL)
-    return NULL;
-
-  akill = MyMalloc(sizeof(struct ServiceBan));
-
-  brc = Bind("?d?ps?ps?d?d?d", &akill->id, &akill->mask, &akill->reason,
-      &akill->setter, &akill->time_set, &akill->duration);
-
-  if(Fetch(rc, brc) == 0)
-  {
-    db_log("db_find_akill: '%s' not found.", mask);
-    Free(brc);
-    Free(rc);
-    free_serviceban(akill);
-    return NULL;
-  }
-
-  DupString(akill->mask, akill->mask);
-  DupString(akill->reason, akill->reason);
-
-  db_log("db_find_akill: Found akill %s(asked for %s)", akill->mask, mask);
-
-  Free(brc);
-  Free(rc);
-
-  return akill;
 }
 
 struct JupeEntry *

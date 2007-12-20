@@ -508,7 +508,7 @@ m_akill_add(struct Service *service, struct Client *client,
   if(duration == -1)
     duration = 0;
 
-  if((tmp = db_find_akill(mask)) != NULL)
+  if((tmp = akill_find(mask)) != NULL)
   {
     reply_user(service, service, client, OS_AKILL_ALREADY, mask);
     free_serviceban(tmp);
@@ -524,14 +524,22 @@ m_akill_add(struct Service *service, struct Client *client,
 
   join_params(reason, parc-1, &parv[para_start]);
 
-  akill = akill_add(service, client, mask, reason, duration);
+  akill = MyMalloc(sizeof(struct ServiceBan *));
 
-  if(akill == NULL)
+  akill->setter = client->nickname->id;
+  akill->time_set = CurrentTime;
+  akill->duration = duration;
+  DupString(akill->mask, mask);
+  DupString(akill->reason, reason);
+
+  if(!akill_add(akill))
   {
     reply_user(service, service, client, OS_AKILL_ADDFAIL, mask);
+    free_serviceban(akill);
     return;
   }
 
+  send_akill(service, client->name, akill);
   reply_user(service, service, client, OS_AKILL_ADDOK, mask);
   free_serviceban(akill);
 }
@@ -541,15 +549,20 @@ m_akill_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct ServiceBan *akill;
-  void *handle, *first;
   char setbuf[TIME_BUFFER + 1];
   char durbuf[TIME_BUFFER + 1];
   int i = 1;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
-  first = handle = db_list_first(AKILL_LIST, 0, (void**)&akill);
-  while(handle != NULL)
+  akill_list(&list);
+
+  DLINK_FOREACH(ptr, list.head)
   {
-    char *setter = nickname_nick_from_id(akill->setter, TRUE);
+    char *setter;
+    
+    akill = (struct ServiceBan *)ptr->data;
+    setter = nickname_nick_from_id(akill->setter, TRUE);
 
     strtime(client, akill->time_set, setbuf);
     strtime(client, akill->time_set + akill->duration, durbuf);
@@ -558,12 +571,9 @@ m_akill_list(struct Service *service, struct Client *client,
         akill->reason, setter, setbuf, akill->duration == 0 ? "N/A" : durbuf);
     free_serviceban(akill);
     MyFree(setter);
-    handle = db_list_next(handle, AKILL_LIST, (void**)&akill);
   }
-  if(first)
-    db_list_done(first);
 
-  free_serviceban(akill);
+  akill_list_free(&list);
 
   reply_user(service, service, client, OS_AKILL_LIST_END);
 }
@@ -576,7 +586,7 @@ m_akill_del(struct Service *service, struct Client *client,
   struct ServiceBan *akill;
   char *expire_time, *set_time;
 
-  if((akill = db_find_akill(parv[1])) == NULL)
+  if((akill = akill_find(parv[1])) == NULL)
   {
     reply_user(service, service, client, OS_AKILL_DEL, 0);
     return;

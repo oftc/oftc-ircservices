@@ -99,7 +99,7 @@ akill_check_mask(struct Client *client, const char *mask)
 }
 
 void
-free_akill_list(dlink_list *list)
+akill_list_free(dlink_list *list)
 {
   dlink_node *ptr, *next;
   struct ServiceBan *sban;
@@ -167,12 +167,55 @@ akill_check_client(struct Service *service, struct Client *client)
       send_akill(service, setter, sban);
       MyFree(setter);
 
-      free_akill_list(&list);
+      akill_list_free(&list);
 
       return TRUE;
     }
   }
   
-  free_akill_list(&list);
+  akill_list_free(&list);
   return FALSE;
+}
+
+int
+akill_add(struct ServiceBan *akill)
+{
+  int ret;
+  
+  akill->type = AKILL_BAN;
+  
+  if(akill->setter != 0)
+    ret = db_execute_nonquery(INSERT_AKILL, "ssiii", akill->mask,
+        akill->reason, akill->setter, akill->time_set, akill->duration);
+  else
+    ret = db_execute_nonquery(INSERT_SERVICES_AKILL, "ssii", akill->mask,
+        akill->reason, akill->time_set, akill->duration);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
+}
+
+struct ServiceBan *
+akill_find(const char *mask)
+{
+  int error;
+  result_set_t *results;
+  struct ServiceBan *akill;
+
+  results = db_execute(GET_AKILL, &error, "s", mask);
+  if(error || results == NULL)
+    return NULL;
+
+  if(results->row_count == 0)
+  {
+    db_free_result(results);
+    return NULL;
+  }
+
+  akill = row_to_akill(&results->rows[0]);
+  db_free_result(results);
+
+  return akill;
 }

@@ -497,50 +497,6 @@ kill_user(struct Service *service, struct Client *client, const char *reason)
   }
 }
 
-struct ServiceBan*
-akill_add(struct Service *service, struct Client *client, const char* mask,
-  const char *reason, int duration)
-{
-  struct ServiceBan *akill;
-  int ret = 0;
-
-  if(!valid_wild_card(mask))
-  {
-    ilog(L_NOTICE, "%s tried to add an akill(%s) that was too wild!", 
-        client->nickname != NULL ? client->nickname->nick : "Services", mask);
-    return NULL;
-  }
-
-  akill = MyMalloc(sizeof(struct ServiceBan));
-
-  akill->type = AKILL_BAN;
-  if(client->nickname != NULL)
-    akill->setter = client->nickname->id;
-  akill->time_set = CurrentTime;
-  akill->duration = duration;
-  DupString(akill->mask, mask);
-  DupString(akill->reason, reason);
-
-  if(client->nickname != NULL)
-    ret = db_list_add(AKILL_LIST, akill);
-  else
-    ret = db_list_add(AKILL_SERVICES_LIST, akill);
-
-  if(!ret)
-  {
-    ilog(L_NOTICE, "Failed to insert akill %s into database", mask);
-    free_serviceban(akill);
-    return NULL;
-  }
-
-  ilog(L_NOTICE, "%s Added an akill on %s. Expires %s [%s]", client->name,
-      akill->mask, smalldate(akill->time_set + duration), reason);
-
-  send_akill(service, client->name, akill);
-
-  return akill;
-}
-
 void
 send_chops_notice(struct Service *service, struct Channel *chptr, 
     const char *format, ...)
@@ -935,8 +891,6 @@ enforce_matching_serviceban(struct Service *service, struct Channel *chptr,
 
   if(chptr != NULL)
     first = ptr = db_list_first(AKICK_LIST, chptr->regchan->id, (void**)&sban);
-  else
-    first = ptr = db_list_first(AKILL_LIST, 0, (void**)&sban);
 
   if(ptr == NULL)
   {
@@ -955,8 +909,6 @@ enforce_matching_serviceban(struct Service *service, struct Channel *chptr,
     free_serviceban(sban);
     if(chptr != NULL)
       ptr = db_list_next(ptr, AKICK_LIST, (void**)&sban);
-    else
-      ptr = db_list_next(ptr, AKILL_LIST, (void**)&sban);
   }
 
   db_list_done(first);

@@ -38,6 +38,7 @@
 #include "nickname.h"
 #include "floodserv.h"
 #include "mqueue.h"
+#include "akill.h"
 
 static struct Service *floodserv = NULL;
 static struct Client  *fsclient  = NULL;
@@ -499,14 +500,23 @@ fs_on_privmsg(va_list args)
           source->name, host, message);
         snprintf(mask, IRC_BUFSIZE, "*@%s", host);
 
-        if((akill = db_find_akill(mask)) != NULL)
+        if((akill = akill_find(mask)) != NULL)
         {
           ilog(L_NOTICE, "Flood AKILL Already Exists");
           free_serviceban(akill);
           return pass_callback(fs_privmsg_hook, source, channel, message);
         }
 
-        akill = akill_add(floodserv, fsclient, mask, FS_KILL_MSG, FS_KILL_DUR);
+        akill = MyMalloc(sizeof(struct ServiceBan));
+
+        akill->setter = 0;
+        akill->time_set = CurrentTime;
+        akill->duration = FS_KILL_DUR;
+        DupString(akill->mask, mask);
+        DupString(akill->reason, FS_KILL_MSG);
+
+        akill_add(akill);
+        send_akill(floodserv, fsclient->name, akill);
 
         if(akill != NULL)
           free_serviceban(akill);
