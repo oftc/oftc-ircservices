@@ -385,7 +385,7 @@ NS_HELP_LIST_LONG
 	Shows a list of nicknames which are registered and match the pattern
 	specified. If you specify FORBID, only forbidden nicknames will be shown.
 	The forbid option is restricted to IRC Operators. Results will be limited to
-	50 matches, so try to be specified with your pattern.
+	50 matches, so try to be specific with your pattern.
 NS_HELP_STATUS_SHORT
 	%s: Shows the identified status of a nickname
 NS_HELP_STATUS_LONG
