@@ -12,17 +12,22 @@ build-stamp: $(QUILT_STAMPFN)
 install: build-stamp
 	dh_testroot
 	dh_clean -k
+	dh_installdirs etc/oftc-ircservices var/log/oftc-ircservices
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/oftc-ircservices
-	cd $(CURDIR)/debian/oftc-ircservices/etc && mv example.conf services.conf
+	cd $(CURDIR)/debian/oftc-ircservices/etc && mv example.conf oftc-ircservices/services.conf
+	cd $(CURDIR)/debian/oftc-ircservices/usr/bin && mv services oftc-ircservices
 
 binary-indep:
 binary binary-arch: install
-	dh_installdocs
-	dh_installchangelogs ChangeLog
+	dh_installdocs -p"oftc-ircservices"
+	dh_installchangelogs -p"oftc-ircservices" ChangeLog
+	dh_link -p"oftc-ircservices-dbg" \
+		usr/share/doc/oftc-ircservices usr/share/doc/oftc-ircservices-dbg
+	dh_installinit
 	dh_fixperms
-	dh_compress
 	dh_strip --dbg-package=oftc-ircservices-dbg
 	dh_shlibdeps
+	dh_compress
 	dh_md5sums
 	dh_installdeb
 	dh_gencontrol

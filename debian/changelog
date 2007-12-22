@@ -1,5 +1,5 @@
-oftc-ircservices (1.0.17-r1126.1) unstable; urgency=low
+oftc-ircservices (1.2.0-pre4-1) unstable; urgency=low
 
   * Initial release.
 
- -- Christoph Berg <myon@debian.org>  Sun, 22 Jul 2007 18:17:04 +0200
+ -- Christoph Berg <myon@debian.org>  Fri, 21 Dec 2007 23:34:31 +0100
