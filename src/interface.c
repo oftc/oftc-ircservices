@@ -69,8 +69,12 @@ struct Callback *on_burst_done_cb;
 struct Callback *on_certfp_cb;
 struct Callback *on_db_init_cb;
 
+struct Callback *on_nick_reg_cb;
+struct Callback *on_chan_reg_cb;
 struct Callback *on_nick_drop_cb;
 struct Callback *on_chan_drop_cb;
+
+struct Callback *on_ctcp_cb;
 
 struct LanguageFile ServicesLanguages[LANG_LAST];
 struct ModeList *ServerModeList;
@@ -122,6 +126,9 @@ init_interface()
   on_nick_drop_cb     = register_callback("Nick Dropped", NULL);
   on_chan_drop_cb     = register_callback("Chan Dropped", NULL);
   on_db_init_cb       = register_callback("On Database Init", NULL);
+  on_ctcp_cb          = register_callback("On CTCP Message", NULL);
+  on_nick_reg_cb      = register_callback("Newly Registered Nick", NULL);
+  on_chan_reg_cb      = register_callback("Newly Registered Chan", NULL);
 
   load_language(ServicesLanguages, "services.en");
 }
@@ -169,6 +176,9 @@ cleanup_interface()
   unregister_callback(on_certfp_cb);
   unregister_callback(on_nick_drop_cb);
   unregister_callback(on_chan_drop_cb);
+  unregister_callback(on_ctcp_cb);
+  unregister_callback(on_nick_reg_cb);
+  unregister_callback(on_chan_reg_cb);
 
   unload_languages(ServicesLanguages);
 }
@@ -299,9 +309,17 @@ part_channel(struct Client *service, const char *chname, const char *reason)
 }
 
 void
-tell_user(struct Service *service, struct Client *client, char *text)
+ctcp_user(struct Service *service, struct Client *client, const char *text)
 {
-  //execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, text);
+  char buffer[IRC_BUFSIZE];
+  sprintf(buffer, "\001%s\001", text);
+  execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, buffer);
+}
+
+void
+sendto_channel(struct Service *service, struct Channel *channel, const char *text)
+{
+  execute_callback(send_privmsg_cb, me.uplink, service->name, channel->chname, text);
 }
 
 /* Ensure the result buffer is TIME_BUFFER+1 in size */

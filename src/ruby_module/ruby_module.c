@@ -38,6 +38,9 @@ static dlink_node *ruby_nick_hook;
 static dlink_node *ruby_notice_hook;
 static dlink_node *ruby_chan_create_hook;
 static dlink_node *ruby_chan_delete_hook;
+static dlink_node *ruby_ctcp_hook;
+static dlink_node *ruby_nick_reg_hook;
+static dlink_node *ruby_chan_reg_hook;
 
 static VALUE ruby_server_hooks = Qnil;
 
@@ -52,6 +55,9 @@ static void *rb_nick_hdlr(va_list);
 static void *rb_notice_hdlr(va_list);
 static void *rb_chan_create_hdlr(va_list);
 static void *rb_chan_delete_hdlr(va_list);
+static void *rb_ctcp_hdlr(va_list);
+static void *rb_nick_reg_hdlr(va_list);
+static void *rb_chan_reg_hdlr(va_list);
 
 static void ruby_script_error();
 
@@ -406,6 +412,47 @@ rb_chan_delete_hdlr(va_list args)
   return pass_callback(ruby_chan_delete_hook, channel);
 }
 
+static void *
+rb_ctcp_hdlr(va_list args)
+{
+  struct Service *service = va_arg(args, struct Service *);
+  struct Client *client   = va_arg(args, struct Client *);
+  char *command           = va_arg(args, char *);
+  char *arg               = va_arg(args, char *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CTCP);
+
+  do_hook(hooks, 4, /*TODO*/service,
+    rb_cclient2rbclient(client), rb_str_new2(command), rb_str_new2(arg));
+
+  return pass_callback(ruby_ctcp_hook, service, client, command, arg);
+}
+
+static void *
+rb_chan_reg_hdlr(va_list args)
+{
+  struct Client *client = va_arg(args, struct Client *);
+  struct Channel *channel = va_arg(args, struct Channel *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_REG);
+
+  do_hook(hooks, 2, rb_cclient2rbclient(client), rb_cchannel2rbchannel(channel));
+
+  return pass_callback(ruby_chan_reg_hook, client, channel);
+}
+
+static void *
+rb_nick_reg_hdlr(va_list args)
+{
+  struct Client *client = va_arg(args, struct Client *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NICK_REG);
+
+  do_hook(hooks, 1, rb_cclient2rbclient(client));
+
+  return pass_callback(ruby_nick_reg_hook, client);
+}
+
 void
 rb_add_hook(VALUE self, VALUE hook, int type)
 {
@@ -592,6 +639,9 @@ init_ruby(void)
   ruby_notice_hook = install_hook(on_notice_cb, rb_notice_hdlr);
   ruby_chan_create_hook = install_hook(on_channel_created_cb, rb_chan_create_hdlr);
   ruby_chan_delete_hook = install_hook(on_channel_destroy_cb, rb_chan_delete_hdlr);
+  ruby_ctcp_hook = install_hook(on_ctcp_cb, rb_ctcp_hdlr);
+  ruby_chan_reg_hook = install_hook(on_chan_reg_cb, rb_chan_reg_hdlr);
+  ruby_nick_reg_hook = install_hook(on_nick_reg_cb, rb_nick_reg_hdlr);
 
   /* pin any ruby address we keep on the C side */
   rb_gc_register_address(&ruby_server_hooks);

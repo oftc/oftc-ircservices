@@ -135,7 +135,8 @@ struct Client
   char          info[REALLEN + 1];  /* Free form additional client info */
   char          username[USERLEN + 1];
   char          certfp[SHA1_DIGEST_LENGTH+1];
-    
+  char          ctcp_version[IRC_BUFSIZE];
+
   struct Server      *server;
 
   time_t        tsinfo;

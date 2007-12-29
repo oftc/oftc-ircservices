@@ -17,6 +17,8 @@ static VALUE ClientStruct_Username(VALUE);
 static VALUE ClientStruct_UsernameSet(VALUE, VALUE);
 static VALUE ClientStruct_Nick(VALUE);
 static VALUE ClientStruct_NickSet(VALUE, VALUE);
+static VALUE ClientStruct_CTCP(VALUE);
+static VALUE ClientStruct_CTCPSet(VALUE, VALUE);
 static VALUE ClientStruct_IsOper(VALUE);
 static VALUE ClientStruct_IsAdmin(VALUE);
 static VALUE ClientStruct_IsIdentified(VALUE);
@@ -146,6 +148,24 @@ ClientStruct_NickSet(VALUE self, VALUE value)
 }
 
 static VALUE
+ClientStruct_CTCP(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+
+  return rb_str_new2(client->ctcp_version);
+}
+
+static VALUE
+ClientStruct_CTCPSet(VALUE self, VALUE value)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+
+  strncpy(client->ctcp_version, StringValueCStr(value), IRC_BUFSIZE);
+
+  return self;
+}
+
+static VALUE
 ClientStruct_IsOper(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
@@ -204,6 +224,8 @@ Init_ClientStruct(void)
   rb_define_method(cClientStruct, "username=", ClientStruct_UsernameSet, 1);
   rb_define_method(cClientStruct, "nick", ClientStruct_Nick, 0);
   rb_define_method(cClientStruct, "nick=", ClientStruct_NickSet, 1);
+  rb_define_method(cClientStruct, "ctcp_version", ClientStruct_CTCP, 0);
+  rb_define_method(cClientStruct, "ctcp_version=", ClientStruct_CTCPSet, 1);
   rb_define_method(cClientStruct, "is_oper?", ClientStruct_IsOper, 0);
   rb_define_method(cClientStruct, "is_admin?", ClientStruct_IsAdmin, 0);
   rb_define_method(cClientStruct, "is_identified?", ClientStruct_IsIdentified, 0);

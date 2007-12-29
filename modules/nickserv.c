@@ -441,6 +441,7 @@ m_register(struct Service *service, struct Client *client,
     global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
         client->username, client->host, nick->nick);
 
+    execute_callback(on_chan_reg_cb, client);
     return;
   }
   reply_user(service, service, client, NS_REG_FAIL, client->name);

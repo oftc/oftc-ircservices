@@ -397,6 +397,22 @@ ServiceModule_lm(VALUE self, VALUE mid)
   return 1;
 }
 
+static VALUE
+ServiceModule_ctcp_user(VALUE self, VALUE user, VALUE message)
+{
+  struct Client *client = rb_rbclient2cclient(user);
+  if(me.uplink != NULL && !IsConnecting(me.uplink))
+    ctcp_user(get_service(self), client, StringValueCStr(message));
+  return self;
+}
+
+static VALUE
+ServiceModule_sendto_channel(VALUE self, VALUE channel, VALUE message)
+{
+  sendto_channel(get_service(self), rb_rbchannel2cchannel(channel), StringValueCStr(message));
+  return self;
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -414,6 +430,9 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "NOTICE_HOOK", INT2NUM(RB_HOOKS_NOTICE));
   rb_define_const(cServiceModule, "CHAN_CREATED_HOOK", INT2NUM(RB_HOOKS_CHAN_CREATED));
   rb_define_const(cServiceModule, "CHAN_DELETED_HOOK", INT2NUM(RB_HOOKS_CHAN_DELETED));
+  rb_define_const(cServiceModule, "CTCP_HOOK", INT2NUM(RB_HOOKS_CTCP));
+  rb_define_const(cServiceModule, "CHAN_REG_HOOK", INT2NUM(RB_HOOKS_CHAN_REG));
+  rb_define_const(cServiceModule, "NICK_REG_HOOK", INT2NUM(RB_HOOKS_NICK_REG));
 
   rb_define_const(cServiceModule, "LOG_CRIT",   INT2NUM(L_CRIT));
   rb_define_const(cServiceModule, "LOG_ERROR",  INT2NUM(L_ERROR));
@@ -452,6 +471,8 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
   rb_define_method(cServiceModule, "channels_each", ServiceModule_channels_each, 0);
   rb_define_method(cServiceModule, "akill_add", ServiceModule_akill_add, 3);
+  rb_define_method(cServiceModule, "ctcp_user", ServiceModule_ctcp_user, 2);
+  rb_define_method(cServiceModule, "sendto_channel", ServiceModule_sendto_channel, 2);
 
   rb_define_method(cServiceModule, "regchan_by_name?", ServiceModule_regchan_by_name, 1);
   rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);

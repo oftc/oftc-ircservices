@@ -952,9 +952,12 @@ process_ctcp(struct Service *service, struct Client *client, char *command,
   }
   else if(irccmp(command, "VERSION") == 0)
   {
-    snprintf(buf, IRC_BUFSIZE, "\001VERSION oftc-ircservices version %s\001",
-    PACKAGE_VERSION);
-    reply_user(service, service, client, 0, buf);
+    if(arg == NULL)
+    {
+      snprintf(buf, IRC_BUFSIZE, "\001VERSION oftc-ircservices version %s\001",
+      PACKAGE_VERSION);
+      reply_user(service, service, client, 0, buf);
+    }
   }
   else if(irccmp(command, "CLIENTINFO") == 0)
   {
@@ -971,6 +974,8 @@ process_ctcp(struct Service *service, struct Client *client, char *command,
     snprintf(buf, IRC_BUFSIZE, "\001TIME %s\001", currtime);
     reply_user(service, service, client, 0, buf);
   }
+
+  execute_callback(on_ctcp_cb, service, client, command, arg);
 }
 
 void
@@ -999,9 +1004,6 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
     }
   }
 
-  if(!privmsg)
-    return;
-
   service = find_service(parv[1]);
   if(service == NULL)
   {
@@ -1021,6 +1023,9 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
     process_ctcp(service, source, ch + 1, s);
     return;
   }
+
+  if(!privmsg)
+    return;
 
   if (*ch == '\0' || 
       (mptr = find_services_command(ch, &service->msg_tree)) == NULL)

@@ -21,6 +21,7 @@ class RubyServ < ServiceModule
       [NOTICE_HOOK, 'notice'],
       [CHAN_CREATED_HOOK, 'chan_created'],
       [CHAN_DELETED_HOOK, 'chan_deleted'],
+      [CTCP_HOOK, 'ctcp_msg'],
     ])
     #join_channel("#test")
     self.channels_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
@@ -59,6 +60,7 @@ class RubyServ < ServiceModule
   end
   def newuser(newuser)
     log(LOG_DEBUG, "RUBY newuser.name: #{newuser.name}")
+    ctcp_user(newuser, "VERSION") unless newuser.is_server?
   end
   def privmsg(source, channel, message)
     log(LOG_DEBUG, "RUBY #{source.name} said #{message} in #{channel.name}")
@@ -81,6 +83,9 @@ class RubyServ < ServiceModule
   end
   def chan_deleted(channel)
     log(LOG_NOTICE, "#{channel.name} has been deleted")
+  end
+  def ctcp_msg(service, client, command, arg)
+    log(LOG_NOTICE, "#{client.name} CTCP'd #{command}: #{arg}")
   end
 end
 

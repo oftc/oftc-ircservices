@@ -83,9 +83,12 @@ extern struct Callback *on_privmsg_cb;
 extern struct Callback *on_notice_cb;
 extern struct Callback *on_burst_done_cb;
 extern struct Callback *on_certfp_cb;
+extern struct Callback *on_nick_reg_cb;
+extern struct Callback *on_chan_reg_cb;
 extern struct Callback *on_nick_drop_cb;
 extern struct Callback *on_chan_drop_cb;
 extern struct Callback *on_db_init_cb;
+extern struct Callback *on_ctcp_cb;
 
 extern struct ModeList *ServerModeList;
 
@@ -151,6 +154,9 @@ void free_nick(struct Nick *);
 void free_regchan(struct RegChannel *);
 void free_serviceban(struct ServiceBan *);
 void free_jupeentry(struct JupeEntry *);
+
+void ctcp_user(struct Service *, struct Client *, const char *);
+void sendto_channel(struct Service *, struct Channel *, const char *);
 
 unsigned int get_mode_from_letter(char);
 void get_modestring(unsigned int, char *, int);

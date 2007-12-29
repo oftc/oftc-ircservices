@@ -475,6 +475,7 @@ m_register(struct Service *service, struct Client *client,
     reply_user(service, service, client, CS_REG_SUCCESS, parv[1]);
     ilog(L_NOTICE, "%s!%s@%s registered channel %s", 
         client->name, client->username, client->host, parv[1]);
+    execute_callback(on_chan_reg_cb, client, chptr);
   }
   else
   {
