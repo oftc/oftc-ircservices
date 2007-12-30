@@ -312,7 +312,7 @@ void
 ctcp_user(struct Service *service, struct Client *client, const char *text)
 {
   char buffer[IRC_BUFSIZE];
-  sprintf(buffer, "\001%s\001", text);
+  snprintf(buffer, IRC_BUFSIZE, "\001%s\001", text);
   execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, buffer);
 }
 

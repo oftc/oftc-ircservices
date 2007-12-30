@@ -19,6 +19,7 @@ static VALUE ClientStruct_Nick(VALUE);
 static VALUE ClientStruct_NickSet(VALUE, VALUE);
 static VALUE ClientStruct_CTCP(VALUE);
 static VALUE ClientStruct_CTCPSet(VALUE, VALUE);
+static VALUE ClientStruct_TS(VALUE);
 static VALUE ClientStruct_IsOper(VALUE);
 static VALUE ClientStruct_IsAdmin(VALUE);
 static VALUE ClientStruct_IsIdentified(VALUE);
@@ -166,6 +167,13 @@ ClientStruct_CTCPSet(VALUE self, VALUE value)
 }
 
 static VALUE
+ClientStruct_TS(VALUE self)
+{
+  struct Client *client = rb_rbclient2cclient(self);
+  return ULONG2NUM(client->tsinfo);
+}
+
+static VALUE
 ClientStruct_IsOper(VALUE self)
 {
   struct Client *client = rb_rbclient2cclient(self);
@@ -226,6 +234,7 @@ Init_ClientStruct(void)
   rb_define_method(cClientStruct, "nick=", ClientStruct_NickSet, 1);
   rb_define_method(cClientStruct, "ctcp_version", ClientStruct_CTCP, 0);
   rb_define_method(cClientStruct, "ctcp_version=", ClientStruct_CTCPSet, 1);
+  rb_define_method(cClientStruct, "ts", ClientStruct_TS, 0);
   rb_define_method(cClientStruct, "is_oper?", ClientStruct_IsOper, 0);
   rb_define_method(cClientStruct, "is_admin?", ClientStruct_IsAdmin, 0);
   rb_define_method(cClientStruct, "is_identified?", ClientStruct_IsIdentified, 0);
