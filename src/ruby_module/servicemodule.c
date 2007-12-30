@@ -22,7 +22,7 @@ static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
 static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_lm(VALUE, VALUE);
-static VALUE ServiceModule_delete_nick(VALUE, VALUE);
+static VALUE ServiceModule_nickname_delete(VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -389,13 +389,76 @@ ServiceModule_regchan_by_name(VALUE self, VALUE name)
 static VALUE
 ServiceModule_load_language(VALUE self, VALUE file)
 {
-  return Qnil;
+  VALUE lang_map = rb_iv_get(self, "@lang_map");
+  VALUE sv_langs = rb_iv_get(self, "@sv_langs");
+  VALUE curr = Qnil;
+  VALUE last = Qnil;
+  size_t count = 1;
+  int langid;
+  FBFILE *cfile;
+  char buffer[256];
+
+  if(lang_map == Qnil)
+  {
+    lang_map = rb_hash_new();
+    rb_iv_set(self, "@lang_map", lang_map);
+  }
+
+  if(sv_langs == Qnil)
+  {
+    sv_langs = rb_hash_new();
+    rb_iv_set(self, "@sv_langs", sv_langs);
+  }
+
+  snprintf(buffer, sizeof(buffer), "%s/%s.lang", LANGPATH, StringValueCStr(file));
+
+  if((cfile = fbopen(buffer, "r")) == NULL)
+  {
+    rb_raise(rb_eIOError, "Failed to open file %s", buffer);
+    return Qfalse;
+  }
+
+  fbgets(buffer, sizeof(buffer), cfile);
+  langid = atoi(buffer);
+
+  curr = rb_hash_aref(sv_langs, langid);
+
+  if(curr == Qnil)
+  {
+    curr = rb_hash_new();
+    rb_hash_aset(sv_langs, langid, curr);
+  }
+
+  while(fbgets(buffer, sizeof(buffer), cfile) != NULL)
+  {
+    if(buffer[0] == '\t')
+    {
+      VALUE line = rb_str_new2(buffer);
+      VALUE this = rb_hash_aref(curr, last);
+      rb_str_append(this, rb_str_substr(line, 1, RSTRING_LEN(line)-1));
+      rb_hash_aset(curr, last, this);
+    }
+    else
+    {
+      VALUE line = rb_funcall2(rb_str_new2(buffer), rb_intern("chomp"), 0, 0);
+      rb_hash_aset(lang_map, line, INT2NUM(count));
+      rb_hash_aset(curr, line, rb_str_new2(""));
+      last = line;
+      ++count;
+    }
+  }
+
+  fbclose(cfile);
+
+  ServiceModule_chain_language(self, file);
+  return Qtrue;
 }
 
 static VALUE
 ServiceModule_lm(VALUE self, VALUE mid)
 {
-  return 1;
+  VALUE lang_map = rb_iv_get(self, "@lang_map");
+  return rb_hash_aref(lang_map, mid);
 }
 
 static VALUE
@@ -415,7 +478,7 @@ ServiceModule_sendto_channel(VALUE self, VALUE channel, VALUE message)
 }
 
 static VALUE
-ServiceModule_delete_nick(VALUE self, VALUE user)
+ServiceModule_nickname_delete(VALUE self, VALUE user)
 {
   struct Client *client = rb_rbclient2cclient(user);
   if(client->nickname &&
@@ -499,7 +562,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
   rb_define_method(cServiceModule, "lm", ServiceModule_lm, 1);
 
-  rb_define_method(cServiceModule, "delete_nick", ServiceModule_delete_nick, 1);
+  rb_define_method(cServiceModule, "nickname_delete", ServiceModule_nickname_delete, 1);
 }
 
 static void
