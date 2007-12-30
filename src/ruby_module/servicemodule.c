@@ -22,6 +22,7 @@ static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
 static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_lm(VALUE, VALUE);
+static VALUE ServiceModule_delete_nick(VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -413,6 +414,26 @@ ServiceModule_sendto_channel(VALUE self, VALUE channel, VALUE message)
   return self;
 }
 
+static VALUE
+ServiceModule_delete_nick(VALUE self, VALUE user)
+{
+  struct Client *client = rb_rbclient2cclient(user);
+  if(client->nickname &&
+    db_delete_nick(client->nickname->id, client->nickname->nickid,
+      client->nickname->pri_nickid))
+  {
+    ClearIdentified(client);
+    client->nickname = NULL;
+    client->access = USER_FLAG;
+    send_umode(get_service(self), client, "-R");
+    return Qtrue;
+  }
+  else
+  {
+    return Qfalse;
+  }
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -477,6 +498,8 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "regchan_by_name?", ServiceModule_regchan_by_name, 1);
   rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
   rb_define_method(cServiceModule, "lm", ServiceModule_lm, 1);
+
+  rb_define_method(cServiceModule, "delete_nick", ServiceModule_delete_nick, 1);
 }
 
 static void
