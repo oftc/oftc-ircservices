@@ -13,8 +13,8 @@
 
 VALUE rb_carray2rbarray(int, char **);
 
-struct Client* rb_rbclient2cclient(VALUE);
-VALUE rb_cclient2rbclient(struct Client*);
+struct Client* value_to_client(VALUE);
+VALUE client_to_value(struct Client*);
 
 struct Channel* rb_rbchannel2cchannel(VALUE);
 VALUE rb_cchannel2rbchannel(struct Channel*);
@@ -27,7 +27,7 @@ VALUE rb_cnick2rbnick(struct Nick*);
 
 void Init_ChannelStruct(void);
 void Init_RegChannel(void);
-void Init_ClientStruct(void);
+void Init_Client(void);
 void Init_NickStruct(void);
 void Init_ServiceModule(void);
 
@@ -81,7 +81,7 @@ void check_our_type(VALUE obj, VALUE type);
 
 extern VALUE cServiceModule;
 extern VALUE cNickStruct;
-extern VALUE cClientStruct;
+extern VALUE cClient;
 extern VALUE cRegChannel;
 extern VALUE cChannelStruct;
 

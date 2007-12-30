@@ -1,50 +1,50 @@
 #include <ruby.h>
 #include "libruby_module.h"
 
-VALUE cClientStruct = Qnil;
+VALUE cClient = Qnil;
 VALUE cNickStruct;
 
-static VALUE ClientStruct_Initialize(VALUE, VALUE);
-static VALUE ClientStruct_Name(VALUE);
-static VALUE ClientStruct_NameSet(VALUE, VALUE);
-static VALUE ClientStruct_Host(VALUE);
-static VALUE ClientStruct_HostSet(VALUE, VALUE);
-static VALUE ClientStruct_ID(VALUE);
-static VALUE ClientStruct_IDSet(VALUE, VALUE);
-static VALUE ClientStruct_Info(VALUE);
-static VALUE ClientStruct_InfoSet(VALUE, VALUE);
-static VALUE ClientStruct_Username(VALUE);
-static VALUE ClientStruct_UsernameSet(VALUE, VALUE);
-static VALUE ClientStruct_Nick(VALUE);
-static VALUE ClientStruct_NickSet(VALUE, VALUE);
-static VALUE ClientStruct_CTCP(VALUE);
-static VALUE ClientStruct_CTCPSet(VALUE, VALUE);
-static VALUE ClientStruct_TS(VALUE);
-static VALUE ClientStruct_IsOper(VALUE);
-static VALUE ClientStruct_IsAdmin(VALUE);
-static VALUE ClientStruct_IsIdentified(VALUE);
-static VALUE ClientStruct_IsServer(VALUE);
-static VALUE ClientStruct_IsClient(VALUE);
-static VALUE ClientStruct_IsMe(VALUE);
+static VALUE initialize(VALUE, VALUE);
+static VALUE name(VALUE);
+static VALUE name_set(VALUE, VALUE);
+static VALUE host(VALUE);
+static VALUE host_set(VALUE, VALUE);
+static VALUE id(VALUE);
+static VALUE id_set(VALUE, VALUE);
+static VALUE info(VALUE);
+static VALUE info_set(VALUE, VALUE);
+static VALUE username(VALUE);
+static VALUE username_set(VALUE, VALUE);
+static VALUE nick(VALUE);
+static VALUE nick_set(VALUE, VALUE);
+static VALUE ctcp(VALUE);
+static VALUE ctcp_set(VALUE, VALUE);
+static VALUE ts(VALUE);
+static VALUE is_oper(VALUE);
+static VALUE is_admin(VALUE);
+static VALUE is_identified(VALUE);
+static VALUE is_server(VALUE);
+static VALUE is_client(VALUE);
+static VALUE is_me(VALUE);
 
 static VALUE
-ClientStruct_Initialize(VALUE self, VALUE client)
+initialize(VALUE self, VALUE client)
 {
   rb_iv_set(self, "@realptr", client);
   return self;
 }
 
 static VALUE
-ClientStruct_Name(VALUE self)
+name(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return rb_str_new2(client->name);
 }
 
 static VALUE
-ClientStruct_NameSet(VALUE self, VALUE value)
+name_set(VALUE self, VALUE value)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   const char* cvalue;
 
   Check_Type(value, T_STRING);
@@ -54,16 +54,16 @@ ClientStruct_NameSet(VALUE self, VALUE value)
 }
 
 static VALUE
-ClientStruct_Host(VALUE self)
+host(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return rb_str_new2(client->host);
 }
 
 static VALUE
-ClientStruct_HostSet(VALUE self, VALUE value)
+host_set(VALUE self, VALUE value)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   const char* cvalue;
 
   Check_Type(value, T_STRING);
@@ -73,16 +73,16 @@ ClientStruct_HostSet(VALUE self, VALUE value)
 }
 
 static VALUE
-ClientStruct_ID(VALUE self)
+id(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return rb_str_new2(client->id);
 }
 
 static VALUE
-ClientStruct_IDSet(VALUE self, VALUE value)
+id_set(VALUE self, VALUE value)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   const char* cvalue;
 
   Check_Type(value, T_STRING);
@@ -92,16 +92,16 @@ ClientStruct_IDSet(VALUE self, VALUE value)
 }
 
 static VALUE
-ClientStruct_Info(VALUE self)
+info(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return rb_str_new2(client->info);
 }
 
 static VALUE
-ClientStruct_InfoSet(VALUE self, VALUE value)
+info_set(VALUE self, VALUE value)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   const char* cvalue;
 
   Check_Type(value, T_STRING);
@@ -111,16 +111,16 @@ ClientStruct_InfoSet(VALUE self, VALUE value)
 }
 
 static VALUE
-ClientStruct_Username(VALUE self)
+username(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return rb_str_new2(client->username);
 }
 
 static VALUE
-ClientStruct_UsernameSet(VALUE self, VALUE value)
+username_set(VALUE self, VALUE value)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   const char* cvalue;
 
   Check_Type(value, T_STRING);
@@ -130,17 +130,17 @@ ClientStruct_UsernameSet(VALUE self, VALUE value)
 }
 
 static VALUE
-ClientStruct_Nick(VALUE self)
+nick(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   VALUE nick = rb_cnick2rbnick(client->nickname);
   return nick;
 }
 
 static VALUE
-ClientStruct_NickSet(VALUE self, VALUE value)
+nick_set(VALUE self, VALUE value)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
 
   Check_OurType(value, cNickStruct);
 
@@ -149,17 +149,17 @@ ClientStruct_NickSet(VALUE self, VALUE value)
 }
 
 static VALUE
-ClientStruct_CTCP(VALUE self)
+ctcp(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
 
   return rb_str_new2(client->ctcp_version);
 }
 
 static VALUE
-ClientStruct_CTCPSet(VALUE self, VALUE value)
+ctcp_set(VALUE self, VALUE value)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
 
   strncpy(client->ctcp_version, StringValueCStr(value), IRC_BUFSIZE);
 
@@ -167,84 +167,84 @@ ClientStruct_CTCPSet(VALUE self, VALUE value)
 }
 
 static VALUE
-ClientStruct_TS(VALUE self)
+ts(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return ULONG2NUM(client->tsinfo);
 }
 
 static VALUE
-ClientStruct_IsOper(VALUE self)
+is_oper(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return IsOper(client) ? Qtrue : Qfalse;
 }
 
 static VALUE
-ClientStruct_IsAdmin(VALUE self)
+is_admin(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return IsAdmin(client) ? Qtrue : Qfalse;
 }
 
 static VALUE
-ClientStruct_IsIdentified(VALUE self)
+is_identified(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return IsIdentified(client) ? Qtrue : Qfalse;
 }
 
 static VALUE
-ClientStruct_IsServer(VALUE self)
+is_server(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return IsServer(client) ? Qtrue : Qfalse;
 }
 
 static VALUE
-ClientStruct_IsClient(VALUE self)
+is_client(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return IsClient(client) ? Qtrue : Qfalse;
 }
 
-static VALUE ClientStruct_IsMe(VALUE self)
+static VALUE is_me(VALUE self)
 {
-  struct Client *client = rb_rbclient2cclient(self);
+  struct Client *client = value_to_client(self);
   return IsMe(client) ? Qtrue : Qfalse;
 }
 
 void
-Init_ClientStruct(void)
+Init_Client(void)
 {
-  cClientStruct = rb_define_class("ClientStruct", rb_cObject);
+  cClient = rb_define_class("Client", rb_cObject);
 
-  rb_define_method(cClientStruct, "initialize", ClientStruct_Initialize, 1);
-  rb_define_method(cClientStruct, "name", ClientStruct_Name, 0);
-  rb_define_method(cClientStruct, "name=", ClientStruct_NameSet, 1);
-  rb_define_method(cClientStruct, "host", ClientStruct_Host, 0);
-  rb_define_method(cClientStruct, "host=", ClientStruct_HostSet, 1);
-  rb_define_method(cClientStruct, "id", ClientStruct_ID, 0);
-  rb_define_method(cClientStruct, "id=", ClientStruct_IDSet, 1);
-  rb_define_method(cClientStruct, "info", ClientStruct_Info, 0);
-  rb_define_method(cClientStruct, "info=", ClientStruct_InfoSet, 1);
-  rb_define_method(cClientStruct, "username", ClientStruct_Username, 0);
-  rb_define_method(cClientStruct, "username=", ClientStruct_UsernameSet, 1);
-  rb_define_method(cClientStruct, "nick", ClientStruct_Nick, 0);
-  rb_define_method(cClientStruct, "nick=", ClientStruct_NickSet, 1);
-  rb_define_method(cClientStruct, "ctcp_version", ClientStruct_CTCP, 0);
-  rb_define_method(cClientStruct, "ctcp_version=", ClientStruct_CTCPSet, 1);
-  rb_define_method(cClientStruct, "ts", ClientStruct_TS, 0);
-  rb_define_method(cClientStruct, "is_oper?", ClientStruct_IsOper, 0);
-  rb_define_method(cClientStruct, "is_admin?", ClientStruct_IsAdmin, 0);
-  rb_define_method(cClientStruct, "is_identified?", ClientStruct_IsIdentified, 0);
-  rb_define_method(cClientStruct, "is_server?", ClientStruct_IsServer, 0);
-  rb_define_method(cClientStruct, "is_client?", ClientStruct_IsClient, 0);
-  rb_define_method(cClientStruct, "is_me?", ClientStruct_IsMe, 0);
+  rb_define_method(cClient, "initialize", initialize, 1);
+  rb_define_method(cClient, "name", name, 0);
+  rb_define_method(cClient, "name=", name_set, 1);
+  rb_define_method(cClient, "host", host, 0);
+  rb_define_method(cClient, "host=", host_set, 1);
+  rb_define_method(cClient, "id", id, 0);
+  rb_define_method(cClient, "id=", id_set, 1);
+  rb_define_method(cClient, "info", info, 0);
+  rb_define_method(cClient, "info=", info_set, 1);
+  rb_define_method(cClient, "username", username, 0);
+  rb_define_method(cClient, "username=", username_set, 1);
+  rb_define_method(cClient, "nick", nick, 0);
+  rb_define_method(cClient, "nick=", nick_set, 1);
+  rb_define_method(cClient, "ctcp_version", ctcp, 0);
+  rb_define_method(cClient, "ctcp_version=", ctcp_set, 1);
+  rb_define_method(cClient, "ts", ts, 0);
+  rb_define_method(cClient, "is_oper?", is_oper, 0);
+  rb_define_method(cClient, "is_admin?", is_admin, 0);
+  rb_define_method(cClient, "is_identified?", is_identified, 0);
+  rb_define_method(cClient, "is_server?", is_server, 0);
+  rb_define_method(cClient, "is_client?", is_client, 0);
+  rb_define_method(cClient, "is_me?", is_me, 0);
 }
 
 struct Client*
-rb_rbclient2cclient(VALUE self)
+value_to_client(VALUE self)
 {
   struct Client* out;
   VALUE rbclient = rb_iv_get(self, "@realptr");
@@ -253,12 +253,12 @@ rb_rbclient2cclient(VALUE self)
 }
 
 VALUE
-rb_cclient2rbclient(struct Client *client)
+client_to_value(struct Client *client)
 {
   VALUE rbclient, real_client;
 
   rbclient = Data_Wrap_Struct(rb_cObject, 0, 0, client);
-  real_client = do_ruby_ret(cClientStruct, rb_intern("new"), 1, rbclient);;
+  real_client = do_ruby_ret(cClient, rb_intern("new"), 1, rbclient);;
 
   if(real_client == Qnil)
   {

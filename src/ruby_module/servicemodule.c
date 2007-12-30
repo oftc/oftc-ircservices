@@ -104,8 +104,8 @@ ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource,
   Check_OurType(rbsource, cClientStruct);
   Check_Type(rbreason, T_STRING);
 
-  client = rb_rbclient2cclient(rbclient);
-  source = rb_rbclient2cclient(rbsource);
+  client = value_to_client(rbclient);
+  source = value_to_client(rbsource);
 
   reason = StringValueCStr(rbreason);
 
@@ -122,7 +122,7 @@ ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE message)
   Check_OurType(rbclient, cClientStruct);
   Check_Type(message, T_STRING);
 
-  client = rb_rbclient2cclient(rbclient);
+  client = value_to_client(rbclient);
 
   reply_user(service, service, client, 0, StringValueCStr(message));
 
@@ -194,7 +194,7 @@ ServiceModule_introduce_server(VALUE self, VALUE server, VALUE gecos)
 
   serv = introduce_server(name, cgecos);
 
-  rbserver = rb_cclient2rbclient(serv);
+  rbserver = client_to_value(serv);
   return rbserver;
 }
 
@@ -218,7 +218,7 @@ ServiceModule_do_help(VALUE self, VALUE client, VALUE value, VALUE parv)
   VALUE tmp;
 
   Check_OurType(client, cClientStruct);
-  cclient = rb_rbclient2cclient(client);
+  cclient = value_to_client(client);
 
   if(!NIL_P(value))
   {
@@ -464,7 +464,7 @@ ServiceModule_lm(VALUE self, VALUE mid)
 static VALUE
 ServiceModule_ctcp_user(VALUE self, VALUE user, VALUE message)
 {
-  struct Client *client = rb_rbclient2cclient(user);
+  struct Client *client = value_to_client(user);
   if(me.uplink != NULL && !IsConnecting(me.uplink))
     ctcp_user(get_service(self), client, StringValueCStr(message));
   return self;
@@ -480,7 +480,7 @@ ServiceModule_sendto_channel(VALUE self, VALUE channel, VALUE message)
 static VALUE
 ServiceModule_nickname_delete(VALUE self, VALUE user)
 {
-  struct Client *client = rb_rbclient2cclient(user);
+  struct Client *client = value_to_client(user);
   if(client->nickname &&
     db_delete_nick(client->nickname->id, client->nickname->nickid,
       client->nickname->pri_nickid))
@@ -579,7 +579,7 @@ m_generic(struct Service *service, struct Client *client,
  
   rbparams = rb_ary_new();
 
-  real_client = rb_cclient2rbclient(client);
+  real_client = client_to_value(client);
   rbparv = rb_carray2rbarray(parc, parv);
 
   rb_ary_push(rbparams, real_client);

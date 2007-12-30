@@ -267,10 +267,10 @@ rb_cmode_hdlr(va_list args)
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CMODE);
 
   if(param == NULL)
-    do_hook(hooks, 5, rb_cclient2rbclient(source_p), 
+    do_hook(hooks, 5, client_to_value(source_p), 
         rb_cchannel2rbchannel(chptr), INT2NUM(dir), rb_str_new(&letter, 1), 0);
   else
-    do_hook(hooks, 5, rb_cclient2rbclient(source_p), 
+    do_hook(hooks, 5, client_to_value(source_p), 
         rb_cchannel2rbchannel(chptr), INT2NUM(dir), rb_str_new(&letter, 1), 
         rb_str_new2(param));
  
@@ -286,7 +286,7 @@ rb_umode_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_UMODE);
 
-  do_hook(hooks, 3, rb_cclient2rbclient(user), INT2NUM(what), INT2NUM(mode));
+  do_hook(hooks, 3, client_to_value(user), INT2NUM(what), INT2NUM(mode));
 
   return pass_callback(ruby_umode_hook, user, what, mode);
 }
@@ -298,7 +298,7 @@ rb_newusr_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NEWUSR);
 
-  do_hook(hooks, 1, rb_cclient2rbclient(newuser));
+  do_hook(hooks, 1, client_to_value(newuser));
 
   return pass_callback(ruby_newusr_hook, newuser);
 }
@@ -312,7 +312,7 @@ rb_privmsg_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_PRIVMSG);
 
-  do_hook(hooks, 3, rb_cclient2rbclient(source), 
+  do_hook(hooks, 3, client_to_value(source), 
       rb_cchannel2rbchannel(channel), rb_str_new2(message));
 
   return pass_callback(ruby_privmsg_hook, source, channel, message);
@@ -326,7 +326,7 @@ rb_join_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_JOIN);
 
-  do_hook(hooks, 2, rb_cclient2rbclient(source), rb_str_new2(channel));
+  do_hook(hooks, 2, client_to_value(source), rb_str_new2(channel));
 
   return pass_callback(ruby_join_hook, source, channel);
 }
@@ -341,7 +341,7 @@ rb_part_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_PART);
 
-  do_hook(hooks, 4, rb_cclient2rbclient(client), rb_cclient2rbclient(source),
+  do_hook(hooks, 4, client_to_value(client), client_to_value(source),
     rb_cchannel2rbchannel(channel), rb_str_new2(reason));
 
   return pass_callback(ruby_part_hook, client, source, channel, reason);
@@ -355,7 +355,7 @@ rb_quit_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_QUIT);
 
-  do_hook(hooks, 2, rb_cclient2rbclient(client), rb_str_new2(reason));
+  do_hook(hooks, 2, client_to_value(client), rb_str_new2(reason));
 
   return pass_callback(ruby_quit_hook, client, reason);
 }
@@ -368,7 +368,7 @@ rb_nick_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NICK);
 
-  do_hook(hooks, 2, rb_cclient2rbclient(source), rb_str_new2(oldnick));
+  do_hook(hooks, 2, client_to_value(source), rb_str_new2(oldnick));
 
   return pass_callback(ruby_nick_hook, source, oldnick);
 }
@@ -382,7 +382,7 @@ rb_notice_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NOTICE);
 
-  do_hook(hooks, 3, rb_cclient2rbclient(source), rb_cchannel2rbchannel(channel),
+  do_hook(hooks, 3, client_to_value(source), rb_cchannel2rbchannel(channel),
       rb_str_new2(message));
 
   return pass_callback(ruby_notice_hook, source, channel, message);
@@ -423,7 +423,7 @@ rb_ctcp_hdlr(va_list args)
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CTCP);
 
   do_hook(hooks, 4, /*TODO*/service,
-    rb_cclient2rbclient(client), rb_str_new2(command), rb_str_new2(arg));
+    client_to_value(client), rb_str_new2(command), rb_str_new2(arg));
 
   return pass_callback(ruby_ctcp_hook, service, client, command, arg);
 }
@@ -436,7 +436,7 @@ rb_chan_reg_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_REG);
 
-  do_hook(hooks, 2, rb_cclient2rbclient(client), rb_cchannel2rbchannel(channel));
+  do_hook(hooks, 2, client_to_value(client), rb_cchannel2rbchannel(channel));
 
   return pass_callback(ruby_chan_reg_hook, client, channel);
 }
@@ -448,7 +448,7 @@ rb_nick_reg_hdlr(va_list args)
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NICK_REG);
 
-  do_hook(hooks, 1, rb_cclient2rbclient(client));
+  do_hook(hooks, 1, client_to_value(client));
 
   return pass_callback(ruby_nick_reg_hook, client);
 }
@@ -618,7 +618,7 @@ init_ruby(void)
   ruby_init_loadpath();
 
   Init_ServiceModule();
-  Init_ClientStruct();
+  Init_Client();
   Init_ChannelStruct();
   Init_RegChannel();
   Init_NickStruct();
