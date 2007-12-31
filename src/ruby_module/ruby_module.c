@@ -421,9 +421,15 @@ rb_ctcp_hdlr(va_list args)
   char *arg               = va_arg(args, char *);
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CTCP);
+  VALUE varg;
+
+  if(arg == NULL)
+    varg = Qnil;
+  else
+    varg = rb_str_new2(arg);
 
   do_hook(hooks, 4, /*TODO*/service,
-    client_to_value(client), rb_str_new2(command), rb_str_new2(arg));
+    client_to_value(client), rb_str_new2(command), varg);
 
   return pass_callback(ruby_ctcp_hook, service, client, command, arg);
 }
