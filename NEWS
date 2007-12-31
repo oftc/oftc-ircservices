@@ -10,6 +10,7 @@ o Add ENSLAVE command which works the opposite way to LINK.
 o Make password checking CERTFP aware.  This means that link, enslave,
 identify, ghost and all related commands can now auth on certfp instead.
 o Allow users to remove themselves from channel access lists.
+o Tidy up ruby bindings a bit.
 
 1.1.4 
 -----
