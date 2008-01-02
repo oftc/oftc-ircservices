@@ -2,7 +2,7 @@
 #include "libruby_module.h"
 
 VALUE cServiceModule = Qnil;
-VALUE cClientStruct;
+VALUE cClient;
 
 /* Core Functions */
 static VALUE ServiceModule_register(VALUE, VALUE);
@@ -100,8 +100,8 @@ ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource,
   struct Client *client, *source;
   char *reason;
 
-  Check_OurType(rbclient, cClientStruct);
-  Check_OurType(rbsource, cClientStruct);
+  Check_OurType(rbclient, cClient);
+  Check_OurType(rbsource, cClient);
   Check_Type(rbreason, T_STRING);
 
   client = value_to_client(rbclient);
@@ -119,7 +119,7 @@ ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE message)
   struct Client *client;
   struct Service *service = get_service(self);
 
-  Check_OurType(rbclient, cClientStruct);
+  Check_OurType(rbclient, cClient);
   Check_Type(message, T_STRING);
 
   client = value_to_client(rbclient);
@@ -217,7 +217,7 @@ ServiceModule_do_help(VALUE self, VALUE client, VALUE value, VALUE parv)
   char **argv = 0;
   VALUE tmp;
 
-  Check_OurType(client, cClientStruct);
+  Check_OurType(client, cClient);
   cclient = value_to_client(client);
 
   if(!NIL_P(value))
