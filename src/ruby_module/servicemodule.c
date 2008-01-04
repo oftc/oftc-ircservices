@@ -202,7 +202,7 @@ static VALUE
 ServiceModule_log(VALUE self, VALUE level, VALUE message)
 {
   Check_Type(message, T_STRING);
-  ilog(NUM2INT(level), StringValueCStr(message));
+  ilog(NUM2INT(level), "{%s} %s", get_service(self)->name, StringValueCStr(message));
   return self;
 }
 
