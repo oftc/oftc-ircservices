@@ -23,6 +23,7 @@ static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_lm(VALUE, VALUE);
 static VALUE ServiceModule_nickname_delete(VALUE, VALUE);
+static VALUE ServiceModule_find_channel(VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -500,6 +501,16 @@ ServiceModule_nickname_delete(VALUE self, VALUE user)
   }
 }
 
+static VALUE
+ServiceModule_find_channel(VALUE self, VALUE name)
+{
+  struct Channel *channel = hash_find_channel(StringValueCStr(name));
+  if(channel == NULL)
+    return Qnil;
+  else
+    return rb_cchannel2rbchannel(channel);
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -566,6 +577,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "lm", ServiceModule_lm, 1);
 
   rb_define_method(cServiceModule, "nickname_delete", ServiceModule_nickname_delete, 1);
+  rb_define_method(cServiceModule, "find_channel", ServiceModule_find_channel, 1);
 }
 
 static void

@@ -16,6 +16,7 @@ static VALUE ChannelStruct_ModeSet(VALUE, VALUE);
 static VALUE ChannelStruct_RegChan(VALUE);
 static VALUE ChannelStruct_RegChanSet(VALUE, VALUE);
 static VALUE ChannelStruct_MembersLength(VALUE);
+static VALUE ChannelStruct_MembersEach(VALUE);
 
 static VALUE
 ChannelStruct_Initialize(VALUE self, VALUE channel)
@@ -135,6 +136,25 @@ ChannelStruct_MembersLength(VALUE self)
   return ULONG2NUM(channel->members.length);
 }
 
+static VALUE
+ChannelStruct_MembersEach(VALUE self)
+{
+  struct Channel *channel = rb_rbchannel2cchannel(self);
+  dlink_node *ptr = NULL, *next_ptr = NULL;
+
+  if(rb_block_given_p())
+  {
+    /* TODO Wrap in protect/ensure */
+    DLINK_FOREACH_SAFE(ptr, next_ptr, channel->members.head)
+    {
+      struct Membership *ms = ptr->data;
+      rb_yield(client_to_value(ms->client_p));
+    }
+  }
+
+  return self;
+}
+
 void
 Init_ChannelStruct(void)
 {
@@ -152,6 +172,7 @@ Init_ChannelStruct(void)
   rb_define_method(cChannelStruct, "regchan", ChannelStruct_RegChan, 0);
   rb_define_method(cChannelStruct, "regchan=", ChannelStruct_RegChanSet, 1);
   rb_define_method(cChannelStruct, "members_length", ChannelStruct_MembersLength, 0);
+  rb_define_method(cChannelStruct, "members_each", ChannelStruct_MembersEach, 0);
 
   /*TODO members, invites, bans, excepts, invex */
 }
