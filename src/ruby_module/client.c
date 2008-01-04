@@ -20,12 +20,14 @@ static VALUE nick_set(VALUE, VALUE);
 static VALUE ctcp(VALUE);
 static VALUE ctcp_set(VALUE, VALUE);
 static VALUE ts(VALUE);
+static VALUE from(VALUE);
 static VALUE is_oper(VALUE);
 static VALUE is_admin(VALUE);
 static VALUE is_identified(VALUE);
 static VALUE is_server(VALUE);
 static VALUE is_client(VALUE);
 static VALUE is_me(VALUE);
+static VALUE is_services_client(VALUE);
 
 static VALUE
 initialize(VALUE self, VALUE client)
@@ -174,6 +176,13 @@ ts(VALUE self)
 }
 
 static VALUE
+from(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+  return client_to_value(client->from);
+}
+
+static VALUE
 is_oper(VALUE self)
 {
   struct Client *client = value_to_client(self);
@@ -214,6 +223,12 @@ static VALUE is_me(VALUE self)
   return IsMe(client) ? Qtrue : Qfalse;
 }
 
+static VALUE is_services_client(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+  return IsMe(client->from) ? Qtrue : Qfalse;
+}
+
 void
 Init_Client(void)
 {
@@ -235,12 +250,14 @@ Init_Client(void)
   rb_define_method(cClient, "ctcp_version", ctcp, 0);
   rb_define_method(cClient, "ctcp_version=", ctcp_set, 1);
   rb_define_method(cClient, "ts", ts, 0);
+  rb_define_method(cClient, "from", from, 0);
   rb_define_method(cClient, "is_oper?", is_oper, 0);
   rb_define_method(cClient, "is_admin?", is_admin, 0);
   rb_define_method(cClient, "is_identified?", is_identified, 0);
   rb_define_method(cClient, "is_server?", is_server, 0);
   rb_define_method(cClient, "is_client?", is_client, 0);
   rb_define_method(cClient, "is_me?", is_me, 0);
+  rb_define_method(cClient, "is_services_client?", is_services_client, 0);
 }
 
 struct Client*
