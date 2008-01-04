@@ -201,8 +201,11 @@ ServiceModule_introduce_server(VALUE self, VALUE server, VALUE gecos)
 static VALUE
 ServiceModule_log(VALUE self, VALUE level, VALUE message)
 {
+  VALUE service_name = rb_class_name(RBASIC(self)->klass);
   Check_Type(message, T_STRING);
-  ilog(NUM2INT(level), "{%s} %s", get_service(self)->name, StringValueCStr(message));
+
+  ilog(NUM2INT(level), "{%s} %s", StringValueCStr(service_name), StringValueCStr(message));
+
   return self;
 }
 
