@@ -22,6 +22,7 @@ class RubyServ < ServiceModule
       [CHAN_CREATED_HOOK, 'chan_created'],
       [CHAN_DELETED_HOOK, 'chan_deleted'],
       [CTCP_HOOK, 'ctcp_msg'],
+      [EOB_HOOK, 'eob'],
     ])
     #join_channel("#test")
     self.channels_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
@@ -88,6 +89,10 @@ class RubyServ < ServiceModule
   end
   def ctcp_msg(service, client, command, arg)
     log(LOG_NOTICE, "#{client.name} CTCP'd #{command}: #{arg}")
+  end
+  def eob()
+    log(LOG_NOTICE, "EOB IS DONE")
+    join_channel("#ganneffserv")
   end
 end
 

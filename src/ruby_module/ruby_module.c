@@ -41,6 +41,8 @@ static dlink_node *ruby_chan_delete_hook;
 static dlink_node *ruby_ctcp_hook;
 static dlink_node *ruby_nick_reg_hook;
 static dlink_node *ruby_chan_reg_hook;
+static dlink_node *ruby_db_init_hook;
+static dlink_node *ruby_eob_hook;
 
 static VALUE ruby_server_hooks = Qnil;
 
@@ -58,6 +60,8 @@ static void *rb_chan_delete_hdlr(va_list);
 static void *rb_ctcp_hdlr(va_list);
 static void *rb_nick_reg_hdlr(va_list);
 static void *rb_chan_reg_hdlr(va_list);
+static void *rb_db_init_hdlr(va_list);
+static void *rb_eob_hdlr(va_list);
 
 static void ruby_script_error();
 
@@ -459,6 +463,26 @@ rb_nick_reg_hdlr(va_list args)
   return pass_callback(ruby_nick_reg_hook, client);
 }
 
+static void *
+rb_db_init_hdlr(va_list args)
+{
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_DB_INIT);
+
+  do_hook(hooks, 0, Qnil);
+
+  return pass_callback(ruby_db_init_hook);
+}
+
+static void *
+rb_eob_hdlr(va_list args)
+{
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_EOB);
+
+  do_hook(hooks, 0, Qnil);
+
+  return pass_callback(ruby_eob_hook);
+}
+
 void
 rb_add_hook(VALUE self, VALUE hook, int type)
 {
@@ -648,6 +672,8 @@ init_ruby(void)
   ruby_ctcp_hook = install_hook(on_ctcp_cb, rb_ctcp_hdlr);
   ruby_chan_reg_hook = install_hook(on_chan_reg_cb, rb_chan_reg_hdlr);
   ruby_nick_reg_hook = install_hook(on_nick_reg_cb, rb_nick_reg_hdlr);
+  ruby_db_init_hook = install_hook(on_db_init_cb, rb_db_init_hdlr);
+  ruby_eob_hook = install_hook(on_burst_done_cb, rb_eob_hdlr);
 
   /* pin any ruby address we keep on the C side */
   rb_gc_register_address(&ruby_server_hooks);

@@ -531,6 +531,8 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "CTCP_HOOK", INT2NUM(RB_HOOKS_CTCP));
   rb_define_const(cServiceModule, "CHAN_REG_HOOK", INT2NUM(RB_HOOKS_CHAN_REG));
   rb_define_const(cServiceModule, "NICK_REG_HOOK", INT2NUM(RB_HOOKS_NICK_REG));
+  rb_define_const(cServiceModule, "DB_INIT_HOOK", INT2NUM(RB_HOOKS_DB_INIT));
+  rb_define_const(cServiceModule, "EOB_HOOK", INT2NUM(RB_HOOKS_EOB));
 
   rb_define_const(cServiceModule, "LOG_CRIT",   INT2NUM(L_CRIT));
   rb_define_const(cServiceModule, "LOG_ERROR",  INT2NUM(L_ERROR));
