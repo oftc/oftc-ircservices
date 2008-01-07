@@ -377,8 +377,11 @@ boot_modules(char cold)
 static void *
 h_switch_conf_pass(va_list args)
 {
+  /* XXX Don't load modules on a config switch pass, wait
+   * for the rest of the system to be up
   if (conf_pass == 2)
     boot_modules(conf_cold);
+  */
 
   return pass_callback(hpass);
 }

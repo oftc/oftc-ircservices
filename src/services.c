@@ -243,6 +243,8 @@ int main(int argc, char *argv[])
 #else
   load_all_modules(1);
 #endif
+
+  boot_modules(1);
   
   connect_server();
 

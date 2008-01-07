@@ -92,7 +92,6 @@ class RubyServ < ServiceModule
   end
   def eob()
     log(LOG_NOTICE, "EOB IS DONE")
-    join_channel("#ganneffserv")
   end
 end
 
