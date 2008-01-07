@@ -462,7 +462,16 @@ static VALUE
 ServiceModule_lm(VALUE self, VALUE mid)
 {
   VALUE lang_map = rb_iv_get(self, "@lang_map");
-  return rb_hash_aref(lang_map, mid);
+  VALUE entry = rb_hash_aref(lang_map, mid);
+
+  if(entry == Qnil)
+  {
+    VALUE sn = rb_iv_get(self, "@ServiceName");
+    ilog(L_DEBUG, "{%s} Failed to find help string id: %s", StringValueCStr(sn), StringValueCStr(mid));
+    return INT2NUM(0);
+  }
+  else
+    return entry;
 }
 
 static VALUE
