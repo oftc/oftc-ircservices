@@ -356,15 +356,6 @@ ServiceModule_akill_add(VALUE self, VALUE mask, VALUE reason, VALUE duration)
   Check_Type(reason, T_STRING);
   creason = StringValueCStr(reason);
 
-  if(client->nickname == NULL)
-    client->nickname = db_find_nick(client->name);
-
-  if(client->nickname == NULL)
-  {
-    ilog(L_CRIT, "%s Trying to akill but doesn't have a NickStruct", client->name);
-    return Qfalse;
-  }
-
   akill = akill_add(service, client, cmask, creason, NUM2INT(duration));
 
   if(akill == NULL)
