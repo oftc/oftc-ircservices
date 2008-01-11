@@ -65,7 +65,7 @@ static void *rb_eob_hdlr(va_list);
 
 static void ruby_script_error();
 
-static int rb_do_hook_each(VALUE key, VALUE name, VALUE params);
+static VALUE rb_do_hook_each(VALUE key, VALUE name, VALUE params);
 static void unhook_events(const char* name);
 
 char *
@@ -111,23 +111,24 @@ ruby_handle_error(int status)
   return status;
 }
 
-int
+VALUE
 do_rubyv(VALUE recv, ID id, int parc, VALUE *parv)
 {
   struct ruby_args args;
   int status;
+  VALUE retval;
 
   args.recv = recv;
   args.id = id;
   args.parc = parc;
   args.parv = parv;
 
-  rb_protect(rb_singleton_call, (VALUE)&args, &status);
+  retval = rb_protect(rb_singleton_call, (VALUE)&args, &status);
 
   if(ruby_handle_error(status))
-    return 0;
+    return Qnil;
 
-  return 1;
+  return retval;
 }
 
 VALUE
@@ -166,7 +167,7 @@ do_ruby_ret(VALUE recv, ID id, int parc, ...)
   return ret;
 }
 
-int
+VALUE
 do_ruby(VALUE recv, ID id, int parc, ...)
 {
   int i;
@@ -235,11 +236,12 @@ check_our_type(VALUE obj, VALUE type)
   }
 }
 
-static void
+static VALUE
 do_hook(VALUE hooks, int parc, ...)
 {
   struct rhook_args arg;
   VALUE *params = 0;
+  VALUE keys, ret;
   int i;
   va_list args;
 
@@ -256,7 +258,47 @@ do_hook(VALUE hooks, int parc, ...)
 
   va_end(args);
 
-  rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
+  /* TODO protect */
+  keys = rb_funcall2(hooks, rb_intern("keys"), 0, 0);
+  for(i = 0; i < RARRAY(keys)->len; ++i)
+  {
+    VALUE key, value;
+    key = rb_ary_entry(keys, i);
+    value = rb_hash_aref(hooks, key);
+    ret = rb_do_hook_each(key, value, (VALUE)&arg);
+    if(ret == Qfalse)
+      break;
+  }
+
+  return ret;
+  //rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
+}
+
+static VALUE
+rb_do_hook_each(VALUE key, VALUE value, VALUE arg)
+{
+  VALUE self, command, command_id, ret;
+  struct rhook_args *args = (struct rhook_args*)arg;
+
+  self = rb_ary_entry(value, 0);
+  command = rb_ary_entry(value, 1);
+  command_id = rb_intern(StringValueCStr(command));
+
+  ret = do_rubyv(self, command_id, args->parc, args->parv);
+
+  switch(ret)
+  {
+    case Qnil:
+      ilog(L_DEBUG, "{%s} Returned nil while processing callback: %s", StringValueCStr(key),
+        StringValueCStr(command));
+      break;
+    case Qfalse:
+      ilog(L_DEBUG, "{%s} Interrupted Callback Chain in %s", StringValueCStr(key),
+        StringValueCStr(command));
+      break;
+  }
+
+  return ret;
 }
 
 static void *
@@ -267,18 +309,21 @@ rb_cmode_hdlr(va_list args)
   int dir = va_arg(args, int);
   char letter = (char)va_arg(args, int);
   char *param = va_arg(args, char *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CMODE);
 
   if(param == NULL)
-    do_hook(hooks, 5, client_to_value(source_p), 
+    ret = do_hook(hooks, 5, client_to_value(source_p),
         rb_cchannel2rbchannel(chptr), INT2NUM(dir), rb_str_new(&letter, 1), 0);
   else
-    do_hook(hooks, 5, client_to_value(source_p), 
-        rb_cchannel2rbchannel(chptr), INT2NUM(dir), rb_str_new(&letter, 1), 
+    ret = do_hook(hooks, 5, client_to_value(source_p),
+        rb_cchannel2rbchannel(chptr), INT2NUM(dir), rb_str_new(&letter, 1),
         rb_str_new2(param));
- 
-  return pass_callback(ruby_cmode_hook, source_p, chptr, dir, letter, param);
+
+  if(ret != Qfalse)
+    return pass_callback(ruby_cmode_hook, source_p, chptr, dir, letter, param);
+  else
+    return NULL;
 }
 
 static void*
@@ -287,24 +332,30 @@ rb_umode_hdlr(va_list args)
   struct Client *user = va_arg(args, struct Client *);
   int what = va_arg(args, int);
   int mode = va_arg(args, int);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_UMODE);
 
-  do_hook(hooks, 3, client_to_value(user), INT2NUM(what), INT2NUM(mode));
+  ret = do_hook(hooks, 3, client_to_value(user), INT2NUM(what), INT2NUM(mode));
 
-  return pass_callback(ruby_umode_hook, user, what, mode);
+  if(ret != Qfalse)
+    return pass_callback(ruby_umode_hook, user, what, mode);
+  else
+    return NULL;
 }
 
 static void *
 rb_newusr_hdlr(va_list args)
 {
   struct Client *newuser = va_arg(args, struct Client *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NEWUSR);
 
-  do_hook(hooks, 1, client_to_value(newuser));
+  ret = do_hook(hooks, 1, client_to_value(newuser));
 
-  return pass_callback(ruby_newusr_hook, newuser);
+  if(ret != Qfalse)
+    return pass_callback(ruby_newusr_hook, newuser);
+  else
+    return NULL;
 }
 
 static void *
@@ -313,13 +364,16 @@ rb_privmsg_hdlr(va_list args)
   struct Client *source = va_arg(args, struct Client *);
   struct Channel *channel = va_arg(args, struct Channel *);
   char *message = va_arg(args, char *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_PRIVMSG);
 
-  do_hook(hooks, 3, client_to_value(source), 
+  ret = do_hook(hooks, 3, client_to_value(source),
       rb_cchannel2rbchannel(channel), rb_str_new2(message));
 
-  return pass_callback(ruby_privmsg_hook, source, channel, message);
+  if(ret != Qfalse)
+    return pass_callback(ruby_privmsg_hook, source, channel, message);
+  else
+    return NULL;
 }
 
 static void *
@@ -327,12 +381,15 @@ rb_join_hdlr(va_list args)
 {
   struct Client* source = va_arg(args, struct Client *);
   char *channel = va_arg(args, char *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_JOIN);
 
-  do_hook(hooks, 2, client_to_value(source), rb_str_new2(channel));
+  ret = do_hook(hooks, 2, client_to_value(source), rb_str_new2(channel));
 
-  return pass_callback(ruby_join_hook, source, channel);
+  if(ret != Qfalse)
+    return pass_callback(ruby_join_hook, source, channel);
+  else
+    return NULL;
 }
 
 static void *
@@ -342,13 +399,16 @@ rb_part_hdlr(va_list args)
   struct Client* source = va_arg(args, struct Client *);
   struct Channel* channel = va_arg(args, struct Channel *);
   char *reason = va_arg(args, char *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_PART);
 
-  do_hook(hooks, 4, client_to_value(client), client_to_value(source),
+  ret = do_hook(hooks, 4, client_to_value(client), client_to_value(source),
     rb_cchannel2rbchannel(channel), rb_str_new2(reason));
 
-  return pass_callback(ruby_part_hook, client, source, channel, reason);
+  if(ret != Qfalse)
+    return pass_callback(ruby_part_hook, client, source, channel, reason);
+  else
+    return NULL;
 }
 
 static void *
@@ -356,12 +416,15 @@ rb_quit_hdlr(va_list args)
 {
   struct Client* client = va_arg(args, struct Client *);
   char *reason = va_arg(args, char *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_QUIT);
 
-  do_hook(hooks, 2, client_to_value(client), rb_str_new2(reason));
+  ret = do_hook(hooks, 2, client_to_value(client), rb_str_new2(reason));
 
-  return pass_callback(ruby_quit_hook, client, reason);
+  if(ret != Qfalse)
+    return pass_callback(ruby_quit_hook, client, reason);
+  else
+    return NULL;
 }
 
 static void *
@@ -369,12 +432,15 @@ rb_nick_hdlr(va_list args)
 {
   struct Client *source = va_arg(args, struct Client *);
   char *oldnick = va_arg(args, char *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NICK);
 
-  do_hook(hooks, 2, client_to_value(source), rb_str_new2(oldnick));
+  ret = do_hook(hooks, 2, client_to_value(source), rb_str_new2(oldnick));
 
-  return pass_callback(ruby_nick_hook, source, oldnick);
+  if(ret != Qfalse)
+    return pass_callback(ruby_nick_hook, source, oldnick);
+  else
+    return NULL;
 }
 
 static void *
@@ -383,37 +449,46 @@ rb_notice_hdlr(va_list args)
   struct Client *source = va_arg(args, struct Client *);
   struct Channel *channel = va_arg(args, struct Channel *);
   char *message = va_arg(args, char *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NOTICE);
 
-  do_hook(hooks, 3, client_to_value(source), rb_cchannel2rbchannel(channel),
+  ret = do_hook(hooks, 3, client_to_value(source), rb_cchannel2rbchannel(channel),
       rb_str_new2(message));
 
-  return pass_callback(ruby_notice_hook, source, channel, message);
+  if(ret != Qfalse)
+    return pass_callback(ruby_notice_hook, source, channel, message);
+  else
+    return NULL;
 }
 
 static void *
 rb_chan_create_hdlr(va_list args)
 {
   struct Channel *channel = va_arg(args, struct Channel *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_CREATED);
 
-  do_hook(hooks, 1, rb_cchannel2rbchannel(channel));
+  ret = do_hook(hooks, 1, rb_cchannel2rbchannel(channel));
 
-  return pass_callback(ruby_chan_create_hook, channel);
+  if(ret != Qfalse)
+    return pass_callback(ruby_chan_create_hook, channel);
+  else
+    return NULL;
 }
 
 static void *
 rb_chan_delete_hdlr(va_list args)
 {
   struct Channel *channel = va_arg(args, struct Channel *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_DELETED);
 
-  do_hook(hooks, 1, rb_cchannel2rbchannel(channel));
+  ret = do_hook(hooks, 1, rb_cchannel2rbchannel(channel));
 
-  return pass_callback(ruby_chan_delete_hook, channel);
+  if(ret != Qfalse)
+    return pass_callback(ruby_chan_delete_hook, channel);
+  else
+    return NULL;
 }
 
 static void *
@@ -425,17 +500,20 @@ rb_ctcp_hdlr(va_list args)
   char *arg               = va_arg(args, char *);
 
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CTCP);
-  VALUE varg;
+  VALUE varg, ret;
 
   if(arg == NULL)
     varg = Qnil;
   else
     varg = rb_str_new2(arg);
 
-  do_hook(hooks, 4, /*TODO*/service,
+  ret = do_hook(hooks, 4, /*TODO*/service,
     client_to_value(client), rb_str_new2(command), varg);
 
-  return pass_callback(ruby_ctcp_hook, service, client, command, arg);
+  if(ret != Qfalse)
+    return pass_callback(ruby_ctcp_hook, service, client, command, arg);
+  else
+    return NULL;
 }
 
 static void *
@@ -443,44 +521,54 @@ rb_chan_reg_hdlr(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
   struct Channel *channel = va_arg(args, struct Channel *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_REG);
 
-  do_hook(hooks, 2, client_to_value(client), rb_cchannel2rbchannel(channel));
+  ret = do_hook(hooks, 2, client_to_value(client), rb_cchannel2rbchannel(channel));
 
-  return pass_callback(ruby_chan_reg_hook, client, channel);
+  if(ret != Qfalse)
+    return pass_callback(ruby_chan_reg_hook, client, channel);
+  else
+    return NULL;
 }
 
 static void *
 rb_nick_reg_hdlr(va_list args)
 {
   struct Client *client = va_arg(args, struct Client *);
-
+  VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NICK_REG);
 
-  do_hook(hooks, 1, client_to_value(client));
+  ret = do_hook(hooks, 1, client_to_value(client));
 
-  return pass_callback(ruby_nick_reg_hook, client);
+  if(ret != Qfalse)
+    return pass_callback(ruby_nick_reg_hook, client);
+  else
+    return NULL;
 }
 
 static void *
 rb_db_init_hdlr(va_list args)
 {
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_DB_INIT);
+  VALUE ret = do_hook(hooks, 0, Qnil);
 
-  do_hook(hooks, 0, Qnil);
-
-  return pass_callback(ruby_db_init_hook);
+  if(ret != Qfalse)
+    return pass_callback(ruby_db_init_hook);
+  else
+    return NULL;
 }
 
 static void *
 rb_eob_hdlr(va_list args)
 {
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_EOB);
+  VALUE ret = do_hook(hooks, 0, Qnil);
 
-  do_hook(hooks, 0, Qnil);
-
-  return pass_callback(ruby_eob_hook);
+  if(ret != Qfalse)
+    return pass_callback(ruby_eob_hook);
+  else
+    return NULL;
 }
 
 void
@@ -507,22 +595,6 @@ unhook_events(const char* name)
     hooks = rb_ary_entry(ruby_server_hooks, type);
     rb_hash_delete(hooks, rname);
   }
-}
-
-static int
-rb_do_hook_each(VALUE key, VALUE value, VALUE arg)
-{
-  VALUE self, command, command_id;
-  struct rhook_args *args = (struct rhook_args*)arg;
-
-  self = rb_ary_entry(value, 0);
-  command = rb_ary_entry(value, 1);
-  command_id = rb_intern(StringValueCStr(command));
-
-  if(!do_rubyv(self, command_id, args->parc, args->parv))
-    ilog(L_DEBUG, "RUBY ERROR: Failed to call: %s", StringValueCStr(command));
-
-  return 1;
 }
 
 int
