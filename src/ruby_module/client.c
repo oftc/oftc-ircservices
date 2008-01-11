@@ -260,8 +260,8 @@ Init_Client(void)
   rb_define_method(cClient, "name=", name_set, 1);
   rb_define_method(cClient, "host", host, 0);
   rb_define_method(cClient, "host=", host_set, 1);
-  rb_define_method(cClient, "realhost", host, 0);
-  rb_define_method(cClient, "realhost=", host_set, 1);
+  rb_define_method(cClient, "realhost", realhost, 0);
+  rb_define_method(cClient, "realhost=", realhost_set, 1);
   rb_define_method(cClient, "id", id, 0);
   rb_define_method(cClient, "id=", id_set, 1);
   rb_define_method(cClient, "info", info, 0);
