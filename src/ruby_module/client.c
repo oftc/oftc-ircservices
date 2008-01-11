@@ -9,6 +9,8 @@ static VALUE name(VALUE);
 static VALUE name_set(VALUE, VALUE);
 static VALUE host(VALUE);
 static VALUE host_set(VALUE, VALUE);
+static VALUE realhost(VALUE);
+static VALUE realhost_set(VALUE, VALUE);
 static VALUE id(VALUE);
 static VALUE id_set(VALUE, VALUE);
 static VALUE info(VALUE);
@@ -71,6 +73,25 @@ host_set(VALUE self, VALUE value)
   Check_Type(value, T_STRING);
 
   strlcpy(client->host, cvalue, sizeof(client->host));
+  return value;
+}
+
+static VALUE
+realhost(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+  return rb_str_new2(client->realhost);
+}
+
+static VALUE
+realhost_set(VALUE self, VALUE value)
+{
+  struct Client *client = value_to_client(self);
+  const char* cvalue;
+
+  Check_Type(value, T_STRING);
+
+  strlcpy(client->realhost, cvalue, sizeof(client->host));
   return value;
 }
 
@@ -239,6 +260,8 @@ Init_Client(void)
   rb_define_method(cClient, "name=", name_set, 1);
   rb_define_method(cClient, "host", host, 0);
   rb_define_method(cClient, "host=", host_set, 1);
+  rb_define_method(cClient, "realhost", host, 0);
+  rb_define_method(cClient, "realhost=", host_set, 1);
   rb_define_method(cClient, "id", id, 0);
   rb_define_method(cClient, "id=", id_set, 1);
   rb_define_method(cClient, "info", info, 0);

@@ -821,6 +821,8 @@ cloak_user(struct Client *client, char *cloak)
     return;
 
   execute_callback(send_cloak_cb, client, cloak);
+  if(*client->realhost == '\0')
+    strlcpy(client->realhost, client->host, sizeof(client->realhost));
   strlcpy(client->host, cloak, sizeof(client->host));
 }
 
