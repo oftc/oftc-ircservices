@@ -976,9 +976,9 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
     if (!IsMember(target, chptr))
     {
       add_user_to_channel(chptr, target, fl, !have_many_nicks);
-      execute_callback(on_join_cb, target, chptr->chname);
       ilog(L_DEBUG, "Added %s!%s@%s to %s", target->name, target->username,
           target->host, chptr->chname);
+      execute_callback(on_join_cb, target, chptr->chname);
     }
 
     if (fl & CHFL_CHANOP)
