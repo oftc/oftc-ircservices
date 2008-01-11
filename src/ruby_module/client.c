@@ -80,7 +80,10 @@ static VALUE
 realhost(VALUE self)
 {
   struct Client *client = value_to_client(self);
-  return rb_str_new2(client->realhost);
+  if(EmptyString(client->realhost))
+    return Qnil;
+  else
+    return rb_str_new2(client->realhost);
 }
 
 static VALUE
