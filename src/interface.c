@@ -821,6 +821,7 @@ cloak_user(struct Client *client, char *cloak)
     return;
 
   execute_callback(send_cloak_cb, client, cloak);
+  strlcpy(client->host, cloak, sizeof(client->host));
 }
 
 void
