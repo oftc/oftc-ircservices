@@ -378,7 +378,7 @@ ServiceModule_kill_user(VALUE self, VALUE who, VALUE reason)
   Check_Type(reason, T_STRING);
   creason = StringValueCStr(reason);
 
-  Check_OurType(who, client);
+  Check_OurType(who, cClient);
   client = value_to_client(who);
 
   return Qtrue;
