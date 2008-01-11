@@ -20,6 +20,7 @@ static VALUE ServiceModule_chain_language(VALUE, VALUE);
 static VALUE ServiceModule_channels_each(VALUE);
 static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
 static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
+static VALUE ServiceModule_kill_user(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_lm(VALUE, VALUE);
 static VALUE ServiceModule_nickname_delete(VALUE, VALUE);
@@ -368,6 +369,22 @@ ServiceModule_akill_add(VALUE self, VALUE mask, VALUE reason, VALUE duration)
 }
 
 static VALUE
+ServiceModule_kill_user(VALUE self, VALUE who, VALUE reason)
+{
+  struct Service *service = get_service(self);
+  struct Client *client = find_client(service->name);
+  const char *creason;
+
+  Check_Type(reason, T_STRING);
+  creason = StringValueCStr(reason);
+
+  Check_OurType(who, client);
+  client = value_to_client(who);
+
+  return Qtrue;
+}
+
+static VALUE
 ServiceModule_regchan_by_name(VALUE self, VALUE name)
 {
   struct RegChannel *channel = NULL;
@@ -573,6 +590,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "akill_add", ServiceModule_akill_add, 3);
   rb_define_method(cServiceModule, "ctcp_user", ServiceModule_ctcp_user, 2);
   rb_define_method(cServiceModule, "sendto_channel", ServiceModule_sendto_channel, 2);
+  rb_define_method(cServiceModule, "kill_user", ServiceModule_kill_user, 2);
 
   rb_define_method(cServiceModule, "regchan_by_name?", ServiceModule_regchan_by_name, 1);
   rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
