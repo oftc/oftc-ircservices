@@ -29,6 +29,7 @@ struct LoggingConf
 {
   char use_logging;
   char serviceslog[PATH_MAX+1], debuglog[PATH_MAX+1], sqllog[PATH_MAX+1];
+  char parselog[PATH_MAX+1];
 };
 
 EXTERN struct LoggingConf Logging;

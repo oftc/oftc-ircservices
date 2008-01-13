@@ -60,6 +60,8 @@
  * Diane Bruce (Dianora), June 6 2003
  */
 
+#define LOG_BUFSIZE 2048
+
 static struct MessageTree irc_msg_tree;
 
 /*
@@ -68,6 +70,8 @@ static struct MessageTree irc_msg_tree;
 static char *sender;
 static char *para[IRCD_MAXPARA + 1];
 static char *servpara[IRCD_MAXPARA+1];
+
+static FBFILE *parse_log_fb;
 
 static void handle_command(struct Message *, struct Client *, struct Client *, unsigned int, char **);
 //static void recurse_report_messages(struct Client *source_p, struct MessageTree *mtree);
@@ -79,8 +83,63 @@ static void serv_del_msg_element(struct ServiceMessageTree *mtree_p, const char 
 void
 init_parser()
 {
+  char logpath[LOG_BUFSIZE];
+
   clear_tree_parse(&irc_msg_tree);
+  snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
+  if(parse_log_fb == NULL)
+  {
+    if(Logging.parselog[0] != '\0' && (parse_log_fb = fbopen(logpath, "r")) != NULL)
+    {
+      fbclose(parse_log_fb);
+      parse_log_fb = fbopen(logpath, "a");
+    }
+  }
 }
+
+void
+parse_log(const char *format, ...)
+{
+  char *buf;
+  char lbuf[LOG_BUFSIZE];
+  va_list args;
+  size_t bytes;
+
+  if(parse_log_fb == NULL)
+    return;
+
+  va_start(args, format);
+  vasprintf(&buf, format, args);
+  va_end(args);
+
+  bytes = snprintf(lbuf, sizeof(lbuf), "[%s] %s\n", smalldate(CurrentTime), buf);
+  MyFree(buf);
+
+  fbputs(lbuf, parse_log_fb, bytes);
+}
+
+void
+parse_reopen_log()
+{
+  char logpath[LOG_BUFSIZE+1];
+
+  if(parse_log_fb != NULL)
+  {
+    fbclose(parse_log_fb);
+    parse_log_fb = NULL;
+  }
+
+  snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.parselog);
+  if(parse_log_fb == NULL)
+  {
+    if(Logging.parselog[0] != '\0' && (parse_log_fb = fbopen(logpath, "r")) != NULL)
+    {
+      fbclose(parse_log_fb);
+      parse_log_fb = fbopen(logpath, "a");
+    }
+  }
+}
+
 /* turn a string into a parc/parv pair */
 static inline int
 string_to_array(char *string, char *parv[])
@@ -157,6 +216,8 @@ parse(struct Client *client, char *pbuffer, char *bufend)
 
   assert(client->server->fd.flags.open);
   assert((bufend - pbuffer) < 512);
+
+  parse_log("{%s}: %s", client->name, pbuffer);
 
   for (ch = pbuffer; *ch == ' '; ch++) /* skip spaces */
     /* null statement */ ;

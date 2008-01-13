@@ -126,9 +126,10 @@ conf_log_level(void *list, void *logtype)
 void
 init_logging(void)
 {
-  char *short_fields[] = { "fsqllog", "fserviceslog", "fdebuglog" };
-  char *long_fields[] = { "fname_sqllog", "fname_serviceslog", "fname_debuglog" };
-  char *paths[] = { Logging.sqllog, Logging.serviceslog, Logging.debuglog };
+  char *short_fields[] = { "fsqllog", "fserviceslog", "fdebuglog", "fparselog" };
+  char *long_fields[] = { "fname_sqllog", "fname_serviceslog", "fname_debuglog",
+    "fname_parselog"};
+  char *paths[] = { Logging.sqllog, Logging.serviceslog, Logging.debuglog, Logging.parselog };
   int i;
   struct ConfSection *s = add_conf_section("logging", 2);
   
