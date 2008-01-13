@@ -140,7 +140,7 @@ init_logging(void)
   add_conf_field(s, "use_logging", CT_BOOL, NULL, &Logging.use_logging);
   add_conf_field(s, "logpath", CT_STRING, NULL, NULL);
 
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < 4; i++)
   {
     add_conf_field(s, short_fields[i], CT_STRING, set_log_path, paths[i]);
     add_conf_field(s, long_fields[i], CT_STRING, set_log_path, paths[i]);
