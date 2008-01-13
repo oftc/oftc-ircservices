@@ -29,6 +29,8 @@ void do_serv_help_messages(struct Service *service, struct Client *client);
 size_t join_params(char *target, int parc, char *parv[]);
 void serv_clear_messages(struct Service *service);
 
+void parse_reopen_log();
+
 #define MAXPTRLEN    32
         /* Must be a power of 2, and
          * larger than 26 [a-z]|[A-Z]

@@ -68,6 +68,7 @@ verify_logging(va_list args)
     reopen_log(ServicesState.logfile);
 
   db_reopen_log();
+  parse_reopen_log();
 
   return pass_callback(hverify);
 }
