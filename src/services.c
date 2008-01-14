@@ -253,6 +253,8 @@ int main(int argc, char *argv[])
     while (eventNextTime() <= CurrentTime)
       eventRun();
 
+    execute_callback(do_event_cb);
+
     comm_select();
     send_queued_all();
 

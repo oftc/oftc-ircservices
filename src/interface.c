@@ -76,6 +76,8 @@ struct Callback *on_chan_drop_cb;
 
 struct Callback *on_ctcp_cb;
 
+struct Callback *do_event_cb;
+
 struct LanguageFile ServicesLanguages[LANG_LAST];
 struct ModeList *ServerModeList;
 
@@ -129,6 +131,7 @@ init_interface()
   on_ctcp_cb          = register_callback("On CTCP Message", NULL);
   on_nick_reg_cb      = register_callback("Newly Registered Nick", NULL);
   on_chan_reg_cb      = register_callback("Newly Registered Chan", NULL);
+  do_event_cb         = register_callback("Event Loop Callback", NULL);
 
   load_language(ServicesLanguages, "services.en");
 }
@@ -179,6 +182,7 @@ cleanup_interface()
   unregister_callback(on_ctcp_cb);
   unregister_callback(on_nick_reg_cb);
   unregister_callback(on_chan_reg_cb);
+  unregister_callback(do_event_cb);
 
   unload_languages(ServicesLanguages);
 }

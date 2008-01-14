@@ -44,6 +44,8 @@ static dlink_node *ruby_chan_reg_hook;
 static dlink_node *ruby_db_init_hook;
 static dlink_node *ruby_eob_hook;
 
+static dlink_node *ruby_event_hook;
+
 static VALUE ruby_server_hooks = Qnil;
 static VALUE ruby_server_events = Qnil;
 
@@ -63,6 +65,8 @@ static void *rb_nick_reg_hdlr(va_list);
 static void *rb_chan_reg_hdlr(va_list);
 static void *rb_db_init_hdlr(va_list);
 static void *rb_eob_hdlr(va_list);
+
+static void *rb_event_hdlr(va_list);
 
 static void ruby_script_error();
 
@@ -634,11 +638,12 @@ unhook_events(VALUE self)
   rb_hash_delete(ruby_server_events, sn);
 }
 
-static void
-m_generic_event(void *param)
+static void *
+rb_event_hdlr(va_list args)
 {
   int i, j;
   int delta;
+  int handled = 0;
   VALUE keys = do_ruby_ret(ruby_server_events, rb_intern("keys"), 0);
   VALUE key, events, event, self, method, timer, ltime;
 
@@ -661,9 +666,16 @@ m_generic_event(void *param)
       {
         do_ruby(self, rb_intern(StringValueCStr(method)), 0);
         rb_ary_store(event, EVT_LAST, LONG2NUM(CurrentTime));
+        handled = 1;
+        break;
       }
     }
+
+    if(handled)
+      break;
   }
+
+  return pass_callback(ruby_event_hook);
 }
 
 int
@@ -823,16 +835,18 @@ init_ruby(void)
   ruby_db_init_hook = install_hook(on_db_init_cb, rb_db_init_hdlr);
   ruby_eob_hook = install_hook(on_burst_done_cb, rb_eob_hdlr);
 
+  ruby_event_hook = install_hook(do_event_cb, rb_event_hdlr);
+
   /* pin any ruby address we keep on the C side */
   rb_gc_register_address(&ruby_server_hooks);
   rb_gc_register_address(&ruby_server_events);
 
-  eventAdd("Generic Ruby Event Handler", m_generic_event, NULL, 10);
+  //eventAdd("Generic Ruby Event Handler", m_generic_event, NULL, 10);
 }
 
 void
 cleanup_ruby(void)
 {
-  eventDelete(m_generic_event, NULL);
+  //eventDelete(m_generic_event, NULL);
   ruby_finalize();
 }

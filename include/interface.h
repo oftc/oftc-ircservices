@@ -90,6 +90,8 @@ extern struct Callback *on_chan_drop_cb;
 extern struct Callback *on_db_init_cb;
 extern struct Callback *on_ctcp_cb;
 
+extern struct Callback *do_event_cb;
+
 extern struct ModeList *ServerModeList;
 
 void init_interface();
