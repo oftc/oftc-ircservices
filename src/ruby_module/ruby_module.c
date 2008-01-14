@@ -260,8 +260,7 @@ do_hook(VALUE hooks, int parc, ...)
 
   va_end(args);
 
-  /* TODO protect */
-  keys = rb_funcall2(hooks, rb_intern("keys"), 0, 0);
+  keys = do_ruby_ret(hooks, rb_intern("keys"), 0);
   for(i = 0; i < RARRAY(keys)->len; ++i)
   {
     VALUE key, value;
@@ -273,7 +272,6 @@ do_hook(VALUE hooks, int parc, ...)
   }
 
   return ret;
-  //rb_hash_foreach(hooks, rb_do_hook_each, (VALUE)&arg);
 }
 
 static VALUE
