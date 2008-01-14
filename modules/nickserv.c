@@ -454,7 +454,6 @@ m_drop(struct Service *service, struct Client *client,
   struct Client *target;
   struct Nick *nick = db_find_nick(client->name);
   char *target_nick = NULL;
-  char *channel;
 
   assert(nick != NULL);
 
@@ -533,45 +532,12 @@ m_drop(struct Service *service, struct Client *client,
    * drop
    */
 
-  /*
-   * If a channel will end up a masterless with this drop, do not allow it.
-   * This sort of violates the nickserv shouldnt deal with channels policy,
-   * but it's a little naive not to realise the bond.
-   */
-  if((channel = check_masterless_channels(client->nickname->id)) != NULL)
+  if(drop_nickname(nickserv, client, target_nick))
   {
-    reply_user(service, service, client, NS_DROP_FAIL_MASTERLESS, target_nick,
-        channel);
-    MyFree(channel);
-    return;
-  }
-
-  if(db_delete_nick(client->nickname->id, client->nickname->nickid,
-        client->nickname->pri_nickid)) 
-  {
-    if(target != NULL)
-    {
-      ClearIdentified(target);
-      if(target->nickname != NULL)
-        free_nick(target->nickname);
-      target->nickname = NULL;
-      target->access = USER_FLAG;
-      send_umode(nickserv, target, "-R");
-      reply_user(service, service, client, NS_NICK_DROPPED, target->name);
-      ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
-        client->username, client->host, target->name);
-    }
-    else
-    {
-      reply_user(service, service, client, NS_NICK_DROPPED, target_nick);
-      ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
-        client->username, client->host, target_nick);
-    }
+    reply_user(service, service, client, NS_NICK_DROPPED, target_nick);
   }
   else
   {
-    ilog(L_NOTICE, "Error: %s!%s@%s could not DROP nick %s", 
-        client->name, client->username, client->host, target_nick);
     reply_user(service, service, client, NS_NICK_DROPFAIL, target_nick);
   }
 

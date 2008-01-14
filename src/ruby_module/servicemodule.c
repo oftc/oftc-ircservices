@@ -23,8 +23,9 @@ static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_kill_user(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_lm(VALUE, VALUE);
-static VALUE ServiceModule_nickname_delete(VALUE, VALUE);
+static VALUE ServiceModule_drop_nick(VALUE, VALUE);
 static VALUE ServiceModule_find_channel(VALUE, VALUE);
+static VALUE ServiceModule_add_event(VALUE, VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -501,23 +502,12 @@ ServiceModule_sendto_channel(VALUE self, VALUE channel, VALUE message)
 }
 
 static VALUE
-ServiceModule_nickname_delete(VALUE self, VALUE user)
+ServiceModule_drop_nick(VALUE self, VALUE nickname)
 {
-  struct Client *client = value_to_client(user);
-  if(client->nickname &&
-    db_delete_nick(client->nickname->id, client->nickname->nickid,
-      client->nickname->pri_nickid))
-  {
-    ClearIdentified(client);
-    client->nickname = NULL;
-    client->access = USER_FLAG;
-    send_umode(get_service(self), client, "-R");
+  if(drop_nickname(get_service(self), NULL, StringValueCStr(nickname)))
     return Qtrue;
-  }
   else
-  {
     return Qfalse;
-  }
 }
 
 static VALUE
@@ -528,6 +518,13 @@ ServiceModule_find_channel(VALUE self, VALUE name)
     return Qnil;
   else
     return rb_cchannel2rbchannel(channel);
+}
+
+static VALUE
+ServiceModule_add_event(VALUE self, VALUE method, VALUE time)
+{
+  rb_add_event(self, method, time);
+  return self;
 }
 
 void
@@ -598,8 +595,9 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
   rb_define_method(cServiceModule, "lm", ServiceModule_lm, 1);
 
-  rb_define_method(cServiceModule, "nickname_delete", ServiceModule_nickname_delete, 1);
+  rb_define_method(cServiceModule, "drop_nick", ServiceModule_drop_nick, 1);
   rb_define_method(cServiceModule, "find_channel", ServiceModule_find_channel, 1);
+  rb_define_method(cServiceModule, "add_event", ServiceModule_add_event, 2);
 }
 
 static void

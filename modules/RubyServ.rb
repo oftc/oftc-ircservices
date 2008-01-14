@@ -24,9 +24,15 @@ class RubyServ < ServiceModule
       [CTCP_HOOK, 'ctcp_msg'],
       [EOB_HOOK, 'eob'],
     ])
+    add_event('timer', 30)
     #join_channel("#test")
     self.channels_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
   end
+
+  def timer()
+    log(LOG_NOTICE, "Timer Called")
+  end
+
   def HELP(client, parv = [])
     log(LOG_DEBUG, "RubyServ::Help")
 		do_help(client, parv[1], parv)

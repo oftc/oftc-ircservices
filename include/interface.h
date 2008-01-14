@@ -167,6 +167,8 @@ char *check_masterless_channels(unsigned int);
 
 void send_chops_notice(struct Service *, struct Channel *, const char *, ...);
 
+int drop_nickname(struct Service *, struct Client *, const char *);
+
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
 #endif /* INCLUDED_interface_h */

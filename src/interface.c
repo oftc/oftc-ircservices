@@ -1667,3 +1667,55 @@ check_masterless_channels(unsigned int accid)
 
   return 0;
 }
+
+int
+drop_nickname(struct Service *service, struct Client *client, const char *target)
+{
+  char *channel;
+  struct Nick *nick = db_find_nick(target);
+
+  if((channel = check_masterless_channels(nick->id)) != NULL)
+  {
+    if(client != NULL)
+    {
+      /* TODO This should come from services language file */
+      reply_user(service, service, client, NS_DROP_FAIL_MASTERLESS, target, channel);
+    }
+    else
+    {
+      ilog(L_NOTICE, "%s Failed to drop %s because %s would have no master", service->name, target, channel);
+    }
+    MyFree(channel);
+    return 0;
+  }
+
+  if(db_delete_nick(nick->id, nick->nickid, nick->pri_nickid))
+  {
+    struct Client *user = find_client(target);
+
+    if(user != NULL)
+    {
+      ClearIdentified(user);
+      if(user->nickname != NULL)
+        free_nick(user->nickname);
+      user->nickname = NULL;
+      user->access = USER_FLAG;
+      send_umode(service, user, "-R");
+    }
+
+    if(client != NULL)
+    {
+      ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, client->username,
+        client->host, target);
+    }
+    else
+    {
+      ilog(L_NOTICE, "%s dropped nick %s", service->name, target);
+    }
+
+    return 1;
+  }
+
+  return 0;
+}
+

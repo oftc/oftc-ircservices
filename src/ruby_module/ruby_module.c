@@ -45,6 +45,7 @@ static dlink_node *ruby_db_init_hook;
 static dlink_node *ruby_eob_hook;
 
 static VALUE ruby_server_hooks = Qnil;
+static VALUE ruby_server_events = Qnil;
 
 static void *rb_cmode_hdlr(va_list);
 static void *rb_umode_hdlr(va_list);
@@ -66,7 +67,8 @@ static void *rb_eob_hdlr(va_list);
 static void ruby_script_error();
 
 static VALUE rb_do_hook_each(VALUE key, VALUE name, VALUE params);
-static void unhook_events(const char* name);
+static void unhook_callbacks(const char *);
+static void unhook_events(VALUE);
 
 char *
 strupr(char *s)
@@ -581,8 +583,8 @@ rb_add_hook(VALUE self, VALUE hook, int type)
   rb_hash_aset(hooks, rb_iv_get(self, "@ServiceName"), newhook);
 }
 
-void
-unhook_events(const char* name)
+static void
+unhook_callbacks(const char* name)
 {
   VALUE rname = rb_str_new2(name);
   int type;
@@ -594,6 +596,75 @@ unhook_events(const char* name)
   {
     hooks = rb_ary_entry(ruby_server_hooks, type);
     rb_hash_delete(hooks, rname);
+  }
+}
+
+enum EVENT_POSITION
+{
+  EVT_SELF = 0,
+  EVT_METHOD,
+  EVT_TIMER,
+  EVT_LAST,
+  EVT_COUNT,
+};
+
+void
+rb_add_event(VALUE self, VALUE method, VALUE time)
+{
+  VALUE sn = rb_iv_get(self, "@ServiceName");
+  VALUE events = rb_hash_aref(ruby_server_events, sn);
+  VALUE event = rb_ary_new2(EVT_COUNT);
+  rb_ary_store(event, EVT_SELF, self);
+  rb_ary_store(event, EVT_METHOD, method);
+  rb_ary_store(event, EVT_TIMER, time);
+  rb_ary_store(event, EVT_LAST, LONG2NUM(CurrentTime));
+
+  if(events == Qnil)
+  {
+    events = rb_ary_new();
+    rb_hash_aset(ruby_server_events, sn, events);
+  }
+
+  ilog(L_DEBUG, "{%s} Adding Event: %s Every %d", StringValueCStr(sn), StringValueCStr(method), NUM2INT(time));
+  rb_ary_push(events, event);
+}
+
+static void
+unhook_events(VALUE self)
+{
+  VALUE sn = rb_iv_get(self, "@ServiceName");
+  rb_hash_delete(ruby_server_events, sn);
+}
+
+static void
+m_generic_event(void *param)
+{
+  int i, j;
+  int delta;
+  VALUE keys = do_ruby_ret(ruby_server_events, rb_intern("keys"), 0);
+  VALUE key, events, event, self, method, timer, ltime;
+
+  for(i = 0; i < RARRAY(keys)->len; ++i)
+  {
+    key = rb_ary_entry(keys, i);
+    events = rb_hash_aref(ruby_server_events, key);
+
+    for(j = 0; j < RARRAY(events)->len; ++j)
+    {
+      event = rb_ary_entry(events, j);
+      self = rb_ary_entry(event, EVT_SELF);
+      method = rb_ary_entry(event, EVT_METHOD);
+      timer = rb_ary_entry(event, EVT_TIMER);
+      ltime = rb_ary_entry(event, EVT_LAST);
+
+      delta = CurrentTime - NUM2LONG(ltime);
+
+      if(delta >= NUM2LONG(timer))
+      {
+        do_ruby(self, rb_intern(StringValueCStr(method)), 0);
+        rb_ary_store(event, EVT_LAST, LONG2NUM(CurrentTime));
+      }
+    }
   }
 }
 
@@ -676,6 +747,7 @@ unload_ruby_module(const char* name)
 
   strlcpy(namet, name, sizeof(namet));
   service = find_service(namet);
+  VALUE self;
 
   if(service == NULL && ServicesState.namesuffix)
   {
@@ -691,10 +763,14 @@ unload_ruby_module(const char* name)
 
   ilog(L_DEBUG, "Unloading ruby module: %s", namet);
 
-  if(!do_ruby((VALUE)service->data, rb_intern("unload"), 0))
+  self = (VALUE)service->data;
+
+  unhook_events(self);
+
+  if(!do_ruby(self, rb_intern("unload"), 0))
     ilog(L_DEBUG, "Failed to call %s's unload method", namet);
 
-  unhook_events(namet);
+  unhook_callbacks(namet);
   serv_clear_messages(service);
   unload_languages(service->languages);
 
@@ -730,6 +806,8 @@ init_ruby(void)
   for(i=0; i < RB_HOOKS_COUNT; ++i)
     rb_ary_push(ruby_server_hooks, rb_hash_new());
 
+  ruby_server_events = rb_hash_new();
+
   ruby_cmode_hook = install_hook(on_cmode_change_cb, rb_cmode_hdlr);
   ruby_umode_hook = install_hook(on_umode_change_cb, rb_umode_hdlr);
   ruby_newusr_hook = install_hook(on_newuser_cb, rb_newusr_hdlr);
@@ -749,10 +827,14 @@ init_ruby(void)
 
   /* pin any ruby address we keep on the C side */
   rb_gc_register_address(&ruby_server_hooks);
+  rb_gc_register_address(&ruby_server_events);
+
+  eventAdd("Generic Ruby Event Handler", m_generic_event, NULL, 10);
 }
 
 void
 cleanup_ruby(void)
 {
+  eventDelete(m_generic_event, NULL);
   ruby_finalize();
 }
