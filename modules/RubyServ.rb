@@ -24,7 +24,7 @@ class RubyServ < ServiceModule
       [CTCP_HOOK, 'ctcp_msg'],
       [EOB_HOOK, 'eob'],
     ])
-    add_event('timer', 3)
+    #add_event('timer', 3)
     #join_channel("#test")
     self.channels_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
   end
@@ -76,7 +76,6 @@ class RubyServ < ServiceModule
     log(LOG_DEBUG, "RUBY #{source.name} joined #{channel}")
     rchannel = find_channel(channel)
     rchannel.members_each { |x| log(LOG_DEBUG, "#{x.name} is also in #{rchannel.name}") }
-    return false;
   end
   def part(client, source, channel, reason)
     part_channel('#floodtest', nil) if channel.name.downcase == '#floodtest' and channel.members_length == 1

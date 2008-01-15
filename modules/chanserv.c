@@ -2239,6 +2239,7 @@ cs_on_client_join(va_list args)
   struct Client *source_p = va_arg(args, struct Client *);
   char          *name     = va_arg(args, char *);
   
+  char tmp_name[CHANNELLEN+1];
   struct RegChannel *regchptr;
   struct Channel *chptr;
   struct ChanAccess *access;
@@ -2254,9 +2255,11 @@ cs_on_client_join(va_list args)
 
   if(db_is_chan_forbid(name))
   {
+    strlcpy(tmp_name, name, CHANNELLEN);
     kick_user(chanserv, chptr, source_p->name, 
         "This channel is forbidden and may not be used");
-    return pass_callback(cs_join_hook, source_p, name);
+    send_resv(chanserv, tmp_name, "Forbidden channel", 0);
+    return NULL;
   }
 
   if(enforce_matching_serviceban(chanserv, chptr, source_p))
