@@ -589,6 +589,7 @@ send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
 void
 send_resv(struct Service *service, char *resv, char *reason, time_t duration)
 {
+  ilog(L_DEBUG, "%s set RESV on %s for %ld because %s", service->name, resv, duration, reason);
   execute_callback(send_resv_cb, me.uplink, service, resv, reason, duration);
 }
 

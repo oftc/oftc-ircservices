@@ -535,7 +535,7 @@ irc_sendmsg_resv(va_list args)
   }
   else
   {
-    sendto_server(uplink, ":%s ENCAP * RESV %ld %s :%s", 
+    sendto_server(uplink, ":%s ENCAP * RESV %ld %s 0 :%s", 
         (source != NULL) ? source->name : me.name, duration, resv, reason);
   }
  

@@ -2258,7 +2258,7 @@ cs_on_client_join(va_list args)
     strlcpy(tmp_name, name, CHANNELLEN);
     kick_user(chanserv, chptr, source_p->name, 
         "This channel is forbidden and may not be used");
-    send_resv(chanserv, tmp_name, "Forbidden channel", 0);
+    send_resv(chanserv, tmp_name, "Forbidden channel", ServicesInfo.def_forbid_dur);
     return NULL;
   }
 
