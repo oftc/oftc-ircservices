@@ -1,0 +1,59 @@
+0 English
+GS_HLP_SHORT
+	%s: shows this help
+GS_HLP_LONG
+	Shows this help message
+GS_HLP_CLT_SHORT
+	%s: Execute a ruby gc collection
+GS_HLP_CLT_LONG
+	Execute a ruby gc collection
+		
+	Use only if you expect something evil in ruby has happened.
+GS_HLP_ADD_SHORT
+	%s: Cause GS to monitor a specific channel
+GS_HLP_ADD_LONG
+	Cause GS to monitor a specific channel
+	
+	Adding the optional 1 as second parameter monitors the channel
+	for bots that connect, register a nick within 15 seconds and join
+	that channel.
+	
+	Without the optional 1 everyone in the channel or new people trying
+	to join the channel will be klined.
+	
+	Usage: ADD #foo [1] :reason
+GS_HLP_DEL_SHORT
+	%s: Delete monitored channel
+GS_HLP_DEL_LONG
+	Delete a monitored channel
+	
+	Usage: DEL #foo
+GS_HLP_LST_SHORT
+	%s: List monitored channels
+GS_HLP_LST_LONG
+	It really just lists monitored channels
+GS_HLP_DBG_SHORT
+	%s: Toggle debug notices
+GS_HLP_DBG_LONG
+	Toggle debug notices on/off (all log entries will be sent as snotes too)
+	
+	Usage: DEBUG
+GS_HLP_CRP_SHORT
+	%s: Toggle restricted mode
+GS_HLP_CRP_LONG
+	Toggle restricted mode, where only actions will be done that don't
+	depend on any other part of services.
+	
+	Usage: CRAP
+GS_HLP_SAV_SHORT
+	%s: Saves channel data
+GS_HLP_SAV_LONG
+	Saves channel data
+GS_HLP_ENF_SHORT
+	%s: Enforces all known channels again. Don't run!
+GS_HLP_ENF_LONG
+	Enforces all known channels again. Don't run!
+GS_HLP_STS_SHORT
+	%s: Statistics
+GS_HLP_STS_LONG
+	Don't trust this, you haven't forged the numbers yourself!
