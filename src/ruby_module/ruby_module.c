@@ -685,7 +685,6 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   char path[PATH_MAX];
   char classname[PATH_MAX];
   VALUE klass, self;
-  VALUE params;
   struct Service *service;
 
 
@@ -720,22 +719,18 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   ilog(L_DEBUG, "RUBY INFO: Loaded Class %s", classname);
 
-  params = rb_ary_new();
-
-  rb_ary_push(params, klass);
-  rb_ary_push(params, rb_intern("new"));
-  rb_ary_push(params, 0);
-  rb_ary_push(params, (VALUE)NULL);
+  if(ServicesState.namesuffix)
+    strlcat(classname, ServicesState.namesuffix, sizeof(classname));
 
   self = do_ruby_ret(klass, rb_intern("new"), 0);
 
   if(self == Qnil)
+  {
+    unload_ruby_module(classname);
     return 0;
+  }
 
   ilog(L_TRACE, "RUBY INFO: Initialized Class %s", classname);
-
-  if(ServicesState.namesuffix)
-    strlcat(classname, ServicesState.namesuffix, sizeof(classname));
 
   service = find_service(classname);
 
@@ -754,6 +749,7 @@ unload_ruby_module(const char* name)
 {
   char namet[PATH_MAX];
   struct Service *service;
+  struct Client *client;
 
   strlcpy(namet, name, sizeof(namet));
   service = find_service(namet);
@@ -784,7 +780,9 @@ unload_ruby_module(const char* name)
   serv_clear_messages(service);
   unload_languages(service->languages);
 
-  exit_client(find_client(service->name), &me, "Service unloaded");
+  if((client = find_client(service->name)) != NULL)
+    exit_client(find_client(service->name), &me, "Service unloaded");
+
   hash_del_service(service);
   dlinkDelete(&service->node, &services_list);
 

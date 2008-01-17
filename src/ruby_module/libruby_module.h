@@ -10,6 +10,7 @@
 #undef EXTERN
 
 #include "stdinc.h"
+#include "ruby_module.h"
 
 VALUE rb_carray2rbarray(int, char **);
 
