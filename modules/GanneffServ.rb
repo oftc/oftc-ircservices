@@ -421,10 +421,13 @@ class GanneffServ < ServiceModule
   # Nick changed, track it. You can run, but you can't hide!
   def nick_changed(client, oldnick)
     debug(LOG_DEBUG, "#{oldnick} is now #{client.name}")
-    @nicks[client.name] = Hash.new
-    @nicks[client.name]["client"] = client
-    @nicks[client.name]["registered"] = @nicks[oldnick]["registered"] unless @nicks[oldnick]["registered"].nil?
-    @nicks.delete(oldnick)
+    if not @nicks[oldnick].nil?
+      @nicks[client.name] = Hash.new
+      @nicks[client.name]["client"] = client
+      @nicks[client.name]["registered"] = @nicks[oldnick]["registered"] unless @nicks[oldnick]["registered"].nil?
+      @nicks.delete(oldnick)
+    end # if not
+    true
   end
 
 
@@ -561,6 +564,7 @@ class GanneffServ < ServiceModule
       end # if diff
     end # @nicks.each_pair
     debug(LOG_DEBUG, "Done with all nicks")
+    true
   end # def clean
 
 end # class GanneffServ
