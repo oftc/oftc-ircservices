@@ -197,7 +197,7 @@ class GanneffServ < ServiceModule
     end # @channels.each_pair
 
     reply_user(client, "\n\nCRFJ - checks Connect, Register nick, Join channel within 15 seconds (i.e. Fast)")
-    reply_user(client, "J - triggets on every Join")
+    reply_user(client, "J - triggers on every Join")
 
     true
   end # def LIST
