@@ -37,7 +37,7 @@ class GanneffServ < ServiceModule
     # @channels is built up like:
     # @channels[channel]                - Hash for one channel
     # @channels[channel]["reason"]      - Kill reason
-    # @channels[channel]["monitoronly"] - CRJF/J channel? (Boolean, true = CRJF)
+    # @channels[channel]["monitoronly"] - CRFJ/J channel? (Boolean, true = CRFJ)
     # @channels[channel]["kills"]       - How many kills for this channel
     @channels = Hash.new
 
@@ -190,7 +190,7 @@ class GanneffServ < ServiceModule
     @channels.each_pair do |name, data|
       check = "J"
       if data["monitoronly"]
-        check = "CRJF"
+        check = "CRFJ"
       end # if data
 
       reply_user(client, "%-20s %-6s %s" % [ name, check, "AKILL: #{data["reason"]}" ])
@@ -332,7 +332,7 @@ class GanneffServ < ServiceModule
 
     if rdiff < @delay and jdiff < @delay
       debug(LOG_NOTICE, "#{nick} hit #{@delay} seconds delay for register/join, channel #{@nicks[nick]["joined"]}, killing and dropping nick")
-      ret = akill(client, "#{@channels[@nicks[nick]["joined"]]["reason"]}", "CRJF:#{@nicks[nick]["joined"]}", @nicks[nick]["joined"])
+      ret = akill(client, "#{@channels[@nicks[nick]["joined"]]["reason"]}", "CRFJ:#{@nicks[nick]["joined"]}", @nicks[nick]["joined"])
       # Now drop the nick
       ret = drop_nick(nick)
       debug(LOG_DEBUG, "drop_nick returned #{ret}")
