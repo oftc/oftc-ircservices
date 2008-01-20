@@ -1732,7 +1732,7 @@ expire_akills(void *param)
 
   while(Fetch(rc, brc) != 0)
   {
-    ilog(L_NOTICE, "AKill on %s set by %s on %s(%s) has expired",
+    ilog(L_NOTICE, "AKill Expired: %s set by %s on %s(%s)",
         akill.mask, setter, smalldate(akill.time_set), akill.reason);
     db_exec(ret, DELETE_AKILL, akill.mask);
   }
