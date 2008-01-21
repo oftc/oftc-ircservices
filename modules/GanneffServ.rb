@@ -501,11 +501,11 @@ class GanneffServ < ServiceModule
       cname=channel.name
     end # if channel.name.nil?
 
-    debug(LOG_NOTICE, "Asked to enforce #{cname} with reason \"#{reason}\"")
     if @channels.has_key?(cname)
       if @channels[cname]["monitoronly"]
         return true # Nothing to do here
       else # if @channels...monitoronly
+        debug(LOG_NOTICE, "Asked to enforce #{cname} with reason \"#{reason}\"")
         chan = find_channel(cname)
         chan.members_each do |client|
           akill(client, reason, "J: #{cname}", cname)
