@@ -136,7 +136,7 @@ class GanneffServ < ServiceModule
 
     if @channels.has_key?(parv[1])
       reply_user(client, "Channel #{parv[1]} is already known")
-      return false
+      return true
     end # if @channels.has_key?
 
     @channels[parv[1]] = Hash.new
