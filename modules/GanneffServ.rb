@@ -56,11 +56,11 @@ class GanneffServ < ServiceModule
 
     # What commands do we support?
     register([
-      #["COMMAND", PAR_MIN, PAR_MAX, FLAGS,                        ACCESS,     HLP_SHORT,              HLP_LONG]
-       ["HELP",     0,       2,       SFLG_UNREGOK|SFLG_NOMAXPARAM, 0,          lm('GS_HLP_SHORT'),     lm('GS_HLP_LONG')],
-       ["ADD",      1,       2,       SFLG_NOMAXPARAM,              0,          lm('GS_HLP_ADD_SHORT'), lm('GS_HLP_ADD_LONG')],
-       ["DEL",      1,       2,       SFLG_NOMAXPARAM,              0,          lm('GS_HLP_DEL_SHORT'), lm('GS_HLP_DEL_LONG')],
-       ["LIST",     0,       0,       SFLG_NOMAXPARAM,              0,          lm('GS_HLP_LST_SHORT'), lm('GS_HLP_LST_LONG')],
+      #["COMMAND", PAR_MIN, PAR_MAX, FLAGS,                         ACCESS,     HLP_SHORT,              HLP_LONG]
+       ["HELP",     0,       2,       SFLG_UNREGOK|SFLG_NOMAXPARAM, ADMIN_FLAG, lm('GS_HLP_SHORT'),     lm('GS_HLP_LONG')],
+       ["ADD",      1,       2,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_ADD_SHORT'), lm('GS_HLP_ADD_LONG')],
+       ["DEL",      1,       2,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_DEL_SHORT'), lm('GS_HLP_DEL_LONG')],
+       ["LIST",     0,       0,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_LST_SHORT'), lm('GS_HLP_LST_LONG')],
        ["CLEANUP",  0,       0,       0,                            ADMIN_FLAG, lm('GS_HLP_CLT_SHORT'), lm('GS_HLP_CLT_LONG')],
        ["DEBUG",    0,       0,       0,                            ADMIN_FLAG, lm('GS_HLP_DBG_SHORT'), lm('GS_HLP_DBG_LONG')],
        ["CRAP",     0,       0,       0,                            ADMIN_FLAG, lm('GS_HLP_CRP_SHORT'), lm('GS_HLP_CRP_LONG')],
@@ -367,7 +367,8 @@ class GanneffServ < ServiceModule
 
   # We got a ctcp reply
   def ctcp_reply(service, client, command, arg)
-    debug(LOG_DEBUG, "Got a ctcp reply for #{client.name}")
+    debug(LOG_DEBUG, "Got a ctcp reply for #{client.name} and command #{command}")
+    return unless command == 'VERSION'
     msg = ""
     if @nicks.has_key?(client.name)
       diff = @nicks[client.name]["registered"] - @nicks[client.name]["client"].ts
