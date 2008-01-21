@@ -183,6 +183,8 @@ class GanneffServ < ServiceModule
 
     save_data
 
+    reply_user(client, "Channel #{parv[1]} successfully deleted.")
+
     true
   end # def DEL
 
