@@ -187,7 +187,7 @@ class GanneffServ < ServiceModule
     reply_user(client, "Known Channels\n\n")
     reply_user(client, "%-20s %-6s %s" % [ "Channel", "Type", "Action" ])
 
-    @channels.each_pair do |name, data|
+    @channels.sort.each do |name, data|
       check = "J"
       if data["monitoronly"]
         check = "CRFJ"
