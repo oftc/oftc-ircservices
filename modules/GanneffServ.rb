@@ -139,17 +139,24 @@ class GanneffServ < ServiceModule
       return true
     end # if @channels.has_key?
 
-    @channels[parv[1]] = Hash.new
+    debug(LOG_DEBUG, "Param 2 was #{parv[2]}")
+    if parv[2] == "CRFJ"
+      @channels[parv[1]] = Hash.new
+      @channels[parv[1]]["monitoronly"] = true
+    elsif parv[2] == "J"
+      @channels[parv[1]] = Hash.new
+      @channels[parv[1]]["monitoronly"] = false
+      enforce=true
+    else # None of the known values -> don't add channel
+      debug(LOG_DEBUG, "Param 2 was invalid.")
+      reply_user(client, "<type> value #{parv[2]} is unknown, has to be one of J/CRFJ, see help.")
+      return true
+    end # if parv[2]
+
     @channels[parv[1]]["reason"] = parv[-1]
     @channels[parv[1]]["kills"] = 0
 
-    if parv[2] == "1"
-      @channels[parv[1]]["monitoronly"] = true
-      debug(LOG_DEBUG, "Param 2 was #{parv[2]}")
-    else
-      @channels[parv[1]]["monitoronly"] = false
-      enforce=true
-    end # if parv[2]
+    debug(LOG_NOTICE, "#{client.name} added #{parv[1]}, type #{parv[2]}, reason #{parv[-1]}")
 
     save_data
 

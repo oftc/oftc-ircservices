@@ -14,14 +14,21 @@ GS_HLP_ADD_SHORT
 GS_HLP_ADD_LONG
 	Cause GS to monitor a specific channel
 	
-	Adding the optional 1 as second parameter monitors the channel
-	for bots that connect, register a nick within 15 seconds and join
-	that channel.
+	Usage: ADD #<channel> <type> :<reason>
 	
-	Without the optional 1 everyone in the channel or new people trying
-	to join the channel will be klined.
+	#<channel> is the channel to monitor.
 	
-	Usage: ADD #foo [1] :reason
+	<type> is the type of the channel. This is either
+	J    for a channel where every join triggers a kill
+	CRFJ for a channel where Connect, Register nick, Join channel within
+	     15 seconds (ie. Fast) triggers a kill
+	If it is omitted a default J is taken.
+	
+	:<reason> is the reason to use with the kill. A default contact email
+	is added if no support@oftc.net is found within reason. Do not
+	forget the :
+	
+	Usage: ADD #<channel> <type> :<reason>
 GS_HLP_DEL_SHORT
 	%s: Delete monitored channel
 GS_HLP_DEL_LONG
