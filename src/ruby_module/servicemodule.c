@@ -26,6 +26,7 @@ static VALUE ServiceModule_lm(VALUE, VALUE);
 static VALUE ServiceModule_drop_nick(VALUE, VALUE);
 static VALUE ServiceModule_find_channel(VALUE, VALUE);
 static VALUE ServiceModule_add_event(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_send_cmode(VALUE, VALUE, VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
@@ -527,6 +528,23 @@ ServiceModule_add_event(VALUE self, VALUE method, VALUE time)
   return self;
 }
 
+static VALUE
+ServiceModule_send_cmode(VALUE self, VALUE channel, VALUE mode, VALUE param)
+{
+  struct Service *service = get_service(self);
+  struct Channel *target = rb_rbchannel2cchannel(channel);
+  char *cmode = NULL, *cparam = NULL;
+
+  if(!NIL_P(param))
+    cmode = StringValueCStr(mode);
+
+  if(!NIL_P(param))
+    cparam = StringValueCStr(param);
+
+  send_cmode(service, target, cmode, cparam);
+  return self;
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -598,6 +616,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "drop_nick", ServiceModule_drop_nick, 1);
   rb_define_method(cServiceModule, "find_channel", ServiceModule_find_channel, 1);
   rb_define_method(cServiceModule, "add_event", ServiceModule_add_event, 2);
+  rb_define_method(cServiceModule, "send_cmode", ServiceModule_send_cmode, 3);
 }
 
 static void

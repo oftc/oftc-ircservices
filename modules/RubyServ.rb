@@ -25,7 +25,11 @@ class RubyServ < ServiceModule
       [EOB_HOOK, 'eob'],
     ])
     #add_event('timer', 3)
-    #join_channel("#test")
+  end
+
+  def loaded()
+    chan = join_channel("#test")
+    send_cmode(chan, "+s", "")
     self.channels_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
   end
 

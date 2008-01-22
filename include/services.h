@@ -18,6 +18,7 @@ struct ServicesState_t
   int printversion;
   int debugmode;
   int keepmodules;
+  int fully_connected;
 };
 
 EXTERN struct ServicesState_t ServicesState;

@@ -170,6 +170,7 @@ int main(int argc, char *argv[])
   ServicesState.configfile = CPATH; 
   ServicesState.logfile    = LPATH;
   ServicesState.pidfile    = PPATH;
+  ServicesState.fully_connected = 0;
 
   parseargs(&argc, &argv, myopts);
 

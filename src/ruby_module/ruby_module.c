@@ -49,6 +49,8 @@ static dlink_node *ruby_event_hook;
 static VALUE ruby_server_hooks = Qnil;
 static VALUE ruby_server_events = Qnil;
 
+static VALUE preloaded_modules = Qnil;
+
 static void *rb_cmode_hdlr(va_list);
 static void *rb_umode_hdlr(va_list);
 static void *rb_newusr_hdlr(va_list);
@@ -569,6 +571,12 @@ rb_eob_hdlr(va_list args)
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_EOB);
   VALUE ret = do_hook(hooks, 0, Qnil);
 
+  while(RARRAY(preloaded_modules)->len > 0)
+  {
+    VALUE self = rb_ary_pop(preloaded_modules);
+    do_ruby_ret(self, rb_intern("loaded"), 0);
+  }
+
   if(ret != Qfalse)
     return pass_callback(ruby_eob_hook);
   else
@@ -738,6 +746,16 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
   {
     rb_gc_register_address(&self);
     service->data = (void *)self;
+
+    if(ServicesState.fully_connected)
+    {
+      do_ruby_ret(self, rb_intern("loaded"), 0);
+    }
+    else
+    {
+      rb_ary_push(preloaded_modules, self);
+    }
+
     return 1;
   }
 
@@ -816,6 +834,8 @@ init_ruby(void)
 
   ruby_server_events = rb_hash_new();
 
+  preloaded_modules = rb_ary_new();
+
   ruby_cmode_hook = install_hook(on_cmode_change_cb, rb_cmode_hdlr);
   ruby_umode_hook = install_hook(on_umode_change_cb, rb_umode_hdlr);
   ruby_newusr_hook = install_hook(on_newuser_cb, rb_newusr_hdlr);
@@ -838,6 +858,7 @@ init_ruby(void)
   /* pin any ruby address we keep on the C side */
   rb_gc_register_address(&ruby_server_hooks);
   rb_gc_register_address(&ruby_server_events);
+  rb_gc_register_address(&preloaded_modules);
 
   //eventAdd("Generic Ruby Event Handler", m_generic_event, NULL, 10);
 }

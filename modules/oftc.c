@@ -272,6 +272,7 @@ m_eob(struct Client *client, struct Client *source, int parc, char *parv[])
   ilog(L_INFO, "Completed server burst");
   sendto_server(client, "EOB");
   ClearConnecting(me.uplink);
+  ServicesState.fully_connected = 1;
   execute_callback(on_burst_done_cb);
 }
 
