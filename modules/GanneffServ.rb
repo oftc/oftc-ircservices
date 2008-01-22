@@ -265,7 +265,7 @@ class GanneffServ < ServiceModule
     reply_user(client, "I know about the following channels:\n\n")
     reply_user(client, "%-20s  %-5s %s" % [ "Channel", "Kills", "AKILL Reason" ])
 
-    @channels.each_pair do |name, data|
+    @channels.sort.each do |name, data|
       reply_user(client, "%-20s  %5d %s" % [ name, data["kills"], data["reason"] ] )
     end # channels.each_pair
 
