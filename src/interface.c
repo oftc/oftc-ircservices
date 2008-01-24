@@ -583,12 +583,18 @@ send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
 {
   if(!ServicesState.debugmode)
   {
-    if(akill->duration >= 60)
-      execute_callback(send_akill_cb, me.uplink, service, setter,
-        akill->mask, akill->reason, akill->duration);
-    else
-      execute_callback(send_akill_cb, me.uplink, service, setter,
-        akill->mask, akill->reason, 60);
+    int duration = (akill->time_set + akill->duration) - CurrentTime;
+
+    if(duration < 0)
+    {
+      ilog(L_CRIT, "Trying to akill expired ban on %s set %s", akill->mask, smalldate(akill->time_set));
+      return;
+    }
+
+    if(duration < 60)
+      duration = 60;
+
+    execute_callback(send_akill_cb, me.uplink, service, setter, akill->mask, akill->reason, duration);
   }
 }
 
