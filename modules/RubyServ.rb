@@ -31,6 +31,8 @@ class RubyServ < ServiceModule
     chan = join_channel("#test")
     send_cmode(chan, "+s", "")
     self.channels_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
+    log(LOG_NOTICE, "AKILL Duration 1")
+    akill_add("*@some.non.existent.domain.com", "testing", 1)
   end
 
   def timer()

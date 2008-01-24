@@ -582,8 +582,14 @@ void
 send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
 {
   if(!ServicesState.debugmode)
-    execute_callback(send_akill_cb, me.uplink, service, setter, akill->mask,
-        akill->reason, akill->duration);
+  {
+    if(akill->duration >= 60)
+      execute_callback(send_akill_cb, me.uplink, service, setter,
+        akill->mask, akill->reason, akill->duration);
+    else
+      execute_callback(send_akill_cb, me.uplink, service, setter,
+        akill->mask, akill->reason, 60);
+  }
 }
 
 void
