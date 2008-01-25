@@ -98,7 +98,7 @@ find_module(const char *filename, int exact)
  *     (contains suffix for shared modules)
  * output: none, except success report
  */
-static void
+static void *
 init_module(struct Module *mod, const char *fullname)
 {
   char message[IRC_BUFSIZE];
@@ -115,7 +115,7 @@ init_module(struct Module *mod, const char *fullname)
 
   DupString(mod->fullname, fullname);
   dlinkAdd(mod, &mod->node, &loaded_modules);
-  mod->modinit();
+  return mod->modinit();
 }
 
 /*
@@ -131,7 +131,7 @@ init_module(struct Module *mod, const char *fullname)
  * output: 1 if ok, 0 otherwise
  */
 #ifdef USE_SHARED_MODULES
-static int
+static void *
 load_shared_module(const char *name, const char *dir, const char *fname)
 {
   char path[PATH_MAX];
@@ -175,14 +175,14 @@ load_shared_module(const char *name, const char *dir, const char *fname)
       if(result == 1)
       {
         dlinkAdd(mod, &mod->node, &loaded_modules);
-        return result;
+        return mod;
       }
       else
       {
         MyFree(mod->name);
         MyFree(mod->fullname);
         MyFree(mod);
-        return result;
+        return mod;
       }
     }
 
@@ -213,8 +213,8 @@ load_shared_module(const char *name, const char *dir, const char *fname)
   mod->handle = handle;
   mod->address = base;
   mod->type = MODTYPE_SO;
-  init_module(mod, fname);
-  return 1;
+  return init_module(mod, fname);
+  
 }
 #endif
 
@@ -225,17 +225,19 @@ load_shared_module(const char *name, const char *dir, const char *fname)
  *
  * inputs: module name (without path, with suffix if needed)
  * output:
- *   -1 if the module was already loaded (no error message),
- *    0 if loading failed (errors reported),
- *    1 if ok (success reported)
+ *   NULL if module not found or already loaded
+ *   pointer returned by the module's init function otherwise
+ *   
+ *  
  */
-int
+void *
 load_module(const char *filename)
 {
   char name[PATH_MAX], *p = NULL;
+  void *modptr;
 
   if (find_module(filename, NO) != NULL)
-    return -1;
+    return NULL;
 
   if (strpbrk(filename, "\\/") == NULL)
   {
@@ -249,15 +251,15 @@ load_module(const char *filename)
       dlink_node *ptr;
 
       DLINK_FOREACH(ptr, mod_paths.head)
-        if (load_shared_module(name, ptr->data, filename))
-          return 1;
+        if ((modptr = load_shared_module(name, ptr->data, filename)) != NULL)
+          return modptr;
     }
 #endif
   }
 
   ilog(L_CRIT, "Cannot locate module %s", filename);
   ilog(L_DEBUG, "Cannot locate module %s", filename);
-  return 0;
+  return NULL;
 }
 
 /*

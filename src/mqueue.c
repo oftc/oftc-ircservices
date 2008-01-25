@@ -1,6 +1,8 @@
 /* TODO: Add copyright */
 
 #include "stdinc.h"
+#include "mqueue.h"
+#include "hash.h"
 
 static BlockHeap *mqueue_heap = NULL;
 static BlockHeap *fmsg_heap   = NULL;

@@ -23,9 +23,29 @@
  */
 
 #include "stdinc.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "nickserv.h"
+#include "chanserv.h"
+#include "interface.h"
+#include "crypt.h"
+#include "msg.h"
+#include "hash.h"
+#include "client.h"
+#include "conf/servicesinfo.h"
+#include "conf/mail.h"
+#include "mqueue.h"
+#include "hostmask.h"
+#include "nickname.h"
+#include "dbchannel.h"
+#include "channel_mode.h"
+#include "channel.h"
+
 #include <openssl/hmac.h>
 
 dlink_list services_list = { 0 };
+
 struct Callback *send_newuser_cb;
 struct Callback *send_privmsg_cb;
 struct Callback *send_notice_cb;
@@ -499,50 +519,6 @@ kill_user(struct Service *service, struct Client *client, const char *reason)
   }
 }
 
-struct ServiceBan*
-akill_add(struct Service *service, struct Client *client, const char* mask,
-  const char *reason, int duration)
-{
-  struct ServiceBan *akill;
-  int ret = 0;
-
-  if(!valid_wild_card(mask))
-  {
-    ilog(L_NOTICE, "%s tried to add an akill(%s) that was too wild!", 
-        client->nickname != NULL ? client->nickname->nick : "Services", mask);
-    return NULL;
-  }
-
-  akill = MyMalloc(sizeof(struct ServiceBan));
-
-  akill->type = AKILL_BAN;
-  if(client->nickname != NULL)
-    akill->setter = client->nickname->id;
-  akill->time_set = CurrentTime;
-  akill->duration = duration;
-  DupString(akill->mask, mask);
-  DupString(akill->reason, reason);
-
-  if(client->nickname != NULL)
-    ret = db_list_add(AKILL_LIST, akill);
-  else
-    ret = db_list_add(AKILL_SERVICES_LIST, akill);
-
-  if(!ret)
-  {
-    ilog(L_NOTICE, "Failed to insert akill %s into database", mask);
-    free_serviceban(akill);
-    return NULL;
-  }
-
-  ilog(L_NOTICE, "%s Added an akill on %s. Expires %s [%s]", client->name,
-      akill->mask, smalldate(akill->time_set + duration), reason);
-
-  send_akill(service, client->name, akill);
-
-  return akill;
-}
-
 void
 send_chops_notice(struct Service *service, struct Channel *chptr, 
     const char *format, ...)
@@ -944,42 +920,6 @@ replace_string(char *str, const char *value)
   return ptr;
 }
 
-int
-check_list_entry(unsigned int type, unsigned int id, const char *value)
-{
-  struct AccessEntry *entry = NULL;
-  void *ptr, *first;
-
-  first = ptr = db_list_first(type, id, (void**)&entry);
-
-  if(ptr == NULL)
-  {
-    MyFree(entry);
-    return FALSE;
-  }
-
-  while(ptr != NULL)
-  {
-    if(match(entry->value, value))
-    {
-      ilog(L_DEBUG, "check_list_entry: Found match: %s %s", entry->value, 
-          value);
-      MyFree(entry);
-      db_list_done(first);
-      return TRUE;
-    }
-    
-    ilog(L_DEBUG, "check_list_entry: Not Found match: %s %s", entry->value, 
-        value);
-    MyFree(entry);
-    entry = NULL;
-    ptr = db_list_next(ptr, type, (void**)&entry);
-  }
-  MyFree(entry);
-  db_list_done(first);
-  return FALSE;
-}
-
 int 
 enforce_matching_serviceban(struct Service *service, struct Channel *chptr, 
     struct Client *client)
@@ -992,8 +932,6 @@ enforce_matching_serviceban(struct Service *service, struct Channel *chptr,
 
   if(chptr != NULL)
     first = ptr = db_list_first(AKICK_LIST, chptr->regchan->id, (void**)&sban);
-  else
-    first = ptr = db_list_first(AKILL_LIST, 0, (void**)&sban);
 
   if(ptr == NULL)
   {
@@ -1012,8 +950,6 @@ enforce_matching_serviceban(struct Service *service, struct Channel *chptr,
     free_serviceban(sban);
     if(chptr != NULL)
       ptr = db_list_next(ptr, AKICK_LIST, (void**)&sban);
-    else
-      ptr = db_list_next(ptr, AKILL_LIST, (void**)&sban);
   }
 
   db_list_done(first);
@@ -1052,7 +988,7 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
 
   if(sban->mask == NULL && sban->type == AKICK_BAN)
   {
-    char *nick = db_get_nickname_from_id(sban->target);
+    char *nick = nickname_nick_from_id(sban->target, TRUE);
     if(ircncmp(nick, client->name, NICKLEN) == 0)
     {
       snprintf(host, HOSTLEN, "%s!*@*", nick);
@@ -1111,7 +1047,7 @@ enforce_client_serviceban(struct Service *service, struct Channel *chptr,
       }
       else if(sban->type == AKILL_BAN)
       {
-        char *setter = db_get_nickname_from_id(sban->setter);
+        char *setter = nickname_nick_from_id(sban->setter, TRUE);
 
         send_akill(service, setter, sban);
         MyFree(setter);
@@ -1180,7 +1116,7 @@ set_mode_lock(struct Service *service, const char *channel,
   memset(key, 0, sizeof(key));
 
   chptr = hash_find_channel(channel);
-  regchptr = chptr == NULL ? db_find_chan(channel) : chptr->regchan;
+  regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
 
   parv[0] = lock;
 
@@ -1517,7 +1453,7 @@ check_nick_pass(struct Client *client, struct Nick *nick, const char *password)
 
   if(*client->certfp != '\0')
   {
-    if(check_list_entry(CERT_LIST, nick->id, client->certfp))
+    if(nickname_cert_check(nick, client->certfp))
       return 1;
   }
   
@@ -1637,13 +1573,13 @@ check_masterless_channels(unsigned int accid)
     {
       if(db_get_num_channel_accesslist_entries(chan->channel_id) == 1)
       {
-        char *nick = db_get_nickname_from_id(accid);
+        char *nick = nickname_nick_from_id(accid, TRUE);
         struct Channel *chptr;
 
         ilog(L_NOTICE, "Dropping channel %s because its access list would be "
             "left empty by drop of nickname %s", chan->channel, nick);
         MyFree(nick);
-        db_delete_chan(chan->channel);
+//        dbchannel_delete(chan);
 
         chptr = hash_find_channel(chan->channel);
         if(chptr != NULL)

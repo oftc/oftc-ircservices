@@ -55,8 +55,8 @@
 
 
 #include "stdinc.h"
+#include "crypt.h"
 #include <openssl/sha.h>
-//#include "libio/mem/memory.h"
 
 static const char saltChars[] = 
   "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

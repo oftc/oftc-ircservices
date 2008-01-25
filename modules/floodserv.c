@@ -23,6 +23,22 @@
  */
 
 #include "stdinc.h"
+#include "chanserv.h"
+#include "client.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "msg.h"
+#include "interface.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "conf/modules.h"
+#include "hash.h"
+#include "dbchannel.h"
+#include "nickname.h"
+#include "floodserv.h"
+#include "mqueue.h"
+#include "akill.h"
 
 static struct Service *floodserv = NULL;
 static struct Client  *fsclient  = NULL;
@@ -99,6 +115,7 @@ INIT_MODULE(floodserv, "$Revision$")
   eventAdd("floodserv gc routine", floodserv_gc_routine, NULL, FS_GC_EVENT_TIMER);
   eventAdd("floodserv unenforce routine", floodserv_unenforce_routine, NULL, 10);
   eventAdd("floodserv cleanup channels", floodserv_cleanup_channels, NULL, 60);
+  return floodserv;
 }
 
 CLEANUP_MODULE
@@ -251,7 +268,7 @@ floodserv_free_channel(struct RegChannel *chptr)
 static void
 setup_channel(struct Channel *chptr)
 {
-  struct RegChannel *regchan = chptr->regchan == NULL ? db_find_chan(chptr->chname) : chptr->regchan;
+  struct RegChannel *regchan = chptr->regchan == NULL ? dbchannel_find(chptr->chname) : chptr->regchan;
 
   if(regchan != NULL && regchan->floodserv && !IsMember(fsclient, chptr))
   {
@@ -483,14 +500,23 @@ fs_on_privmsg(va_list args)
           source->name, host, message);
         snprintf(mask, IRC_BUFSIZE, "*@%s", host);
 
-        if((akill = db_find_akill(mask)) != NULL)
+        if((akill = akill_find(mask)) != NULL)
         {
           ilog(L_NOTICE, "Flood AKILL Already Exists");
           free_serviceban(akill);
           return pass_callback(fs_privmsg_hook, source, channel, message);
         }
 
-        akill = akill_add(floodserv, fsclient, mask, FS_KILL_MSG, FS_KILL_DUR);
+        akill = MyMalloc(sizeof(struct ServiceBan));
+
+        akill->setter = 0;
+        akill->time_set = CurrentTime;
+        akill->duration = FS_KILL_DUR;
+        DupString(akill->mask, mask);
+        DupString(akill->reason, FS_KILL_MSG);
+
+        akill_add(akill);
+        send_akill(floodserv, fsclient->name, akill);
 
         if(akill != NULL)
           free_serviceban(akill);

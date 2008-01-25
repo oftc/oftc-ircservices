@@ -3,14 +3,6 @@
 #ifndef INCLUDED_dbm_h
 #define INCLUDED_dbm_h
 
-#include <yada.h>
-
-struct AccessEntry 
-{
-  unsigned int id;
-  char *value;
-};
-
 struct ChanAccess
 {
   unsigned int id;
@@ -27,12 +19,6 @@ struct JupeEntry
   char *reason;
 };
 
-struct DBResult
-{
-  yada_rc_t *rc;
-  yada_rc_t *brc;
-};
-
 struct InfoChanList
 {
   int channel_id;
@@ -41,12 +27,38 @@ struct InfoChanList
   char *level;
 };
 
+typedef struct row
+{
+  int col_count;
+  char **cols;
+} row_t;
+
+typedef struct result_set
+{
+  int row_count;
+  row_t *rows;
+} result_set_t;
+
+typedef struct DataBaseModule
+{
+  void *connection;
+  int last_index;
+  int(*connect)(const char *);
+  char*(*execute_scalar)(int, int *, const char *, va_list);
+  result_set_t*(*execute)(int, int *, const char *, va_list);
+  int (*execute_nonquery)(int, const char *, va_list);
+  void(*free_result)(result_set_t*);
+  int (*prepare)(int, const char *);
+  int (*begin_transaction)();
+  int (*commit_transaction)();
+  int (*rollback_transaction)();
+  int64_t (*next_id)(const char *, const char *);
+  int64_t (*insert_id)(const char *, const char *);
+} database_t;
+
 enum db_list_type
 {
-  ACCESS_LIST = 0,
-  ADMIN_LIST,
-  AKILL_LIST,
-  AKILL_SERVICES_LIST,
+  ADMIN_LIST = 0,
   CHACCESS_LIST,
   AKICK_LIST,
   NICKLINK_LIST,
@@ -59,7 +71,6 @@ enum db_list_type
   CHAN_LIST_OPER,
   CHAN_FORBID_LIST,
   EXPIRING_AKILL_LIST,
-  CERT_LIST,
   JUPE_LIST
 };
 
@@ -166,7 +177,7 @@ enum db_queries
   DELETE_NICKCERT_IDX,
   DELETE_ALL_NICKCERT,
   INSERT_JUPE,
-  GET_JUPE,
+  GET_JUPES,
   DELETE_JUPE_NAME,
   FIND_JUPE,
   COUNT_CHANNEL_ACCESS_LIST,
@@ -185,54 +196,41 @@ typedef struct query
 {
   int index;
   const char *name;
-  yada_rc_t *rc;
   int type;
 } query_t;
 
-#define TransBegin() Database.yada->trx(Database.yada, 0)
-#define TransCommit() Database.yada->commit(Database.yada)
-#define TransRollback() Database.yada->rollback(Database.yada, 0)
 #define Query(m, args...) Database.yada->query(Database.yada, m, args)
 #define Execute(m, args...) Database.yada->execute(Database.yada, m, args)
 #define Bind(m, args...) Database.yada->bind(Database.yada, m, args)
 #define Fetch(r, b) Database.yada->fetch(Database.yada, r, b)
-#define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
+//#define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
 #define Free(r) Database.yada->free(Database.yada, r)
-#define InsertID(t, c) Database.yada->insert_id(Database.yada, t, c)
-#define NextID(t, c) Database.yada->next_id(Database.yada, t, c)
 
 void init_db();
 void db_load_driver();
 void cleanup_db();
+
+int db_prepare(int, const char *);
+char *db_execute_scalar(int, int*, const char *, ...);
+result_set_t *db_execute(int, int *, const char *, ...);
+int db_execute_nonquery(int, const char *, ...);
+
+void db_free_result(result_set_t *result);
+
+int64_t db_nextid(const char *, const char *);
+int64_t db_insertid(const char *, const char *);
+
+int db_begin_transaction();
+int db_commit_transaction();
+int db_rollback_transaction();
 
 int db_set_string(unsigned int, unsigned int, const char *);
 int db_set_number(unsigned int, unsigned int, unsigned long);
 int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
-int db_register_nick(struct Nick *);
-int db_delete_nick(unsigned int, unsigned int, unsigned int);
-char *db_get_nickname_from_id(unsigned int);
-char *db_get_nickname_from_nickid(unsigned int);
-unsigned int db_get_id_from_name(const char *, unsigned int);
-int db_set_nick_master(unsigned int, const char *);
-
-int db_forbid_nick(const char *);
-int db_is_forbid(const char *);
-int db_delete_forbid(const char *);
-int db_forbid_chan(const char *);
 int db_is_chan_forbid(const char *);
-int db_delete_chan_forbid(const char *);
 
-int db_link_nicks(unsigned int, unsigned int);
-unsigned int db_unlink_nick(unsigned int, unsigned int, unsigned int);
-
-int db_register_chan(struct RegChannel *, unsigned int);
-int db_delete_chan(const char *);
-
-struct Nick *db_find_nick(const char *);
-struct RegChannel *db_find_chan(const char *);
-struct ServiceBan *db_find_akill(const char *);
 struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
 struct JupeEntry  *db_find_jupe(const char *);
 
@@ -246,13 +244,11 @@ int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 int db_get_num_masters(unsigned int);
 int db_get_num_channel_accesslist_entries(unsigned int);
 
-char *db_find_certfp(unsigned int, const char *);
-
 int db_add_sentmail(unsigned int, const char *);
 int db_is_mailsent(unsigned int, const char *);
 
-int db_save_nick(struct Nick *);
-
 void db_reopen_log();
+void db_log(const char *, ...);
+
 
 #endif /* INCLUDED_dbm_h */

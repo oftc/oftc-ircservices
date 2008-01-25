@@ -27,6 +27,18 @@
  */
 
 #include "stdinc.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "dbm.h"
+#include "nickname.h"
+#include "dbchannel.h"
+#include "hash.h"
+#include "hostmask.h"
+#include "client.h"
+#include "chanserv.h"
+#include "language.h"
+#include "parse.h"
+#include "interface.h"
 
 static BlockHeap *channel_heap = NULL;
 static BlockHeap *member_heap = NULL;
@@ -90,7 +102,7 @@ make_channel(const char *chname)
   strlcpy(chptr->chname, chname, sizeof(chptr->chname));
   dlinkAdd(chptr, &chptr->node, &global_channel_list);
 
-  chptr->regchan = db_find_chan(chname);
+  chptr->regchan = dbchannel_find(chname);
 
   hash_add_channel(chptr);
 

@@ -27,6 +27,15 @@
  */
 
 #include "stdinc.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "client.h"
+#include "send.h"
+#include "hostmask.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "interface.h"
 
 /* 10 is a magic number in hybrid 6 NFI where it comes from -db */
 #define BAN_FUDGE	10
@@ -39,7 +48,7 @@ static int mode_limit;		/* number of modes set other than simple */
 static int simple_modes_mask;	/* bit mask of simple modes already set */
 extern BlockHeap *ban_heap;
 struct Callback *channel_access_cb = NULL;
-
+static const struct ModeList *flags;
 
 /* check_string()
  *
@@ -237,23 +246,6 @@ del_id(struct Channel *chptr, char *banid, int type)
 
   return 0;
 }
-
-/* XXX This needs to come from the protocol module!! */
-/*static const struct mode_letter
-{
-  const unsigned int mode;
-  const unsigned char letter;
-} flags[] = {
-  { MODE_INVITEONLY, 'i' },
-  { MODE_MODERATED,  'm' },
-  { MODE_NOPRIVMSGS, 'n' },
-  { MODE_PARANOID,   'p' },
-  { MODE_SECRET,     's' },
-  { MODE_TOPICLIMIT, 't' },
-  { MODE_NOCOLOR,    'c' },
-  { 0, '\0' }
-};*/
-static const struct ModeList *flags;
 
 /* channel_modes()
  *

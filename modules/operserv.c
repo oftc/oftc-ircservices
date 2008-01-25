@@ -27,6 +27,22 @@
  */
 
 #include "stdinc.h"
+#include "client.h"
+#include "chanserv.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "msg.h"
+#include "interface.h"
+#include "conf/modules.h"
+#include "conf/servicesinfo.h"
+#include "operserv.h"
+#include "nickserv.h"
+#include "nickname.h"
+#include "jupe.h"
+#include "akill.h"
+#include "send.h"
+#include "hash.h"
 
 static struct Service *operserv = NULL;
 
@@ -152,6 +168,7 @@ INIT_MODULE(operserv, "$Revision$")
   mod_add_servcmd(&operserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &jupe_msgtab);
+  return operserv;
 }
 
 CLEANUP_MODULE
@@ -170,36 +187,31 @@ static void *
 os_on_burst_done(va_list param)
 {
   struct JupeEntry *jupe;
-  void *handle, *first;
   struct Client *target;
   int ret;
+  dlink_list list;
+  dlink_node *ptr;
 
-  first = handle = db_list_first(JUPE_LIST, 0, (void**)&jupe);
-  while(handle != NULL)
+  jupe_list(&list);
+
+  DLINK_FOREACH(ptr, list.head)
   {
     if((target = find_client(jupe->name)) != NULL && IsServer(target))
     {
       ilog(L_DEBUG, "JUPE Server %s already exists, removing jupe", jupe->name);
       ret = db_list_del(DELETE_JUPE_NAME, 0, jupe->name);
       if(ret <= 0)
-      {
-        ilog(L_INFO, "Failed to remove existing jupe for existing server %s", jupe->name);
-      }
+        ilog(L_INFO, "Failed to remove existing jupe for existing server %s", 
+            jupe->name);
     }
     else
     {
       introduce_server(jupe->name, jupe->reason);
       ilog(L_DEBUG, "JUPE %s [%s]", jupe->name, jupe->reason);
     }
-
-    free_jupeentry(jupe);
-    jupe = NULL;
-    handle = db_list_next(handle, JUPE_LIST, (void**)&jupe);
   }
-  if(first)
-    db_list_done(first);
 
-  free_jupeentry(jupe);
+  free_jupe_list(&list);
 
   return pass_callback(os_burst_done_hook, param);
 }
@@ -251,7 +263,7 @@ m_mod_load(struct Service *service, struct Client *client,
 
   ilog(L_NOTICE, "Loading %s by request of %s",
       parm, client->name);
-  if (load_module(parm) == 1)
+  if (load_module(parm) != NULL)
   {
     ilog(L_NOTICE, "Module %s loaded", parm);
     reply_user(service, service, client, OS_MOD_LOADED, parm);
@@ -290,7 +302,7 @@ m_mod_reload(struct Service *service, struct Client *client,
   ilog(L_NOTICE, "Reloading %s by request of %s", parm, client->name);
   reply_user(service, service, client, OS_MOD_RELOADING, parm, client->name);
   unload_module(module);
-  if (load_module(parm) == 1)
+  if (load_module(parm) != NULL)
   {
     ilog(L_NOTICE, "Module %s loaded", parm);
     reply_user(service, service, client, OS_MOD_LOADED,parm);
@@ -348,7 +360,7 @@ static void
 m_admin_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct Nick *nick = db_find_nick(parv[1]);
+  struct Nick *nick = nickname_find(parv[1]);
   struct Client *target;
 
   if(nick == NULL)
@@ -402,7 +414,7 @@ m_admin_del(struct Service *service, struct Client *client,
   struct Nick *nick;
   struct Client *target;
     
-  nick = db_find_nick(parv[1]);
+  nick = nickname_find(parv[1]);
     
   if(nick == NULL || !(nick->admin))
   {
@@ -496,7 +508,7 @@ m_akill_add(struct Service *service, struct Client *client,
   if(duration == -1)
     duration = 0;
 
-  if((tmp = db_find_akill(mask)) != NULL)
+  if((tmp = akill_find(mask)) != NULL)
   {
     reply_user(service, service, client, OS_AKILL_ALREADY, mask);
     free_serviceban(tmp);
@@ -512,14 +524,22 @@ m_akill_add(struct Service *service, struct Client *client,
 
   join_params(reason, parc-1, &parv[para_start]);
 
-  akill = akill_add(service, client, mask, reason, duration);
+  akill = MyMalloc(sizeof(struct ServiceBan *));
 
-  if(akill == NULL)
+  akill->setter = client->nickname->id;
+  akill->time_set = CurrentTime;
+  akill->duration = duration;
+  DupString(akill->mask, mask);
+  DupString(akill->reason, reason);
+
+  if(!akill_add(akill))
   {
     reply_user(service, service, client, OS_AKILL_ADDFAIL, mask);
+    free_serviceban(akill);
     return;
   }
 
+  send_akill(service, client->name, akill);
   reply_user(service, service, client, OS_AKILL_ADDOK, mask);
   free_serviceban(akill);
 }
@@ -529,15 +549,20 @@ m_akill_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct ServiceBan *akill;
-  void *handle, *first;
   char setbuf[TIME_BUFFER + 1];
   char durbuf[TIME_BUFFER + 1];
   int i = 1;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
-  first = handle = db_list_first(AKILL_LIST, 0, (void**)&akill);
-  while(handle != NULL)
+  akill_list(&list);
+
+  DLINK_FOREACH(ptr, list.head)
   {
-    char *setter = db_get_nickname_from_id(akill->setter);
+    char *setter;
+    
+    akill = (struct ServiceBan *)ptr->data;
+    setter = nickname_nick_from_id(akill->setter, TRUE);
 
     strtime(client, akill->time_set, setbuf);
     strtime(client, akill->time_set + akill->duration, durbuf);
@@ -546,12 +571,9 @@ m_akill_list(struct Service *service, struct Client *client,
         akill->reason, setter, setbuf, akill->duration == 0 ? "N/A" : durbuf);
     free_serviceban(akill);
     MyFree(setter);
-    handle = db_list_next(handle, AKILL_LIST, (void**)&akill);
   }
-  if(first)
-    db_list_done(first);
 
-  free_serviceban(akill);
+  akill_list_free(&list);
 
   reply_user(service, service, client, OS_AKILL_LIST_END);
 }
@@ -564,7 +586,7 @@ m_akill_del(struct Service *service, struct Client *client,
   struct ServiceBan *akill;
   char *expire_time, *set_time;
 
-  if((akill = db_find_akill(parv[1])) == NULL)
+  if((akill = akill_find(parv[1])) == NULL)
   {
     reply_user(service, service, client, OS_AKILL_DEL, 0);
     return;
@@ -607,7 +629,7 @@ os_on_newuser(va_list args)
   if(IsMe(newuser->from))
     return pass_callback(os_newuser_hook, newuser);
 
-  enforce_matching_serviceban(operserv, NULL, newuser); 
+  akill_check_client(operserv, newuser);
 
   return pass_callback(os_newuser_hook, newuser);
 }
@@ -673,7 +695,7 @@ m_jupe_list(struct Service *service, struct Client *client,
   first = handle = db_list_first(JUPE_LIST, 0, (void**)&jupe);
   while(handle != NULL)
   {
-    char *setter = db_get_nickname_from_id(jupe->setter);
+    char *setter = nickname_nick_from_id(jupe->setter, TRUE);
 
     reply_user(service, service, client, OS_JUPE_LIST, i++, jupe->name,
       jupe->reason, setter);

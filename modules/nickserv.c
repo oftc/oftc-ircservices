@@ -27,6 +27,21 @@
  */
 
 #include "stdinc.h"
+#include "client.h"
+#include "chanserv.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "msg.h"
+#include "interface.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "conf/modules.h"
+#include "conf/servicesinfo.h"
+#include "hash.h"
+#include "nickname.h"
+#include "nickserv.h"
+#include "crypt.h"
 
 static struct Service *nickserv = NULL;
 static struct Client *nickserv_client = NULL;
@@ -273,6 +288,7 @@ INIT_MODULE(nickserv, "$Revision$")
 
   eventAdd("process nickserv enforce list", process_enforce_list, NULL, 10);
   eventAdd("process nickserv release list", process_release_list, NULL, 60);
+  return nickserv;
 }
 
 CLEANUP_MODULE
@@ -396,7 +412,7 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  if(db_is_forbid(client->name))
+  if(nickname_is_forbid(client->name))
   {
     reply_user(service, service, client, NS_NOREG_FORBID, client->name);
     return;
@@ -414,7 +430,7 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
     
-  if((nick = db_find_nick(client->name)) != NULL)
+  if((nick = nickname_find(client->name)) != NULL)
   {
     reply_user(service, service, client, NS_ALREADY_REG, client->name); 
     free_nick(nick);
@@ -432,7 +448,7 @@ m_register(struct Service *service, struct Client *client,
   DupString(nick->email, parv[2]);
   MyFree(pass);
 
-  if(db_register_nick(nick))
+  if(nickname_register(nick))
   {
     client->nickname = nick;
     identify_user(client);
@@ -452,7 +468,7 @@ m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
   struct Client *target;
-  struct Nick *nick = db_find_nick(client->name);
+  struct Nick *nick = nickname_find(client->name);
   char *target_nick = NULL;
 
   assert(nick != NULL);
@@ -460,7 +476,7 @@ m_drop(struct Service *service, struct Client *client,
   /* This might be being executed via sudo, find the real user of the nick */
   if(client->nickname->id != nick->id)
   {
-    target_nick = db_get_nickname_from_nickid(client->nickname->nickid);
+    target_nick = nickname_nick_from_id(client->nickname->nickid, FALSE);
     target = find_client(target_nick);
   }
   else
@@ -532,9 +548,26 @@ m_drop(struct Service *service, struct Client *client,
    * drop
    */
 
-  if(drop_nickname(nickserv, client, target_nick))
+  if(nickname_delete(client->nickname)) 
   {
-    reply_user(service, service, client, NS_NICK_DROPPED, target_nick);
+    if(target != NULL)
+    {
+      ClearIdentified(target);
+      if(target->nickname != NULL)
+        free_nick(target->nickname);
+      target->nickname = NULL;
+      target->access = USER_FLAG;
+      send_umode(nickserv, target, "-R");
+      reply_user(service, service, client, NS_NICK_DROPPED, target->name);
+      ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
+        client->username, client->host, target->name);
+    }
+    else
+    {
+      reply_user(service, service, client, NS_NICK_DROPPED, target_nick);
+      ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
+        client->username, client->host, target_nick);
+    }
   }
   else
   {
@@ -557,7 +590,7 @@ m_identify(struct Service *service, struct Client *client,
   else
     name = client->name;
 
-  if((nick = db_find_nick(name)) == NULL)
+  if((nick = nickname_find(name)) == NULL)
   {
     reply_user(service, service, client, NS_REG_FIRST, name);
     return;
@@ -755,7 +788,7 @@ static void
 m_cloakstring(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  struct Nick *nick = db_find_nick(parv[1]);
+  struct Nick *nick = nickname_find(parv[1]);
 
   if(nick == NULL)
   {
@@ -886,20 +919,20 @@ m_set_master(struct Service *service, struct Client *client,
 
   if(parc == 0)
   {
-    char *prinick = db_get_nickname_from_id(nick->id);
+    char *prinick = nickname_nick_from_id(nick->id, TRUE);
 
     reply_user(service, service, client, NS_SET_VALUE, "MASTER", prinick);
     MyFree(prinick);
     return;
   }
 
-  if(db_get_id_from_name(parv[1], GET_ACCID_FROM_NICK) != nick->id)
+  if(nickname_id_from_nick(parv[1], TRUE) != nick->id)
   {
     reply_user(service, service, client, NS_MASTER_NOT_LINKED, parv[1]);
     return;
   }
 
-  if(db_set_nick_master(nick->id, parv[1]))
+  if(nickname_set_master(nick, parv[1]))
     reply_user(service, service, client, NS_MASTER_SET_OK, parv[1]);
   else
     reply_user(service, service, client, NS_MASTER_SET_FAIL, parv[1]);
@@ -956,14 +989,10 @@ m_access_add(struct Service *service, struct Client *client, int parc,
   access.id = nick->id;
   access.value = parv[1];
   
-  if(db_list_add(ACCESS_LIST, (void *)&access))
-  {
+  if(nickname_accesslist_add(&access))
     reply_user(service, service, client, NS_ACCESS_ADD, parv[1]);
-  }
   else
-  {
     reply_user(service, service, client, NS_ACCESS_ADDFAIL, parv[1]);
-  }
 }
 
 static void
@@ -972,30 +1001,20 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 {
   struct Nick *nick;
   struct AccessEntry *entry = NULL;
-  void *first, *listptr;
+  dlink_list list = { 0 };
+  dlink_node *ptr;
   int i = 1;
 
   nick = client->nickname;
 
   reply_user(service, service, client, NS_ACCESS_START);
- 
-  if((listptr = db_list_first(ACCESS_LIST, nick->id, (void**)&entry)) == NULL)
-  {
-    MyFree(entry);
-    return;
-  }
 
-  first = listptr;
+  nickname_accesslist_list(nick, &list);
 
-  while(listptr != NULL)
-  {
+  DLINK_FOREACH(ptr, list.head)
     reply_user(service, service, client, NS_ACCESS_ENTRY, i++, entry->value);
-    MyFree(entry);
-    listptr = db_list_next(listptr, ACCESS_LIST, (void**)&entry);
-  }
 
-  MyFree(entry);
-  db_list_done(first);
+  nickname_accesslist_free(&list);
 }
 
 static void
@@ -1006,10 +1025,7 @@ m_access_del(struct Service *service, struct Client *client, int parc,
   int index, ret;
 
   index = atoi(parv[1]);
-  if(index > 0)
-    ret = db_list_del_index(DELETE_NICKACCESS_IDX, nick->id, index);
-  else
-    ret = db_list_del(DELETE_NICKACCESS, nick->id, parv[1]);
+  ret = nickname_accesslist_delete(nick, parv[1], index);
   
   reply_user(service, service, client, NS_ACCESS_DEL, ret);
 }
@@ -1019,10 +1035,9 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Nick *nick = client->nickname;
-  struct AccessEntry access;
-  char *cert;
+  char *certfp;
+  struct AccessEntry access = { 0 };
 
-  access.id = nick->id;
   if(parv[1] == NULL)
   {
     if(*client->certfp == '\0')
@@ -1030,7 +1045,7 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
       reply_user(service, service, client, NS_CERT_YOUHAVENONE);
       return;
     }
-    access.value = client->certfp;
+    certfp = client->certfp;
   }
   else
   {
@@ -1039,17 +1054,17 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
       reply_user(service, service, client, NS_CERT_INVALID, parv[1]);
       return;
     }
-    access.value = parv[1];
+    certfp = parv[1];
   }
 
-  if((cert = db_find_certfp(nick->id, access.value)) != NULL)
+  if(nickname_cert_check(nick, certfp))
   {
-    reply_user(service, service, client, NS_CERT_EXISTS, access.value);
-    MyFree(cert);
+    reply_user(service, service, client, NS_CERT_EXISTS, certfp);
     return;
   }
-
-  if(db_list_add(CERT_LIST, (void *)&access))
+  access.id = nick->id;
+  access.value = certfp;
+  if(nickname_cert_add(&access))
     reply_user(service, service, client, NS_CERT_ADD, access.value);
   else
     reply_user(service, service, client, NS_CERT_ADDFAIL, access.value);
@@ -1061,30 +1076,26 @@ m_cert_list(struct Service *service, struct Client *client, int parc,
 {
   struct Nick *nick;
   struct AccessEntry *entry = NULL;
-  void *first, *listptr;
+  dlink_list list = { 0 };
+  dlink_node *ptr;
   int i = 1;
 
   nick = client->nickname;
 
- 
-  if((listptr = db_list_first(CERT_LIST, nick->id, (void**)&entry)) == NULL)
-  {
-    reply_user(service, service, client, NS_CERT_EMPTY);
-    MyFree(entry);
-    return;
-  }
+  nickname_cert_list(nick, &list);
 
   reply_user(service, service, client, NS_CERT_START);
-  first = listptr;
 
-  while(listptr != NULL)
+  DLINK_FOREACH(ptr, list.head)
   {
-    reply_user(service, service, client, NS_CERT_ENTRY, i++, entry->value);
-    MyFree(entry);
-    listptr = db_list_next(listptr, CERT_LIST, (void**)&entry);
-  }
+    entry = (struct AccessEntry *)ptr->data;
 
-  db_list_done(first);
+    reply_user(service, service, client, NS_CERT_ENTRY, i++, entry->value);
+    MyFree(entry->value);
+    MyFree(entry);
+  }
+  
+  nickname_certlist_free(&list);
 }
 
 static void
@@ -1095,10 +1106,7 @@ m_cert_del(struct Service *service, struct Client *client, int parc,
   int index, ret;
 
   index = atoi(parv[1]);
-  if(index > 0)
-    ret = db_list_del_index(DELETE_NICKCERT_IDX, nick->id, index);
-  else
-    ret = db_list_del(DELETE_NICKCERT, nick->id, parv[1]);
+  ret = nickname_cert_delete(nick, parv[1], index);
   
   reply_user(service, service, client, NS_CERT_DEL, ret);
 }
@@ -1114,7 +1122,7 @@ m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if((nick = db_find_nick(parv[1])) == NULL)
+  if((nick = nickname_find(parv[1])) == NULL)
   {
     reply_user(service, service, client, NS_REG_FIRST, parv[1]);
     return;
@@ -1148,7 +1156,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Nick *nick, *master_nick;
 
   nick = client->nickname;
-  if((master_nick = db_find_nick(parv[1])) == NULL)
+  if((master_nick = nickname_find(parv[1])) == NULL)
   {
     reply_user(service, service, client, NS_LINK_NOMASTER, parv[1]);
     return;
@@ -1168,7 +1176,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(!db_link_nicks(master_nick->id, nick->id))
+  if(!nickname_link(master_nick, nick))
   {
     free_nick(master_nick);
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
@@ -1180,7 +1188,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
   free_nick(master_nick);
   free_nick(nick);
 
-  client->nickname = db_find_nick(parv[1]);
+  client->nickname = nickname_find(parv[1]);
   assert(client->nickname != NULL);
 }
 
@@ -1189,12 +1197,12 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Nick *nick = client->nickname;
 
-  if((nick->id = db_unlink_nick(nick->id, nick->pri_nickid, nick->nickid)) > 0)
+  if((nick->id = nickname_unlink(nick)) > 0)
   {
     reply_user(service, service, client, NS_UNLINK_OK, client->name);
     // In case this was a slave nick, it is now a master of itself
     free_nick(client->nickname);
-    client->nickname = db_find_nick(client->name);
+    client->nickname = nickname_find(client->name);
   }
   else
     reply_user(service, service, client, NS_UNLINK_FAILED, client->name);
@@ -1218,12 +1226,12 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       nick = client->nickname;
     else
     {
-      if(db_is_forbid(client->name))
+      if(nickname_is_forbid(client->name))
       {
         reply_user(service, service, client, NS_NICKFORBID, client->name);
         return;
       }
-      if((nick = db_find_nick(client->name)) == NULL)
+      if((nick = nickname_find(client->name)) == NULL)
       {
         reply_user(service, service, client, NS_REG_FIRST, client->name);
         return;
@@ -1233,13 +1241,13 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   }
   else
   {
-    if(db_is_forbid(parv[1]))
+    if(nickname_is_forbid(parv[1]))
     {
       reply_user(service, service, client, NS_NICKFORBID, parv[1]);
       return;
     }
 
-    if((nick = db_find_nick(parv[1])) == NULL)
+    if((nick = nickname_find(parv[1])) == NULL)
     {
       reply_user(service, service, client, NS_REG_FIRST,
           parv[1]);
@@ -1316,7 +1324,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
     if(nick->nickid != nick->pri_nickid)
     {
-      char *prinick = db_get_nickname_from_id(nick->id);
+      char *prinick = nickname_nick_from_id(nick->id, TRUE);
 
       reply_user(service, service, client, NS_INFO_MASTER, prinick);
       MyFree(prinick);
@@ -1400,7 +1408,7 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
   if(duration == -1)
     duration = 0;
 
-  if(!db_forbid_nick(resv))
+  if(!nickname_forbid(resv))
   {
     reply_user(service, service, client, NS_FORBID_FAIL, parv[1]);
     return;
@@ -1425,13 +1433,13 @@ m_unforbid(struct Service *service, struct Client *client, int parc,
   struct Client *target;
   dlink_node *ptr;
 
-  if(!db_is_forbid(parv[1]))
+  if(!nickname_is_forbid(parv[1]))
   {
     reply_user(service, service, client, NS_UNFORBID_NOT_FORBID, parv[1]);
     return;
   }
 
-  if(db_delete_forbid(parv[1]))
+  if(nickname_delete_forbid(parv[1]))
     reply_user(service, service, client, NS_UNFORBID_OK, parv[1]);
   else
     reply_user(service, service, client, NS_UNFORBID_FAIL, parv[1]);
@@ -1459,7 +1467,7 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
   oldnick = client->nickname;
   oldaccess = client->access;
 
-  nick = db_find_nick(parv[1]);
+  nick = nickname_find(parv[1]);
   if(nick == NULL)
   {
     reply_user(service, service, client, NS_REG_FIRST, parv[1]);
@@ -1505,7 +1513,7 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
   char *pass;
   int timestamp;
 
-  if((nick = db_find_nick(parv[1])) == NULL)
+  if((nick = nickname_find(parv[1])) == NULL)
   {
     reply_user(service, service, client, NS_REG_FIRST, parv[1]);
     return;
@@ -1647,7 +1655,7 @@ m_enslave(struct Service *service, struct Client *client, int parc, char *parv[]
   struct Nick *nick, *slave_nick;
 
   nick = client->nickname;
-  if((slave_nick = db_find_nick(parv[1])) == NULL)
+  if((slave_nick = nickname_find(parv[1])) == NULL)
   {
     reply_user(service, service, client, NS_LINK_NOSLAVE, parv[1]);
     return;
@@ -1667,7 +1675,7 @@ m_enslave(struct Service *service, struct Client *client, int parc, char *parv[]
     return;
   }
 
-  if(!db_link_nicks(nick->id, slave_nick->id))
+  if(!nickname_link(nick, slave_nick))
   {
     free_nick(slave_nick);
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
@@ -1679,7 +1687,7 @@ m_enslave(struct Service *service, struct Client *client, int parc, char *parv[]
   free_nick(slave_nick);
   free_nick(nick);
 
-  client->nickname = db_find_nick(parv[1]);
+  client->nickname = nickname_find(parv[1]);
   assert(client->nickname != NULL);
 }
 
@@ -1694,7 +1702,7 @@ ns_on_umode_change(va_list args)
   {
     if(user->nickname != NULL)
       free_nick(user->nickname);
-    user->nickname = db_find_nick(user->name);
+    user->nickname = nickname_find(user->name);
     if(user->nickname != NULL)
     {
       dlinkFindDelete(&nick_enforce_list, user);
@@ -1776,7 +1784,7 @@ ns_on_nick_change(va_list args)
     }
   }
 
-  if(db_is_forbid(user->name))
+  if(nickname_is_forbid(user->name))
   {
     reply_user(nickserv, nickserv, user, NS_NICK_FORBID_IWILLCHANGE, user->name);
     user->enforce_time = CurrentTime + 10; /* XXX configurable? */
@@ -1784,7 +1792,7 @@ ns_on_nick_change(va_list args)
     return pass_callback(ns_nick_hook, user, oldnick);
   }
 
-  if((nick_p = db_find_nick(user->name)) == NULL)
+  if((nick_p = nickname_find(user->name)) == NULL)
   {
     ilog(L_DEBUG, "Nick Change: %s->%s(nick not registered)", oldnick, user->name);
     if(user->nickname != NULL)
@@ -1807,7 +1815,7 @@ ns_on_nick_change(va_list args)
  
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
 
-  if(*user->certfp != '\0' && check_list_entry(CERT_LIST, nick_p->id, user->certfp))
+  if(*user->certfp != '\0' && nickname_cert_check(nick_p, user->certfp))
   {
     if(user->nickname != NULL)
       free_nick(user->nickname);
@@ -1816,7 +1824,7 @@ ns_on_nick_change(va_list args)
     SetSentCert(user);
     reply_user(nickserv, nickserv, user, NS_IDENTIFY_CERT, user->name);
   }
-  else if(check_list_entry(ACCESS_LIST, nick_p->id, userhost))
+  else if(nickname_accesslist_check(nick_p, userhost))
   {
     ilog(L_DEBUG, "%s changed nick to %s(found access entry)", oldnick, 
         user->name);
@@ -1864,7 +1872,7 @@ ns_on_newuser(va_list args)
 
   ilog(L_DEBUG, "New User: %s!", newuser->name);
 
-  if(db_is_forbid(newuser->name))
+  if(nickname_is_forbid(newuser->name))
   {
     reply_user(nickserv, nickserv, newuser, NS_NICK_FORBID_IWILLCHANGE, newuser->name);
     newuser->enforce_time = CurrentTime + 10; /* XXX configurable? */
@@ -1872,7 +1880,7 @@ ns_on_newuser(va_list args)
     return pass_callback(ns_newuser_hook, newuser);
   }
  
-  if((nick_p = db_find_nick(newuser->name)) == NULL)
+  if((nick_p = nickname_find(newuser->name)) == NULL)
   {
     ilog(L_DEBUG, "New user: %s(nick not registered)", newuser->name);
     return pass_callback(ns_newuser_hook, newuser);
@@ -1888,7 +1896,7 @@ ns_on_newuser(va_list args)
   }
 
   snprintf(userhost, USERHOSTLEN, "%s@%s", newuser->username, newuser->host);
-  if(check_list_entry(ACCESS_LIST, nick_p->id, userhost))
+  if(nickname_accesslist_check(nick_p, userhost))
   {
     ilog(L_DEBUG, "new user: %s(found access entry)", newuser->name);
     SetOnAccess(newuser);
@@ -1952,7 +1960,7 @@ static void *
 ns_on_certfp(va_list args)
 {
   struct Client *user = va_arg(args, struct Client *);
-  struct Nick *nick = db_find_nick(user->name);
+  struct Nick *nick = nickname_find(user->name);
 
   if(nick == NULL)
     return pass_callback(ns_certfp_hook, user);
@@ -1964,7 +1972,7 @@ ns_on_certfp(va_list args)
     return pass_callback(ns_certfp_hook, user);
   }
 
-  if(check_list_entry(CERT_LIST, nick->id, user->certfp))
+  if(nickname_cert_check(nick, user->certfp))
   {
     if(user->nickname != NULL)
       free_nick(user->nickname);

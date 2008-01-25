@@ -23,6 +23,19 @@
  */
 
 #include "stdinc.h"
+#include "stdinc.h"
+#include "client.h"
+#include "chanserv.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "msg.h"
+#include "interface.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "conf/modules.h"
+#include "hash.h"
+#include "send.h"
 
 static void *oftc_server_connected(va_list);
 static void *oftc_sendmsg_gnotice(va_list);
@@ -148,6 +161,7 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&eob_msgtab);
   mod_add_cmd(&realhost_msgtab);
   mod_add_cmd(&certfp_msgtab);
+  return ModeList;
 }
 
 CLEANUP_MODULE

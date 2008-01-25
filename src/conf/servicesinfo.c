@@ -23,6 +23,8 @@
 
 #include "stdinc.h"
 #include "conf/conf.h"
+#include "client.h"
+#include "hash.h"
 
 struct ServicesInfoConf ServicesInfo = {};
 char new_uid[TOTALSIDUID + 1] = {0};

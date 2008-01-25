@@ -23,6 +23,18 @@
  */
 
 #include "stdinc.h"
+#include "client.h"
+#include "chanserv.h"
+#include "dbm.h"
+#include "language.h"
+#include "parse.h"
+#include "msg.h"
+#include "interface.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "conf/modules.h"
+#include "hash.h"
+#include "send.h"
 
 static void m_privmsg(struct Client *, struct Client *, int, char *[]);
 static void m_notice(struct Client *, struct Client *, int, char *[]);
@@ -273,6 +285,7 @@ INIT_MODULE(irc, "$Revision$")
   mod_add_cmd(&kick_msgtab);
   mod_add_cmd(&notice_msgtab);
   mod_add_cmd(&tburst_msgtab);
+  return ModeList;
 }
 
 CLEANUP_MODULE
