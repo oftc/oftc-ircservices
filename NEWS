@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+1.2.1
+-----
+o GanneffServ Bugfixes.
+o Additional ruby events/fixes.
+o Fix akills to not send out the wrong type of kline if the duration is not
+long enough.
+
 1.2.0
 -----
 o Make the EXPIREBANS paramter more than just simple ON/OFF.  You can now
