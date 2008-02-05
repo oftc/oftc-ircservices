@@ -140,6 +140,7 @@ struct Client
   struct Server      *server;
 
   time_t        tsinfo;
+  time_t        firsttime;
   time_t        enforce_time;
   time_t        release_time;
   unsigned int  status;

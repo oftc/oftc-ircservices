@@ -231,7 +231,7 @@ introduce_client(const char *name, const char *gecos, char isservice)
   if(client == NULL)
   {
     client = make_client(&me);
-    client->tsinfo = CurrentTime;
+    client->firsttime = client->tsinfo = CurrentTime;
     dlinkAdd(client, &client->node, &global_client_list);
 
     /* copy the nick in place */
@@ -1625,7 +1625,7 @@ int
 drop_nickname(struct Service *service, struct Client *client, const char *target)
 {
   char *channel;
-  struct Nick *nick = db_find_nick(target);
+  struct Nick *nick = nickname_find(target);
 
   if((channel = check_masterless_channels(nick->id)) != NULL)
   {
@@ -1642,7 +1642,7 @@ drop_nickname(struct Service *service, struct Client *client, const char *target
     return 0;
   }
 
-  if(db_delete_nick(nick->id, nick->nickid, nick->pri_nickid))
+  if(nickname_delete(nick))
   {
     struct Client *user = find_client(target);
 

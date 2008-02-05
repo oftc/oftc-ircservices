@@ -29,6 +29,7 @@
 #include "stdinc.h"
 #include "conf/conf.h"
 #include "dbm.h"
+#include "parse.h"
 
 struct LoggingConf Logging;
 

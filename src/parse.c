@@ -39,6 +39,7 @@
 #include "channel.h"
 #include "dbchannel.h"
 #include "nickserv.h"
+#include "conf/logging.h"
 
 /*
  * (based on orabidoo's parser code)nick_id
