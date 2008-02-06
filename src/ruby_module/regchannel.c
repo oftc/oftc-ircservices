@@ -312,7 +312,7 @@ RegChannel_ByName(VALUE self, VALUE name)
 
   Check_Type(name, T_STRING);
 
-  channel = db_find_chan(StringValueCStr(name));
+  //channel = db_find_chan(StringValueCStr(name));
 
   if(channel)
     return rb_cregchan2rbregchan(channel);

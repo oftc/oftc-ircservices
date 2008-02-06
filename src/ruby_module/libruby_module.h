@@ -11,6 +11,18 @@
 
 #include "stdinc.h"
 #include "ruby_module.h"
+#include "nickname.h"
+#include "chanserv.h"
+#include "nickserv.h"
+#include "channel_mode.h"
+#include "channel.h"
+#include "dbm.h"
+#include "language.h"
+#include "hash.h"
+#include "parse.h"
+#include "client.h"
+#include "interface.h"
+#include "msg.h"
 
 VALUE rb_carray2rbarray(int, char **);
 

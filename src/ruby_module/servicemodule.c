@@ -338,7 +338,8 @@ ServiceModule_channels_each(VALUE self)
 static VALUE
 ServiceModule_akill_add(VALUE self, VALUE mask, VALUE reason, VALUE duration)
 {
-  struct Service *service = get_service(self);
+  //TODO XXX FIXME
+  /*struct Service *service = get_service(self);
   struct Client *client = find_client(service->name);
   const char *creason;
   const char *cmask;
@@ -367,7 +368,8 @@ ServiceModule_akill_add(VALUE self, VALUE mask, VALUE reason, VALUE duration)
   {
     free_serviceban(akill);
     return Qtrue;
-  }
+  }*/
+  return Qfalse;
 }
 
 static VALUE
@@ -391,7 +393,7 @@ ServiceModule_kill_user(VALUE self, VALUE who, VALUE reason)
 static VALUE
 ServiceModule_regchan_by_name(VALUE self, VALUE name)
 {
-  struct RegChannel *channel = NULL;
+  /*struct RegChannel *channel = NULL;
   Check_Type(name, T_STRING);
 
   channel = db_find_chan(StringValueCStr(name));
@@ -399,7 +401,8 @@ ServiceModule_regchan_by_name(VALUE self, VALUE name)
   if(channel)
     return rb_cregchan2rbregchan(channel);
   else
-    return Qnil;
+    return Qnil;*/
+  return Qtrue;
 }
 
 static VALUE

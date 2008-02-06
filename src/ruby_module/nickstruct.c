@@ -1,6 +1,5 @@
 #include <ruby.h>
 #include "libruby_module.h"
-#include "dbm.h"
 
 VALUE cNickStruct = Qnil;
 
@@ -442,15 +441,16 @@ NickStruct_NickRegTimeSet(VALUE self, VALUE value)
 static VALUE
 NickStruct_Save(VALUE self)
 {
-  struct Nick *nick = rb_rbnick2cnick(self);
-  int ret = db_save_nick(nick);
-  return ret ? Qtrue : Qfalse;
+  //struct Nick *nick = rb_rbnick2cnick(self);
+  //int ret = db_save_nick(nick);
+  //return ret ? Qtrue : Qfalse;
+  return Qtrue;
 }
 
 static VALUE
 NickStruct_ByName(VALUE self, VALUE name)
 {
-  char *cname;
+  /*char *cname;
   struct Nick *nick;
 
   Check_Type(name, T_STRING);
@@ -462,13 +462,14 @@ NickStruct_ByName(VALUE self, VALUE name)
   if(nick)
     return rb_cnick2rbnick(nick);
   else
-    return Qnil;
+    return Qnil;*/
+  return Qtrue;
 }
 
 static VALUE
 NickStruct_NameFromID(VALUE self, VALUE id)
 {
-  VALUE ret;
+  /*VALUE ret;
   char *nick = db_get_nickname_from_id(NUM2UINT(id));
   if(nick)
   {
@@ -477,13 +478,14 @@ NickStruct_NameFromID(VALUE self, VALUE id)
     return ret;
   }
   else
-    return Qnil;
+    return Qnil;*/
+  return Qtrue;
 }
 
 static VALUE
 NickStruct_AccountID(VALUE self, VALUE name)
 {
-  unsigned int ret;
+  /*unsigned int ret;
 
   Check_Type(name, T_STRING);
 
@@ -492,12 +494,14 @@ NickStruct_AccountID(VALUE self, VALUE name)
   if(ret != 0)
     return UINT2NUM(ret);
   else
-    return Qnil;
+    return Qnil;*/
+  return Qtrue;
 }
 
 static VALUE
 NickStruct_NickID(VALUE self, VALUE name)
 {
+/*
   unsigned int ret;
 
   Check_Type(name, T_STRING);
@@ -508,6 +512,8 @@ NickStruct_NickID(VALUE self, VALUE name)
     return UINT2NUM(ret);
   else
     return Qnil;
+*/
+  return Qtrue;
 }
 
  void

@@ -22,6 +22,7 @@ static VALUE nick_set(VALUE, VALUE);
 static VALUE ctcp(VALUE);
 static VALUE ctcp_set(VALUE, VALUE);
 static VALUE ts(VALUE);
+static VALUE firsttime(VALUE);
 static VALUE from(VALUE);
 static VALUE is_oper(VALUE);
 static VALUE is_admin(VALUE);
@@ -200,6 +201,13 @@ ts(VALUE self)
 }
 
 static VALUE
+firsttime(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+  return ULONG2NUM(client->firsttime);
+}
+
+static VALUE
 from(VALUE self)
 {
   struct Client *client = value_to_client(self);
@@ -276,6 +284,7 @@ Init_Client(void)
   rb_define_method(cClient, "ctcp_version", ctcp, 0);
   rb_define_method(cClient, "ctcp_version=", ctcp_set, 1);
   rb_define_method(cClient, "ts", ts, 0);
+  rb_define_method(cClient, "firsttime", firsttime, 0);
   rb_define_method(cClient, "from", from, 0);
   rb_define_method(cClient, "is_oper?", is_oper, 0);
   rb_define_method(cClient, "is_admin?", is_admin, 0);
