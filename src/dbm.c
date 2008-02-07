@@ -49,14 +49,20 @@ init_db()
   char port[128] = {'\0'};
   //int len;
   char foo[128];
+  char cstring[IRC_BUFSIZE];
 
-  strcpy(foo, "pgsql.la");
+  strcpy(foo, "libpgsql.la");
 
   if(Database.port != 0)
     snprintf(port, 127, "%d", Database.port);
 
   database = load_module(foo);
-  if(!database->connect(""))
+
+  snprintf(cstring, sizeof(cstring), "host='%s' user='%s' password='%s' dbname='%s'",
+    Database.hostname, Database.username, Database.password,
+    Database.dbname);
+
+  if(!database->connect(cstring))
   {
     ilog(L_CRIT, "Cannot connect to database");
     exit(-1);
@@ -78,7 +84,7 @@ cleanup_db()
 {
   struct Module *mod;
 
-  mod = find_module("pgsql.la", 0);
+  mod = find_module("libpgsql.la", 0);
   unload_module(mod);
   fbclose(db_log_fb);
 }

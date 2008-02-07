@@ -51,6 +51,25 @@ AC_DEFUN([AX_CHECK_LIB_YADA],[
   AC_CHECK_HEADER([yada.h],,[AC_MSG_ERROR([yada header files not found])])
   AC_CHECK_LIB([yada],[yada_init],,[AC_MSG_ERROR([yada library not found])])
 ])dnl }}}
+
+dnl {{{ ax_check_lib_pgsql
+AC_DEFUN([AX_CHECK_LIB_PGSQL],
+[
+  AC_SEARCH_LIBS([PQconnectdb],[pq],[have_pgsql="yes"],[have_pgsql="no"])
+  if test "$have_pgsql" = "yes"; then
+    LIBPQ_LIBS="-lpq"
+    LIBPQ_INCLUDE="-I/usr/include/postgresql/"
+    LIBPQ_LDFLAGS="-L/usr/lib -lpq"
+    AC_SUBST(LIBPQ_LIBS)
+    AC_SUBST(LIBPQ_INCLUDE)
+    AC_SUBST(LIBPQ_LDFLAGS)
+  else
+    LIBPQ_LIBS=""
+    LIBPQ_LDFLAGS=""
+    LIBPQ_INCLUDE=""
+  fi
+  ])dnl}}}
+
 dnl {{{ ax_arg_enable_ioloop_mechanism (FIXME)
 AC_DEFUN([AX_ARG_ENABLE_IOLOOP_MECHANISM],[
   dnl {{{ allow the user to specify desired mechanism

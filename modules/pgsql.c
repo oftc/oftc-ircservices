@@ -261,7 +261,7 @@ static query_t queries[QUERY_COUNT] = {
 };
 
 
-INIT_MODULE(pgsql, "$Revision: 1251 $")
+INIT_MODULE(libpgsql, "$Revision: 1251 $")
 {
   pgsql = MyMalloc(sizeof(database_t));
 
