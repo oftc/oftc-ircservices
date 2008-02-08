@@ -5,7 +5,29 @@ if USE_RUBY
 SUBDIRS+=ruby_module
 endif
 bin_PROGRAMS=services
-services_SOURCES=channel.c channel_mode.c conf.c client.c crypt.c connection.c dbm.c hash.c hostmask.c interface.c language.c m_error.c packet.c parse.c  services.c send.c mqueue.c nickname.c akill.c jupe.c dbchannel.c
+services_SOURCES= akick.c					\
+									akill.c					\
+									channel.c				\
+									channel_mode.c	\
+									conf.c					\
+									client.c				\
+									crypt.c					\
+									connection.c		\
+									dbchannel.c			\
+									dbm.c						\
+									hash.c					\
+									hostmask.c			\
+									interface.c			\
+									jupe.c					\
+									language.c			\
+									m_error.c				\
+									mqueue.c				\
+									nickname.c			\
+									packet.c				\
+									parse.c					\
+									services.c			\
+									send.c
+
 services_LDADD=conf/libconf.a $(top_srcdir)/libio/libio.a
 services_LDFLAGS=@LIBLTDL@ @RUBY_LDFLAGS@ -export-dynamic
 if USE_RUBY

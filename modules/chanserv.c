@@ -38,6 +38,7 @@
 #include "dbchannel.h"
 #include "nickname.h"
 #include "nickserv.h"
+#include "akick.h"
 
 static struct Service *chanserv = NULL;
 static struct Client *chanserv_client = NULL;
@@ -1245,7 +1246,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   else
     DupString(akick->reason, "You are not permitted on this channel");
 
-  if(db_list_add(AKICK_LIST, akick))
+  if(akick_add(akick))
     reply_user(service, service, client, CS_AKICK_ADDED, parv[2]);
   else
     reply_user(service, service, client, CS_AKICK_ADDFAIL, parv[2]);
@@ -1256,7 +1257,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   {
     int numkicks = 0;
 
-    numkicks = enforce_akick(service, chptr, akick);
+    numkicks = akick_enforce(service, chptr, akick);
     reply_user(service, service, client, CS_AKICK_ENFORCE, numkicks, 
         regchptr->channel);
   }
@@ -1269,19 +1270,21 @@ m_akick_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct ServiceBan *akick = NULL;
-  void *handle, *first;
   int i = 1;
   struct Channel *chptr;
   struct RegChannel *regchptr;
   char setbuf[TIME_BUFFER + 1];
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  first = handle = db_list_first(AKICK_LIST, regchptr->id, (void**)&akick);
-  while(handle != NULL)
+  akick_list(regchptr->id, &list);
+  DLINK_FOREACH(ptr, list.head)
   {
     char *who, *whoset;
+    akick = (struct ServiceBan *)ptr->data;
 
     if(akick->target == 0)
       who = akick->mask;
@@ -1296,14 +1299,10 @@ m_akick_list(struct Service *service, struct Client *client,
         whoset, setbuf);
     if(akick->target != 0)
       MyFree(who);
-    free_serviceban(akick);
     MyFree(whoset);
-    handle = db_list_next(handle, AKICK_LIST, (void**)&akick);
   }
-  if(first)
-    db_list_done(first);
+  akick_list_free(&list);
 
-  free_serviceban(akick);
   reply_user(service, service, client, CS_AKICK_LISTEND, parv[1]);
 
   if(chptr == NULL)
@@ -1323,11 +1322,11 @@ m_akick_del(struct Service *service, struct Client *client,
 
   index = atoi(parv[2]);
   if(index > 0)
-    ret = db_list_del_index(DELETE_AKICK_IDX, regchptr->id, index);
+    ret = akick_remove_index(regchptr->id, index);
   else if(strchr(parv[2], '@') != NULL)
-    ret = db_list_del(DELETE_AKICK_MASK, regchptr->id, parv[2]);
+    ret = akick_remove_mask(regchptr->id, parv[2]);
   else
-    ret = db_list_del(DELETE_AKICK_ACCOUNT, regchptr->id, parv[2]);
+    ret = akick_remove_account(regchptr->id, parv[2]);
 
   if(chptr == NULL)
     free_regchan(regchptr);
@@ -1353,7 +1352,7 @@ m_akick_enforce(struct Service *service, struct Client *client,
     struct Membership *ms = ptr->data;
     struct Client *client = ms->client_p;
 
-    numkicks += enforce_matching_serviceban(service, chptr, client);
+    numkicks += akick_check_client(service, chptr, client);
   }
 
   reply_user(service, service, client, CS_AKICK_ENFORCE, numkicks, 
@@ -2286,7 +2285,7 @@ cs_on_client_join(va_list args)
   }
   */
 
-  if(enforce_matching_serviceban(chanserv, chptr, source_p))
+  if(akick_check_client(chanserv, chptr, source_p))
     return pass_callback(cs_join_hook, source_p, name);
 
   if((regchptr = chptr->regchan) == NULL)

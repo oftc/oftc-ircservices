@@ -302,58 +302,12 @@ db_set_bool(unsigned int key, unsigned int id, unsigned char value)
   return 1;
 }
 
-int
-db_list_add(unsigned int type, const void *value)
-{
-  //struct AccessEntry *aeval = (struct AccessEntry *)value;
-  //struct ChanAccess *caval  = (struct ChanAccess *)value;
-  struct ServiceBan *banval = (struct ServiceBan *)value;
-//  struct JupeEntry *jval    = (struct JupeEntry *)value;
-  int ret = 0;
-
-  switch(type)
-  {
-    case AKICK_LIST:
-      if(banval->target != 0)
-      {
-        db_exec(ret, INSERT_AKICK_ACCOUNT, banval->channel, banval->target,
-            banval->setter, banval->reason, banval->time_set, 
-            banval->duration);
-      }
-      else if(banval->mask != NULL)
-      {
-        db_exec(ret, INSERT_AKICK_MASK, banval->channel, banval->setter, 
-            banval->reason, banval->mask, banval->time_set, 
-            banval->duration);
-      }
-      else
-        assert(0 == 1);
-      break;
-    case CHACCESS_LIST:
-      db_exec(ret, INSERT_CHANACCESS, caval->account, caval->channel,
-          caval->level);
-      break;
-    case JUPE_LIST:
-      db_exec(ret, INSERT_JUPE, jval->setter, jval->name, jval->reason);
-      break;
-    default:
-      assert(1 == 0);
-      break;
-  }
-    
-  if(ret == -1)
-    return FALSE;
-  else
-    return TRUE;
-}
-
 void *
 db_list_first(unsigned int type, unsigned int param, void **entry)
 {
   yada_rc_t *rc, *brc;
   char *strval = (char*)*entry; 
   struct ChanAccess *caval;
-  struct ServiceBan *banval;
   struct InfoChanList *info;
   struct JupeEntry *jval;
   unsigned int query;
@@ -369,15 +323,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       query = GET_NICK_LINKS;
       *entry = strval;
       brc = Bind("?ps", entry);
-      break;
-    case AKICK_LIST:
-      query = GET_AKICKS;
-
-      banval = MyMalloc(sizeof(struct ServiceBan));
-      *entry = banval;
-      brc = Bind("?d?d?d?d?ps?ps?d?d", &banval->id, &banval->channel,
-          &banval->target, &banval->setter, &banval->mask, 
-          &banval->reason, &banval->time_set, &banval->duration);
       break;
     case CHACCESS_LIST:
       query = GET_CHAN_ACCESSES;
@@ -485,7 +430,6 @@ void *
 db_list_next(void *result, unsigned int type, void **entry)
 {
   struct ChanAccess *caval;
-  struct ServiceBan *banval;
   struct InfoChanList *info;
   struct JupeEntry *jval;
   char *strval = (char*)*entry; 
@@ -507,10 +451,6 @@ db_list_next(void *result, unsigned int type, void **entry)
     case CHAN_FORBID_LIST:
       *entry = strval;
       break;
-    case AKICK_LIST:
-      banval = MyMalloc(sizeof(struct ServiceBan));
-      *entry = banval;
-      break;
     case CHACCESS_LIST:
       caval = MyMalloc(sizeof(struct ChanAccess));
       *entry = caval;
@@ -523,13 +463,7 @@ db_list_next(void *result, unsigned int type, void **entry)
       assert(0 == 1);
   }
 
-  if(type == AKICK_LIST)
-  {
-    banval->type = AKICK_BAN;
-    DupString(banval->mask, banval->mask);
-    DupString(banval->reason, banval->reason);
-  }
-  else if(type == JUPE_LIST)
+  if(type == JUPE_LIST)
   {
     DupString(jval->name, jval->name);
     DupString(jval->reason, jval->reason);
