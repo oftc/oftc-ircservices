@@ -71,6 +71,8 @@ static void m_jupe_add(struct Service *, struct Client *, int, char *[]);
 static void m_jupe_list(struct Service *, struct Client *, int, char *[]);
 static void m_jupe_del(struct Service *, struct Client *, int, char *[]);
 
+static void expire_akills(void *);
+
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, 2, 0, OPER_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
 };
@@ -168,6 +170,9 @@ INIT_MODULE(operserv, "$Revision$")
   mod_add_servcmd(&operserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &raw_msgtab);
   mod_add_servcmd(&operserv->msg_tree, &jupe_msgtab);
+
+  eventAdd("Expire akills", expire_akills, NULL, 60);
+
   return operserv;
 }
 
@@ -178,6 +183,8 @@ CLEANUP_MODULE
   uninstall_hook(on_quit_cb, os_on_quit);
 
   serv_clear_messages(operserv);
+
+  eventDelete(expire_akills, NULL);
 
   unload_languages(operserv->languages);
   ilog(L_DEBUG, "Unloaded operserv");
@@ -447,7 +454,7 @@ m_akill_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct ServiceBan *akill, *tmp;
-  char reason[IRC_BUFSIZE+1];
+  char reason[IRC_BUFSIZE+1] = "\0";
   int para_start = 2;
   char *mask = parv[1];
   char duration_char = '\0';
@@ -524,7 +531,7 @@ m_akill_add(struct Service *service, struct Client *client,
 
   join_params(reason, parc-1, &parv[para_start]);
 
-  akill = MyMalloc(sizeof(struct ServiceBan *));
+  akill = MyMalloc(sizeof(struct ServiceBan));
 
   akill->setter = client->nickname->id;
   akill->time_set = CurrentTime;
@@ -549,8 +556,7 @@ m_akill_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct ServiceBan *akill;
-  char setbuf[TIME_BUFFER + 1];
-  char durbuf[TIME_BUFFER + 1];
+  char *set, *expire;
   int i = 1;
   dlink_node *ptr;
   dlink_list list = { 0 };
@@ -560,17 +566,19 @@ m_akill_list(struct Service *service, struct Client *client,
   DLINK_FOREACH(ptr, list.head)
   {
     char *setter;
-    
+
     akill = (struct ServiceBan *)ptr->data;
     setter = nickname_nick_from_id(akill->setter, TRUE);
 
-    strtime(client, akill->time_set, setbuf);
-    strtime(client, akill->time_set + akill->duration, durbuf);
+    DupString(set, smalldate(akill->time_set));
+    DupString(expire, smalldate(akill->time_set+akill->duration));
 
-    reply_user(service, service, client, OS_AKILL_LIST, i++, akill->mask, 
-        akill->reason, setter, setbuf, akill->duration == 0 ? "N/A" : durbuf);
-    free_serviceban(akill);
+    reply_user(service, service, client, OS_AKILL_LIST, i++, akill->mask,
+        akill->reason, setter, set, akill->duration == 0 ? "N/A" : expire);
+
     MyFree(setter);
+    MyFree(expire);
+    MyFree(set);
   }
 
   akill_list_free(&list);
@@ -592,7 +600,7 @@ m_akill_del(struct Service *service, struct Client *client,
     return;
   }
   
-  ret = db_list_del(DELETE_AKILL, 0, parv[1]);
+  ret = akill_remove_mask(parv[1]);
   remove_akill(service, akill);
   if(ret)
   {
@@ -758,4 +766,27 @@ os_on_quit(va_list param)
   }
 
   return pass_callback(os_quit_hook, server, reason);
+}
+
+static void
+expire_akills(void *param)
+{
+  struct ServiceBan *akill;
+  char *setter;
+  dlink_list list = { 0 };
+  dlink_node *ptr;
+
+  akill_get_expired(&list);
+
+  DLINK_FOREACH(ptr, list.head)
+  {
+    akill = (struct ServiceBan *)ptr->data;
+    setter = nickname_nick_from_id(akill->setter, TRUE);
+    ilog(L_NOTICE, "AKill Expired: %s set by %s on %s(%s)",
+        akill->mask, setter, smalldate(akill->time_set), akill->reason);
+    akill_remove_mask(akill->mask);
+    MyFree(setter);
+  }
+
+  akill_list_free(&list);
 }

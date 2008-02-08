@@ -29,6 +29,8 @@ int akill_add(struct ServiceBan *);
 struct ServiceBan *akill_find(const char *);
 int akill_check_client(struct Service *, struct Client *);
 int akill_list(dlink_list *);
+int akill_get_expired(dlink_list *);
 int akill_list_free(dlink_list *);
+int akill_remove_mask(const char *);
 
 #endif

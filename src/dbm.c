@@ -39,7 +39,6 @@ static FBFILE *db_log_fb;
 static database_t *database;
 
 static void expire_sentmail(void *);
-static void expire_akills(void *);
 
 void
 init_db()
@@ -136,7 +135,6 @@ void
 db_load_driver()
 {
   eventAdd("Expire sent mail", expire_sentmail, NULL, 60); 
-  eventAdd("Expire akills", expire_akills, NULL, 60); 
 
   execute_callback(on_db_init_cb);
 }
@@ -739,28 +737,3 @@ expire_sentmail(void *param)
   db_exec(ret, DELETE_EXPIRED_SENT_MAIL, Mail.expire_time, CurrentTime);
 }
 
-static void
-expire_akills(void *param)
-{
-  yada_rc_t *rc, *brc;
-  struct ServiceBan akill;
-  char *setter;
-  //int ret;
-
-  db_query(rc, GET_EXPIRED_AKILL, CurrentTime);
-  if(rc == NULL)
-    return;
-
-  brc = Bind("?d?ps?ps?ps?d?d", &akill.id, &setter, &akill.mask,
-      &akill.reason, &akill.time_set, &akill.duration);
-
-  while(Fetch(rc, brc) != 0)
-  {
-    ilog(L_NOTICE, "AKill Expired: %s set by %s on %s(%s)",
-        akill.mask, setter, smalldate(akill.time_set), akill.reason);
-    db_exec(ret, DELETE_AKILL, akill.mask);
-  }
-
-  Free(brc);
-  Free(rc);
-}

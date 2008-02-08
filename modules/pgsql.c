@@ -209,10 +209,11 @@ static query_t queries[QUERY_COUNT] = {
       EXECUTE },
   { MERGE_CHACCESS, "UPDATE channel_access SET account_id=$1 WHERE account_id=$2", 
     EXECUTE },
-  { GET_EXPIRED_AKILL, "SELECT akill.id, nickname.nick, mask, reason, time, duration FROM "
+  /*{ GET_EXPIRED_AKILL, "SELECT akill.id, nickname.nick, mask, reason, time, duration FROM "
     "account JOIN nickname ON "
     "account.primary_nick=nickname.id RIGHT OUTER JOIN akill ON "
-    "akill.setter=account.id WHERE "
+    "akill.setter=account.id WHERE "*/
+  { GET_EXPIRED_AKILL, "SELECT id, setter, mask, reason, time, duration FROM akill WHERE "
     "NOT duration = 0 AND time + duration < $1", QUERY },
   { INSERT_SENT_MAIL, "INSERT INTO sent_mail (account_id, email, sent) VALUES "
       "($1, $2, $3)", EXECUTE },

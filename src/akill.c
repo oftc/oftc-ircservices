@@ -43,7 +43,8 @@ row_to_akill(row_t *row)
   sban->setter = atoi(row->cols[1]);
   DupString(sban->mask, row->cols[2]);
   DupString(sban->reason, row->cols[3]);
-  sban->duration = atoi(row->cols[4]);
+  sban->time_set = atoi(row->cols[4]);
+  sban->duration = atoi(row->cols[5]);
   sban->type = AKILL_BAN;
 
   return sban;
@@ -149,6 +150,38 @@ akill_list(dlink_list *list)
 }
 
 int
+akill_get_expired(dlink_list *list)
+{
+  result_set_t *results;
+  int error;
+  int i;
+
+  results = db_execute(GET_EXPIRED_AKILL, &error, "i", CurrentTime);
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "akill_get_expired: database error %d", error);
+    return FALSE;
+  }
+  else if(results == NULL)
+    return FALSE;
+
+  if(results->row_count == 0)
+    return FALSE;
+
+  for(i = 0; i < results->row_count; i++)
+  {
+    row_t *row = &results->rows[i];
+    struct ServiceBan *sban = row_to_akill(row);
+
+    dlinkAdd(sban, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+int
 akill_check_client(struct Service *service, struct Client *client)
 {
   dlink_list list = { 0 };
@@ -172,7 +205,7 @@ akill_check_client(struct Service *service, struct Client *client)
       return TRUE;
     }
   }
-  
+
   akill_list_free(&list);
   return FALSE;
 }
@@ -218,4 +251,10 @@ akill_find(const char *mask)
   db_free_result(results);
 
   return akill;
+}
+
+int
+akill_remove_mask(const char *mask)
+{
+  return db_execute_nonquery(DELETE_AKILL, "s", mask);
 }
