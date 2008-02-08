@@ -17,8 +17,8 @@ floodserv_la_SOURCES=floodserv.c
 irc_la_SOURCES=irc.c
 oftc_la_SOURCES=oftc.c
 pgsql_la_SOURCES=pgsql.c
-pgsql_la_CFLAGS=@LIBPQ_INCLUDE@
-pgsql_la_LDLIBS=@LIBPQ_LIBS@
+pgsql_la_CFLAGS=@POSTGRESQL_CFLAGS@
+pgsql_la_LIBADD=@POSTGRESQL_LDFLAGS@
 
 install-exec-local:
 	rm -f $(DESTDIR)/$(pkglibdir)/*.la $(DESTDIR)/$(pkblibdir)/*.a

@@ -51,25 +51,73 @@ AC_DEFUN([AX_CHECK_LIB_YADA],[
   AC_CHECK_HEADER([yada.h],,[AC_MSG_ERROR([yada header files not found])])
   AC_CHECK_LIB([yada],[yada_init],,[AC_MSG_ERROR([yada library not found])])
 ])dnl }}}
-
 dnl {{{ ax_check_lib_pgsql
+dnl  License
+dnl  Copyright © 2008 Mateusz Loskot <mateusz@loskot.net>
+dnl
+dnl  Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved.
+dnl
+dnl  http://autoconf-archive.cryp.to/ax_lib_postgresql.html
 AC_DEFUN([AX_CHECK_LIB_PGSQL],
 [
-  AC_SEARCH_LIBS([PQconnectdb],[pq],[have_pgsql="yes"],[have_pgsql="no"])
-  if test "$have_pgsql" = "yes"; then
-    LIBPQ_LIBS="-lpq"
-    LIBPQ_INCLUDE="-I/usr/include/postgresql/"
-    LIBPQ_LDFLAGS="-L/usr/lib -lpq"
-    AC_SUBST(LIBPQ_LIBS)
-    AC_SUBST(LIBPQ_INCLUDE)
-    AC_SUBST(LIBPQ_LDFLAGS)
-  else
-    LIBPQ_LIBS=""
-    LIBPQ_LDFLAGS=""
-    LIBPQ_INCLUDE=""
-  fi
-  ])dnl}}}
+  AC_ARG_WITH([postgresql],
+    AC_HELP_STRING([--with-postgresql=@<:@ARG@:>@],
+      [use PostgreSQL library @<:@default=yes@:>@, optionally specify path to pg_config]
+    ),
+    [
+    if test "$withval" = "no"; then
+      want_postgresql="no"
+    elif test "$withval" = "yes"; then
+      want_postgresql="yes"
+    else
+      want_postgresql="yes"
+      PG_CONFIG="$withval"
+    fi
+    ],
+    [want_postgresql="yes"]
+  )
+  
+  POSTGRESQL_CFLAGS=""
+  POSTGRESQL_LDFLAGS=""
+  POSTGRESQL_VERSION=""
 
+  dnl Check PostgreSQL libraries (libpq)
+
+  if test "$want_postgresql" = "yes"; then
+    if test -z "$PG_CONFIG" -o test; then
+      AC_PATH_PROG([PG_CONFIG], [pg_config], [])
+    fi
+
+    if test ! -x "$PG_CONFIG"; then
+      AC_MSG_ERROR([$PG_CONFIG does not exist or it is not an exectuable file])
+      PG_CONFIG="no"
+      found_postgresql="no"
+    fi
+
+    if test "$PG_CONFIG" != "no"; then
+      AC_MSG_CHECKING([for PostgreSQL libraries])
+
+      POSTGRESQL_CFLAGS="-I`$PG_CONFIG --includedir` "
+      POSTGRESQL_LDFLAGS="-L`$PG_CONFIG --libdir` -lpq"
+
+      POSTGRESQL_VERSION=`$PG_CONFIG --version | sed -e 's#PostgreSQL ##'`
+      
+      AC_DEFINE([HAVE_POSTGRESQL], [1],
+        [Define to 1 if PostgreSQL libraries are available])
+
+      found_postgresql="yes"
+      AC_MSG_RESULT([yes])
+    else
+      found_postgresql="no"
+      AC_MSG_RESULT([no])
+    fi
+  fi
+
+  AC_SUBST([POSTGRESQL_VERSION])
+  AC_SUBST([POSTGRESQL_CFLAGS])
+  AC_SUBST([POSTGRESQL_LDFLAGS])
+])
+dnl}}}
 dnl {{{ ax_arg_enable_ioloop_mechanism (FIXME)
 AC_DEFUN([AX_ARG_ENABLE_IOLOOP_MECHANISM],[
   dnl {{{ allow the user to specify desired mechanism
