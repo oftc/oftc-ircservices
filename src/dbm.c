@@ -51,7 +51,7 @@ init_db()
   char foo[128];
   char cstring[IRC_BUFSIZE];
 
-  strcpy(foo, "libpgsql.la");
+  strcpy(foo, "pgsql.la");
 
   if(Database.port != 0)
     snprintf(port, 127, "%d", Database.port);
@@ -84,7 +84,7 @@ cleanup_db()
 {
   struct Module *mod;
 
-  mod = find_module("libpgsql.la", 0);
+  mod = find_module("pgsql.la", 0);
   unload_module(mod);
   fbclose(db_log_fb);
 }
