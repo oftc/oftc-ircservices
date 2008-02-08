@@ -7,7 +7,7 @@ endif
 bin_PROGRAMS=services
 services_SOURCES=channel.c channel_mode.c conf.c client.c crypt.c connection.c dbm.c hash.c hostmask.c interface.c language.c m_error.c packet.c parse.c  services.c send.c mqueue.c nickname.c akill.c jupe.c dbchannel.c
 services_LDADD=conf/libconf.a $(top_srcdir)/libio/libio.a
-services_LDFLAGS=@LIBLTDL@ @LIBPQ_LDFLAGS@ @RUBY_LDFLAGS@ -export-dynamic
+services_LDFLAGS=@LIBLTDL@ @RUBY_LDFLAGS@ -export-dynamic
 if USE_RUBY
 services_LDADD+=ruby_module/libruby_module.a
 endif
