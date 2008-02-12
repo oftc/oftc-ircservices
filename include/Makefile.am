@@ -3,6 +3,7 @@ MAINTAINERCLEANFILES=Makefile.in setup.h.in setup.h.in~
 SUBDIRS=conf
 noinst_HEADERS= akick.h						\
 								akill.h						\
+								chanaccess.h			\
 								channel.h 				\
 								channel_mode.h		\
 								chanserv.h				\

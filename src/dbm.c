@@ -307,7 +307,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
 {
   yada_rc_t *rc, *brc;
   char *strval = (char*)*entry; 
-  struct ChanAccess *caval;
   struct InfoChanList *info;
   struct JupeEntry *jval;
   unsigned int query;
@@ -323,14 +322,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       query = GET_NICK_LINKS;
       *entry = strval;
       brc = Bind("?ps", entry);
-      break;
-    case CHACCESS_LIST:
-      query = GET_CHAN_ACCESSES;
-
-      caval = MyMalloc(sizeof(struct ChanAccess));
-      *entry = caval;
-      brc = Bind("?d?d?d?d", &caval->id, &caval->channel, &caval->account,
-          &caval->level);
       break;
     case NICKCHAN_LIST:
       query = GET_NICK_CHAN_INFO;
@@ -429,7 +420,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
 void *
 db_list_next(void *result, unsigned int type, void **entry)
 {
-  struct ChanAccess *caval;
   struct InfoChanList *info;
   struct JupeEntry *jval;
   char *strval = (char*)*entry; 
@@ -450,10 +440,6 @@ db_list_next(void *result, unsigned int type, void **entry)
     case CHAN_LIST_OPER:
     case CHAN_FORBID_LIST:
       *entry = strval;
-      break;
-    case CHACCESS_LIST:
-      caval = MyMalloc(sizeof(struct ChanAccess));
-      *entry = caval;
       break;
     case NICKCHAN_LIST:
       info = MyMalloc(sizeof(struct InfoChanList));
@@ -518,33 +504,6 @@ db_list_del_index(unsigned int type, unsigned int id, unsigned int index)
     return 0;
 
   return ret;
-}
-
-struct ChanAccess *
-db_find_chanaccess(unsigned int channel, unsigned int account)
-{
-  yada_rc_t *rc, *brc;
-  struct ChanAccess *access = NULL;
-  
-  db_query(rc, GET_CHAN_ACCESS, channel, account);
-  
-  if(rc == NULL)
-    return NULL;
-
-  access = MyMalloc(sizeof(struct ChanAccess));
-  brc = Bind("?d?d?d?d", &access->id, &access->channel, &access->account, 
-      &access->level);
-
-  if(Fetch(rc, brc) == 0)
-  {
-    MyFree(access);
-    access = NULL;
-  }
-
-  Free(rc);
-  Free(brc);
-
-  return access;
 }
 
 struct JupeEntry *

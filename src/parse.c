@@ -40,6 +40,7 @@
 #include "dbchannel.h"
 #include "nickserv.h"
 #include "conf/logging.h"
+#include "chanaccess.h"
 
 /*
  * (based on orabidoo's parser code)nick_id
@@ -469,7 +470,7 @@ handle_services_command(struct ServiceMessage *pmptr,
       level = CHUSER_FLAG;
     else
     {
-      access = db_find_chanaccess(regchptr->id, from->nickname->id);
+      access = chanaccess_find(regchptr->id, from->nickname->id);
       if(access == NULL)
         level = CHUSER_FLAG;
       else

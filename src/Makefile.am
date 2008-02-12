@@ -7,6 +7,7 @@ endif
 bin_PROGRAMS=services
 services_SOURCES= akick.c					\
 									akill.c					\
+									chanaccess.c		\
 									channel.c				\
 									channel_mode.c	\
 									conf.c					\

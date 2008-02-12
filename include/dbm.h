@@ -231,7 +231,6 @@ char *db_get_string(const char *, unsigned int, const char *);
 
 int db_is_chan_forbid(const char *);
 
-struct ChanAccess *db_find_chanaccess(unsigned int, unsigned int);
 struct JupeEntry  *db_find_jupe(const char *);
 
 int   db_list_add(unsigned int, const void *);

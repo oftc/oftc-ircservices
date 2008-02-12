@@ -39,6 +39,7 @@
 #include "nickname.h"
 #include "nickserv.h"
 #include "akick.h"
+#include "chanaccess.h"
 
 static struct Service *chanserv = NULL;
 static struct Client *chanserv_client = NULL;
@@ -557,7 +558,7 @@ m_info(struct Service *service, struct Client *client,
   regchptr = dbchannel_find(parv[1]);
 
   if(client->nickname)
-    access = db_find_chanaccess(regchptr->id, client->nickname->id);
+    access = chanaccess_find(regchptr->id, client->nickname->id);
   
   reply_user(service, service, client, CS_INFO_CHAN_START, regchptr->channel);
   reply_time(service, client, CS_INFO_REGTIME_FULL, regchptr->regtime);
@@ -689,7 +690,7 @@ m_access_add(struct Service *service, struct Client *client,
   access->account = account;
   access->level   = level;
 
-  if((oldaccess = db_find_chanaccess(access->channel, access->account)) != NULL)
+  if((oldaccess = chanaccess_find(access->channel, access->account)) != NULL)
   {
     if(oldaccess->level == MASTER_FLAG && db_get_num_masters(regchptr->id) <= 1)
     {
@@ -701,11 +702,11 @@ m_access_add(struct Service *service, struct Client *client,
       MyFree(access);
       return;
     }
-    db_list_del_index(DELETE_CHAN_ACCESS, access->account, access->channel);
+    chanaccess_remove(access);
     MyFree(oldaccess);
   }
- 
-  if(db_list_add(CHACCESS_LIST, access))
+
+  if(chanaccess_add(access))
   {
     reply_user(service, service, client, CS_ACCESS_ADDOK, parv[2], parv[1],
         level_added);
@@ -746,7 +747,7 @@ m_access_del(struct Service *service, struct Client *client,
     return;
   }
 
-  access = db_find_chanaccess(regchptr->id, nickid);
+  access = chanaccess_find(regchptr->id, nickid);
   if(access == NULL)
   {
     reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
@@ -757,7 +758,7 @@ m_access_del(struct Service *service, struct Client *client,
 
   if(nickid != client->nickname->id)
   {
-    myaccess = db_find_chanaccess(regchptr->id, client->nickname->id);
+    myaccess = chanaccess_find(regchptr->id, client->nickname->id);
     if(myaccess->level != MASTER_FLAG)
     {
       reply_user(service, NULL, client, SERV_NO_ACCESS_CHAN, "DEL",
@@ -779,9 +780,7 @@ m_access_del(struct Service *service, struct Client *client,
     return;
   }
 
-  MyFree(access);
-
-  if(db_list_del_index(DELETE_CHAN_ACCESS, nickid, regchptr->id))
+  if(chanaccess_remove(access))
   {
     reply_user(service, service, client, CS_ACCESS_DELOK, parv[2], parv[1]);
     ilog(L_DEBUG, "%s (%s@%s) removed AE %s from %s", 
@@ -791,6 +790,8 @@ m_access_del(struct Service *service, struct Client *client,
   }
   else
     reply_user(service, service, client, CS_ACCESS_DELFAIL, parv[2], parv[1]);
+
+  MyFree(access);
 
   if (chptr == NULL)
     free_regchan(regchptr);
@@ -803,15 +804,15 @@ m_access_list(struct Service *service, struct Client *client,
   struct ChanAccess *access = NULL;
   struct Channel *chptr;
   struct RegChannel *regchptr;
-  void *handle, *first;
   char *nick;
   int i = 1;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  first = handle = db_list_first(CHACCESS_LIST, regchptr->id, (void**)&access);
-  if (handle == NULL)
+  if(chanaccess_list(regchptr->id, &list) == 0)
   {
     reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
     MyFree(access);
@@ -820,9 +821,10 @@ m_access_list(struct Service *service, struct Client *client,
     return;
   }
 
-  while(handle != NULL)
+  DLINK_FOREACH(ptr, list.head)
   {
     char *level;
+    access = (struct ChanAccess *)ptr->data;
 
     switch(access->level)
     {
@@ -844,14 +846,12 @@ m_access_list(struct Service *service, struct Client *client,
     nick = nickname_nick_from_id(access->account, TRUE);
     reply_user(service, service, client, CS_ACCESS_LIST, i++, nick, level);
 
-    MyFree(access);
     MyFree(nick);
-    handle = db_list_next(handle, CHACCESS_LIST, (void **)&access);
   }
 
-  MyFree(access);
-  db_list_done(first);
   reply_user(service, service, client, CS_ACCESS_LISTEND, regchptr->channel);
+
+  chanaccess_list_free(&list);
 
   if (chptr == NULL)
     free_regchan(regchptr);
@@ -1675,7 +1675,7 @@ m_voice(struct Service *service, struct Client *client, int parc, char *parv[])
   }
 
   regchptr = chptr->regchan;
-  access = db_find_chanaccess(regchptr->id, client->nickname->id);
+  access = chanaccess_find(regchptr->id, client->nickname->id);
 
   if(parv[2] == NULL)
     target = client;
@@ -1725,7 +1725,7 @@ m_devoice(struct Service *service, struct Client *client, int parc, char *parv[]
   }
 
   regchptr = chptr->regchan;
-  access = db_find_chanaccess(regchptr->id, client->nickname->id);
+  access = chanaccess_find(regchptr->id, client->nickname->id);
 
   if(parv[2] == NULL)
     target = client;
@@ -2295,7 +2295,7 @@ cs_on_client_join(va_list args)
     level = CHUSER_FLAG;
   else
   {
-    access = db_find_chanaccess(regchptr->id, source_p->nickname->id);
+    access = chanaccess_find(regchptr->id, source_p->nickname->id);
     if(access == NULL)
       level = CHIDENTIFIED_FLAG;
     else

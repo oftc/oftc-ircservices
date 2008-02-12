@@ -241,19 +241,28 @@ akick_add(struct ServiceBan *akick)
 int
 akick_remove_index(unsigned int channel, unsigned int index)
 {
-  return db_execute_nonquery(DELETE_AKICK_IDX, "ii", channel, index);
+  int ret = db_execute_nonquery(DELETE_AKICK_IDX, "ii", index, channel);
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
 }
 
 int
 akick_remove_mask(unsigned int channel, const char *mask)
 {
-  return db_execute_nonquery(DELETE_AKICK_MASK, "is", channel, mask);
+  int ret = db_execute_nonquery(DELETE_AKICK_MASK, "is", channel, mask);
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
 }
 
 int
 akick_remove_account(unsigned int channel, const char *account)
 {
-  return db_execute_nonquery(DELETE_AKICK_ACCOUNT, "is", channel, account);
+  int ret = db_execute_nonquery(DELETE_AKICK_ACCOUNT, "is", channel, account);
+  return ret == -1 ? FALSE : TRUE;
 }
 
 int

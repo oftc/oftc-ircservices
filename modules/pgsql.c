@@ -183,7 +183,7 @@ static query_t queries[QUERY_COUNT] = {
   { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
           "(SELECT id FROM channel_akick AS a WHERE $1 = "
           "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
-          "b.channel_id = $2) AND channel_id = $3)", EXECUTE },
+          "b.channel_id = $2) AND channel_id = $2)", EXECUTE },
   { DELETE_AKICK_MASK, "DELETE FROM channel_akick WHERE channel_id=$1 AND mask=$2", 
     EXECUTE },
   { DELETE_AKICK_ACCOUNT, "DELETE FROM channel_akick WHERE channel_id=$1 AND target IN (SELECT account_id "
@@ -530,9 +530,9 @@ pg_free_result(result_set_t *result)
 
     for(j = 0; j < row->col_count; j++)
     {
-      MyFree(row[i].cols[j]);
+      MyFree(row->cols[j]);
     }
-    MyFree(row[i].cols);
+    MyFree(row->cols);
   }
 
   MyFree(result);
