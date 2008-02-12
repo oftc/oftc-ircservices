@@ -44,7 +44,10 @@ row_to_akick(row_t *row)
   sban = MyMalloc(sizeof(struct ServiceBan));
   sban->id = atoi(row->cols[0]);
   sban->channel = atoi(row->cols[1]);
-  sban->target = atoi(row->cols[2]);
+  if(row->cols[2] != NULL)
+    sban->target = atoi(row->cols[2]);
+  else
+    sban->target = 0;
   sban->setter = atoi(row->cols[3]);
   DupString(sban->mask, row->cols[4]);
   DupString(sban->reason, row->cols[5]);
