@@ -31,5 +31,8 @@ int dbchannel_forbid(const char *);
 int dbchannel_delete_forbid(const char *);
 int dbchannel_register(struct RegChannel *, struct Nick *);
 int dbchannel_is_forbid(const char *);
+int dbchannel_masters_list(unsigned int, dlink_list *);
+void dbchannel_masters_list_free(dlink_list *);
+int dbchannel_masters_count(unsigned int, int *);
 
 #endif

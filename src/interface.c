@@ -1424,6 +1424,7 @@ check_masterless_channels(unsigned int accid)
 {
   struct InfoChanList *chan;
   void *listptr, *first;
+  int mcount;
 
   first = listptr = NULL;
 
@@ -1457,7 +1458,9 @@ check_masterless_channels(unsigned int accid)
         listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
         continue;
       }
-      if(chan->ilevel == MASTER_FLAG && db_get_num_masters(chan->channel_id) <= 1)
+      mcount = -1;
+      dbchannel_masters_count(chan->channel_id, &mcount);
+      if(chan->ilevel == MASTER_FLAG && mcount <= 1)
       {
         char *cname;
         

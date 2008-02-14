@@ -192,3 +192,66 @@ dbchannel_is_forbid(const char *channel)
   MyFree(ret);
   return TRUE;
 }
+
+int
+dbchannel_masters_list(unsigned int id, dlink_list *list)
+{
+  int error, i;
+  result_set_t *results;
+
+  results = db_execute(GET_CHAN_MASTERS, &error, "i", id);
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "dbchannel_masters_list: database error %d", error);
+    return FALSE;
+  }
+  else if(results == NULL)
+    return FALSE;
+
+  if(results->row_count == 0)
+    return FALSE;
+
+  for(i = 0; i < results->row_count; ++i)
+  {
+    char *nick;
+    row_t *row = &results->rows[i];
+    DupString(nick, row->cols[0]);
+    dlinkAdd(nick, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+void
+dbchannel_masters_list_free(dlink_list *list)
+{
+  dlink_node *ptr, *next;
+  char *tmp;
+
+  ilog(L_DEBUG, "Freeing channel master list %p of length %lu", list,
+    dlink_list_length(list));
+
+  DLINK_FOREACH_SAFE(ptr, next, list->head)
+  {
+    tmp = (char *)ptr->data;
+    MyFree(tmp);
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
+}
+
+int
+dbchannel_masters_count(unsigned int id, int *count)
+{
+  int error;
+  *count = atoi(db_execute_scalar(GET_CHAN_MASTER_COUNT, &error, "i", id));
+  if(error)
+  {
+    *count = -1;
+    return FALSE;
+  }
+
+  return TRUE;
+}

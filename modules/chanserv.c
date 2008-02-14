@@ -540,10 +540,11 @@ m_info(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct RegChannel *regchptr;
-  void *first, *listptr;  
   char buf[IRC_BUFSIZE+1] = {0};
   char *nick;
   struct ChanAccess *access = NULL;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
   if(dbchannel_is_forbid(parv[1]))
   {
@@ -576,22 +577,20 @@ m_info(struct Service *service, struct Client *client,
         regchptr->email == NULL ? "Not Set" : regchptr->email);
   }
 
-  if((listptr = db_list_first(CHMASTER_LIST, regchptr->id, 
-          (void**)&nick)) != NULL)
+  if(dbchannel_masters_list(regchptr->id, &list))
   {
     int comma = 0;
 
-    first = listptr;
-    while(listptr != NULL)
+    DLINK_FOREACH(ptr, list.head)
     {
+      nick = (char *)ptr->data;
       if(comma)
         strlcat(buf, ", ", sizeof(buf));
       strlcat(buf, nick, sizeof(buf));
-      listptr = db_list_next(listptr, CHMASTER_LIST, (void**)&nick);
       if(!comma)
         comma = 1;
     }
-    db_list_done(first);
+    dbchannel_masters_list_free(&list);
   }
 
   reply_user(service, service, client, CS_INFO_MASTERS, buf);
@@ -688,7 +687,9 @@ m_access_add(struct Service *service, struct Client *client,
 
   if((oldaccess = chanaccess_find(access->channel, access->account)) != NULL)
   {
-    if(oldaccess->level == MASTER_FLAG && db_get_num_masters(regchptr->id) <= 1)
+    int mcount = -1;
+    dbchannel_masters_count(regchptr->id, &mcount);
+    if(oldaccess->level == MASTER_FLAG && mcount <= 1)
     {
       reply_user(service, service, client, CS_ACCESS_NOMASTERS, parv[2],
           regchptr->channel);
@@ -731,6 +732,7 @@ m_access_del(struct Service *service, struct Client *client,
   struct RegChannel *regchptr;
   struct ChanAccess *access, *myaccess;
   unsigned int nickid;
+  int mcount = -1;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
@@ -754,19 +756,23 @@ m_access_del(struct Service *service, struct Client *client,
 
   if(nickid != client->nickname->id)
   {
-    myaccess = chanaccess_find(regchptr->id, client->nickname->id);
-    if(myaccess->level != MASTER_FLAG)
+    if(client->access != SUDO_FLAG)
     {
-      reply_user(service, NULL, client, SERV_NO_ACCESS_CHAN, "DEL",
-          regchptr->channel);
-      if(chptr == NULL)
-        free_regchan(regchptr);
-      MyFree(access);
-      return;
+      myaccess = chanaccess_find(regchptr->id, client->nickname->id);
+      if(myaccess->level != MASTER_FLAG)
+      {
+        reply_user(service, NULL, client, SERV_NO_ACCESS_CHAN, "DEL",
+            regchptr->channel);
+        if(chptr == NULL)
+          free_regchan(regchptr);
+        MyFree(access);
+        return;
+      }
     }
   }
 
-  if(access->level == MASTER_FLAG && db_get_num_masters(regchptr->id) <= 1)
+  dbchannel_masters_count(regchptr->id, &mcount);
+  if(access->level == MASTER_FLAG && mcount <= 1)
   {
     reply_user(service, service, client, CS_ACCESS_NOMASTERS, parv[2],
         regchptr->channel);

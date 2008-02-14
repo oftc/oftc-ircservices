@@ -330,12 +330,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = info;
       brc = Bind("?d?ps?d", &info->channel_id, &info->channel, &info->ilevel);
       break;
-    case CHMASTER_LIST:
-      query = GET_CHAN_MASTERS;
-
-      *entry = strval;
-      brc = Bind("?ps", entry);
-      break;
     case NICK_LIST:
       query = GET_NICKS;
 
@@ -432,7 +426,6 @@ db_list_next(void *result, unsigned int type, void **entry)
       break;
     case ADMIN_LIST:
     case NICKLINK_LIST:
-    case CHMASTER_LIST:
     case NICK_LIST:
     case NICK_LIST_OPER:
     case NICK_FORBID_LIST:
@@ -541,28 +534,6 @@ db_find_jupe(const char *name)
   Free(rc);
 
   return jupe;
-}
-
-int
-db_get_num_masters(unsigned int chanid)
-{
-  yada_rc_t *rc, *brc;
-  int count;
-
-  db_query(rc, GET_CHAN_MASTER_COUNT, chanid);
-
-  if(rc == NULL)
-    return 0;
-
-  brc = Bind("?d", &count);
-
-  if(Fetch(rc, brc) == 0)
-    count = 0;
-
-  Free(brc);
-  Free(rc);
-
-  return count;
 }
 
 int
