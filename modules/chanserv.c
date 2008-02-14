@@ -474,15 +474,13 @@ m_register(struct Service *service, struct Client *client,
   }
 
   /* finally, bail if this is a forbidden channel */
-  /* TODO
-  if(db_is_chan_forbid(parv[1]))
+  if(dbchannel_is_forbid(parv[1]))
   {
     reply_user(service, service, client, CS_NOREG_FORBID, parv[1]);
     ilog(L_DEBUG, "Channel REG failed for %s on %s (forbidden)", client->name, 
         parv[1]);
     return;
   }
-  */
 
   regchptr = MyMalloc(sizeof(struct RegChannel));
   strlcpy(regchptr->channel, parv[1], sizeof(regchptr->channel));
@@ -547,19 +545,17 @@ m_info(struct Service *service, struct Client *client,
   char *nick;
   struct ChanAccess *access = NULL;
 
-  /* TODO
-  if(db_is_chan_forbid(parv[1]))
+  if(dbchannel_is_forbid(parv[1]))
   {
     reply_user(service, service, client, CS_NOREG_FORBID, parv[1]);
     return;
   }
-  */
-  
+
   regchptr = dbchannel_find(parv[1]);
 
   if(client->nickname)
     access = chanaccess_find(regchptr->id, client->nickname->id);
-  
+
   reply_user(service, service, client, CS_INFO_CHAN_START, regchptr->channel);
   reply_time(service, client, CS_INFO_REGTIME_FULL, regchptr->regtime);
   if(IsOper(client) || (access != NULL && access->level >= MEMBER_FLAG))
@@ -2207,13 +2203,11 @@ m_forbid(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_unforbid(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  /* TODO
-  if(!db_is_chan_forbid(parv[1]))
+  if(!dbchannel_is_forbid(parv[1]))
   {
     reply_user(service, service, client, CS_CHAN_NOT_FORBID, parv[1]);
     return;
   }
-  */
 
   if(!dbchannel_delete_forbid(parv[1]))
   {
@@ -2259,8 +2253,8 @@ cs_on_client_join(va_list args)
 {
   struct Client *source_p = va_arg(args, struct Client *);
   char          *name     = va_arg(args, char *);
-  
-  //char tmp_name[CHANNELLEN+1];
+
+  char tmp_name[CHANNELLEN+1];
   struct RegChannel *regchptr;
   struct Channel *chptr;
   struct ChanAccess *access;
@@ -2274,8 +2268,7 @@ cs_on_client_join(va_list args)
     return pass_callback(cs_join_hook, source_p, name);
   }
 
-  /* TODO
-  if(db_is_chan_forbid(name))
+  if(dbchannel_is_forbid(name))
   {
     strlcpy(tmp_name, name, CHANNELLEN);
     kick_user(chanserv, chptr, source_p->name, 
@@ -2283,7 +2276,6 @@ cs_on_client_join(va_list args)
     send_resv(chanserv, tmp_name, "Forbidden channel", ServicesInfo.def_forbid_dur);
     return NULL;
   }
-  */
 
   if(akick_check_client(chanserv, chptr, source_p))
     return pass_callback(cs_join_hook, source_p, name);

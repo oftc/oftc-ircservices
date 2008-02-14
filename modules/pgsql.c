@@ -534,7 +534,7 @@ pg_free_result(result_set_t *result)
     }
     MyFree(row->cols);
   }
-
+  MyFree(result->rows);
   MyFree(result);
 }
 

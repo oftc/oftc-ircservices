@@ -174,3 +174,21 @@ failure:
   db_rollback_transaction();
   return FALSE;
 }
+
+int
+dbchannel_is_forbid(const char *channel)
+{
+  int error;
+  char *ret = db_execute_scalar(GET_CHAN_FORBID, &error, "s", channel);
+  if(error)
+  {
+    ilog(L_CRIT, "dbchannel_is_forbid: Database error %d", error);
+    return FALSE;
+  }
+
+  if(ret == NULL)
+    return FALSE;
+
+  MyFree(ret);
+  return TRUE;
+}

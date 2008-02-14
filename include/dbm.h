@@ -229,8 +229,6 @@ int db_set_number(unsigned int, unsigned int, unsigned long);
 int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
 
-int db_is_chan_forbid(const char *);
-
 struct JupeEntry  *db_find_jupe(const char *);
 
 int   db_list_add(unsigned int, const void *);

@@ -30,5 +30,6 @@ int dbchannel_delete(struct RegChannel *);
 int dbchannel_forbid(const char *);
 int dbchannel_delete_forbid(const char *);
 int dbchannel_register(struct RegChannel *, struct Nick *);
+int dbchannel_is_forbid(const char *);
 
 #endif
