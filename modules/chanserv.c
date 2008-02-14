@@ -590,7 +590,7 @@ m_info(struct Service *service, struct Client *client,
       if(!comma)
         comma = 1;
     }
-    dbchannel_masters_list_free(&list);
+    dbchannel_list_free(&list);
   }
 
   reply_user(service, service, client, CS_INFO_MASTERS, buf);
@@ -2080,14 +2080,15 @@ static void
 m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   char *chan;
-  void *listptr, *first;
   int count = 0;
-  int query = CHAN_LIST;
+  int qcount = 0;
+  dlink_list list = { 0 };
+  dlink_node *ptr;
 
   if(parc == 2 && client->access >= OPER_FLAG)
   {
     if(irccmp(parv[2], "FORBID") == 0)
-      query = CHAN_FORBID_LIST;
+      qcount = dbchannel_list_forbid(&list);
     else
     {
       reply_user(service, service, client, CS_LIST_INVALID_OPTION, parv[2]);
@@ -2095,19 +2096,21 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
     }
   }
 
-  if(query == CHAN_LIST && client->access >= OPER_FLAG)
-    query = CHAN_LIST_OPER;
+  if(qcount == 0 && client->access >= OPER_FLAG)
+    qcount = dbchannel_list_all(&list);
+  else
+    qcount = dbchannel_list_regular(&list);
 
-  if((listptr = db_list_first(query, 0, (void**)&chan)) == NULL)
+  if(qcount == 0)
   {
+    dbchannel_list_free(&list);
     reply_user(service, service, client, CS_LIST_NO_MATCHES, parv[1]);
     return;
   }
 
-  first = listptr;
-
-  while(listptr != NULL)
+  DLINK_FOREACH(ptr, list.head)
   {
+    chan = (char *)ptr->data;
     if(match(parv[1], chan))
     {
       count++;
@@ -2115,10 +2118,8 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
     }
     if(count == 50)
       break;
-    listptr = db_list_next(listptr, query, (void**)&chan);
   }
-
-  db_list_done(first);
+  dbchannel_list_free(&list);
 
   reply_user(service, service, client, CS_LIST_END, count);
 }

@@ -193,16 +193,16 @@ dbchannel_is_forbid(const char *channel)
   return TRUE;
 }
 
-int
-dbchannel_masters_list(unsigned int id, dlink_list *list)
+static int
+dbchannel_list(unsigned int query, dlink_list *list)
 {
   int error, i;
   result_set_t *results;
 
-  results = db_execute(GET_CHAN_MASTERS, &error, "i", id);
+  results = db_execute(query, &error, "", 0);
   if(results == NULL && error != 0)
   {
-    ilog(L_CRIT, "dbchannel_masters_list: database error %d", error);
+    ilog(L_CRIT, "dbchannel_list: query %d database error %d", query, error);
     return FALSE;
   }
   else if(results == NULL)
@@ -213,10 +213,10 @@ dbchannel_masters_list(unsigned int id, dlink_list *list)
 
   for(i = 0; i < results->row_count; ++i)
   {
-    char *nick;
+    char *chan;
     row_t *row = &results->rows[i];
-    DupString(nick, row->cols[0]);
-    dlinkAdd(nick, make_dlink_node(), list);
+    DupString(chan, row->cols[0]);
+    dlinkAdd(chan, make_dlink_node(), list);
   }
 
   db_free_result(results);
@@ -224,13 +224,37 @@ dbchannel_masters_list(unsigned int id, dlink_list *list)
   return dlink_list_length(list);
 }
 
+int
+dbchannel_list_all(dlink_list *list)
+{
+  return dbchannel_list(GET_CHANNELS_OPER, list);
+}
+
+int
+dbchannel_list_regular(dlink_list *list)
+{
+  return dbchannel_list(GET_CHANNELS, list);
+}
+
+int
+dbchannel_list_forbid(dlink_list *list)
+{
+  return dbchannel_list(GET_CHANNEL_FORBID_LIST, list);
+}
+
+int
+dbchannel_masters_list(unsigned int id, dlink_list *list)
+{
+  return dbchannel_list(GET_CHAN_MASTERS, list);
+}
+
 void
-dbchannel_masters_list_free(dlink_list *list)
+dbchannel_list_free(dlink_list *list)
 {
   dlink_node *ptr, *next;
   char *tmp;
 
-  ilog(L_DEBUG, "Freeing channel master list %p of length %lu", list,
+  ilog(L_DEBUG, "Freeing channel list %p of length %lu", list,
     dlink_list_length(list));
 
   DLINK_FOREACH_SAFE(ptr, next, list->head)

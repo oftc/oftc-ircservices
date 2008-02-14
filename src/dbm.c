@@ -348,25 +348,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = strval;
       brc = Bind("?ps", entry);
       break;
-    case CHAN_LIST:
-      query = GET_CHANNELS;
-
-      *entry = strval;
-      brc = Bind("?ps", entry);
-      break;
-    case CHAN_LIST_OPER:
-      query = GET_CHANNELS_OPER;
-
-      *entry = strval;
-      brc = Bind("?ps", entry);
-      break;
-
-    case CHAN_FORBID_LIST:
-      query = GET_CHANNEL_FORBID_LIST;
-
-      *entry = strval;
-      brc = Bind("?ps", entry);
-      break;
     default:
       assert(0 == 1);
       break;
@@ -429,9 +410,6 @@ db_list_next(void *result, unsigned int type, void **entry)
     case NICK_LIST:
     case NICK_LIST_OPER:
     case NICK_FORBID_LIST:
-    case CHAN_LIST:
-    case CHAN_LIST_OPER:
-    case CHAN_FORBID_LIST:
       *entry = strval;
       break;
     case NICKCHAN_LIST:
