@@ -247,7 +247,8 @@ int db_is_mailsent(unsigned int, const char *);
 void db_reopen_log();
 void db_log(const char *, ...);
 
-int db_string_list(unsigned int, dlink_list *, const char *, ...);
+int db_string_list(unsigned int, dlink_list *);
+int db_string_list_by_id(unsigned int, dlink_list *, unsigned int);
 void db_string_list_free(dlink_list *);
 
 #endif /* INCLUDED_dbm_h */

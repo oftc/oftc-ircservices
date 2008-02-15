@@ -196,7 +196,7 @@ dbchannel_is_forbid(const char *channel)
 int
 dbchannel_list_all(dlink_list *list)
 {
-  return db_string_list(GET_CHANNELS_OPER, list, NULL);
+  return db_string_list(GET_CHANNELS_OPER, list);
 }
 
 void
@@ -208,7 +208,7 @@ dbchannel_list_all_free(dlink_list *list)
 int
 dbchannel_list_regular(dlink_list *list)
 {
-  return db_string_list(GET_CHANNELS, list, NULL);
+  return db_string_list(GET_CHANNELS, list);
 }
 
 void
@@ -220,7 +220,7 @@ dbchannel_list_regular_free(dlink_list *list)
 int
 dbchannel_list_forbid(dlink_list *list)
 {
-  return db_string_list(GET_CHANNEL_FORBID_LIST, list, NULL);
+  return db_string_list(GET_CHANNEL_FORBID_LIST, list);
 }
 
 void
@@ -232,7 +232,7 @@ dbchannel_list_forbid_free(dlink_list *list)
 int
 dbchannel_masters_list(unsigned int id, dlink_list *list)
 {
-  return db_string_list(GET_CHAN_MASTERS, list, NULL);
+  return db_string_list(GET_CHAN_MASTERS, list);
 }
 
 void

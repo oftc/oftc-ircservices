@@ -531,22 +531,12 @@ expire_sentmail(void *param)
 }
 
 int
-db_string_list(unsigned int query, dlink_list *list, const char *fmt, ...)
+db_string_list(unsigned int query, dlink_list *list)
 {
   int error, i;
   result_set_t *results;
 
-  if(fmt == NULL)
-  {
-    results = db_execute(query, &error, "", 0);
-  }
-  else
-  {
-    va_list args;
-    va_start(args, fmt);
-    results = db_execute(query, &error, fmt, args);
-    va_end(args);
-  }
+  results = db_execute(query, &error, "", 0);
 
   if(results == NULL && error != 0)
   {
@@ -561,10 +551,42 @@ db_string_list(unsigned int query, dlink_list *list, const char *fmt, ...)
 
   for(i = 0; i < results->row_count; ++i)
   {
-    char *chan;
+    char *tmp;
     row_t *row = &results->rows[i];
-    DupString(chan, row->cols[0]);
-    dlinkAdd(chan, make_dlink_node(), list);
+    DupString(tmp, row->cols[0]);
+    dlinkAdd(tmp, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+int
+db_string_list_by_id(unsigned int query, dlink_list *list, unsigned int id)
+{
+  int error, i;
+  result_set_t *results;
+
+  results = db_execute(query, &error, "i", id);
+
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "db_string_list_by_id: query %d database error %d", query, error);
+    return FALSE;
+  }
+  else if(results == NULL)
+    return FALSE;
+
+  if(results->row_count == 0)
+    return FALSE;
+
+  for(i = 0; i < results->row_count; ++i)
+  {
+    char *tmp;
+    row_t *row = &results->rows[i];
+    DupString(tmp, row->cols[0]);
+    dlinkAdd(tmp, make_dlink_node(), list);
   }
 
   db_free_result(results);

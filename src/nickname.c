@@ -803,7 +803,7 @@ nickname_cert_check(struct Nick *nick, const char *value)
 int
 nickname_link_list(unsigned int id, dlink_list *list)
 {
-  return db_string_list(GET_NICK_LINKS, list, "i", id);
+  return db_string_list_by_id(GET_NICK_LINKS, list, id);
 }
 
 void

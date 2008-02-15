@@ -1218,6 +1218,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   char *link;
   char buf[IRC_BUFSIZE+1] = {0};
   int online = 0;
+  int comma;
   dlink_node *ptr;
   dlink_list list = { 0 };
 
@@ -1261,10 +1262,10 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       nick->last_realname != NULL ? nick->last_realname : "Unknown");
 
   nickname_link_list(nick->id, &list);
+  comma = 0;
   DLINK_FOREACH(ptr, list.head)
   {
     link = (char *)ptr->data;
-    int comma = 0;
 
     if(irccmp(link, name) == 0)
     {
