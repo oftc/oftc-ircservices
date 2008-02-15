@@ -579,3 +579,51 @@ expire_sentmail(void *param)
   db_exec(ret, DELETE_EXPIRED_SENT_MAIL, Mail.expire_time, CurrentTime);
 }
 
+int
+db_string_list(unsigned int query, dlink_list *list)
+{
+  int error, i;
+  result_set_t *results;
+
+  results = db_execute(query, &error, "", 0);
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "db_string_list: query %d database error %d", query, error);
+    return FALSE;
+  }
+  else if(results == NULL)
+    return FALSE;
+
+  if(results->row_count == 0)
+    return FALSE;
+
+  for(i = 0; i < results->row_count; ++i)
+  {
+    char *chan;
+    row_t *row = &results->rows[i];
+    DupString(chan, row->cols[0]);
+    dlinkAdd(chan, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+void
+db_string_list_free(dlink_list *list)
+{
+  dlink_node *ptr, *next;
+  char *tmp;
+
+  ilog(L_DEBUG, "Freeing string list %p of length %lu", list,
+    dlink_list_length(list));
+
+  DLINK_FOREACH_SAFE(ptr, next, list->head)
+  {
+    tmp = (char *)ptr->data;
+    MyFree(tmp);
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
+}

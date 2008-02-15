@@ -590,7 +590,7 @@ m_info(struct Service *service, struct Client *client,
       if(!comma)
         comma = 1;
     }
-    dbchannel_list_free(&list);
+    dbchannel_masters_list_free(&list);
   }
 
   reply_user(service, service, client, CS_INFO_MASTERS, buf);
@@ -2103,7 +2103,10 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(qcount == 0)
   {
-    dbchannel_list_free(&list);
+    /* XXX TODO FIXME
+     * cache which method was called
+     */
+    db_string_list_free(&list);
     reply_user(service, service, client, CS_LIST_NO_MATCHES, parv[1]);
     return;
   }
@@ -2119,7 +2122,10 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
     if(count == 50)
       break;
   }
-  dbchannel_list_free(&list);
+  /* XXX TODO FIXME
+   * cache which method was called
+   */
+  db_string_list_free(&list);
 
   reply_user(service, service, client, CS_LIST_END, count);
 }

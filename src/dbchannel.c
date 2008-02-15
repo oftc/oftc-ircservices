@@ -193,77 +193,52 @@ dbchannel_is_forbid(const char *channel)
   return TRUE;
 }
 
-static int
-dbchannel_list(unsigned int query, dlink_list *list)
-{
-  int error, i;
-  result_set_t *results;
-
-  results = db_execute(query, &error, "", 0);
-  if(results == NULL && error != 0)
-  {
-    ilog(L_CRIT, "dbchannel_list: query %d database error %d", query, error);
-    return FALSE;
-  }
-  else if(results == NULL)
-    return FALSE;
-
-  if(results->row_count == 0)
-    return FALSE;
-
-  for(i = 0; i < results->row_count; ++i)
-  {
-    char *chan;
-    row_t *row = &results->rows[i];
-    DupString(chan, row->cols[0]);
-    dlinkAdd(chan, make_dlink_node(), list);
-  }
-
-  db_free_result(results);
-
-  return dlink_list_length(list);
-}
-
 int
 dbchannel_list_all(dlink_list *list)
 {
-  return dbchannel_list(GET_CHANNELS_OPER, list);
+  return db_string_list(GET_CHANNELS_OPER, list);
+}
+
+void
+dbchannel_list_all_free(dlink_list *list)
+{
+  db_string_list_free(list);
 }
 
 int
 dbchannel_list_regular(dlink_list *list)
 {
-  return dbchannel_list(GET_CHANNELS, list);
+  return db_string_list(GET_CHANNELS, list);
+}
+
+void
+dbchannel_list_regular_free(dlink_list *list)
+{
+  db_string_list_free(list);
 }
 
 int
 dbchannel_list_forbid(dlink_list *list)
 {
-  return dbchannel_list(GET_CHANNEL_FORBID_LIST, list);
+  return db_string_list(GET_CHANNEL_FORBID_LIST, list);
+}
+
+void
+dbchannel_list_forbid_free(dlink_list *list)
+{
+  db_string_list_free(list);
 }
 
 int
 dbchannel_masters_list(unsigned int id, dlink_list *list)
 {
-  return dbchannel_list(GET_CHAN_MASTERS, list);
+  return db_string_list(GET_CHAN_MASTERS, list);
 }
 
 void
-dbchannel_list_free(dlink_list *list)
+dbchannel_masters_list_free(dlink_list *list)
 {
-  dlink_node *ptr, *next;
-  char *tmp;
-
-  ilog(L_DEBUG, "Freeing channel list %p of length %lu", list,
-    dlink_list_length(list));
-
-  DLINK_FOREACH_SAFE(ptr, next, list->head)
-  {
-    tmp = (char *)ptr->data;
-    MyFree(tmp);
-    dlinkDelete(ptr, list);
-    free_dlink_node(ptr);
-  }
+  db_string_list_free(list);
 }
 
 int
