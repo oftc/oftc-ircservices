@@ -30,6 +30,7 @@
 #include "language.h"
 #include "chanserv.h"
 #include "interface.h"
+#include "msg.h"
 
 /* 
  * row_to_nickname: 
@@ -697,7 +698,7 @@ nickname_accesslist_check(struct Nick *nick, const char *value)
 
   DLINK_FOREACH(ptr, list.head)
   {
-    struct AccessEntry *entry = (struct AccessEntry *)ptr;
+    struct AccessEntry *entry = (struct AccessEntry *)ptr->data;
 
     if(match(entry->value, value))
     {
@@ -785,7 +786,7 @@ nickname_cert_check(struct Nick *nick, const char *value)
 
   DLINK_FOREACH(ptr, list.head)
   {
-    struct AccessEntry *entry = (struct AccessEntry *)ptr;
+    struct AccessEntry *entry = (struct AccessEntry *)ptr->data;
 
     if(match(entry->value, value))
     {
@@ -797,4 +798,89 @@ nickname_cert_check(struct Nick *nick, const char *value)
   nickname_certlist_free(&list);
 
   return found;
+}
+
+int
+nickname_link_list(unsigned int id, dlink_list *list)
+{
+  return db_string_list(GET_NICK_LINKS, list, "i", id);
+}
+
+void
+nickname_link_list_free(dlink_list *list)
+{
+  db_string_list_free(list);
+}
+
+static struct InfoChanList *
+row_to_infochanlist(row_t *row)
+{
+  struct InfoChanList *chan = MyMalloc(sizeof(struct InfoChanList));
+  chan->channel_id = atoi(row->cols[0]);
+  DupString(chan->channel, row->cols[1]);
+  chan->ilevel = atoi(row->cols[2]);
+  switch(chan->ilevel)
+  {
+    case MASTER_FLAG:
+      chan->level = "MASTER";
+      break;
+    case CHANOP_FLAG:
+      chan->level = "CHANOP";
+      break;
+    case MEMBER_FLAG:
+      chan->level = "MEMBER";
+      break;
+  }
+  return chan;
+}
+
+int
+nickname_chan_list(unsigned int id, dlink_list *list)
+{
+  int error, i;
+  result_set_t *results;
+
+  results = db_execute(GET_NICK_CHAN_INFO, &error, "i", id);
+
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "nickname_chan_list: database error %d", error);
+    return FALSE;
+  }
+  else if(results == NULL)
+    return FALSE;
+
+  if(results->row_count == 0)
+    return FALSE;
+
+  for(i = 0; i < results->row_count; ++i)
+  {
+    struct InfoChanList *chan;
+    row_t *row = &results->rows[i];
+    chan = row_to_infochanlist(row);
+    dlinkAdd(chan, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+void
+nickname_chan_list_free(dlink_list *list)
+{
+  dlink_node *ptr, *next;
+  struct InfoChanList *chan;
+
+  ilog(L_DEBUG, "Freeing string list %p of length %lu", list,
+    dlink_list_length(list));
+
+  DLINK_FOREACH_SAFE(ptr, next, list->head)
+  {
+    chan = (struct InfoChanList *)ptr->data;
+    MyFree(chan->channel);
+    MyFree(chan);
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
 }

@@ -62,4 +62,10 @@ int nickname_cert_check(struct Nick *, const char *);
 int nickname_cert_delete(struct Nick *, const char *, int);
 void nickname_certlist_free(dlink_list *);
 
+int nickname_link_list(unsigned int, dlink_list *);
+void nickname_link_list_free(dlink_list *);
+
+int nickname_chan_list(unsigned int, dlink_list *);
+void nickname_chan_list_free(dlink_list *);
+
 #endif

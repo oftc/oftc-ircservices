@@ -1217,8 +1217,9 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   char *name;
   char *link;
   char buf[IRC_BUFSIZE+1] = {0};
-  void *first, *listptr;
   int online = 0;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
   if(parc == 0)
   {
@@ -1259,38 +1260,36 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   reply_user(service, service, client, NS_INFO_START, name, 
       nick->last_realname != NULL ? nick->last_realname : "Unknown");
 
-  if((listptr = db_list_first(NICKLINK_LIST, nick->id, (void**)&link)) != NULL)
+  nickname_link_list(nick->id, &list);
+  DLINK_FOREACH(ptr, list.head)
   {
+    link = (char *)ptr->data;
     int comma = 0;
 
-    first = listptr;
-    while(listptr != NULL)
+    if(irccmp(link, name) == 0)
     {
-      if(irccmp(link, name) == 0)
+      if((target = find_client(name)) != NULL && IsIdentified(target))
       {
-        if((target = find_client(name)) != NULL && IsIdentified(target))
-        {
-          reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
-          online = 1;
-        }
-        listptr = db_list_next(listptr, NICKLINK_LIST, (void**)&link);
-        continue;
-      }
-      if((target = find_client(link)) != NULL && IsIdentified(target))
-      {
-        reply_user(service, service, client, NS_INFO_ONLINE, name, link);
+        reply_user(service, service, client, NS_INFO_ONLINE_NONICK, name);
         online = 1;
       }
-
-      if(comma)
-        strlcat(buf, ", ", sizeof(buf));
-      strlcat(buf, link, sizeof(buf));
-      listptr = db_list_next(listptr, NICKLINK_LIST, (void**)&link);
-      if(!comma)
-        comma = 1;
+      continue;
     }
-    db_list_done(first);
+
+    if((target = find_client(link)) != NULL && IsIdentified(target))
+    {
+      reply_user(service, service, client, NS_INFO_ONLINE, name, link);
+      online = 1;
+    }
+
+    if(comma)
+      strlcat(buf, ", ", sizeof(buf));
+    strlcat(buf, link, sizeof(buf));
+    if(!comma)
+      comma = 1;
   }
+
+  nickname_link_list_free(&list);
 
   if(!online)
     reply_time(service, client, NS_INFO_SEENTIME_FULL, nick->last_seen);
@@ -1330,22 +1329,17 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       MyFree(prinick);
     }
 
-    if((listptr = db_list_first(NICKCHAN_LIST, nick->id, (void**)&chan)) != NULL)
+    if(nickname_chan_list(nick->id, &list))
     {
-      first = listptr;
       reply_user(service, service, client, NS_INFO_CHANS);
-      while(listptr != NULL)
+      DLINK_FOREACH(ptr, list.head)
       {
+        chan = (struct InfoChanList *)ptr->data;
         reply_user(service, service, client, NS_INFO_CHAN, chan->channel,
             chan->level);
-        MyFree(chan);
-        listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
       }
-      MyFree(chan);
-      db_list_done(first);
+      nickname_chan_list_free(&list);
     }
-    else
-      MyFree(chan);
   }
   else if(!nick->priv)
     reply_user(service, service, client, NS_INFO_EMAIL, nick->email);

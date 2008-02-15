@@ -307,7 +307,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
 {
   yada_rc_t *rc, *brc;
   char *strval = (char*)*entry; 
-  struct InfoChanList *info;
   struct JupeEntry *jval;
   unsigned int query;
   
@@ -317,18 +316,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       query = GET_ADMINS;
       *entry = strval;
       brc = Bind("?ps", entry);
-      break;
-    case NICKLINK_LIST:
-      query = GET_NICK_LINKS;
-      *entry = strval;
-      brc = Bind("?ps", entry);
-      break;
-    case NICKCHAN_LIST:
-      query = GET_NICK_CHAN_INFO;
-
-      info = MyMalloc(sizeof(struct InfoChanList));
-      *entry = info;
-      brc = Bind("?d?ps?d", &info->channel_id, &info->channel, &info->ilevel);
       break;
     case NICK_LIST:
       query = GET_NICKS;
@@ -374,28 +361,12 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
     DupString(jval->name, jval->name);
     DupString(jval->reason, jval->reason);
   }
-  else if(type == NICKCHAN_LIST)
-  {
-    switch(info->ilevel)
-    {
-      case MASTER_FLAG:
-        info->level = "MASTER";
-        break;
-      case CHANOP_FLAG:
-        info->level = "CHANOP";
-        break;
-      case MEMBER_FLAG:
-        info->level = "MEMBER";
-        break;
-    }
-  }
   return NULL;
 }
 
 void *
 db_list_next(void *result, unsigned int type, void **entry)
 {
-  struct InfoChanList *info;
   struct JupeEntry *jval;
   char *strval = (char*)*entry; 
 
@@ -406,15 +377,10 @@ db_list_next(void *result, unsigned int type, void **entry)
       *entry = jval;
       break;
     case ADMIN_LIST:
-    case NICKLINK_LIST:
     case NICK_LIST:
     case NICK_LIST_OPER:
     case NICK_FORBID_LIST:
       *entry = strval;
-      break;
-    case NICKCHAN_LIST:
-      info = MyMalloc(sizeof(struct InfoChanList));
-      *entry = info;
       break;
     default:
       assert(0 == 1);
@@ -424,21 +390,6 @@ db_list_next(void *result, unsigned int type, void **entry)
   {
     DupString(jval->name, jval->name);
     DupString(jval->reason, jval->reason);
-  }
-  else if(type == NICKCHAN_LIST)
-  {
-    switch(info->ilevel)
-    {
-      case MASTER_FLAG:
-        info->level = "MASTER";
-        break;
-      case CHANOP_FLAG:
-        info->level = "CHANOP";
-        break;
-      case MEMBER_FLAG:
-        info->level = "MEMBER";
-        break;
-    }
   }
   return NULL;
 }
@@ -580,12 +531,23 @@ expire_sentmail(void *param)
 }
 
 int
-db_string_list(unsigned int query, dlink_list *list)
+db_string_list(unsigned int query, dlink_list *list, const char *fmt, ...)
 {
   int error, i;
   result_set_t *results;
 
-  results = db_execute(query, &error, "", 0);
+  if(fmt == NULL)
+  {
+    results = db_execute(query, &error, "", 0);
+  }
+  else
+  {
+    va_list args;
+    va_start(args, fmt);
+    results = db_execute(query, &error, fmt, args);
+    va_end(args);
+  }
+
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "db_string_list: query %d database error %d", query, error);
