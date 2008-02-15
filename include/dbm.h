@@ -232,9 +232,6 @@ char *db_get_string(const char *, unsigned int, const char *);
 struct JupeEntry  *db_find_jupe(const char *);
 
 int   db_list_add(unsigned int, const void *);
-void *db_list_first(unsigned int, unsigned int, void **);
-void *db_list_next(void *, unsigned int, void **);
-void  db_list_done(void *);
 int   db_list_del(unsigned int, unsigned int, const char *);
 int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 

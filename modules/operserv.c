@@ -399,17 +399,17 @@ m_admin_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   char *currnick;
-  void *first, *handle;
   int i = 1;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
-  first = handle = db_list_first(ADMIN_LIST, 0, (void**)&currnick);
-  while(handle != NULL)
+  nickname_list_admins(&list);
+  DLINK_FOREACH(ptr, list.head)
   {
+    currnick = (char *)ptr->data;
     reply_user(service, service, client, OS_ADMIN_LIST, i++, currnick);
-    handle = db_list_next(handle, ADMIN_LIST, (void **)&currnick);
   }
-  if(first != NULL)
-  db_list_done(first);
+  nickname_list_admins_free(&list);
 
   reply_user(service, service, client, OS_ADMIN_LIST_END);
 }
@@ -696,36 +696,27 @@ m_jupe_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct JupeEntry *jupe;
-  void *handle, *first;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
   int i = 1;
 
-  first = handle = db_list_first(JUPE_LIST, 0, (void**)&jupe);
-  while(handle != NULL)
+  jupe_list(&list);
+
+  DLINK_FOREACH(ptr, list.head)
   {
+    jupe = (struct JupeEntry *)ptr->data;
     char *setter = nickname_nick_from_id(jupe->setter, TRUE);
 
     reply_user(service, service, client, OS_JUPE_LIST, i++, jupe->name,
       jupe->reason, setter);
 
-    if(jupe->setter > 0)
-      MyFree(setter);
-
-    if(jupe != NULL)
-    {
-      free_jupeentry(jupe);
-      jupe = NULL;
-    }
-
-    handle = db_list_next(handle, JUPE_LIST, (void**)&jupe);
+    MyFree(setter);
   }
 
-  if(first)
-    db_list_done(first);
+  free_jupe_list(&list);
 
   reply_user(service, service, client, OS_JUPE_LIST_END);
-
-  free_jupeentry(jupe);
 }
 
 static void

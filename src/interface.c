@@ -1423,17 +1423,15 @@ char *
 check_masterless_channels(unsigned int accid)
 {
   struct InfoChanList *chan;
-  void *listptr, *first;
   int mcount;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
-  first = listptr = NULL;
-
-  if((listptr = db_list_first(NICKCHAN_LIST, accid, (void**)&chan)) != NULL)
+  if(nickname_chan_list(accid, &list))
   {
-    first = listptr;
-
-    while(listptr != NULL)
+    DLINK_FOREACH(ptr, list.head)
     {
+      chan = (struct InfoChanList *)ptr->data;
       if(db_get_num_channel_accesslist_entries(chan->channel_id) == 1)
       {
         char *nick = nickname_nick_from_id(accid, TRUE);
@@ -1442,7 +1440,7 @@ check_masterless_channels(unsigned int accid)
         ilog(L_NOTICE, "Dropping channel %s because its access list would be "
             "left empty by drop of nickname %s", chan->channel, nick);
         MyFree(nick);
-//        dbchannel_delete(chan);
+        dbchannel_delete(dbchannel_find(chan->channel));
 
         chptr = hash_find_channel(chan->channel);
         if(chptr != NULL)
@@ -1454,8 +1452,6 @@ check_masterless_channels(unsigned int accid)
           }
         }
 
-        MyFree(chan);
-        listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
         continue;
       }
       mcount = -1;
@@ -1463,24 +1459,13 @@ check_masterless_channels(unsigned int accid)
       if(chan->ilevel == MASTER_FLAG && mcount <= 1)
       {
         char *cname;
-        
-        DupString(cname, chan->channel);
-        db_list_done(listptr);
 
-        MyFree(chan);
+        DupString(cname, chan->channel);
+        nickname_chan_list_free(&list);
         return cname;
       }
-      MyFree(chan);
-      listptr = db_list_next(listptr, NICKCHAN_LIST, (void**)&chan);
     }
-    MyFree(chan);
-    db_list_done(first);
-  }
-  else
-  {
-    MyFree(chan);
-    if(listptr != NULL)
-      db_list_done(listptr);
+    nickname_chan_list_free(&list);
   }
 
   return 0;

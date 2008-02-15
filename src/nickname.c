@@ -920,3 +920,15 @@ nickname_list_forbid_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
+
+int
+nickname_list_admins(dlink_list *list)
+{
+  return db_string_list(GET_ADMINS, list);
+}
+
+void
+nickname_list_admins_free(dlink_list *list)
+{
+  db_string_list_free(list);
+}

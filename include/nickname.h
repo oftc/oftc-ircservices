@@ -77,4 +77,6 @@ void nickname_list_regular_free(dlink_list *);
 int nickname_list_forbid(dlink_list *);
 void nickname_list_forbid_free(dlink_list *);
 
+int nickname_list_admins(dlink_list *);
+void nickname_list_admins_free(dlink_list *);
 #endif
