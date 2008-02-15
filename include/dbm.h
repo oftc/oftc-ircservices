@@ -56,24 +56,6 @@ typedef struct DataBaseModule
   int64_t (*insert_id)(const char *, const char *);
 } database_t;
 
-enum db_list_type
-{
-  ADMIN_LIST = 0,
-  CHACCESS_LIST,
-  AKICK_LIST,
-  NICKLINK_LIST,
-  NICKCHAN_LIST,
-  CHMASTER_LIST,
-  NICK_LIST,
-  NICK_LIST_OPER,
-  NICK_FORBID_LIST,
-  CHAN_LIST,
-  CHAN_LIST_OPER,
-  CHAN_FORBID_LIST,
-  EXPIRING_AKILL_LIST,
-  JUPE_LIST
-};
-
 enum db_queries
 {
   GET_FULL_NICK = 0,
@@ -228,12 +210,6 @@ int db_set_string(unsigned int, unsigned int, const char *);
 int db_set_number(unsigned int, unsigned int, unsigned long);
 int db_set_bool(unsigned int, unsigned int, unsigned char);
 char *db_get_string(const char *, unsigned int, const char *);
-
-struct JupeEntry  *db_find_jupe(const char *);
-
-int   db_list_add(unsigned int, const void *);
-int   db_list_del(unsigned int, unsigned int, const char *);
-int   db_list_del_index(unsigned int, unsigned int, unsigned int);
 
 int db_get_num_masters(unsigned int);
 int db_get_num_channel_accesslist_entries(unsigned int);

@@ -38,9 +38,9 @@ row_to_jupe(row_t *row)
 
   jupe = MyMalloc(sizeof(struct JupeEntry));
   jupe->id = atoi(row->cols[0]);
-  jupe->setter = atoi(row->cols[1]);
-  DupString(jupe->name, row->cols[2]);
-  DupString(jupe->reason, row->cols[3]);
+  DupString(jupe->name, row->cols[1]);
+  DupString(jupe->reason, row->cols[2]);
+  jupe->setter = atoi(row->cols[3]);
 
   return jupe;
 }
@@ -93,4 +93,58 @@ jupe_list(dlink_list *list)
   db_free_result(results);
 
   return dlink_list_length(list);
+}
+
+struct JupeEntry *
+jupe_find(const char *name)
+{
+  result_set_t *results;
+  row_t *row;
+  struct JupeEntry *jupe;
+  int error;
+
+  results = db_execute(FIND_JUPE, &error, "s", name);
+
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "jupe_find: database error %d", error);
+    return NULL;
+  }
+  else if(results == NULL)
+    return NULL;
+
+  if(results->row_count == 0)
+    return NULL;
+
+  row = &results->rows[0];
+  jupe = row_to_jupe(row);
+  db_free_result(results);
+
+  return jupe;
+}
+
+int
+jupe_delete(const char *name)
+{
+  int ret;
+
+  ret = db_execute_nonquery(DELETE_JUPE_NAME, "s", name);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
+}
+
+int
+jupe_add(struct JupeEntry *entry)
+{
+  int ret;
+
+  ret = db_execute_nonquery(INSERT_JUPE, "iss", entry->setter, entry->name, entry->reason);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
 }

@@ -203,10 +203,11 @@ os_on_burst_done(va_list param)
 
   DLINK_FOREACH(ptr, list.head)
   {
+    jupe = (struct JupeEntry *)ptr->data;
     if((target = find_client(jupe->name)) != NULL && IsServer(target))
     {
       ilog(L_DEBUG, "JUPE Server %s already exists, removing jupe", jupe->name);
-      ret = db_list_del(DELETE_JUPE_NAME, 0, jupe->name);
+      ret = jupe_delete(jupe->name);
       if(ret <= 0)
         ilog(L_INFO, "Failed to remove existing jupe for existing server %s", 
             jupe->name);
@@ -647,7 +648,7 @@ m_jupe_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Client *target = find_client(parv[1]);
-  struct JupeEntry *entry = db_find_jupe(parv[1]);
+  struct JupeEntry *entry = jupe_find(parv[1]);
   char reason[IRC_BUFSIZE+1] = "Jupitered: No Reason";
   int ret = 0;
 
@@ -674,7 +675,7 @@ m_jupe_add(struct Service *service, struct Client *client,
 
   entry->setter = client->nickname->id;
 
-  ret = db_list_add(JUPE_LIST, entry);
+  ret = jupe_add(entry);
 
   if(ret)
   {
@@ -744,7 +745,7 @@ os_on_quit(va_list param)
 
   if(IsServer(server) && IsMe(server->servptr))
   {
-    ret = db_list_del(DELETE_JUPE_NAME, 0, server->name);
+    ret = jupe_delete(server->name);
 
     if(ret > 0)
     {

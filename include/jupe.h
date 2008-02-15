@@ -27,5 +27,8 @@
 
 int jupe_list(dlink_list *);
 void free_jupe_list(dlink_list *);
+struct JupeEntry *jupe_find(const char *);
+int jupe_delete(const char *);
+int jupe_add(struct JupeEntry *);
 
 #endif
