@@ -884,3 +884,39 @@ nickname_chan_list_free(dlink_list *list)
     free_dlink_node(ptr);
   }
 }
+
+int
+nickname_list_all(dlink_list *list)
+{
+  return db_string_list(GET_NICKS_OPER, list);
+}
+
+void
+nickname_list_all_free(dlink_list *list)
+{
+  db_string_list_free(list);
+}
+
+int
+nickname_list_regular(dlink_list *list)
+{
+  return db_string_list(GET_NICKS, list);
+}
+
+void
+nickname_list_regular_free(dlink_list *list)
+{
+  db_string_list_free(list);
+}
+
+int
+nickname_list_forbid(dlink_list *list)
+{
+  return db_string_list(GET_FORBIDS, list);
+}
+
+void
+nickname_list_forbid_free(dlink_list *list)
+{
+  db_string_list_free(list);
+}

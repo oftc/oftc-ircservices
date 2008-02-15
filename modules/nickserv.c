@@ -1601,14 +1601,15 @@ static void
 m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   char *nick;
-  void *listptr, *first;
   int count = 0;
-  int query = NICK_LIST;
+  int qcount = 0;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
   if(parc == 2 && client->access >= OPER_FLAG)
   {
     if(irccmp(parv[2], "FORBID") == 0)
-      query = NICK_FORBID_LIST;
+      qcount = nickname_list_forbid(&list);
     else
     {
       reply_user(service, service, client, NS_LIST_INVALID_OPTION, parv[2]);
@@ -1616,19 +1617,22 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
     }
   }
 
-  if(query == NICK_LIST && client->access >= OPER_FLAG)
-    query = NICK_LIST_OPER;
+  if(qcount == 0 && client->access >= OPER_FLAG)
+    qcount = nickname_list_all(&list);
+  else if(qcount == 0)
+    qcount = nickname_list_regular(&list);
 
-  if((listptr = db_list_first(query, 0, (void**)&nick)) == NULL)
+  if(qcount == 0)
   {
     reply_user(service, service, client, NS_LIST_NO_MATCHES, parv[1]);
+    /* TODO XXX FIXME use proper free */
+    db_string_list_free(&list);
     return;
   }
 
-  first = listptr;
-
-  while(listptr != NULL)
+  DLINK_FOREACH(ptr, list.head)
   {
+    nick = (char *)ptr->data;
     if(match(parv[1], nick))
     {
       count++;
@@ -1636,10 +1640,10 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
     }
     if(count == 50)
       break;
-    listptr = db_list_next(listptr, query, (void**)&nick);
   }
 
-  db_list_done(first);
+  /* TODO XXX FIXME use proper free */
+  db_string_list_free(&list);
 
   reply_user(service, service, client, NS_LIST_END, count);
 }

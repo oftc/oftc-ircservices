@@ -317,24 +317,6 @@ db_list_first(unsigned int type, unsigned int param, void **entry)
       *entry = strval;
       brc = Bind("?ps", entry);
       break;
-    case NICK_LIST:
-      query = GET_NICKS;
-
-      *entry = strval;
-      brc = Bind("?ps", entry);
-      break;
-    case NICK_LIST_OPER:
-      query = GET_NICKS_OPER;
-
-      *entry = strval;
-      brc = Bind("?ps", entry);
-      break;
-    case NICK_FORBID_LIST:
-      query = GET_FORBIDS;
-
-      *entry = strval;
-      brc = Bind("?ps", entry);
-      break;
     default:
       assert(0 == 1);
       break;
@@ -377,9 +359,6 @@ db_list_next(void *result, unsigned int type, void **entry)
       *entry = jval;
       break;
     case ADMIN_LIST:
-    case NICK_LIST:
-    case NICK_LIST_OPER:
-    case NICK_FORBID_LIST:
       *entry = strval;
       break;
     default:
