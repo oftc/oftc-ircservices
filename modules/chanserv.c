@@ -2098,7 +2098,7 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(qcount == 0 && client->access >= OPER_FLAG)
     qcount = dbchannel_list_all(&list);
-  else
+  else if(qcount == 0)
     qcount = dbchannel_list_regular(&list);
 
   if(qcount == 0)
