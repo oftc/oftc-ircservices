@@ -24,6 +24,7 @@
 
 #include "stdinc.h"
 #include "client.h"
+#include "nickname.h"
 #include "dbchannel.h"
 #include "dbm.h"
 #include "language.h"

@@ -23,6 +23,7 @@ noinst_HEADERS= akick.h						\
 								modules.h					\
 								msg.h							\
 								mqueue.h					\
+								nick.h						\
 								nickname.h				\
 								nickserv.h				\
 								operserv.h				\

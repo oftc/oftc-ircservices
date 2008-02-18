@@ -110,7 +110,7 @@ void reply_user(struct Service *,struct Service *, struct Client *,
 void reply_mail(struct Service *, struct Client *, unsigned int, 
     unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
-void cloak_user(struct Client *, char *);
+void cloak_user(struct Client *, const char *);
 void do_help(struct Service *, struct Client *, const char *, int, char **);
 void identify_user(struct Client *);
 void send_nick_change(struct Service *, struct Client *, const char *);
@@ -129,7 +129,7 @@ int set_mode_lock(struct Service *, const char *, struct Client *,
 
 char *replace_string(char *, const char *);
 int check_list_entry(unsigned int, unsigned int, const char *);
-int check_nick_pass(struct Client *, struct Nick *, const char *);
+int check_nick_pass(struct Client *, Nickname, const char *);
 void make_random_string(char *, size_t);
 int enforce_matching_serviceban(struct Service *, struct Channel *, 
     struct Client *);
@@ -150,7 +150,6 @@ void quiet_mask(struct Service *, struct Channel *, const char *);
 void unquiet_mask(struct Service *, struct Channel *, const char *);
 int valid_wild_card(const char *);
 
-void free_nick(struct Nick *);
 void free_serviceban(struct ServiceBan *);
 void free_jupeentry(struct JupeEntry *);
 

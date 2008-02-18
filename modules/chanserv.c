@@ -25,6 +25,7 @@
 #include "stdinc.h"
 #include "client.h"
 #include "chanserv.h"
+#include "nickname.h"
 #include "dbchannel.h"
 #include "dbm.h"
 #include "language.h"
@@ -36,8 +37,6 @@
 #include "conf/modules.h"
 #include "conf/servicesinfo.h"
 #include "hash.h"
-#include "nickname.h"
-#include "nickserv.h"
 #include "akick.h"
 #include "chanaccess.h"
 
@@ -555,7 +554,7 @@ m_info(struct Service *service, struct Client *client,
   regchptr = dbchannel_find(parv[1]);
 
   if(client->nickname)
-    access = chanaccess_find(dbchannel_get_id(regchptr), client->nickname->id);
+    access = chanaccess_find(dbchannel_get_id(regchptr), nickname_get_id(client->nickname));
 
   reply_user(service, service, client, CS_INFO_CHAN_START, dbchannel_get_channel(regchptr));
   reply_time(service, client, CS_INFO_REGTIME_FULL, dbchannel_get_regtime(regchptr));
@@ -754,11 +753,11 @@ m_access_del(struct Service *service, struct Client *client,
     return;
   }
 
-  if(nickid != client->nickname->id)
+  if(nickid != nickname_get_id(client->nickname))
   {
     if(client->access != SUDO_FLAG)
     {
-      myaccess = chanaccess_find(dbchannel_get_id(regchptr), client->nickname->id);
+      myaccess = chanaccess_find(dbchannel_get_id(regchptr), nickname_get_id(client->nickname));
       if(myaccess->level != MASTER_FLAG)
       {
         reply_user(service, NULL, client, SERV_NO_ACCESS_CHAN, "DEL",
@@ -1215,7 +1214,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct ServiceBan *akick;
-  struct Nick *nick;
+  Nickname nick;
   struct Channel *chptr;
   DBChannel regchptr;
   char reason[IRC_BUFSIZE+1];
@@ -1237,8 +1236,8 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
       return;
     }
     akick->mask = NULL;
-    akick->target = nick->id;
-    free_nick(nick);
+    akick->target = nickname_get_id(nick);
+    nickname_free(nick);
   }
   else
   {
@@ -1247,7 +1246,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
     DupString(akick->mask, parv[2]);
   }
 
-  akick->setter = client->nickname->id;
+  akick->setter = nickname_get_id(client->nickname);
   akick->channel = dbchannel_get_id(regchptr);
   akick->time_set = CurrentTime;
   akick->duration = 0;
@@ -1689,7 +1688,7 @@ m_voice(struct Service *service, struct Client *client, int parc, char *parv[])
   }
 
   regchptr = chptr->regchan;
-  access = chanaccess_find(dbchannel_get_id(regchptr), client->nickname->id);
+  access = chanaccess_find(dbchannel_get_id(regchptr), nickname_get_id(client->nickname));
 
   if(parv[2] == NULL)
     target = client;
@@ -1739,7 +1738,7 @@ m_devoice(struct Service *service, struct Client *client, int parc, char *parv[]
   }
 
   regchptr = chptr->regchan;
-  access = chanaccess_find(dbchannel_get_id(regchptr), client->nickname->id);
+  access = chanaccess_find(dbchannel_get_id(regchptr), nickname_get_id(client->nickname));
 
   if(parv[2] == NULL)
     target = client;
@@ -2323,7 +2322,7 @@ cs_on_client_join(va_list args)
     level = CHUSER_FLAG;
   else
   {
-    access = chanaccess_find(dbchannel_get_id(regchptr), source_p->nickname->id);
+    access = chanaccess_find(dbchannel_get_id(regchptr), nickname_get_id(source_p->nickname));
     if(access == NULL)
       level = CHIDENTIFIED_FLAG;
     else

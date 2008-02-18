@@ -28,7 +28,7 @@
 #include "chanserv.h"
 #include "language.h"
 #include "parse.h"
-#include "nickserv.h"
+#include "nickname.h"
 #include "interface.h"
 
 static struct JupeEntry *

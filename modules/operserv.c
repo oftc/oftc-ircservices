@@ -28,6 +28,7 @@
 
 #include "stdinc.h"
 #include "client.h"
+#include "nickname.h"
 #include "dbchannel.h"
 #include "dbm.h"
 #include "language.h"
@@ -37,8 +38,6 @@
 #include "conf/modules.h"
 #include "conf/servicesinfo.h"
 #include "operserv.h"
-#include "nickserv.h"
-#include "nickname.h"
 #include "jupe.h"
 #include "akill.h"
 #include "send.h"
@@ -368,7 +367,7 @@ static void
 m_admin_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct Nick *nick = nickname_find(parv[1]);
+  Nickname nick = nickname_find(parv[1]);
   struct Client *target;
 
   if(nick == NULL)
@@ -376,17 +375,16 @@ m_admin_add(struct Service *service, struct Client *client,
     reply_user(service, service, client, OS_NICK_NOTREG, parv[1]);
     return;
   }
-  nick->admin = TRUE;
-  db_set_bool(SET_NICK_ADMIN, nick->id, TRUE);
-  reply_user(service, service, client, OS_ADMIN_ADDED, nick->nick);
-  free_nick(nick);
+  nickname_set_admin(nick, TRUE);
+  reply_user(service, service, client, OS_ADMIN_ADDED, nickname_get_nick(nick));
+  nickname_free(nick);
 
   /* Actively enforce the admin add in case the nick is online right now */
   if((target = find_client(parv[1])) != NULL)
   {
     if(target->nickname != NULL)
     {
-      target->nickname->admin = TRUE;
+      nickname_set_admin(target->nickname, TRUE);
       if(IsOper(target))
         target->access = ADMIN_FLAG;
       else
@@ -419,28 +417,27 @@ static void
 m_admin_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct Nick *nick;
+  Nickname nick;
   struct Client *target;
     
   nick = nickname_find(parv[1]);
     
-  if(nick == NULL || !(nick->admin))
+  if(nick == NULL || !nickname_get_admin(nick))
   {
     reply_user(service, service, client, OS_ADMIN_NOTADMIN, parv[1]);
     return;
   }
-  reply_user(service, service, client, OS_ADMIN_DEL, nick->nick);
-  nick->admin = FALSE;
-  db_set_bool(SET_NICK_ADMIN, nick->id, FALSE);
+  reply_user(service, service, client, OS_ADMIN_DEL, nickname_get_nick(nick));
+  nickname_set_admin(nick, FALSE);
 
-  free_nick(nick);
+  nickname_free(nick);
 
   /* Actively enforce the admin removal in case the nick is online right now */
   if((target = find_client(parv[1])) != NULL)
   {
     if(target->nickname != NULL)
     {
-      target->nickname->admin = FALSE;
+      nickname_set_admin(target->nickname, FALSE);
       if(IsOper(target))
         target->access = OPER_FLAG;
       else
@@ -534,7 +531,7 @@ m_akill_add(struct Service *service, struct Client *client,
 
   akill = MyMalloc(sizeof(struct ServiceBan));
 
-  akill->setter = client->nickname->id;
+  akill->setter = nickname_get_id(client->nickname);
   akill->time_set = CurrentTime;
   akill->duration = duration;
   DupString(akill->mask, mask);
@@ -673,7 +670,7 @@ m_jupe_add(struct Service *service, struct Client *client,
   DupString(entry->name, parv[1]);
   DupString(entry->reason, reason);
 
-  entry->setter = client->nickname->id;
+  entry->setter = nickname_get_id(client->nickname);
 
   ret = jupe_add(entry);
 

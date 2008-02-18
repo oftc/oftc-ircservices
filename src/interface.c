@@ -26,8 +26,9 @@
 #include "dbm.h"
 #include "language.h"
 #include "parse.h"
-#include "nickserv.h"
 #include "chanserv.h"
+#include "nickname.h"
+#include "dbchannel.h"
 #include "interface.h"
 #include "crypt.h"
 #include "msg.h"
@@ -37,10 +38,9 @@
 #include "conf/mail.h"
 #include "mqueue.h"
 #include "hostmask.h"
-#include "nickname.h"
-#include "dbchannel.h"
 #include "channel_mode.h"
 #include "channel.h"
+#include "nickserv.h"
 
 #include <openssl/hmac.h>
 
@@ -355,7 +355,7 @@ strtime(struct Client *client, time_t tm, char *result)
   if(client->nickname == NULL)
     timestr = ServicesLanguages[0].entries[SERV_DATETIME_FORMAT];
   else
-    timestr = ServicesLanguages[client->nickname->language].entries[SERV_DATETIME_FORMAT];
+    timestr = ServicesLanguages[nickname_get_language(client->nickname)].entries[SERV_DATETIME_FORMAT];
 
   if(tm <= 0)
     return 0;
@@ -411,7 +411,7 @@ reply_user(struct Service *source, struct Service *service,
     if(client->nickname == NULL)
       langstr = languages[0].entries[langid];
     else
-      langstr = languages[client->nickname->language].entries[langid];
+      langstr = languages[nickname_get_language(client->nickname)].entries[langid];
   }
    
   if(langstr == NULL)
@@ -456,13 +456,13 @@ reply_mail(struct Service *service, struct Client *client,
   
   if(langid != 0)
   {
-    langstr = languages[client->nickname->language].entries[langid];
-    subjectstr = languages[client->nickname->language].entries[subjectid];
+    langstr = languages[nickname_get_language(client->nickname)].entries[langid];
+    subjectstr = languages[nickname_get_language(client->nickname)].entries[subjectid];
   }
   else
   {
     langstr = "%s";
-    subjectstr = languages[client->nickname->language].entries[subjectid];
+    subjectstr = languages[nickname_get_language(client->nickname)].entries[subjectid];
   }
 
   va_start(ap, langid);
@@ -475,7 +475,7 @@ reply_mail(struct Service *service, struct Client *client,
     return;
   }
 
-  fprintf(ptr, "To: %s\n", client->nickname->email);
+  fprintf(ptr, "To: %s\n", nickname_get_email(client->nickname));
   fprintf(ptr, "From: %s\n", Mail.from_address);
   fprintf(ptr, "Subject: %s\n", subjectstr);
   fprintf(ptr, "Precedence: junk\n");
@@ -790,17 +790,17 @@ unquiet_mask(struct Service *service, struct Channel *chptr, const char *mask)
 void
 identify_user(struct Client *client)
 {
-  struct Nick *nick = client->nickname;
+  Nickname nick = client->nickname;
 
-  if(nick->admin && IsOper(client))
+  if(nickname_get_admin(nick) && IsOper(client))
     client->access = ADMIN_FLAG;
-  else if(!nick->admin && IsOper(client))
+  else if(!nickname_get_admin(nick) && IsOper(client))
     client->access = OPER_FLAG;
   else
     client->access = IDENTIFIED_FLAG;
 
-  if(nick->cloak[0] != '\0' && nick->cloak_on)
-    cloak_user(client, nick->cloak);
+  if(nickname_get_cloak(nick)[0] != '\0' && nickname_get_cloak_on(nick))
+    cloak_user(client, nickname_get_cloak(nick));
 
   client->num_badpass = 0;
 
@@ -808,7 +808,7 @@ identify_user(struct Client *client)
 }
 
 void
-cloak_user(struct Client *client, char *cloak)
+cloak_user(struct Client *client, const char *cloak)
 {
   if(ServicesState.debugmode)
     return;
@@ -1249,18 +1249,6 @@ set_mode_lock(struct Service *service, const char *channel,
 }
 
 void
-free_nick(struct Nick *nick)
-{
-  ilog(L_DEBUG, "Freeing nick %p for %s", nick, nick->nick);
-  MyFree(nick->email);
-  MyFree(nick->url);
-  MyFree(nick->last_quit);
-  MyFree(nick->last_host);
-  MyFree(nick->last_realname);
-  MyFree(nick);
-}
-
-void
 free_serviceban(struct ServiceBan *ban)
 {
   ilog(L_DEBUG, "Freeing serviceban %p for %s", ban, ban->mask);
@@ -1281,14 +1269,14 @@ free_jupeentry(struct JupeEntry *entry)
 }
 
 int 
-check_nick_pass(struct Client *client, struct Nick *nick, const char *password)
+check_nick_pass(struct Client *client, Nickname nick, const char *password)
 {
   char fullpass[PASSLEN*2+1];
   char *pass;
   int ret;
 
   assert(nick);
-  assert(nick->salt);
+  assert(nickname_get_salt(nick));
 
   if(*client->certfp != '\0')
   {
@@ -1296,10 +1284,10 @@ check_nick_pass(struct Client *client, struct Nick *nick, const char *password)
       return 1;
   }
   
-  snprintf(fullpass, sizeof(fullpass), "%s%s", password, nick->salt);
+  snprintf(fullpass, sizeof(fullpass), "%s%s", password, nickname_get_salt(nick));
   
   pass = crypt_pass(fullpass, 1);
-  if(strncasecmp(nick->pass, pass, PASSLEN*2) == 0)
+  if(strncasecmp(nickname_get_pass(nick), pass, PASSLEN*2) == 0)
     ret = 1;
   else 
     ret = 0;
@@ -1452,9 +1440,9 @@ int
 drop_nickname(struct Service *service, struct Client *client, const char *target)
 {
   char *channel;
-  struct Nick *nick = nickname_find(target);
+  Nickname nick = nickname_find(target);
 
-  if((channel = check_masterless_channels(nick->id)) != NULL)
+  if((channel = check_masterless_channels(nickname_get_id(nick))) != NULL)
   {
     if(client != NULL)
     {
@@ -1477,7 +1465,7 @@ drop_nickname(struct Service *service, struct Client *client, const char *target
     {
       ClearIdentified(user);
       if(user->nickname != NULL)
-        free_nick(user->nickname);
+        nickname_free(user->nickname);
       user->nickname = NULL;
       user->access = USER_FLAG;
       send_umode(service, user, "-R");

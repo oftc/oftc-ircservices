@@ -31,7 +31,7 @@ DBChannel dbchannel_find(const char *);
 int dbchannel_delete(DBChannel);
 int dbchannel_forbid(const char *);
 int dbchannel_delete_forbid(const char *);
-int dbchannel_register(DBChannel, struct Nick *);
+int dbchannel_register(DBChannel, Nickname);
 int dbchannel_is_forbid(const char *);
 int dbchannel_masters_list(unsigned int, dlink_list *);
 void dbchannel_masters_list_free(dlink_list *);

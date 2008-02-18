@@ -31,22 +31,23 @@
 #include "chanserv.h"
 #include "interface.h"
 #include "msg.h"
+#include "nick.h"
 
-/* 
- * row_to_nickname: 
+/*
+ * row_to_nickname:
  *
- * Converts a database row to a nickname struct, allocating the required 
- * memory in the process.  Null database fields are left as NULL pointers.  
+ * Converts a database row to a nickname struct, allocating the required
+ * memory in the process.  Null database fields are left as NULL pointers. 
  *
  * See the query GET_FULL_NICK for details of the field mappings.
  *
  * Returns an allocated nickname.
  *
  */
-static struct Nick *
+static Nickname
 row_to_nickname(row_t *row)
 {
-  struct Nick *nick = MyMalloc(sizeof(struct Nick));
+  Nickname nick = MyMalloc(sizeof(struct Nick));
 
   nick->id = atoi(row->cols[0]);
   nick->pri_nickid = atoi(row->cols[1]);
@@ -78,26 +79,26 @@ row_to_nickname(row_t *row)
   nick->reg_time = atoi(row->cols[21]);
   nick->nick_reg_time = atoi(row->cols[22]);
   nick->last_seen = atoi(row->cols[23]);
- 
+
   return nick;
 }
 
-/* 
- * nickname_find: 
+/*
+ * nickname_find:
  *
- * Searches the database for a nickname.  Returns a nickname structure for 
- * the nick if one is found.  Allocates the storage for it, which must be 
- * freed with free_nickname.
+ * Searches the database for a nickname.  Returns a nickname structure for
+ * the nick if one is found.  Allocates the storage for it, which must be
+ * freed with nickname_freename.
  *
  * Returns the nickname structure on success, NULL on error or if the nickname
  * was not found.
  *
  */
-struct Nick *
+Nickname
 nickname_find(const char *nickname)
 {
   result_set_t *results;
-  struct Nick *nick;
+  Nickname nick;
   int error;
 
   results = db_execute(GET_FULL_NICK, &error, "s", nickname);
@@ -117,22 +118,22 @@ nickname_find(const char *nickname)
 
   nick = row_to_nickname(&results->rows[0]);
   db_free_result(results);
- 
+
   return nick;
 }
 
-/* 
- * nickname_register: 
+/*
+ * nickname_register:
  *
  * Registers a nickname in the database.  Will create a new account for it.
  *
- * Returns TRUE on success or FALSE otherwise.  
+ * Returns TRUE on success or FALSE otherwise. 
  *
  * Will not update the database unless successful.
  *
  */
 int
-nickname_register(struct Nick *nick)
+nickname_register(Nickname nick)
 {
   int accid, nickid, ret, tmp;
 
@@ -142,7 +143,7 @@ nickname_register(struct Nick *nick)
   if(nickid == -1)
     goto failure;
 
-  ret = db_execute_nonquery(INSERT_ACCOUNT, "isssi", nickid, nick->pass, 
+  ret = db_execute_nonquery(INSERT_ACCOUNT, "isssi", nickid, nick->pass,
       nick->salt, nick->email, CurrentTime);
 
   if(ret == -1)
@@ -176,18 +177,18 @@ nickname_register(struct Nick *nick)
   nick->nick_reg_time = nick->reg_time = CurrentTime;
 
   return TRUE;
-  
+ 
 failure:
   db_rollback_transaction();
   return FALSE;
 }
 
-/* 
- * nickname_delete: 
+/*
+ * nickname_delete:
  *
- * Deletes the specified nickname from the database.  
+ * Deletes the specified nickname from the database. 
  *
- * Returns TRUE on success and FALSE on failure.  
+ * Returns TRUE on success and FALSE on failure. 
  *
  * Will not update the database unless successful.
  *
@@ -199,15 +200,15 @@ failure:
  *
  */
 int
-nickname_delete(struct Nick *nick)
+nickname_delete(Nickname nick)
 {
   int newid, ret, error;
 
   db_begin_transaction();
-  
+ 
   if(nick->nickid == nick->pri_nickid)
   {
-    char *tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii", 
+    char *tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii",
         nick->id, nick->nickid);
     if(error)
       goto failure;
@@ -249,17 +250,17 @@ failure:
   return FALSE;
 }
 
-/* 
- * nickname_is_forbid: 
- * 
+/*
+ * nickname_is_forbid:
+ *
  * Tests a string nickname for a match in the forbid list.
- * 
- * Returns FALSE if not found OR if a database error occured.  
+ *
+ * Returns FALSE if not found OR if a database error occured. 
  *
  * Returns TRUE if a match was found and the nickname is forbidden.
  *
  */
-int 
+int
 nickname_is_forbid(const char *nickname)
 {
   char *nick;
@@ -268,7 +269,7 @@ nickname_is_forbid(const char *nickname)
   nick = db_execute_scalar(GET_FORBID, &error, "s", nickname);
   if(error)
   {
-    ilog(L_CRIT, "Database error %d trying to test forbidden nickname %s", 
+    ilog(L_CRIT, "Database error %d trying to test forbidden nickname %s",
         error, nickname);
     return 0;
   }
@@ -283,21 +284,21 @@ nickname_is_forbid(const char *nickname)
   return 1;
 }
 
-/* 
- * nickname_forbid: 
+/*
+ * nickname_forbid:
  *
- * Adds the string nickname to the forbidden list.  
+ * Adds the string nickname to the forbidden list. 
  *
- * Returns TRUE if successful, FALSE otherwise.  
+ * Returns TRUE if successful, FALSE otherwise. 
  *
- * If successful, this will also result in the specified nickname being 
+ * If successful, this will also result in the specified nickname being
  * deleted, following the same rules as nickname_delete.
  *
  */
 int
 nickname_forbid(const char *nick)
 {
-  struct Nick *nickname;
+  Nickname nickname;
   int ret;
 
   db_begin_transaction();
@@ -305,7 +306,7 @@ nickname_forbid(const char *nick)
   if((nickname = nickname_find(nick)) != NULL)
   {
     nickname_delete(nickname);
-    free_nick(nickname);
+    nickname_free(nickname);
   }
 
   ret = db_execute_nonquery(INSERT_FORBID, "s", nick);
@@ -319,17 +320,17 @@ nickname_forbid(const char *nick)
   return db_commit_transaction();
 }
 
-/* 
- * nickname_delete_forbid: 
+/*
+ * nickname_delete_forbid:
  *
- * Deletes the string nickname from the forbidden list.  
+ * Deletes the string nickname from the forbidden list. 
  *
- * Returns TRUE on success, FALSE otherwise.  
+ * Returns TRUE on success, FALSE otherwise. 
  *
  * The database is not updated unless successful.
  *
  */
-int 
+int
 nickname_delete_forbid(const char *nick)
 {
   int ret;
@@ -341,17 +342,17 @@ nickname_delete_forbid(const char *nick)
   return TRUE;
 }
 
-/* 
- * nickname_nick_from_id: 
+/*
+ * nickname_nick_from_id:
  *
- * Retrieve a nickname from the database based on its id.  
+ * Retrieve a nickname from the database based on its id. 
  *
  * If is_accid is TRUE, it treats the specified id as an account is and
- * looks for the primary nickname of the account.  
+ * looks for the primary nickname of the account. 
  *
- * If is_accid is FALSE, it treats the id specificed as a nickname and 
+ * If is_accid is FALSE, it treats the id specificed as a nickname and
  * returns that specific nickname.
- * 
+ *
  * Returns the nickname if successful.  Returns NULL on error, or if the
  * nickname was actually null, which shouldnt be possible.
  *
@@ -374,11 +375,11 @@ nickname_nick_from_id(int id, int is_accid)
   return nick;
 }
 
-/* 
- * nickname_id_from_nick: 
+/*
+ * nickname_id_from_nick:
  *
  * Looks up the database id for the specified nickname.
- * 
+ *
  * Returns -1 on error, or the id of the specified nickname.  If is_accid is
  * TRUE, this will be the nickname's account id, otherwise it will be the id
  * of the nickname itself.
@@ -402,15 +403,15 @@ nickname_id_from_nick(const char *nick, int is_accid)
 }
 
 /*
- * nickname_set_master: 
- * 
- * Sets the master nickname of an account to the nickname specified.  
+ * nickname_set_master:
+ *
+ * Sets the master nickname of an account to the nickname specified. 
  *
  * Returns TRUE on success, FALSE otherwise.
  *
  */
 int
-nickname_set_master(struct Nick *nick, const char *master)
+nickname_set_master(Nickname nick, const char *master)
 {
   int newid, ret;
 
@@ -424,7 +425,7 @@ nickname_set_master(struct Nick *nick, const char *master)
   return (ret != -1);
 }
 
-/* 
+/*
  * nickname_link:
  *
  * Links the child nickname to the master.  The child must not already be a
@@ -437,7 +438,7 @@ nickname_set_master(struct Nick *nick, const char *master)
  *
  */
 int
-nickname_link(struct Nick *master, struct Nick *child)
+nickname_link(Nickname master, Nickname child)
 {
   int ret;
 
@@ -467,7 +468,7 @@ failure:
   return FALSE;
 }
 
-/* 
+/*
  * nickname_unlink:
  *
  * Unlinks the specified nickname from its master.
@@ -480,7 +481,7 @@ failure:
  *
  */
 int
-nickname_unlink(struct Nick *nick)
+nickname_unlink(Nickname nick)
 {
   int ret, newid, new_nickid, error;
   char *tmp;
@@ -503,7 +504,7 @@ nickname_unlink(struct Nick *nick)
       goto failure;
   }
 
-  tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii", 
+  tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii",
       nick->id, nick->pri_nickid);
   if(error)
     goto failure;
@@ -516,7 +517,7 @@ nickname_unlink(struct Nick *nick)
         nick->id);
     if(ret == -1)
       goto failure;
-    
+   
     ret = db_execute_nonquery(SET_NICK_MASTER, "ii", new_nickid, newid);
     if(ret == -1)
       goto failure;
@@ -542,7 +543,7 @@ failure:
   return -1;
 }
 
-/* 
+/*
  * nickname_save:
  *
  * Saves the specified nickname to the database.
@@ -553,13 +554,13 @@ failure:
  *
  */
 int
-nickname_save(struct Nick *nick)
+nickname_save(Nickname nick)
 {
   int ret;
 
   db_begin_transaction();
 
-  ret = db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", nick->nickid, 
+  ret = db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", nick->nickid,
       nick->last_seen);
   if(ret == -1)
   {
@@ -581,7 +582,7 @@ nickname_save(struct Nick *nick)
   return db_commit_transaction();
 }
 
-/* 
+/*
  * nickname_accesslist_add:
  *
  * Adds the mask specified to the database attached to the specified nickname.
@@ -625,7 +626,7 @@ row_to_access_entry(row_t *row)
  *
  */
 int
-nickname_accesslist_list(struct Nick *nick, dlink_list *list)
+nickname_accesslist_list(Nickname nick, dlink_list *list)
 {
   result_set_t *results;
   int error, i;
@@ -653,7 +654,7 @@ nickname_accesslist_list(struct Nick *nick, dlink_list *list)
 }
 
 int
-nickname_accesslist_delete(struct Nick *nick, const char *value, int index)
+nickname_accesslist_delete(Nickname nick, const char *value, int index)
 {
   int ret;
 
@@ -688,7 +689,7 @@ nickname_accesslist_free(dlink_list *list)
 }
 
 int
-nickname_accesslist_check(struct Nick *nick, const char *value)
+nickname_accesslist_check(Nickname nick, const char *value)
 {
   dlink_list list = { 0 };
   dlink_node *ptr;
@@ -713,7 +714,7 @@ nickname_accesslist_check(struct Nick *nick, const char *value)
 }
 
 int
-nickname_cert_list(struct Nick *nick, dlink_list *list)
+nickname_cert_list(Nickname nick, dlink_list *list)
 {
   result_set_t *results;
   int error, i;
@@ -741,7 +742,7 @@ nickname_cert_list(struct Nick *nick, dlink_list *list)
 }
 
 int
-nickname_cert_delete(struct Nick *nick, const char *value, int index)
+nickname_cert_delete(Nickname nick, const char *value, int index)
 {
   int ret;
 
@@ -776,7 +777,7 @@ nickname_certlist_free(dlink_list *list)
 }
 
 int
-nickname_cert_check(struct Nick *nick, const char *value)
+nickname_cert_check(Nickname nick, const char *value)
 {
   dlink_list list = { 0 };
   dlink_node *ptr;
@@ -932,3 +933,339 @@ nickname_list_admins_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
+
+Nickname
+nickname_new()
+{
+  return MyMalloc(sizeof(struct Nick *));
+}
+
+void
+nickname_free(Nickname nick)
+{
+  ilog(L_DEBUG, "Freeing nick %p for %s", nick, nickname_get_nick(nick));
+  MyFree(nick->email);
+  MyFree(nick->url);
+  MyFree(nick->last_quit);
+  MyFree(nick->last_host);
+  MyFree(nick->last_realname);
+  MyFree(nick);
+}
+
+/* Nickname getters */
+dlink_node
+nickname_get_node(Nickname this)
+{
+  return this->node;
+}
+
+
+unsigned int
+nickname_get_id(Nickname this)
+{
+  return this->id;
+}
+
+unsigned int
+nickname_get_nickid(Nickname this)
+{
+  return this->nickid;
+}
+
+unsigned int
+nickname_get_pri_nickid(Nickname this)
+{
+  return this->pri_nickid;
+}
+
+const char *
+nickname_get_nick(Nickname this)
+{
+  return this->nick;
+}
+
+const char *
+nickname_get_pass(Nickname this)
+{
+  return this->pass;
+}
+
+const char *
+nickname_get_salt(Nickname this)
+{
+  return this->salt;
+}
+
+const char *
+nickname_get_cloak(Nickname this)
+{
+  return this->cloak;
+}
+
+const char *
+nickname_get_email(Nickname this)
+{
+  return this->email;
+}
+
+const char *
+nickname_get_url(Nickname this)
+{
+  return this->url;
+}
+
+const char *
+nickname_get_last_realname(Nickname this)
+{
+  return this->last_realname;
+}
+
+const char *
+nickname_get_last_host(Nickname this)
+{
+  return this->last_host;
+}
+
+const char *
+nickname_get_last_quit(Nickname this)
+{
+  return this->last_quit;
+}
+
+unsigned int
+nickname_get_status(Nickname this)
+{
+  return this->status;
+}
+
+unsigned int
+nickname_get_language(Nickname this)
+{
+  return this->language;
+}
+
+unsigned char
+nickname_get_enforce(Nickname this)
+{
+  return this->enforce;
+}
+
+unsigned char
+nickname_get_secure(Nickname this)
+{
+  return this->secure;
+}
+
+unsigned char
+nickname_get_verified(Nickname this)
+{
+  return this->verified;
+}
+
+unsigned char
+nickname_get_cloak_on(Nickname this)
+{
+  return this->cloak_on;
+}
+
+unsigned char
+nickname_get_admin(Nickname this)
+{
+  return this->admin;
+}
+
+unsigned char
+nickname_get_email_verified(Nickname this)
+{
+  return this->email_verified;
+}
+
+unsigned char
+nickname_get_priv(Nickname this)
+{
+  return this->priv;
+}
+
+time_t
+nickname_get_reg_time(Nickname this)
+{
+  return this->reg_time;
+}
+
+time_t
+nickname_get_last_seen(Nickname this)
+{
+  return this->last_seen;
+}
+
+time_t
+nickname_get_last_quit_time(Nickname this)
+{
+  return this->last_quit_time;
+}
+
+/* Nickname setters */
+void
+nickname_set_id(Nickname this, unsigned int value)
+{
+  this->id = value;
+}
+
+void
+nickname_set_nickid(Nickname this, unsigned int value)
+{
+  this->nickid = value;
+}
+
+void
+nickname_set_pri_nickid(Nickname this, unsigned int value)
+{
+  this->pri_nickid = value;
+}
+
+void
+nickname_set_nick(Nickname this, const char * value)
+{
+  strlcpy(this->nick, value, sizeof(this->nick));
+}
+
+void
+nickname_set_pass(Nickname this, const char * value)
+{
+  strlcpy(this->pass, value, sizeof(this->pass));
+  db_execute_nonquery(SET_NICK_PASSWORD, "s", this->pass);
+}
+
+void
+nickname_set_salt(Nickname this, const char * value)
+{
+  strlcpy(this->salt, value, sizeof(this->salt));
+}
+
+void
+nickname_set_cloak(Nickname this, const char * value)
+{
+  strlcpy(this->cloak, value, sizeof(this->cloak));
+  db_execute_nonquery(SET_NICK_CLOAK, "s", this->cloak);
+}
+
+void
+nickname_set_email(Nickname this, const char * value)
+{
+  MyFree(this->email);
+  DupString(this->email, value);
+  db_execute_nonquery(SET_NICK_EMAIL, "s", this->email);
+}
+
+void
+nickname_set_url(Nickname this, const char * value)
+{
+  MyFree(this->url);
+  DupString(this->url, value);
+  db_execute_nonquery(SET_NICK_URL, "s", this->url);
+}
+
+void
+nickname_set_last_realname(Nickname this, const char * value)
+{
+  MyFree(this->last_realname);
+  DupString(this->last_realname, value);
+  db_execute_nonquery(SET_NICK_LAST_REALNAME, "s", this->last_realname);
+}
+
+void
+nickname_set_last_host(Nickname this, const char * value)
+{
+  MyFree(this->last_host);
+  DupString(this->last_host, value);
+  db_execute_nonquery(SET_NICK_LAST_HOST, "s", this->last_host);
+}
+
+void
+nickname_set_last_quit(Nickname this, const char * value)
+{
+  MyFree(this->last_quit);
+  DupString(this->last_quit, value);
+  db_execute_nonquery(SET_NICK_LAST_QUIT, "s", this->last_quit);
+}
+
+void
+nickname_set_status(Nickname this, unsigned int value)
+{
+  this->status = value;
+}
+
+void
+nickname_set_language(Nickname this, unsigned int value)
+{
+  this->language = value;
+  db_execute_nonquery(SET_NICK_LANGUAGE, "i", value);
+}
+
+void
+nickname_set_enforce(Nickname this, unsigned char value)
+{
+  this->enforce = value;
+  db_execute_nonquery(SET_NICK_ENFORCE, "b", value);
+}
+
+void
+nickname_set_secure(Nickname this, unsigned char value)
+{
+  this->secure = value;
+  db_execute_nonquery(SET_NICK_SECURE, "b", value);
+}
+
+void
+nickname_set_verified(Nickname this, unsigned char value)
+{
+  this->verified = value;
+}
+
+void
+nickname_set_cloak_on(Nickname this, unsigned char value)
+{
+  this->cloak_on = value;
+  db_execute_nonquery(SET_NICK_CLOAKON, "b", value);
+}
+
+void
+nickname_set_admin(Nickname this, unsigned char value)
+{
+  this->admin = value;
+  db_execute_nonquery(SET_NICK_ADMIN, "b", value);
+}
+
+void
+nickname_set_email_verified(Nickname this, unsigned char value)
+{
+  this->email_verified = value;
+}
+
+void
+nickname_set_priv(Nickname this, unsigned char value)
+{
+  this->priv = value;
+  db_execute_nonquery(SET_NICK_PRIVATE, "b", value);
+}
+
+void
+nickname_set_reg_time(Nickname this, time_t value)
+{
+  this->reg_time = value;
+}
+
+void
+nickname_set_last_seen(Nickname this, time_t value)
+{
+  this->last_seen = value;
+  db_execute_nonquery(SET_NICK_LAST_SEEN, "i", value);
+}
+
+void
+nickname_set_last_quit_time(Nickname this, time_t value)
+{
+  this->last_quit_time = value;
+  db_execute_nonquery(SET_NICK_LAST_QUITTIME, "i", value);
+}
+

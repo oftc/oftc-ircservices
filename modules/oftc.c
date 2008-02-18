@@ -25,7 +25,7 @@
 #include "stdinc.h"
 #include "stdinc.h"
 #include "client.h"
-#include "chanserv.h"
+#include "nickname.h"
 #include "dbm.h"
 #include "language.h"
 #include "parse.h"

@@ -36,6 +36,7 @@
 #include "dbm.h"
 #include "chanserv.h"
 #include "language.h"
+#include "nickname.h"
 #include "interface.h"
 
 static CNCB serv_connect_callback;

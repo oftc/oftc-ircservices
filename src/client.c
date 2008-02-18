@@ -36,6 +36,7 @@
 #include "parse.h"
 #include "language.h"
 #include "dbm.h"
+#include "nickname.h"
 #include "interface.h"
 #include "msg.h"
 #include "nickserv.h"
@@ -293,7 +294,7 @@ exit_one_client(struct Client *source_p)
     hash_del_client(source_p);
     if(source_p->nickname != NULL)
     {
-      free_nick(source_p->nickname);
+      nickname_free(source_p->nickname);
       source_p->nickname = NULL;
     }
   }
@@ -627,7 +628,7 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
               ilog(L_DEBUG, "Setting %s!%s@%s as oper", source_p->name,
                   source_p->username, source_p->host);
               SetOper(source_p);
-              if(source_p->nickname != NULL && source_p->nickname->admin)
+              if(source_p->nickname != NULL && nickname_get_admin(source_p->nickname))
                 source_p->access = ADMIN_FLAG;
               else if(source_p->nickname != NULL)
                 source_p->access = OPER_FLAG;

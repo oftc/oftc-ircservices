@@ -31,35 +31,36 @@ struct AccessEntry
   char *value;
 };
 
+typedef struct Nick * Nickname;
 
-struct Nick *nickname_find(const char *);
-int nickname_register(struct Nick *);
-int nickname_delete(struct Nick *);
+Nickname nickname_find(const char *);
+int nickname_register(Nickname);
+int nickname_delete(Nickname);
 
 int nickname_forbid(const char *);
 int nickname_delete_forbid(const char *);
 int nickname_is_forbid(const char *);
 
 
-int nickname_link(struct Nick *, struct Nick *);
-int nickname_unlink(struct Nick *);
+int nickname_link(Nickname, Nickname);
+int nickname_unlink(Nickname);
 
 char *nickname_nick_from_id(int, int);
 int nickname_id_from_nick(const char *, int);
-int nickname_set_master(struct Nick *, const char *);
+int nickname_set_master(Nickname, const char *);
 
-int nickname_save(struct Nick *);
+int nickname_save(Nickname);
 
 int nickname_accesslist_add(struct AccessEntry *);
-int nickname_accesslist_list(struct Nick *, dlink_list *);
-int nickname_accesslist_check(struct Nick *, const char *);
-int nickname_accesslist_delete(struct Nick *, const char *, int);
+int nickname_accesslist_list(Nickname, dlink_list *);
+int nickname_accesslist_check(Nickname, const char *);
+int nickname_accesslist_delete(Nickname, const char *, int);
 void nickname_accesslist_free(dlink_list *);
 
 int nickname_cert_add(struct AccessEntry *);
-int nickname_cert_list(struct Nick *, dlink_list *);
-int nickname_cert_check(struct Nick *, const char *);
-int nickname_cert_delete(struct Nick *, const char *, int);
+int nickname_cert_list(Nickname, dlink_list *);
+int nickname_cert_check(Nickname, const char *);
+int nickname_cert_delete(Nickname, const char *, int);
 void nickname_certlist_free(dlink_list *);
 
 int nickname_link_list(unsigned int, dlink_list *);
@@ -79,4 +80,61 @@ void nickname_list_forbid_free(dlink_list *);
 
 int nickname_list_admins(dlink_list *);
 void nickname_list_admins_free(dlink_list *);
+
+Nickname nickname_new();
+void nickname_free(Nickname);
+
+/* Nickname getters */
+dlink_node nickname_get_node(Nickname);
+
+unsigned int nickname_get_id(Nickname);
+unsigned int nickname_get_nickid(Nickname);
+unsigned int nickname_get_pri_nickid(Nickname);
+const char *nickname_get_nick(Nickname);
+const char *nickname_get_pass(Nickname);
+const char *nickname_get_salt(Nickname);
+const char *nickname_get_cloak(Nickname);
+const char *nickname_get_email(Nickname);
+const char *nickname_get_url(Nickname);
+const char *nickname_get_last_realname(Nickname);
+const char *nickname_get_last_host(Nickname);
+const char *nickname_get_last_quit(Nickname);
+unsigned int nickname_get_status(Nickname);
+unsigned int nickname_get_language(Nickname);
+unsigned char nickname_get_enforce(Nickname);
+unsigned char nickname_get_secure(Nickname);
+unsigned char nickname_get_verified(Nickname);
+unsigned char nickname_get_cloak_on(Nickname);
+unsigned char nickname_get_admin(Nickname);
+unsigned char nickname_get_email_verified(Nickname);
+unsigned char nickname_get_priv(Nickname);
+time_t nickname_get_reg_time(Nickname);
+time_t nickname_get_last_seen(Nickname);
+time_t nickname_get_last_quit_time(Nickname);
+
+/* Nickname setters */
+void nickname_set_id(Nickname, unsigned int);
+void nickname_set_nickid(Nickname, unsigned int);
+void nickname_set_pri_nickid(Nickname, unsigned int);
+void nickname_set_nick(Nickname, const char *);
+void nickname_set_pass(Nickname, const char *);
+void nickname_set_salt(Nickname, const char *);
+void nickname_set_cloak(Nickname, const char *);
+void nickname_set_email(Nickname, const char *);
+void nickname_set_url(Nickname, const char *);
+void nickname_set_last_realname(Nickname, const char *);
+void nickname_set_last_host(Nickname, const char *);
+void nickname_set_last_quit(Nickname, const char *);
+void nickname_set_status(Nickname, unsigned int);
+void nickname_set_language(Nickname, unsigned int);
+void nickname_set_enforce(Nickname, unsigned char);
+void nickname_set_secure(Nickname, unsigned char);
+void nickname_set_verified(Nickname, unsigned char);
+void nickname_set_cloak_on(Nickname, unsigned char);
+void nickname_set_admin(Nickname, unsigned char);
+void nickname_set_email_verified(Nickname, unsigned char);
+void nickname_set_priv(Nickname, unsigned char);
+void nickname_set_reg_time(Nickname, time_t);
+void nickname_set_last_seen(Nickname, time_t);
+void nickname_set_last_quit_time(Nickname, time_t);
 #endif

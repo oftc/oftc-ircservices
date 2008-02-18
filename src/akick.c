@@ -26,14 +26,13 @@
 #include "language.h"
 #include "parse.h"
 #include "dbm.h"
-#include "nickserv.h"
+#include "nickname.h"
 #include "dbchannel.h"
 #include "channel_mode.h"
 #include "channel.h"
 #include "interface.h"
 #include "client.h"
 #include "hostmask.h"
-#include "nickname.h"
 #include "akick.h"
 
 static struct ServiceBan *

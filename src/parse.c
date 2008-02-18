@@ -32,13 +32,12 @@
 #include "msg.h"
 #include "hash.h"
 #include "language.h"
-#include "chanserv.h"
 #include "dbm.h"
+#include "nickname.h"
 #include "interface.h"
 #include "channel_mode.h"
 #include "channel.h"
 #include "dbchannel.h"
-#include "nickserv.h"
 #include "conf/logging.h"
 #include "chanaccess.h"
 
@@ -470,7 +469,7 @@ handle_services_command(struct ServiceMessage *pmptr,
       level = CHUSER_FLAG;
     else
     {
-      access = chanaccess_find(dbchannel_get_id(regchptr), from->nickname->id);
+      access = chanaccess_find(dbchannel_get_id(regchptr), nickname_get_id(from->nickname));
       if(access == NULL)
         level = CHUSER_FLAG;
       else

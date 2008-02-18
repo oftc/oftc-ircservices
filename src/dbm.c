@@ -29,6 +29,7 @@
 #include "parse.h"
 #include "nickserv.h"
 #include "chanserv.h"
+#include "nickname.h"
 #include "interface.h"
 #include "msg.h"
 #include "send.h"

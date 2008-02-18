@@ -23,7 +23,7 @@
  */
 
 #include "stdinc.h"
-#include "nickserv.h"
+#include "nickname.h"
 #include "dbchannel.h"
 #include "client.h"
 #include "dbm.h"
@@ -35,8 +35,6 @@
 #include "channel.h"
 #include "conf/modules.h"
 #include "hash.h"
-#include "dbchannel.h"
-#include "nickname.h"
 #include "floodserv.h"
 #include "mqueue.h"
 #include "akill.h"

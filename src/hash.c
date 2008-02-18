@@ -35,6 +35,7 @@
 #include "dbm.h"
 #include "parse.h"
 #include "language.h"
+#include "nickname.h"
 #include "interface.h"
 
 /*static BlockHeap *service_heap = NULL;

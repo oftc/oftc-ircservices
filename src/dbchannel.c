@@ -24,7 +24,7 @@
 
 #include "stdinc.h"
 #include "dbm.h"
-#include "nickserv.h"
+#include "nickname.h"
 #include "dbchannel.h"
 #include "chanserv.h"
 #include "parse.h"
@@ -148,7 +148,7 @@ dbchannel_delete_forbid(const char *name)
 }
 
 int
-dbchannel_register(struct RegChannel *channel, struct Nick *founder)
+dbchannel_register(struct RegChannel *channel, Nickname founder)
 {
   int ret;
 
@@ -164,7 +164,7 @@ dbchannel_register(struct RegChannel *channel, struct Nick *founder)
   if(channel->id == -1)
     goto failure;
 
-  ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", founder->id, channel->id, 
+  ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", nickname_get_id(founder), channel->id, 
       MASTER_FLAG);
 
   if(ret == -1)
