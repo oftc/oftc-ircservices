@@ -232,7 +232,7 @@ dbchannel_list_forbid_free(dlink_list *list)
 int
 dbchannel_masters_list(unsigned int id, dlink_list *list)
 {
-  return db_string_list(GET_CHAN_MASTERS, list);
+  return db_string_list_by_id(GET_CHAN_MASTERS, list, id);
 }
 
 void

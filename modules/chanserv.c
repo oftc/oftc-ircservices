@@ -1970,6 +1970,15 @@ m_set_flag(struct Service *service, struct Client *client,
       case SET_CHAN_FLOODSERV:
         on = regchptr->floodserv;
         break;
+      case SET_CHAN_AUTOOP:
+        on = regchptr->autoop;
+        break;
+      case SET_CHAN_AUTOVOICE:
+        on = regchptr->autovoice;
+        break;
+      case SET_CHAN_LEAVEOPS:
+        on = regchptr->leaveops;
+        break;
       case SET_CHAN_EXPIREBANS:
         on = regchptr->expirebans;
         break;
