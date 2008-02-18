@@ -125,7 +125,7 @@ void send_topic(struct Service *, struct Channel *, struct Client *,
 void send_kill(struct Service *, struct Client *, const char *);
 void set_limit(struct Service *, struct Channel *, int);
 int set_mode_lock(struct Service *, const char *, struct Client *, 
-    const char *, char **);
+    const char *, char);
 
 char *replace_string(char *, const char *);
 int check_list_entry(unsigned int, unsigned int, const char *);
@@ -151,7 +151,6 @@ void unquiet_mask(struct Service *, struct Channel *, const char *);
 int valid_wild_card(const char *);
 
 void free_nick(struct Nick *);
-void free_regchan(struct RegChannel *);
 void free_serviceban(struct ServiceBan *);
 void free_jupeentry(struct JupeEntry *);
 

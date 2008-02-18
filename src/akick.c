@@ -27,7 +27,7 @@
 #include "parse.h"
 #include "dbm.h"
 #include "nickserv.h"
-#include "chanserv.h"
+#include "dbchannel.h"
 #include "channel_mode.h"
 #include "channel.h"
 #include "interface.h"
@@ -199,7 +199,7 @@ akick_check_client(struct Service *service, struct Channel *chptr, struct Client
   if(chptr->regchan == NULL)
     return FALSE;
 
-  akick_list(chptr->regchan->id, &list);
+  akick_list(dbchannel_get_id(chptr->regchan), &list);
 
   DLINK_FOREACH(ptr, list.head)
   {

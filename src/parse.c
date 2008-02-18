@@ -462,7 +462,7 @@ handle_services_command(struct ServiceMessage *pmptr,
     {
       reply_user(service, NULL, from, SERV_NOT_IDENTIFIED, from->name);
       if(regchptr != chptr->regchan)
-        free_regchan(regchptr);
+        dbchannel_free(regchptr);
       return;
     }
 
@@ -470,7 +470,7 @@ handle_services_command(struct ServiceMessage *pmptr,
       level = CHUSER_FLAG;
     else
     {
-      access = chanaccess_find(regchptr->id, from->nickname->id);
+      access = chanaccess_find(dbchannel_get_id(regchptr), from->nickname->id);
       if(access == NULL)
         level = CHUSER_FLAG;
       else
@@ -487,23 +487,23 @@ handle_services_command(struct ServiceMessage *pmptr,
     {
       if(level > CHUSER_FLAG)
         reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN, mptr->cmd,
-            regchptr->channel);
+            dbchannel_get_channel(regchptr));
       else
         reply_user(service, NULL, from, SERV_NO_ACCESS_CHAN_ID, mptr->cmd,
-            regchptr->channel);
+            dbchannel_get_channel(regchptr));
       if(chptr == NULL || regchptr != chptr->regchan)
-        free_regchan(regchptr);
+        dbchannel_free(regchptr);
       return;
     }
 
     if(chptr != NULL)
     {
       if(chptr->regchan != regchptr)
-        free_regchan(chptr->regchan);
+        dbchannel_free(chptr->regchan);
       chptr->regchan = regchptr;
     }
     else
-      free_regchan(regchptr);
+      dbchannel_free(regchptr);
   }
   else
   {

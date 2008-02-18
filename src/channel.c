@@ -201,7 +201,7 @@ destroy_channel(struct Channel *chptr)
 
   if(chptr->regchan != NULL)
   {
-    free_regchan(chptr->regchan);
+    dbchannel_free(chptr->regchan);
     chptr->regchan = NULL;
   }
 

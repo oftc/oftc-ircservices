@@ -23,7 +23,8 @@
  */
 
 #include "stdinc.h"
-#include "chanserv.h"
+#include "nickserv.h"
+#include "dbchannel.h"
 #include "client.h"
 #include "dbm.h"
 #include "language.h"
@@ -174,7 +175,7 @@ floodserv_unenforce_routine(void *param)
     struct Membership *ms = ptr->data;
     struct Channel *chptr = ms->chptr;
 
-    if(chptr->regchan != NULL && !chptr->regchan->expirebans)
+    if(chptr->regchan != NULL && !dbchannel_get_expirebans(chptr->regchan))
     {
       DLINK_FOREACH_SAFE(bptr, bnptr, chptr->quietlist.head)
       {
@@ -210,8 +211,8 @@ floodserv_gc_routine(void *param)
     {
       /* HUH? */
       if(chptr->regchan != NULL)
-        floodserv_gc_hash(chptr->regchan->flood_hash,
-          &chptr->regchan->flood_list, chptr->chname);
+        floodserv_gc_hash(dbchannel_get_flood_hash(chptr->regchan),
+          dbchannel_get_flood_list(chptr->regchan), chptr->chname);
 
     }
   }
@@ -251,18 +252,18 @@ floodserv_free_channels()
   DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
   {
     chptr = ptr->data;
-    if(chptr->regchan != NULL && chptr->regchan->flood_hash != NULL)
+    if(chptr->regchan != NULL && dbchannel_get_flood_hash(chptr->regchan) != NULL)
       floodserv_free_channel(chptr->regchan);
   }
 }
 
 static void
-floodserv_free_channel(struct RegChannel *chptr)
+floodserv_free_channel(DBChannel chptr)
 {
-  mqueue_hash_free(chptr->flood_hash, &chptr->flood_list);
-  chptr->flood_hash = NULL;
-  mqueue_free(chptr->gqueue);
-  chptr->gqueue = NULL;
+  mqueue_hash_free(dbchannel_get_flood_hash(chptr), dbchannel_get_flood_list(chptr));
+  dbchannel_set_flood_hash(chptr, NULL);
+  mqueue_free(dbchannel_get_gqueue(chptr));
+  dbchannel_set_gqueue(chptr, NULL);
 }
 
 static void
@@ -270,21 +271,21 @@ setup_channel(struct Channel *chptr)
 {
   struct RegChannel *regchan = chptr->regchan == NULL ? dbchannel_find(chptr->chname) : chptr->regchan;
 
-  if(regchan != NULL && regchan->floodserv && !IsMember(fsclient, chptr))
+  if(regchan != NULL && dbchannel_get_floodserv(regchan) && !IsMember(fsclient, chptr))
   {
-    if(regchan->flood_hash == NULL)
-      regchan->flood_hash = new_mqueue_hash();
+    if(dbchannel_get_flood_hash(regchan) == NULL)
+      dbchannel_set_flood_hash(regchan, new_mqueue_hash());
 
     if(!IsMember(fsclient, chptr))
       join_channel(fsclient, chptr);
 
-    if(regchan->gqueue == NULL)
-      regchan->gqueue = mqueue_new(chptr->chname, MQUEUE_GLOB, FS_GMSG_COUNT,
-        FS_GMSG_TIME, 0);
+    if(dbchannel_get_gqueue(regchan) == NULL)
+      dbchannel_set_gqueue(regchan, mqueue_new(chptr->chname, MQUEUE_GLOB, FS_GMSG_COUNT,
+        FS_GMSG_TIME, 0));
   }
 
   if(regchan != NULL && regchan != chptr->regchan)
-    free_regchan(regchan);
+    dbchannel_free(regchan);
 }
 
 static void
@@ -410,7 +411,7 @@ fs_on_client_part(va_list args)
       source->name);
     /* TODO The channel may already be destroyed we need to find out why */
     if(channel != NULL && channel->regchan != NULL
-      && channel->regchan->flood_hash != NULL)
+      && dbchannel_get_flood_hash(channel->regchan) != NULL)
     {
       floodserv_free_channel(channel->regchan);
     }
@@ -419,7 +420,7 @@ fs_on_client_part(va_list args)
   {
     /* TODO The channel may already be destroyed we need to find out why */
     if(channel != NULL && channel->regchan != NULL
-      && channel->regchan->flood_hash != NULL)
+      && dbchannel_get_flood_hash(channel->regchan) != NULL)
     {
       if(channel->members.length <= 2 && IsMember(fsclient, channel))
         part_channel(fsclient, channel->chname, "");
@@ -446,7 +447,7 @@ fs_on_channel_destroy(va_list args)
 {
   struct Channel *chan = va_arg(args, struct Channel *);
 
-  if(chan->regchan != NULL && chan->regchan->flood_hash != NULL)
+  if(chan->regchan != NULL && dbchannel_get_flood_hash(chan->regchan) != NULL)
     floodserv_free_channel(chan->regchan);
 
   return pass_callback(fs_channel_destroy_hook, chan);
@@ -464,7 +465,7 @@ fs_on_privmsg(va_list args)
   char mask[IRC_BUFSIZE+1];
   char host[HOSTLEN+1];
 
-  if(channel->regchan != NULL && channel->regchan->flood_hash != NULL &&
+  if(channel->regchan != NULL && dbchannel_get_flood_hash(channel->regchan) != NULL &&
     !IsOper(source))
   {
     if(*source->realhost != '\0')
@@ -472,15 +473,15 @@ fs_on_privmsg(va_list args)
     else
       strlcpy(host, source->host, sizeof(host));
 
-    queue = hash_find_mqueue_host(channel->regchan->flood_hash, host);
+    queue = hash_find_mqueue_host(dbchannel_get_flood_hash(channel->regchan), host);
     gqueue = hash_find_mqueue_host(global_msg_queue, host);
 
     if(queue == NULL)
     {
       queue = mqueue_new(host, MQUEUE_CHAN, FS_MSG_COUNT, FS_MSG_TIME,
         FS_LNE_TIME);
-      hash_add_mqueue(channel->regchan->flood_hash, queue);
-      dlinkAdd(queue, &queue->node, &channel->regchan->flood_list);
+      hash_add_mqueue(dbchannel_get_flood_hash(channel->regchan), queue);
+      dlinkAdd(queue, &queue->node, dbchannel_get_flood_list(channel->regchan));
     }
 
     if(gqueue == NULL)
@@ -525,8 +526,8 @@ fs_on_privmsg(va_list args)
         break;
     }
 
-    mqueue_add_message(channel->regchan->gqueue, message);
-    enforce = mqueue_enforce(channel->regchan->gqueue);
+    mqueue_add_message(dbchannel_get_gqueue(channel->regchan), message);
+    enforce = mqueue_enforce(dbchannel_get_gqueue(channel->regchan));
 
     switch(enforce)
     {

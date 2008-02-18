@@ -526,7 +526,7 @@ send_chops_notice(struct Service *service, struct Channel *chptr,
   va_list ap;
   char *buf;
 
-  if(chptr == NULL || chptr->regchan == NULL || !chptr->regchan->verbose)
+  if(chptr == NULL || chptr->regchan == NULL || !dbchannel_get_verbose(chptr->regchan))
     return;
 
   va_start(ap, format);
@@ -957,7 +957,7 @@ get_modestring(unsigned int modes, char *modbuf, int len)
  */
 int
 set_mode_lock(struct Service *service, const char *channel, 
-    struct Client *client, const char *lock, char **value)
+    struct Client *client, const char *lock, char update)
 {
   const char *parv[3] = { NULL, NULL, NULL };
   char *p;
@@ -1096,7 +1096,7 @@ set_mode_lock(struct Service *service, const char *channel,
   ilog(L_DEBUG, "MLOCK -%s+%s", delstr, setstr);
 
   /* If we've been asked to update the db, then we should do so. */
-  if(value != NULL)
+  if(update)
   {
     char *lk = "";
 
@@ -1136,26 +1136,19 @@ set_mode_lock(struct Service *service, const char *channel,
         d ? delstr : "",
         l > 0 || k > 0? parabuf : "");
 
-    if(regchptr->autolimit && l < 0)
-      regchptr->autolimit = FALSE;
-
-    if(!db_set_string(SET_CHAN_MLOCK, regchptr->id, 
-          *mlockbuf == '\0' ? NULL : mlockbuf))
-      return FALSE;
+    if(dbchannel_get_autolimit(regchptr) && l < 0)
+      dbchannel_set_autolimit(regchptr, FALSE);
 
     if(*mlockbuf == '\0')
-    {
-      MyFree(*value);
-      *value = NULL;
-    }
+      dbchannel_set_mlock(regchptr, NULL);
     else
-      *value = replace_string(*value, mlockbuf);
+      dbchannel_set_mlock(regchptr, mlockbuf);
   }
 
   // Channel doesnt exist on the network, skip this
   if(chptr == NULL)
   {
-    free_regchan(regchptr);
+    dbchannel_free(regchptr);
     return TRUE;
   }
 
@@ -1253,22 +1246,6 @@ set_mode_lock(struct Service *service, const char *channel,
   }
 
   return TRUE;
-}
-
-void
-free_regchan(struct RegChannel *regchptr)
-{
-  MyFree(regchptr->description);
-  MyFree(regchptr->entrymsg);
-  MyFree(regchptr->url);
-  MyFree(regchptr->email);
-  MyFree(regchptr->topic);
-  MyFree(regchptr->mlock);
-  mqueue_hash_free(regchptr->flood_hash, &regchptr->flood_list);
-  regchptr->flood_hash = NULL;
-  mqueue_free(regchptr->gqueue);
-  regchptr->gqueue = NULL;
-  MyFree(regchptr);
 }
 
 void
@@ -1447,7 +1424,7 @@ check_masterless_channels(unsigned int accid)
         {
           if(chptr->regchan != NULL)
           {
-            free_regchan(chptr->regchan);
+            dbchannel_free(chptr->regchan);
             chptr->regchan = NULL;
           }
         }
