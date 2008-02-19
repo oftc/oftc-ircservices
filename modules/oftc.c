@@ -32,6 +32,7 @@
 #include "msg.h"
 #include "interface.h"
 #include "channel_mode.h"
+#include "dbchannel.h"
 #include "channel.h"
 #include "conf/modules.h"
 #include "hash.h"

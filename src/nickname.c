@@ -31,7 +31,6 @@
 #include "chanserv.h"
 #include "interface.h"
 #include "msg.h"
-#include "nick.h"
 
 /*
  * row_to_nickname:
@@ -44,10 +43,10 @@
  * Returns an allocated nickname.
  *
  */
-static Nickname
+static Nickname*
 row_to_nickname(row_t *row)
 {
-  Nickname nick = MyMalloc(sizeof(struct Nick));
+  Nickname *nick = MyMalloc(sizeof(Nickname));
 
   nick->id = atoi(row->cols[0]);
   nick->pri_nickid = atoi(row->cols[1]);
@@ -94,11 +93,11 @@ row_to_nickname(row_t *row)
  * was not found.
  *
  */
-Nickname
+Nickname*
 nickname_find(const char *nickname)
 {
   result_set_t *results;
-  Nickname nick;
+  Nickname *nick;
   int error;
 
   results = db_execute(GET_FULL_NICK, &error, "s", nickname);
@@ -133,7 +132,7 @@ nickname_find(const char *nickname)
  *
  */
 int
-nickname_register(Nickname nick)
+nickname_register(Nickname *nick)
 {
   int accid, nickid, ret, tmp;
 
@@ -200,7 +199,7 @@ failure:
  *
  */
 int
-nickname_delete(Nickname nick)
+nickname_delete(Nickname *nick)
 {
   int newid, ret, error;
 
@@ -298,7 +297,7 @@ nickname_is_forbid(const char *nickname)
 int
 nickname_forbid(const char *nick)
 {
-  Nickname nickname;
+  Nickname *nickname;
   int ret;
 
   db_begin_transaction();
@@ -411,7 +410,7 @@ nickname_id_from_nick(const char *nick, int is_accid)
  *
  */
 int
-nickname_set_master(Nickname nick, const char *master)
+nickname_set_master(Nickname *nick, const char *master)
 {
   int newid, ret;
 
@@ -438,7 +437,7 @@ nickname_set_master(Nickname nick, const char *master)
  *
  */
 int
-nickname_link(Nickname master, Nickname child)
+nickname_link(Nickname *master, Nickname *child)
 {
   int ret;
 
@@ -481,7 +480,7 @@ failure:
  *
  */
 int
-nickname_unlink(Nickname nick)
+nickname_unlink(Nickname *nick)
 {
   int ret, newid, new_nickid, error;
   char *tmp;
@@ -554,7 +553,7 @@ failure:
  *
  */
 int
-nickname_save(Nickname nick)
+nickname_save(Nickname *nick)
 {
   int ret;
 
@@ -626,7 +625,7 @@ row_to_access_entry(row_t *row)
  *
  */
 int
-nickname_accesslist_list(Nickname nick, dlink_list *list)
+nickname_accesslist_list(Nickname *nick, dlink_list *list)
 {
   result_set_t *results;
   int error, i;
@@ -654,7 +653,7 @@ nickname_accesslist_list(Nickname nick, dlink_list *list)
 }
 
 int
-nickname_accesslist_delete(Nickname nick, const char *value, int index)
+nickname_accesslist_delete(Nickname *nick, const char *value, int index)
 {
   int ret;
 
@@ -689,7 +688,7 @@ nickname_accesslist_free(dlink_list *list)
 }
 
 int
-nickname_accesslist_check(Nickname nick, const char *value)
+nickname_accesslist_check(Nickname *nick, const char *value)
 {
   dlink_list list = { 0 };
   dlink_node *ptr;
@@ -714,7 +713,7 @@ nickname_accesslist_check(Nickname nick, const char *value)
 }
 
 int
-nickname_cert_list(Nickname nick, dlink_list *list)
+nickname_cert_list(Nickname *nick, dlink_list *list)
 {
   result_set_t *results;
   int error, i;
@@ -742,7 +741,7 @@ nickname_cert_list(Nickname nick, dlink_list *list)
 }
 
 int
-nickname_cert_delete(Nickname nick, const char *value, int index)
+nickname_cert_delete(Nickname *nick, const char *value, int index)
 {
   int ret;
 
@@ -777,7 +776,7 @@ nickname_certlist_free(dlink_list *list)
 }
 
 int
-nickname_cert_check(Nickname nick, const char *value)
+nickname_cert_check(Nickname *nick, const char *value)
 {
   dlink_list list = { 0 };
   dlink_node *ptr;
@@ -934,14 +933,14 @@ nickname_list_admins_free(dlink_list *list)
   db_string_list_free(list);
 }
 
-inline Nickname
+inline Nickname *
 nickname_new()
 {
-  return MyMalloc(sizeof(struct Nick *));
+  return MyMalloc(sizeof(Nickname));
 }
 
 inline void
-nickname_free(Nickname nick)
+nickname_free(Nickname *nick)
 {
   ilog(L_DEBUG, "Freeing nick %p for %s", nick, nickname_get_nick(nick));
   MyFree(nick->email);
@@ -953,204 +952,204 @@ nickname_free(Nickname nick)
 }
 
 /* Nickname getters */
-inline link_node
-nickname_get_node(Nickname this)
+inline dlink_node
+nickname_get_node(Nickname *this)
 {
   return this->node;
 }
 
 
 inline unsigned int
-nickname_get_id(Nickname this)
+nickname_get_id(Nickname *this)
 {
   return this->id;
 }
 
 inline unsigned int
-nickname_get_nickid(Nickname this)
+nickname_get_nickid(Nickname *this)
 {
   return this->nickid;
 }
 
 inline unsigned int
-nickname_get_pri_nickid(Nickname this)
+nickname_get_pri_nickid(Nickname *this)
 {
   return this->pri_nickid;
 }
 
 inline const char *
-nickname_get_nick(Nickname this)
+nickname_get_nick(Nickname *this)
 {
   return this->nick;
 }
 
 inline const char *
-nickname_get_pass(Nickname this)
+nickname_get_pass(Nickname *this)
 {
   return this->pass;
 }
 
 inline const char *
-nickname_get_salt(Nickname this)
+nickname_get_salt(Nickname *this)
 {
   return this->salt;
 }
 
 inline const char *
-nickname_get_cloak(Nickname this)
+nickname_get_cloak(Nickname *this)
 {
   return this->cloak;
 }
 
 inline const char *
-nickname_get_email(Nickname this)
+nickname_get_email(Nickname *this)
 {
   return this->email;
 }
 
 inline const char *
-nickname_get_url(Nickname this)
+nickname_get_url(Nickname *this)
 {
   return this->url;
 }
 
 inline const char *
-nickname_get_last_realname(Nickname this)
+nickname_get_last_realname(Nickname *this)
 {
   return this->last_realname;
 }
 
 inline const char *
-nickname_get_last_host(Nickname this)
+nickname_get_last_host(Nickname *this)
 {
   return this->last_host;
 }
 
 inline const char *
-nickname_get_last_quit(Nickname this)
+nickname_get_last_quit(Nickname *this)
 {
   return this->last_quit;
 }
 
 inline unsigned int
-nickname_get_status(Nickname this)
+nickname_get_status(Nickname *this)
 {
   return this->status;
 }
 
 inline unsigned int
-nickname_get_language(Nickname this)
+nickname_get_language(Nickname *this)
 {
   return this->language;
 }
 
 inline unsigned char
-nickname_get_enforce(Nickname this)
+nickname_get_enforce(Nickname *this)
 {
   return this->enforce;
 }
 
 inline unsigned char
-nickname_get_secure(Nickname this)
+nickname_get_secure(Nickname *this)
 {
   return this->secure;
 }
 
 inline unsigned char
-nickname_get_verified(Nickname this)
+nickname_get_verified(Nickname *this)
 {
   return this->verified;
 }
 
 inline unsigned char
-nickname_get_cloak_on(Nickname this)
+nickname_get_cloak_on(Nickname *this)
 {
   return this->cloak_on;
 }
 
 inline unsigned char
-nickname_get_admin(Nickname this)
+nickname_get_admin(Nickname *this)
 {
   return this->admin;
 }
 
 inline unsigned char
-nickname_get_email_verified(Nickname this)
+nickname_get_email_verified(Nickname *this)
 {
   return this->email_verified;
 }
 
 inline unsigned char
-nickname_get_priv(Nickname this)
+nickname_get_priv(Nickname *this)
 {
   return this->priv;
 }
 
 inline time_t
-nickname_get_reg_time(Nickname this)
+nickname_get_reg_time(Nickname *this)
 {
   return this->reg_time;
 }
 
 inline time_t
-nickname_get_last_seen(Nickname this)
+nickname_get_last_seen(Nickname *this)
 {
   return this->last_seen;
 }
 
 inline time_t
-nickname_get_last_quit_time(Nickname this)
+nickname_get_last_quit_time(Nickname *this)
 {
   return this->last_quit_time;
 }
 
 /* Nickname setters */
 inline void
-nickname_set_id(Nickname this, unsigned int value)
+nickname_set_id(Nickname *this, unsigned int value)
 {
   this->id = value;
 }
 
 inline void
-nickname_set_nickid(Nickname this, unsigned int value)
+nickname_set_nickid(Nickname *this, unsigned int value)
 {
   this->nickid = value;
 }
 
 inline void
-nickname_set_pri_nickid(Nickname this, unsigned int value)
+nickname_set_pri_nickid(Nickname *this, unsigned int value)
 {
   this->pri_nickid = value;
 }
 
 inline void
-nickname_set_nick(Nickname this, const char *value)
+nickname_set_nick(Nickname *this, const char *value)
 {
   strlcpy(this->nick, value, sizeof(this->nick));
 }
 
 inline void
-nickname_set_pass(Nickname this, const char *value)
+nickname_set_pass(Nickname *this, const char *value)
 {
   strlcpy(this->pass, value, sizeof(this->pass));
   db_execute_nonquery(SET_NICK_PASSWORD, "s", this->pass);
 }
 
 inline void
-nickname_set_salt(Nickname this, const char *value)
+nickname_set_salt(Nickname *this, const char *value)
 {
   strlcpy(this->salt, value, sizeof(this->salt));
 }
 
 inline void
-nickname_set_cloak(Nickname this, const char *value)
+nickname_set_cloak(Nickname *this, const char *value)
 {
   strlcpy(this->cloak, value, sizeof(this->cloak));
   db_execute_nonquery(SET_NICK_CLOAK, "s", this->cloak);
 }
 
 inline void
-nickname_set_email(Nickname this, const char *value)
+nickname_set_email(Nickname *this, const char *value)
 {
   MyFree(this->email);
   DupString(this->email, value);
@@ -1158,7 +1157,7 @@ nickname_set_email(Nickname this, const char *value)
 }
 
 inline void
-nickname_set_url(Nickname this, const char *value)
+nickname_set_url(Nickname *this, const char *value)
 {
   MyFree(this->url);
   DupString(this->url, value);
@@ -1166,7 +1165,7 @@ nickname_set_url(Nickname this, const char *value)
 }
 
 inline void
-nickname_set_last_realname(Nickname this, const char *value)
+nickname_set_last_realname(Nickname *this, const char *value)
 {
   MyFree(this->last_realname);
   DupString(this->last_realname, value);
@@ -1174,7 +1173,7 @@ nickname_set_last_realname(Nickname this, const char *value)
 }
 
 inline void
-nickname_set_last_host(Nickname this, const char *value)
+nickname_set_last_host(Nickname *this, const char *value)
 {
   MyFree(this->last_host);
   DupString(this->last_host, value);
@@ -1182,7 +1181,7 @@ nickname_set_last_host(Nickname this, const char *value)
 }
 
 inline void
-nickname_set_last_quit(Nickname this, const char *value)
+nickname_set_last_quit(Nickname *this, const char *value)
 {
   MyFree(this->last_quit);
   DupString(this->last_quit, value);
@@ -1190,80 +1189,80 @@ nickname_set_last_quit(Nickname this, const char *value)
 }
 
 inline void
-nickname_set_status(Nickname this, unsigned int value)
+nickname_set_status(Nickname *this, unsigned int value)
 {
   this->status = value;
 }
 
 inline void
-nickname_set_language(Nickname this, unsigned int value)
+nickname_set_language(Nickname *this, unsigned int value)
 {
   this->language = value;
   db_execute_nonquery(SET_NICK_LANGUAGE, "i", value);
 }
 
 inline void
-nickname_set_enforce(Nickname this, unsigned char value)
+nickname_set_enforce(Nickname *this, unsigned char value)
 {
   this->enforce = value;
   db_execute_nonquery(SET_NICK_ENFORCE, "b", value);
 }
 
 inline void
-nickname_set_secure(Nickname this, unsigned char value)
+nickname_set_secure(Nickname *this, unsigned char value)
 {
   this->secure = value;
   db_execute_nonquery(SET_NICK_SECURE, "b", value);
 }
 
 inline void
-nickname_set_verified(Nickname this, unsigned char value)
+nickname_set_verified(Nickname *this, unsigned char value)
 {
   this->verified = value;
 }
 
 inline void
-nickname_set_cloak_on(Nickname this, unsigned char value)
+nickname_set_cloak_on(Nickname *this, unsigned char value)
 {
   this->cloak_on = value;
   db_execute_nonquery(SET_NICK_CLOAKON, "b", value);
 }
 
 inline void
-nickname_set_admin(Nickname this, unsigned char value)
+nickname_set_admin(Nickname *this, unsigned char value)
 {
   this->admin = value;
   db_execute_nonquery(SET_NICK_ADMIN, "b", value);
 }
 
 inline void
-nickname_set_email_verified(Nickname this, unsigned char value)
+nickname_set_email_verified(Nickname *this, unsigned char value)
 {
   this->email_verified = value;
 }
 
 inline void
-nickname_set_priv(Nickname this, unsigned char value)
+nickname_set_priv(Nickname *this, unsigned char value)
 {
   this->priv = value;
   db_execute_nonquery(SET_NICK_PRIVATE, "b", value);
 }
 
 inline void
-nickname_set_reg_time(Nickname this, time_t value)
+nickname_set_reg_time(Nickname *this, time_t value)
 {
   this->reg_time = value;
 }
 
 inline void
-nickname_set_last_seen(Nickname this, time_t value)
+nickname_set_last_seen(Nickname *this, time_t value)
 {
   this->last_seen = value;
   db_execute_nonquery(SET_NICK_LAST_SEEN, "i", value);
 }
 
 inline void
-nickname_set_last_quit_time(Nickname this, time_t value)
+nickname_set_last_quit_time(Nickname *this, time_t value)
 {
   this->last_quit_time = value;
   db_execute_nonquery(SET_NICK_LAST_QUITTIME, "i", value);

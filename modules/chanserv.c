@@ -429,7 +429,7 @@ m_register(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel    *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char desc[IRC_BUFSIZE+1];
 
   assert(parv[1]);
@@ -486,7 +486,7 @@ m_register(struct Service *service, struct Client *client,
   join_params(desc, parc-1, &parv[2]);
   dbchannel_set_description(regchptr, desc);
 
-  if (dbchannel_register(regchptr, client->nickname))
+  if(dbchannel_register(regchptr, client->nickname))
   {
     chptr->regchan = regchptr;
     reply_user(service, service, client, CS_REG_SUCCESS, parv[1]);
@@ -506,7 +506,7 @@ m_drop(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
 
   assert(parv[1]);
 
@@ -538,7 +538,7 @@ static void
 m_info(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char buf[IRC_BUFSIZE+1] = {0};
   char *nick;
   struct ChanAccess *access = NULL;
@@ -643,7 +643,7 @@ m_access_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct ChanAccess *access, *oldaccess;
   unsigned int account, level;
   char *level_added = "MEMBER";
@@ -728,7 +728,7 @@ m_access_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct ChanAccess *access, *myaccess;
   unsigned int nickid;
   int mcount = -1;
@@ -804,7 +804,7 @@ m_access_list(struct Service *service, struct Client *client,
 {
   struct ChanAccess *access = NULL;
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char *nick;
   int i = 1;
   dlink_node *ptr;
@@ -863,7 +863,7 @@ m_set_desc(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
@@ -885,7 +885,7 @@ m_set_url(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
@@ -907,7 +907,7 @@ m_set_email(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
@@ -929,7 +929,7 @@ m_set_entrymsg(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char value[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
@@ -951,7 +951,7 @@ m_set_topic(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char value[IRC_BUFSIZE+1];
   char *topic = NULL;
   int changetopic = FALSE;
@@ -988,7 +988,7 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char value[IRC_BUFSIZE+1];
   char limit_cache;
 
@@ -1119,7 +1119,7 @@ m_set_expirebans(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr = hash_find_channel(parv[1]);
-  DBChannel regchptr;
+  DBChannel *regchptr;
   int interval;
   char *flag;
 
@@ -1214,9 +1214,9 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct ServiceBan *akick;
-  Nickname nick;
+  Nickname *nick;
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char reason[IRC_BUFSIZE+1];
 
   chptr = hash_find_channel(parv[1]);
@@ -1285,7 +1285,7 @@ m_akick_list(struct Service *service, struct Client *client,
   struct ServiceBan *akick = NULL;
   int i = 1;
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   char setbuf[TIME_BUFFER + 1];
   dlink_node *ptr;
   dlink_list list = { 0 };
@@ -1327,7 +1327,7 @@ m_akick_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   int index, ret;
 
   chptr = hash_find_channel(parv[1]);
@@ -1352,7 +1352,7 @@ m_akick_enforce(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   int numkicks = 0;
   dlink_node *ptr;
   dlink_node *next_ptr;
@@ -1380,7 +1380,7 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   dlink_node *ptr, *nptr;
   int numbans = 0;
  
@@ -1413,7 +1413,7 @@ m_clear_quiets(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   dlink_node *ptr, *nptr;
   int numbans = 0;
 
@@ -1446,7 +1446,7 @@ m_clear_ops(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   dlink_node *ptr;
   int opcount = 0;
  
@@ -1479,7 +1479,7 @@ m_clear_voices(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   dlink_node *ptr;
   int voicecount = 0;
  
@@ -1562,7 +1562,7 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   dlink_node *ptr, *nptr;
   char buf[IRC_BUFSIZE+1];
   int usercount = 0;
@@ -1595,7 +1595,7 @@ static void
 m_op(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct Client *target;
   struct Membership *ms;
 
@@ -1635,7 +1635,7 @@ static void
 m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct Client *target;
   struct Membership *ms;
 
@@ -1674,7 +1674,7 @@ static void
 m_voice(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel    *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct Client     *target;
   struct Membership *ms;
   struct ChanAccess *access;
@@ -1724,7 +1724,7 @@ static void
 m_devoice(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel    *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct Client     *target;
   struct Membership *ms;
   struct ChanAccess *access;
@@ -1774,7 +1774,7 @@ static void
 m_invite(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct Client *target;
 
   chptr = hash_find_channel(parv[1]);
@@ -1815,7 +1815,7 @@ static void
 m_unban(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct Ban *banp;
   int numbans = 0;
 
@@ -1852,7 +1852,7 @@ static void
 m_unquiet(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct Ban *banp;
   int numbans = 0;
 
@@ -1889,7 +1889,7 @@ m_set_string(struct Service *service, struct Client *client,
     const char *value, char **param, int parc)
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
 
   chptr = hash_find_channel(channel);
   regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
@@ -1955,7 +1955,7 @@ m_set_flag(struct Service *service, struct Client *client,
            char *channel, char *toggle, int type, char *flagname)
 {
   struct Channel *chptr;
-  DBChannel regchptr;
+  DBChannel *regchptr;
   int on;
 
   chptr = hash_find_channel(channel);
@@ -2281,7 +2281,7 @@ cs_on_cmode_change(va_list args)
  * @param args 
  * @return pass_callback(self, struct Client *, char *)
  * When a Client joins a Channel:
- *  - attach DBChannel  to struct Channel*
+ *  - attach DBChannel * to struct Channel*
  */
 static void *
 cs_on_client_join(va_list args)
@@ -2290,7 +2290,7 @@ cs_on_client_join(va_list args)
   char          *name     = va_arg(args, char *);
 
   char tmp_name[CHANNELLEN+1];
-  DBChannel regchptr;
+  DBChannel *regchptr;
   struct Channel *chptr;
   struct ChanAccess *access;
   unsigned int level;
@@ -2437,7 +2437,7 @@ cs_on_topic_change(va_list args)
 {
   struct Channel *chan = va_arg(args, struct Channel *);
   char *setter = va_arg(args, char *);
-  DBChannel regchptr;
+  DBChannel *regchptr;
 
   if(chan->regchan == NULL)
     return pass_callback(cs_on_topic_change_hook, chan, setter);
@@ -2481,7 +2481,7 @@ cs_on_burst_done(va_list args)
   DLINK_FOREACH(ptr, global_channel_list.head)
   {
     struct Channel *chptr = (struct Channel *)ptr->data;
-    DBChannel regchptr = chptr->regchan;
+    DBChannel *regchptr = chptr->regchan;
 
     if(regchptr == NULL)
       continue;

@@ -790,7 +790,7 @@ unquiet_mask(struct Service *service, struct Channel *chptr, const char *mask)
 void
 identify_user(struct Client *client)
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
 
   if(nickname_get_admin(nick) && IsOper(client))
     client->access = ADMIN_FLAG;
@@ -968,7 +968,7 @@ set_mode_lock(struct Service *service, const char *channel,
   char modebuf[MODEBUFLEN+1], parabuf[MODEBUFLEN+1];
   char setstr[MODEBUFLEN/2+1], delstr[MODEBUFLEN/2+1]; 
   char mlockbuf[MODEBUFLEN+1];
-  struct RegChannel *regchptr;
+  DBChannel *regchptr;
   struct Channel *chptr;
   int k, l, s, d;
 
@@ -1269,7 +1269,7 @@ free_jupeentry(struct JupeEntry *entry)
 }
 
 int 
-check_nick_pass(struct Client *client, Nickname nick, const char *password)
+check_nick_pass(struct Client *client, Nickname *nick, const char *password)
 {
   char fullpass[PASSLEN*2+1];
   char *pass;
@@ -1440,7 +1440,7 @@ int
 drop_nickname(struct Service *service, struct Client *client, const char *target)
 {
   char *channel;
-  Nickname nick = nickname_find(target);
+  Nickname *nick = nickname_find(target);
 
   if((channel = check_masterless_channels(nickname_get_id(nick))) != NULL)
   {

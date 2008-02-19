@@ -367,7 +367,7 @@ static void
 m_admin_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  Nickname nick = nickname_find(parv[1]);
+  Nickname *nick = nickname_find(parv[1]);
   struct Client *target;
 
   if(nick == NULL)
@@ -417,7 +417,7 @@ static void
 m_admin_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  Nickname nick;
+  Nickname *nick;
   struct Client *target;
     
   nick = nickname_find(parv[1]);

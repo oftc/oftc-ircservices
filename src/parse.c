@@ -37,7 +37,6 @@
 #include "interface.h"
 #include "channel_mode.h"
 #include "channel.h"
-#include "dbchannel.h"
 #include "conf/logging.h"
 #include "chanaccess.h"
 
@@ -388,7 +387,7 @@ handle_services_command(struct ServiceMessage *pmptr,
     unsigned int i, char *hpara[])
 {
   struct Channel *chptr;
-  struct RegChannel *regchptr = NULL;
+  DBChannel *regchptr = NULL;
   struct ChanAccess *access;
   unsigned int level = 0;
 

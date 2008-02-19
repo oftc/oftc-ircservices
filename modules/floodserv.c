@@ -72,7 +72,7 @@ static void mqueue_add_message(struct MessageQueue *, const char *);
 static int mqueue_enforce(struct MessageQueue *);
 
 static void floodserv_free_channels();
-static void floodserv_free_channel(struct RegChannel *);
+static void floodserv_free_channel(DBChannel *);
 
 static struct MessageQueue **global_msg_queue;
 static dlink_list global_msg_list;
@@ -256,7 +256,7 @@ floodserv_free_channels()
 }
 
 static void
-floodserv_free_channel(DBChannel chptr)
+floodserv_free_channel(DBChannel *chptr)
 {
   mqueue_hash_free(dbchannel_get_flood_hash(chptr), dbchannel_get_flood_list(chptr));
   dbchannel_set_flood_hash(chptr, NULL);
@@ -267,7 +267,7 @@ floodserv_free_channel(DBChannel chptr)
 static void
 setup_channel(struct Channel *chptr)
 {
-  struct RegChannel *regchan = chptr->regchan == NULL ? dbchannel_find(chptr->chname) : chptr->regchan;
+  DBChannel *regchan = chptr->regchan == NULL ? dbchannel_find(chptr->chname) : chptr->regchan;
 
   if(regchan != NULL && dbchannel_get_floodserv(regchan) && !IsMember(fsclient, chptr))
   {

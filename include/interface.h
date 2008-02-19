@@ -129,7 +129,7 @@ int set_mode_lock(struct Service *, const char *, struct Client *,
 
 char *replace_string(char *, const char *);
 int check_list_entry(unsigned int, unsigned int, const char *);
-int check_nick_pass(struct Client *, Nickname, const char *);
+int check_nick_pass(struct Client *, Nickname *, const char *);
 void make_random_string(char *, size_t);
 int enforce_matching_serviceban(struct Service *, struct Channel *, 
     struct Client *);

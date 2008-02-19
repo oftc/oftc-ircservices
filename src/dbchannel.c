@@ -32,14 +32,13 @@
 #include "interface.h"
 #include "msg.h"
 #include "mqueue.h"
-#include "regchptr.h"
 
-static struct RegChannel *
+static DBChannel *
 row_to_dbchannel(row_t *row)
 {
-  struct RegChannel *channel;
+  DBChannel *channel;
 
-  channel = MyMalloc(sizeof(struct RegChannel));
+  channel = MyMalloc(sizeof(DBChannel));
 
   channel->id = atoi(row->cols[0]);
   strlcpy(channel->channel, row->cols[1], sizeof(channel->channel));
@@ -69,10 +68,10 @@ row_to_dbchannel(row_t *row)
   return channel;
 }
 
-struct RegChannel *
+DBChannel *
 dbchannel_find(const char *name)
 {
-  struct RegChannel *channel;
+  DBChannel *channel;
   result_set_t *results;
   int error;
 
@@ -96,7 +95,7 @@ dbchannel_find(const char *name)
 }
 
 int
-dbchannel_delete(struct RegChannel *channel)
+dbchannel_delete(DBChannel *channel)
 {
   int ret;
 
@@ -113,7 +112,7 @@ int
 dbchannel_forbid(const char *name)
 {
   int ret;
-  struct RegChannel *chan;
+  DBChannel *chan;
 
   db_begin_transaction();
 
@@ -148,7 +147,7 @@ dbchannel_delete_forbid(const char *name)
 }
 
 int
-dbchannel_register(struct RegChannel *channel, Nickname founder)
+dbchannel_register(DBChannel *channel, Nickname *founder)
 {
   int ret;
 
@@ -195,58 +194,59 @@ dbchannel_is_forbid(const char *channel)
   return TRUE;
 }
 
-int
+inline int
 dbchannel_list_all(dlink_list *list)
 {
   return db_string_list(GET_CHANNELS_OPER, list);
 }
 
-void
+inline void
 dbchannel_list_all_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-int
+inline int
 dbchannel_list_regular(dlink_list *list)
 {
   return db_string_list(GET_CHANNELS, list);
 }
 
-void
+inline void
 dbchannel_list_regular_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-int
+inline int
 dbchannel_list_forbid(dlink_list *list)
 {
   return db_string_list(GET_CHANNEL_FORBID_LIST, list);
 }
 
-void
+inline void
 dbchannel_list_forbid_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-int
+inline int
 dbchannel_masters_list(unsigned int id, dlink_list *list)
 {
   return db_string_list_by_id(GET_CHAN_MASTERS, list, id);
 }
 
-void
+inline void
 dbchannel_masters_list_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-int
+inline int
 dbchannel_masters_count(unsigned int id, int *count)
 {
   int error;
+
   *count = atoi(db_execute_scalar(GET_CHAN_MASTER_COUNT, &error, "i", id));
   if(error)
   {
@@ -257,321 +257,322 @@ dbchannel_masters_count(unsigned int id, int *count)
   return TRUE;
 }
 
-DBChannel
+inline DBChannel*
 dbchannel_new()
 {
-  return MyMalloc(sizeof(struct RegChannel));
+  return MyMalloc(sizeof(DBChannel));
 }
 
 /* Member getters */
-dlink_node
-dbchannel_get_node(DBChannel this)
+inline dlink_node
+dbchannel_get_node(DBChannel *this)
 {
   return this->node;
 }
 
-unsigned int
-dbchannel_get_id(DBChannel this)
+inline unsigned int
+dbchannel_get_id(DBChannel *this)
 {
   return this->id;
 }
 
-time_t
-dbchannel_get_regtime(DBChannel this)
+inline time_t
+dbchannel_get_regtime(DBChannel *this)
 {
   return this->regtime;
 }
 
-const char *
-dbchannel_get_channel(DBChannel this)
+inline const char *
+dbchannel_get_channel(DBChannel *this)
 {
   return this->channel;
 }
 
-const char *
-dbchannel_get_description(DBChannel this)
+inline const char *
+dbchannel_get_description(DBChannel *this)
 {
   return this->description;
 }
 
-const char *
-dbchannel_get_entrymsg(DBChannel this)
+inline const char *
+dbchannel_get_entrymsg(DBChannel *this)
 {
   return this->entrymsg;
 }
 
-const char *
-dbchannel_get_url(DBChannel this)
+inline const char *
+dbchannel_get_url(DBChannel *this)
 {
   return this->url;
 }
 
-const char *
-dbchannel_get_email(DBChannel this)
+inline const char *
+dbchannel_get_email(DBChannel *this)
 {
   return this->email;
 }
 
-const char *
-dbchannel_get_topic(DBChannel this)
+inline const char *
+dbchannel_get_topic(DBChannel *this)
 {
   return this->topic;
 }
 
-const char *
-dbchannel_get_mlock(DBChannel this)
+inline const char *
+dbchannel_get_mlock(DBChannel *this)
 {
   return this->mlock;
 }
 
-char dbchannel_get_priv(DBChannel this)
+inline char dbchannel_get_priv(DBChannel *this)
 {
   return this->priv;
 }
 
-char
-dbchannel_get_restricted(DBChannel this)
+inline char
+dbchannel_get_restricted(DBChannel *this)
 {
   return this->restricted;
 }
 
-char
-dbchannel_get_topic_lock(DBChannel this)
+inline char
+dbchannel_get_topic_lock(DBChannel *this)
 {
   return this->topic_lock;
 }
 
-char
-dbchannel_get_verbose(DBChannel this)
+inline char
+dbchannel_get_verbose(DBChannel *this)
 {
   return this->verbose;
 }
 
-char
-dbchannel_get_autolimit(DBChannel this)
+inline char
+dbchannel_get_autolimit(DBChannel *this)
 {
   return this->autolimit;
 }
 
-char
-dbchannel_get_expirebans(DBChannel this)
+inline char
+dbchannel_get_expirebans(DBChannel *this)
 {
   return this->expirebans;
 }
 
-char
-dbchannel_get_floodserv(DBChannel this)
+inline char
+dbchannel_get_floodserv(DBChannel *this)
 {
   return this->floodserv;
 }
 
-char
-dbchannel_get_autoop(DBChannel this)
+inline char
+dbchannel_get_autoop(DBChannel *this)
 {
   return this->autoop;
 }
 
-char
-dbchannel_get_autovoice(DBChannel this)
+inline char
+dbchannel_get_autovoice(DBChannel *this)
 {
   return this->autovoice;
 }
 
-char
-dbchannel_get_leaveops(DBChannel this)
+inline char
+dbchannel_get_leaveops(DBChannel *this)
 {
   return this->leaveops;
 }
 
-unsigned int
-dbchannel_get_expirebans_lifetime(DBChannel this)
+inline unsigned int
+dbchannel_get_expirebans_lifetime(DBChannel *this)
 {
   return this->expirebans_lifetime;
 }
 
 /* FloodServ */
-struct MessageQueue **
-dbchannel_get_flood_hash(DBChannel this)
+inline struct MessageQueue **
+dbchannel_get_flood_hash(DBChannel *this)
 {
   return this->flood_hash;
 }
 
-dlink_list *
-dbchannel_get_flood_list(DBChannel this)
+inline dlink_list *
+dbchannel_get_flood_list(DBChannel *this)
 {
   return &this->flood_list;
 }
 
-struct MessageQueue *
-dbchannel_get_gqueue(DBChannel this)
+inline struct MessageQueue *
+dbchannel_get_gqueue(DBChannel *this)
 {
   return this->gqueue;
 }
 
 /* Memer setters */
-void
-dbchannel_set_node(DBChannel this, dlink_node node)
+inline void
+dbchannel_set_node(DBChannel *this, dlink_node node)
 {
   this->node = node;
 }
 
-void
-dbchannel_set_id(DBChannel this, unsigned int id)
+inline void
+dbchannel_set_id(DBChannel *this, unsigned int id)
 {
   this->id = id;
 }
 
-void
-dbchannel_set_regtime(DBChannel this, time_t regtime)
+inline void
+dbchannel_set_regtime(DBChannel *this, time_t regtime)
 {
   this->regtime = regtime;
 }
 
-void
-dbchannel_set_channel(DBChannel this, const char *name)
+inline void
+dbchannel_set_channel(DBChannel *this, const char *name)
 {
   strlcpy(this->channel, name, sizeof(this->channel));
 }
 
-void
-dbchannel_set_description(DBChannel this, const char *description)
+inline void
+dbchannel_set_description(DBChannel *this, const char *description)
 {
   MyFree(this->description);
   DupString(this->description, description);
   db_execute_nonquery(SET_CHAN_DESC, "s", this->description);
 }
 
-void
-dbchannel_set_entrymsg(DBChannel this, const char *entrymsg)
+inline void
+dbchannel_set_entrymsg(DBChannel *this, const char *entrymsg)
 {
   MyFree(this->entrymsg);
   DupString(this->entrymsg, entrymsg);
   db_execute_nonquery(SET_CHAN_ENTRYMSG, "s", this->entrymsg);
 }
 
-void
-dbchannel_set_url(DBChannel this, const char *url)
+inline void
+dbchannel_set_url(DBChannel *this, const char *url)
 {
   MyFree(this->url);
   DupString(this->url, url);
   db_execute_nonquery(SET_CHAN_URL, "s", this->url);
 }
 
-void
-dbchannel_set_email(DBChannel this, const char *email)
+inline void
+dbchannel_set_email(DBChannel *this, const char *email)
 {
   MyFree(this->email);
   DupString(this->email, email);
   db_execute_nonquery(SET_CHAN_EMAIL, "s", this->email);
 }
 
-void dbchannel_set_topic(DBChannel this, const char *topic)
+inline void 
+dbchannel_set_topic(DBChannel *this, const char *topic)
 {
   MyFree(this->topic);
   DupString(this->topic, topic);
   db_execute_nonquery(SET_CHAN_TOPIC, "s", this->topic);
 }
 
-void
-dbchannel_set_mlock(DBChannel this, const char *mlock)
+inline void
+dbchannel_set_mlock(DBChannel *this, const char *mlock)
 {
   MyFree(this->mlock);
   DupString(this->mlock, mlock);
   db_execute_nonquery(SET_CHAN_MLOCK, "s", this->mlock);
 }
 
-void
-dbchannel_set_priv(DBChannel this, char priv)
+inline void
+dbchannel_set_priv(DBChannel *this, char priv)
 {
   this->priv = priv;
   db_execute_nonquery(SET_CHAN_PRIVATE, "b", priv);
 }
 
-void
-dbchannel_set_restricted(DBChannel this, char restricted)
+inline void
+dbchannel_set_restricted(DBChannel *this, char restricted)
 {
   this->restricted = restricted;
   db_execute_nonquery(SET_CHAN_RESTRICTED, "b", restricted);
 }
 
-void
-dbchannel_set_topic_lock(DBChannel this, char topic_lock)
+inline void
+dbchannel_set_topic_lock(DBChannel *this, char topic_lock)
 {
   this->topic_lock = topic_lock;
   db_execute_nonquery(SET_CHAN_TOPICLOCK, "b", topic_lock);
 }
 
-void
-dbchannel_set_verbose(DBChannel this, char verbose)
+inline void
+dbchannel_set_verbose(DBChannel *this, char verbose)
 {
   this->verbose = verbose;
   db_execute_nonquery(SET_CHAN_VERBOSE, "b", verbose);
 }
 
-void
-dbchannel_set_autolimit(DBChannel this, char autolimit)
+inline void
+dbchannel_set_autolimit(DBChannel *this, char autolimit)
 {
   this->autolimit = autolimit;
   db_execute_nonquery(SET_CHAN_AUTOLIMIT, "b", autolimit);
 }
 
-void
-dbchannel_set_expirebans(DBChannel this, char expirebans)
+inline void
+dbchannel_set_expirebans(DBChannel *this, char expirebans)
 {
   this->expirebans = expirebans;
   db_execute_nonquery(SET_CHAN_EXPIREBANS, "b", expirebans);
 }
 
-void
-dbchannel_set_floodserv(DBChannel this, char floodserv)
+inline void
+dbchannel_set_floodserv(DBChannel *this, char floodserv)
 {
   this->floodserv = floodserv;
   db_execute_nonquery(SET_CHAN_FLOODSERV, "b", floodserv);
 }
 
-void
-dbchannel_set_autoop(DBChannel this, char autoop)
+inline void
+dbchannel_set_autoop(DBChannel *this, char autoop)
 {
   this->autoop = autoop;
   db_execute_nonquery(SET_CHAN_AUTOOP, "b", autoop);
 }
 
-void
-dbchannel_set_autovoice(DBChannel this, char autovoice)
+inline void
+dbchannel_set_autovoice(DBChannel *this, char autovoice)
 {
   this->autovoice = autovoice;
   db_execute_nonquery(SET_CHAN_AUTOVOICE, "b", autovoice);
 }
 
-void
-dbchannel_set_leaveops(DBChannel this, char leaveops)
+inline void
+dbchannel_set_leaveops(DBChannel *this, char leaveops)
 {
   this->leaveops = leaveops;
   db_execute_nonquery(SET_CHAN_LEAVEOPS, "b", leaveops);
 }
 
-void
-dbchannel_set_expirebans_lifetime(DBChannel this, unsigned int time)
+inline void
+dbchannel_set_expirebans_lifetime(DBChannel *this, unsigned int time)
 {
   this->expirebans_lifetime = time;
   db_execute_nonquery(SET_EXPIREBANS_LIFETIME, "i", time);
 }
 
 /* FloodServ */
-void
-dbchannel_set_flood_hash(DBChannel this, struct MessageQueue ** queue)
+inline void
+dbchannel_set_flood_hash(DBChannel *this, struct MessageQueue ** queue)
 {
   this->flood_hash = queue;
 }
 
-void
-dbchannel_set_gqueue(DBChannel this, struct MessageQueue *queue)
+inline void
+dbchannel_set_gqueue(DBChannel *this, struct MessageQueue *queue)
 {
   this->gqueue = queue;
 }
 
-void
-dbchannel_free(DBChannel this)
+inline void
+dbchannel_free(DBChannel *this)
 {
   MyFree(this->description);
   MyFree(this->entrymsg);
@@ -585,4 +586,3 @@ dbchannel_free(DBChannel this)
   this->gqueue = NULL;
   MyFree(this);
 }
-

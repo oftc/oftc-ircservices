@@ -402,7 +402,7 @@ static void
 m_register(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname nick;
+  Nickname *nick;
   char *pass;
   char password[PASSLEN+SALTLEN+1];
   char salt[SALTLEN+1];
@@ -470,7 +470,7 @@ m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
   struct Client *target;
-  Nickname nick = nickname_find(client->name);
+  Nickname *nick = nickname_find(client->name);
   char *target_nick = NULL;
 
   assert(nick != NULL);
@@ -584,7 +584,7 @@ static void
 m_identify(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  Nickname nick;
+  Nickname *nick;
   const char *name;
 
   if(parc > 1)
@@ -636,7 +636,7 @@ static void
 m_set_password(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  Nickname nick;
+  Nickname *nick;
   char *pass;
   char password[PASSLEN+SALTLEN+1];
   
@@ -709,7 +709,7 @@ static void
 m_set_url(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   
   if(parc == 0)
   {
@@ -734,7 +734,7 @@ static void
 m_set_email(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   
   if(parc == 0)
   {
@@ -749,7 +749,7 @@ static void
 m_set_cloak(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   unsigned char flag;
   
   if(parc == 0)
@@ -778,7 +778,7 @@ static void
 m_cloakstring(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname nick = nickname_find(parv[1]);
+  Nickname *nick = nickname_find(parv[1]);
 
   if(nick == NULL)
   {
@@ -837,7 +837,7 @@ static void
 m_set_secure(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   unsigned char flag;
   
   if(parc == 0)
@@ -866,7 +866,7 @@ static void
 m_set_enforce(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   unsigned char flag;
   
   if(parc == 0)
@@ -895,7 +895,7 @@ static void
 m_set_master(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
 
   if(parc == 0)
   {
@@ -922,7 +922,7 @@ static void
 m_set_private(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   unsigned char flag;
   
   if(parc == 0)
@@ -952,7 +952,7 @@ static void
 m_access_add(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   struct AccessEntry access;
 
   if(strchr(parv[1], '@') == NULL)
@@ -974,7 +974,7 @@ static void
 m_access_list(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  Nickname nick;
+  Nickname *nick;
   struct AccessEntry *entry = NULL;
   dlink_list list = { 0 };
   dlink_node *ptr;
@@ -996,7 +996,7 @@ static void
 m_access_del(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   int index, ret;
 
   index = atoi(parv[1]);
@@ -1009,7 +1009,7 @@ static void
 m_cert_add(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   char *certfp;
   struct AccessEntry access = { 0 };
 
@@ -1049,7 +1049,7 @@ static void
 m_cert_list(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  Nickname nick;
+  Nickname *nick;
   struct AccessEntry *entry = NULL;
   dlink_list list = { 0 };
   dlink_node *ptr;
@@ -1077,7 +1077,7 @@ static void
 m_cert_del(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   int index, ret;
 
   index = atoi(parv[1]);
@@ -1089,7 +1089,7 @@ m_cert_del(struct Service *service, struct Client *client, int parc,
 static void
 m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  Nickname nick;
+  Nickname *nick;
 
   if(find_client(parv[1]) == NULL)
   {
@@ -1128,7 +1128,7 @@ m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_link(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  Nickname nick, master_nick;
+  Nickname *nick, *master_nick;
 
   nick = client->nickname;
   if((master_nick = nickname_find(parv[1])) == NULL)
@@ -1170,7 +1170,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  Nickname nick = client->nickname;
+  Nickname *nick = client->nickname;
   unsigned int newid;
 
   newid = nickname_unlink(nick);
@@ -1190,7 +1190,7 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  Nickname nick;
+  Nickname *nick;
   struct Client *target;
   struct InfoChanList *chan = NULL;
   char *name;
@@ -1433,7 +1433,7 @@ m_unforbid(struct Service *service, struct Client *client, int parc,
 static void 
 m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  Nickname oldnick, nick;
+  Nickname *oldnick, *nick;
   char **newparv;
   char buf[IRC_BUFSIZE] = { '\0' };
   int oldaccess;
@@ -1479,7 +1479,7 @@ static void
 m_sendpass(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  Nickname nick, temp;
+  Nickname *nick, *temp;
   char buf[IRC_BUFSIZE+1] = {0};
   char password[PASSLEN+1] = {0};
   char *hmac;
@@ -1630,7 +1630,7 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_enslave(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  Nickname nick, slave_nick;
+  Nickname *nick, *slave_nick;
 
   nick = client->nickname;
   if((slave_nick = nickname_find(parv[1])) == NULL)
@@ -1695,7 +1695,7 @@ ns_on_nick_change(va_list args)
 {
   struct Client *user = va_arg(args, struct Client *);
   char *oldnick       = va_arg(args, char *);
-  Nickname nick_p;
+  Nickname *nick_p;
   struct Client *enforcer;
   char userhost[USERHOSTLEN+1]; 
   int oldid = 0;
@@ -1842,7 +1842,7 @@ static void *
 ns_on_newuser(va_list args)
 {
   struct Client *newuser = va_arg(args, struct Client*);
-  Nickname nick_p;
+  Nickname *nick_p;
   char userhost[USERHOSTLEN+1];
   
   if(IsMe(newuser->from))
@@ -1913,7 +1913,7 @@ ns_on_quit(va_list args)
 {
   struct Client *user     = va_arg(args, struct Client *);
   char          *comment  = va_arg(args, char *);
-  Nickname nick = user->nickname;
+  Nickname *nick = user->nickname;
 
   if(IsServer(user))
     return pass_callback(ns_quit_hook, user, comment);
@@ -1938,7 +1938,7 @@ static void *
 ns_on_certfp(va_list args)
 {
   struct Client *user = va_arg(args, struct Client *);
-  Nickname nick = nickname_find(user->name);
+  Nickname *nick = nickname_find(user->name);
 
   if(nick == NULL)
     return pass_callback(ns_certfp_hook, user);

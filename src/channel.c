@@ -28,6 +28,8 @@
 
 #include "stdinc.h"
 #include "channel_mode.h"
+#include "nickname.h"
+#include "dbchannel.h"
 #include "channel.h"
 #include "dbm.h"
 #include "nickname.h"

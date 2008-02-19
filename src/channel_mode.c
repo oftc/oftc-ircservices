@@ -28,6 +28,8 @@
 
 #include "stdinc.h"
 #include "channel_mode.h"
+#include "nickname.h"
+#include "dbchannel.h"
 #include "channel.h"
 #include "client.h"
 #include "send.h"
@@ -35,7 +37,6 @@
 #include "dbm.h"
 #include "language.h"
 #include "parse.h"
-#include "nickname.h"
 #include "interface.h"
 
 /* 10 is a magic number in hybrid 6 NFI where it comes from -db */
