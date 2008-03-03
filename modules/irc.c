@@ -458,6 +458,14 @@ irc_sendmsg_akill(va_list args)
 
   split_nuh(&nuh);
 
+  if(strlen(user) == 1 && strlen(host) == 1 &&
+     user[0] == '*' && host[0] == '*')
+  {
+    ilog(L_CRIT, "%s Attempting to KLINE *@* Aborted ...",
+      (source != NULL) ? source->name : me.name);
+    return NULL;
+  }
+
   sendto_server(uplink, ":%s KLINE * %ld %s %s :autokilled: %s", 
       (source != NULL) ? source->name : me.name, duration, user, host, reason);
 

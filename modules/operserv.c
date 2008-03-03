@@ -453,6 +453,7 @@ m_akill_add(struct Service *service, struct Client *client,
 {
   struct ServiceBan *akill, *tmp;
   char reason[IRC_BUFSIZE+1] = "\0";
+  char mask_buf[IRC_BUFSIZE+1] = "\0";
   int para_start = 2;
   char *mask = parv[1];
   char duration_char = '\0';
@@ -513,14 +514,19 @@ m_akill_add(struct Service *service, struct Client *client,
   if(duration == -1)
     duration = 0;
 
-  if((tmp = akill_find(mask)) != NULL)
+  if(strchr(mask, '@') == NULL)
+    snprintf(mask_buf, sizeof(mask_buf), "*@%s", mask);
+  else
+    strlcpy(mask_buf, mask, sizeof(mask_buf));
+
+  if((tmp = akill_find(mask_buf)) != NULL)
   {
-    reply_user(service, service, client, OS_AKILL_ALREADY, mask);
+    reply_user(service, service, client, OS_AKILL_ALREADY, mask_buf);
     free_serviceban(tmp);
     return;
   }
 
-  if(!valid_wild_card(mask))
+  if(!valid_wild_card(mask_buf))
   {
     reply_user(service, service, client, OS_AKILL_TOO_WILD, 
         ServicesInfo.min_nonwildcard);
@@ -534,18 +540,18 @@ m_akill_add(struct Service *service, struct Client *client,
   akill->setter = nickname_get_id(client->nickname);
   akill->time_set = CurrentTime;
   akill->duration = duration;
-  DupString(akill->mask, mask);
+  DupString(akill->mask, mask_buf);
   DupString(akill->reason, reason);
 
   if(!akill_add(akill))
   {
-    reply_user(service, service, client, OS_AKILL_ADDFAIL, mask);
+    reply_user(service, service, client, OS_AKILL_ADDFAIL, mask_buf);
     free_serviceban(akill);
     return;
   }
 
   send_akill(service, client->name, akill);
-  reply_user(service, service, client, OS_AKILL_ADDOK, mask);
+  reply_user(service, service, client, OS_AKILL_ADDOK, mask_buf);
   free_serviceban(akill);
 }
 
