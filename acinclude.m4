@@ -217,6 +217,11 @@ AC_DEFUN([AX_ARG_WITH_HOSTLEN],[
   AC_ARG_WITH([hostlen],[AC_HELP_STRING([--with-hostlen=<value>],[Set username length (default 62).])],[hostlen="$withval"],[hostlen="62"])
   AC_DEFINE_UNQUOTED([HOSTLEN],[($hostlen+1)],[Length of nicknames.]) 
 ])dnl }}}
+dnl {{{ ax_arg_with_topiclen
+AC_DEFUN([AX_ARG_WITH_TOPICLEN],[
+  AC_ARG_WITH([topiclen],[AC_HELP_STRING([--with-topiclen=<value>],[Set topic length (default 300).])],[topiclen="$withval"],[topiclen="300"])
+  AC_DEFINE_UNQUOTED([TOPICLEN],[($topiclen+1)],[Length of topics.]) 
+])dnl }}}
 dnl {{{ ax_arg_with_client_heap_size
 AC_DEFUN([AX_ARG_WITH_CLIENT_HEAP_SIZE],[
   AC_ARG_WITH([client-heap-size],[AC_HELP_STRING([--client-heap-size=<value>],[Set client heap size (default 256).])],[client_heap_size="$withval"],[client_heap_size="256"])

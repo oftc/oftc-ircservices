@@ -24,7 +24,6 @@
 #define KICKLEN         160
 #define KEYLEN           24
 #define REASONLEN       120
-#define TOPICLEN        300
 #define PASSLEN          40
 #define SALTLEN          16
 #define DATALEN         255
