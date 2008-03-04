@@ -753,7 +753,7 @@ m_access_del(struct Service *service, struct Client *client,
     return;
   }
 
-  if(nickid != nickname_get_id(client->nickname))
+  if(nickid != nickname_get_id(client->nickname) && client->access != SUDO_FLAG)
   {
     if(client->access != SUDO_FLAG)
     {
