@@ -734,7 +734,7 @@ m_access_del(struct Service *service, struct Client *client,
     return;
   }
 
-  if(nickid != client->nickname->id)
+  if(nickid != client->nickname->id && client->access != SUDO_FLAG)
   {
     myaccess = db_find_chanaccess(regchptr->id, client->nickname->id);
     if(myaccess->level != MASTER_FLAG)
