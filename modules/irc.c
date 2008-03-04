@@ -445,9 +445,15 @@ irc_sendmsg_akill(va_list args)
   char name[NICKLEN];
   char user[USERLEN + 1];
   char host[HOSTLEN + 1];
+  char userhost[USERLEN + HOSTLEN + 1];
   struct split_nuh_item nuh;
 
-  nuh.nuhmask  = mask;
+  if(strchr(mask, '@') == NULL)
+    snprintf(userhost, USERLEN+HOSTLEN, "*@%s", mask);
+  else
+    snprintf(userhost, USERLEN+HOSTLEN, mask);
+
+  nuh.nuhmask  = userhost;
   nuh.nickptr  = name;
   nuh.userptr  = user;
   nuh.hostptr  = host;
@@ -458,11 +464,12 @@ irc_sendmsg_akill(va_list args)
 
   split_nuh(&nuh);
 
-  if(strlen(user) == 1 && strlen(host) == 1 &&
-     user[0] == '*' && host[0] == '*')
+  /* Safety check the result from split_nuh */
+  snprintf(userhost, USERLEN+HOSTLEN, "%s@%s", user, host);
+  if(!valid_mask(userhost))
   {
-    ilog(L_CRIT, "%s Attempting to KLINE *@* Aborted ...",
-      (source != NULL) ? source->name : me.name);
+    ilog(L_CRIT, "split_nuh tried to akill %s@%s, which is more wild than our configuration!",
+        user, host);
     return NULL;
   }
 
