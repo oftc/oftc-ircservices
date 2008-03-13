@@ -105,32 +105,32 @@ dlink_list *dbchannel_get_flood_list(DBChannel *);
 struct MessageQueue *dbchannel_get_gqueue(DBChannel *);
 
 /* Memer setters */
-void dbchannel_set_node(DBChannel *, dlink_node);
-void dbchannel_set_id(DBChannel *, unsigned int);
-void dbchannel_set_regtime(DBChannel *, time_t);
-void dbchannel_set_channel(DBChannel *, const char *);
-void dbchannel_set_description(DBChannel *, const char *);
-void dbchannel_set_entrymsg(DBChannel *, const char *);
-void dbchannel_set_url(DBChannel *, const char *);
-void dbchannel_set_email(DBChannel *, const char *);
-void dbchannel_set_topic(DBChannel *, const char *);
-void dbchannel_set_mlock(DBChannel *, const char *);
-void dbchannel_set_priv(DBChannel *, char);
-void dbchannel_set_restricted(DBChannel *, char);
-void dbchannel_set_topic_lock(DBChannel *, char);
-void dbchannel_set_verbose(DBChannel *, char);
-void dbchannel_set_autolimit(DBChannel *, char);
-void dbchannel_set_expirebans(DBChannel *, char);
-void dbchannel_set_floodserv(DBChannel *, char);
-void dbchannel_set_autoop(DBChannel *, char);
-void dbchannel_set_autovoice(DBChannel *, char);
-void dbchannel_set_leaveops(DBChannel *, char);
-void dbchannel_set_expirebans_lifetime(DBChannel *, unsigned int);
+inline int dbchannel_set_node(DBChannel *, dlink_node);
+inline int dbchannel_set_id(DBChannel *, unsigned int);
+inline int dbchannel_set_regtime(DBChannel *, time_t);
+inline int dbchannel_set_channel(DBChannel *, const char *);
+inline int dbchannel_set_description(DBChannel *, const char *);
+inline int dbchannel_set_entrymsg(DBChannel *, const char *);
+inline int dbchannel_set_url(DBChannel *, const char *);
+inline int dbchannel_set_email(DBChannel *, const char *);
+inline int dbchannel_set_topic(DBChannel *, const char *);
+inline int dbchannel_set_mlock(DBChannel *, const char *);
+inline int dbchannel_set_priv(DBChannel *, char);
+inline int dbchannel_set_restricted(DBChannel *, char);
+inline int dbchannel_set_topic_lock(DBChannel *, char);
+inline int dbchannel_set_verbose(DBChannel *, char);
+inline int dbchannel_set_autolimit(DBChannel *, char);
+inline int dbchannel_set_expirebans(DBChannel *, char);
+inline int dbchannel_set_floodserv(DBChannel *, char);
+inline int dbchannel_set_autoop(DBChannel *, char);
+inline int dbchannel_set_autovoice(DBChannel *, char);
+inline int dbchannel_set_leaveops(DBChannel *, char);
+inline int dbchannel_set_expirebans_lifetime(DBChannel *, unsigned int);
 
 /* FloodServ */
-void dbchannel_set_flood_hash(DBChannel *, struct MessageQueue **);
-void dbchannel_set_flood_list(DBChannel *, dlink_list *);
-void dbchannel_set_gqueue(DBChannel *, struct MessageQueue *);
+inline int dbchannel_set_flood_hash(DBChannel *, struct MessageQueue **);
+inline int dbchannel_set_flood_list(DBChannel *, dlink_list *);
+inline int dbchannel_set_gqueue(DBChannel *, struct MessageQueue *);
 
 inline void dbchannel_free(DBChannel *);
 

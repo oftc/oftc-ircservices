@@ -409,166 +409,257 @@ dbchannel_get_gqueue(DBChannel *this)
 }
 
 /* Memer setters */
-inline void
+inline int
 dbchannel_set_node(DBChannel *this, dlink_node node)
 {
   this->node = node;
+  return TRUE;
 }
 
-inline void
+inline int
 dbchannel_set_id(DBChannel *this, unsigned int id)
 {
   this->id = id;
+  return TRUE;
 }
 
-inline void
+inline int
 dbchannel_set_regtime(DBChannel *this, time_t regtime)
 {
   this->regtime = regtime;
+  return TRUE;
 }
 
-inline void
+inline int
 dbchannel_set_channel(DBChannel *this, const char *name)
 {
   strlcpy(this->channel, name, sizeof(this->channel));
+  return TRUE;
 }
 
-inline void
+inline int
 dbchannel_set_description(DBChannel *this, const char *description)
 {
-  MyFree(this->description);
-  DupString(this->description, description);
-  db_execute_nonquery(SET_CHAN_DESC, "s", this->description);
+  if(db_execute_nonquery(SET_CHAN_DESC, "si", description, this->id))
+  {
+    MyFree(this->description);
+    DupString(this->description, description);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_entrymsg(DBChannel *this, const char *entrymsg)
 {
-  MyFree(this->entrymsg);
-  DupString(this->entrymsg, entrymsg);
-  db_execute_nonquery(SET_CHAN_ENTRYMSG, "s", this->entrymsg);
+  if(db_execute_nonquery(SET_CHAN_ENTRYMSG, "si", entrymsg, this->id))
+  {
+    MyFree(this->entrymsg);
+    DupString(this->entrymsg, entrymsg);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_url(DBChannel *this, const char *url)
 {
-  MyFree(this->url);
-  DupString(this->url, url);
-  db_execute_nonquery(SET_CHAN_URL, "s", this->url);
+  if(db_execute_nonquery(SET_CHAN_URL, "si", url, this->id))
+  {
+    MyFree(this->url);
+    DupString(this->url, url);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_email(DBChannel *this, const char *email)
 {
-  MyFree(this->email);
-  DupString(this->email, email);
-  db_execute_nonquery(SET_CHAN_EMAIL, "s", this->email);
+  if(db_execute_nonquery(SET_CHAN_EMAIL, "si", email, this->id))
+  {
+    MyFree(this->email);
+    DupString(this->email, email);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void 
+inline int
 dbchannel_set_topic(DBChannel *this, const char *topic)
 {
-  MyFree(this->topic);
-  DupString(this->topic, topic);
-  db_execute_nonquery(SET_CHAN_TOPIC, "s", this->topic);
+  if(db_execute_nonquery(SET_CHAN_TOPIC, "si", topic, this->id))
+  {
+    MyFree(this->topic);
+    DupString(this->topic, topic);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_mlock(DBChannel *this, const char *mlock)
 {
-  MyFree(this->mlock);
-  DupString(this->mlock, mlock);
-  db_execute_nonquery(SET_CHAN_MLOCK, "s", this->mlock);
+  if(db_execute_nonquery(SET_CHAN_MLOCK, "si", mlock, this->id))
+  {
+    MyFree(this->mlock);
+    DupString(this->mlock, mlock);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_priv(DBChannel *this, char priv)
 {
-  this->priv = priv;
-  db_execute_nonquery(SET_CHAN_PRIVATE, "b", priv);
+  if(db_execute_nonquery(SET_CHAN_PRIVATE, "bi", priv, this->id))
+  {
+    this->priv = priv;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_restricted(DBChannel *this, char restricted)
 {
-  this->restricted = restricted;
-  db_execute_nonquery(SET_CHAN_RESTRICTED, "b", restricted);
+  if(db_execute_nonquery(SET_CHAN_RESTRICTED, "bi", restricted, this->id))
+  {
+    this->restricted = restricted;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_topic_lock(DBChannel *this, char topic_lock)
 {
-  this->topic_lock = topic_lock;
-  db_execute_nonquery(SET_CHAN_TOPICLOCK, "b", topic_lock);
+  if(db_execute_nonquery(SET_CHAN_TOPICLOCK, "bi", topic_lock, this->id))
+  {
+    this->topic_lock = topic_lock;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_verbose(DBChannel *this, char verbose)
 {
-  this->verbose = verbose;
-  db_execute_nonquery(SET_CHAN_VERBOSE, "b", verbose);
+  if(db_execute_nonquery(SET_CHAN_VERBOSE, "bi", verbose, this->id))
+  {
+    this->verbose = verbose;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_autolimit(DBChannel *this, char autolimit)
 {
-  this->autolimit = autolimit;
-  db_execute_nonquery(SET_CHAN_AUTOLIMIT, "b", autolimit);
+  if(db_execute_nonquery(SET_CHAN_AUTOLIMIT, "bi", autolimit, this->id))
+  {
+    this->autolimit = autolimit;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_expirebans(DBChannel *this, char expirebans)
 {
-  this->expirebans = expirebans;
-  db_execute_nonquery(SET_CHAN_EXPIREBANS, "b", expirebans);
+  if(db_execute_nonquery(SET_CHAN_EXPIREBANS, "bi", expirebans, this->id))
+  {
+    this->expirebans = expirebans;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_floodserv(DBChannel *this, char floodserv)
 {
-  this->floodserv = floodserv;
-  db_execute_nonquery(SET_CHAN_FLOODSERV, "b", floodserv);
+  if(db_execute_nonquery(SET_CHAN_FLOODSERV, "bi", floodserv, this->id))
+  {
+    this->floodserv = floodserv;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_autoop(DBChannel *this, char autoop)
 {
-  this->autoop = autoop;
-  db_execute_nonquery(SET_CHAN_AUTOOP, "b", autoop);
+  if(db_execute_nonquery(SET_CHAN_AUTOOP, "bi", autoop, this->id))
+  {
+    this->autoop = autoop;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_autovoice(DBChannel *this, char autovoice)
 {
-  this->autovoice = autovoice;
-  db_execute_nonquery(SET_CHAN_AUTOVOICE, "b", autovoice);
+  if(db_execute_nonquery(SET_CHAN_AUTOVOICE, "bi", autovoice, this->id))
+  {
+    this->autovoice = autovoice;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_leaveops(DBChannel *this, char leaveops)
 {
-  this->leaveops = leaveops;
-  db_execute_nonquery(SET_CHAN_LEAVEOPS, "b", leaveops);
+  if(db_execute_nonquery(SET_CHAN_LEAVEOPS, "bi", leaveops, this->id))
+  {
+    this->leaveops = leaveops;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 dbchannel_set_expirebans_lifetime(DBChannel *this, unsigned int time)
 {
-  this->expirebans_lifetime = time;
-  db_execute_nonquery(SET_EXPIREBANS_LIFETIME, "i", time);
+  if(db_execute_nonquery(SET_EXPIREBANS_LIFETIME, "ii", time, this->id))
+  {
+    this->expirebans_lifetime = time;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
 /* FloodServ */
-inline void
+inline int
 dbchannel_set_flood_hash(DBChannel *this, struct MessageQueue ** queue)
 {
   this->flood_hash = queue;
+  return TRUE;
 }
 
-inline void
+inline int
 dbchannel_set_gqueue(DBChannel *this, struct MessageQueue *queue)
 {
   this->gqueue = queue;
+  return TRUE;
 }
 
 inline void
