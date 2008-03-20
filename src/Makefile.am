@@ -16,6 +16,7 @@ services_SOURCES= akick.c					\
 									connection.c		\
 									dbchannel.c			\
 									dbm.c						\
+									dbmail.c				\
 									hash.c					\
 									hostmask.c			\
 									interface.c			\
@@ -29,9 +30,10 @@ services_SOURCES= akick.c					\
 									services.c			\
 									send.c
 
-services_LDADD=conf/libconf.a $(top_srcdir)/libio/libio.a
-services_LDFLAGS=@LIBLTDL@ @RUBY_LDFLAGS@ -export-dynamic
+services_LDADD=conf/libconf.a $(top_srcdir)/libio/libio.a @LIBLTDL@
+services_LDFLAGS=
 if USE_RUBY
+services_LDFLAGS+=@RUBY_LDFLAGS@
 services_LDADD+=ruby_module/libruby_module.a
 endif
 services_LDFLAGS+=-export-dynamic

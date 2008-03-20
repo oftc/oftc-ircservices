@@ -181,13 +181,6 @@ typedef struct query
   int type;
 } query_t;
 
-#define Query(m, args...) Database.yada->query(Database.yada, m, args)
-#define Execute(m, args...) Database.yada->execute(Database.yada, m, args)
-#define Bind(m, args...) Database.yada->bind(Database.yada, m, args)
-#define Fetch(r, b) Database.yada->fetch(Database.yada, r, b)
-//#define Prepare(s, l) Database.yada->prepare(Database.yada, s, l)
-#define Free(r) Database.yada->free(Database.yada, r)
-
 void init_db();
 void db_load_driver();
 void cleanup_db();
@@ -205,12 +198,6 @@ int64_t db_insertid(const char *, const char *);
 int db_begin_transaction();
 int db_commit_transaction();
 int db_rollback_transaction();
-
-int db_get_num_masters(unsigned int);
-int db_get_num_channel_accesslist_entries(unsigned int);
-
-int db_add_sentmail(unsigned int, const char *);
-int db_is_mailsent(unsigned int, const char *);
 
 void db_reopen_log();
 void db_log(const char *, ...);

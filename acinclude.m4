@@ -41,16 +41,6 @@ AC_DEFUN([AX_CHECK_LIB_OPENSSL],[
   AC_CHECK_LIB([ssl],[SHA_Init],,[AC_MSG_ERROR([openssl library not found])])
   AC_CHECK_LIB([crypto],[EVP_MD_CTX_init],,[AC_MSG_ERROR([openssl library not found])])
 ])dnl }}}
-dnl {{{ ax_check_lib_yada
-AC_DEFUN([AX_CHECK_LIB_YADA],[
-  AC_ARG_WITH([yada],
-    AC_HELP_STRING([--with-yada=@<:@ARG@:>@],
-      [use yada library, optionally specify path]
-      ),
-    )
-  AC_CHECK_HEADER([yada.h],,[AC_MSG_ERROR([yada header files not found])])
-  AC_CHECK_LIB([yada],[yada_init],,[AC_MSG_ERROR([yada library not found])])
-])dnl }}}
 dnl {{{ ax_check_lib_pgsql
 dnl  License
 dnl  Copyright © 2008 Mateusz Loskot <mateusz@loskot.net>

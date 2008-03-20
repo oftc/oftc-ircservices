@@ -24,8 +24,6 @@
 #ifndef INCLUDED_conf_database_h
 #define INCLUDED_conf_database_h
 
-#include <yada.h>
-
 struct DatabaseConf
 {
   char *driver;
@@ -34,7 +32,6 @@ struct DatabaseConf
   char *username;
   char *password;
   int port;
-  yada_t *yada;
 };
 
 EXTERN struct DatabaseConf Database;

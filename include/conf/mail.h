@@ -24,8 +24,6 @@
 #ifndef INCLUDED_conf_mail_h
 #define INCLUDED_conf_mail_h
 
-#include <yada.h>
-
 struct MailConf
 {
   char *command;

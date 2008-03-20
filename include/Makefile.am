@@ -13,6 +13,7 @@ noinst_HEADERS= akick.h						\
 								crypt.h						\
 								dbchannel.h				\
 								dbm.h							\
+								dbmail.h					\
 								defines.h					\
 								floodserv.h				\
 								hash.h						\
@@ -21,8 +22,8 @@ noinst_HEADERS= akick.h						\
 								jupe.h						\
 								language.h				\
 								modules.h					\
-								msg.h							\
 								mqueue.h					\
+								msg.h							\
 								nickname.h				\
 								nickserv.h				\
 								operserv.h				\

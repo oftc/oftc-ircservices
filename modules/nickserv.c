@@ -42,6 +42,7 @@
 #include "hash.h"
 #include "nickserv.h"
 #include "crypt.h"
+#include "dbmail.h"
 
 static struct Service *nickserv = NULL;
 static struct Client *nickserv_client = NULL;
@@ -1386,7 +1387,7 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
 
   if(parc == 1)
   {
-    if(db_is_mailsent(nickname_get_id(nick), nickname_get_email(nick)))
+    if(dbmail_is_sent(nickname_get_id(nick), nickname_get_email(nick)))
     {
       reply_user(service, service, client, NS_NO_SENDPASS_YET);
       nickname_free(nick);
@@ -1408,7 +1409,7 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
 
     client->nickname = temp;
 
-    db_add_sentmail(nickname_get_id(nick), nickname_get_email(nick));
+    dbmail_add_sent(nickname_get_id(nick), nickname_get_email(nick));
     nickname_free(nick);
     
     MyFree(hmac);

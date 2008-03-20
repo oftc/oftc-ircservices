@@ -33,13 +33,12 @@
 #include "interface.h"
 #include "msg.h"
 #include "send.h"
+#include "dbmail.h"
 
 #define LOG_BUFSIZE 2048
 
 static FBFILE *db_log_fb;
 static database_t *database;
-
-static void expire_sentmail(void *);
 
 void
 init_db()
@@ -135,7 +134,7 @@ db_log(const char *format, ...)
 void
 db_load_driver()
 {
-  eventAdd("Expire sent mail", expire_sentmail, NULL, 60); 
+  eventAdd("Expire sent mail", dbmail_expire_sentmail, NULL, 60); 
 
   execute_callback(on_db_init_cb);
 }
@@ -143,6 +142,7 @@ db_load_driver()
 void
 db_try_reconnect()
 {
+  /*
   int num_attempts = 0;
 
   ilog(L_NOTICE, "Database connection lost! Attempting reconnect.");
@@ -165,6 +165,7 @@ db_try_reconnect()
   }
   ilog(L_ERROR, "Database reconnect failed: %s", Database.yada->errmsg);
   services_die("Could not reconnect to database.", 0);
+  */
 }
 
 int
@@ -254,57 +255,6 @@ int64_t
 db_insertid(const char *table, const char *column)
 {
   return database->insert_id(table, column);
-}
-
-#define db_query(ret, query_id, args...) do                           \
-{                                                                     \
-} while(0)
-
-#define db_exec(ret, query_id, args...) do                            \
-{                                                                     \
-} while(0)
-
-int
-db_add_sentmail(unsigned int accid, const char *email)
-{
-  int ret;
-
-  db_exec(ret, INSERT_SENT_MAIL, accid, email, CurrentTime);
-  if(ret == -1)
-    return 0;
-  else
-    return 1;
-}
-
-int
-db_is_mailsent(unsigned int accid, const char *email)
-{
-  yada_rc_t *rc, *brc;
-  int temp, ret = 0;
-
-  db_query(rc, GET_SENT_MAIL, accid, email);
-
-  if(rc == NULL)
-    return 0;
-
-  brc = Bind("?d", &temp);
-
-  if(Fetch(rc, brc) == 0)
-    ret = 0;
-  else
-    ret = 1;
-  
-  Free(brc);
-  Free(rc);
-  return ret;
-}
-
-static void
-expire_sentmail(void *param)
-{
-  //int ret;
-
-  db_exec(ret, DELETE_EXPIRED_SENT_MAIL, Mail.expire_time, CurrentTime);
 }
 
 int
