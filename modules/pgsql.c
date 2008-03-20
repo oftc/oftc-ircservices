@@ -373,7 +373,10 @@ internal_execute(int id, int *error, const char *format,
         break;
       case 's':
         strarg = (char*)va_arg(args, const char *);
-        DupString(params[i], strarg);
+        if(strarg == NULL)
+          params[i] = NULL;
+        else
+          DupString(params[i], strarg);
         break;
       default:
         db_log("PG Unknown param type: %c", *format);
