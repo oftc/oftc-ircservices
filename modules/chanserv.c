@@ -1121,7 +1121,7 @@ m_set_expirebans(struct Service *service, struct Client *client,
   }
 
   if(parv[2] != NULL)
-    db_set_number(SET_EXPIREBANS_LIFETIME, dbchannel_get_id(regchptr), interval);
+    dbchannel_set_expirebans_lifetime(regchptr, interval);
 
   reply_user(service, service, client, CS_EXPIREBANS_LIFETIME, interval);
 

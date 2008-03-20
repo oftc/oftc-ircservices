@@ -30,5 +30,6 @@ int chanaccess_list(unsigned int, dlink_list *);
 void chanaccess_list_free(dlink_list *);
 struct ChanAccess * chanaccess_find(unsigned int, unsigned int);
 int chanaccess_remove(struct ChanAccess *);
+int chanaccess_count(unsigned int);
 
 #endif

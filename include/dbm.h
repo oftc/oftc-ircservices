@@ -206,11 +206,6 @@ int db_begin_transaction();
 int db_commit_transaction();
 int db_rollback_transaction();
 
-int db_set_string(unsigned int, unsigned int, const char *);
-int db_set_number(unsigned int, unsigned int, unsigned long);
-int db_set_bool(unsigned int, unsigned int, unsigned char);
-char *db_get_string(const char *, unsigned int, const char *);
-
 int db_get_num_masters(unsigned int);
 int db_get_num_channel_accesslist_entries(unsigned int);
 

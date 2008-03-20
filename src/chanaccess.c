@@ -148,3 +148,17 @@ chanaccess_find(unsigned int channel, unsigned int account)
 
   return access;
 }
+
+int
+chanaccess_count(unsigned int channel)
+{
+  int error = 0;
+  int count = atoi(db_execute_scalar(COUNT_CHANNEL_ACCESS_LIST, &error, "i", channel));
+  if(error)
+  {
+    ilog(L_CRIT, "chanaccess_count: database error %d", error);
+    return -1;
+  }
+
+  return count;
+}

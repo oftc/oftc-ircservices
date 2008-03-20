@@ -47,6 +47,7 @@ static Nickname*
 row_to_nickname(row_t *row)
 {
   Nickname *nick = MyMalloc(sizeof(Nickname));
+  memset(nick, 0, sizeof(Nickname));
 
   nick->id = atoi(row->cols[0]);
   nick->pri_nickid = atoi(row->cols[1]);
@@ -1104,167 +1105,251 @@ nickname_get_last_quit_time(Nickname *this)
 }
 
 /* Nickname setters */
-inline void
+inline int
 nickname_set_id(Nickname *this, unsigned int value)
 {
   this->id = value;
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_nickid(Nickname *this, unsigned int value)
 {
   this->nickid = value;
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_pri_nickid(Nickname *this, unsigned int value)
 {
   this->pri_nickid = value;
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_nick(Nickname *this, const char *value)
 {
   strlcpy(this->nick, value, sizeof(this->nick));
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_pass(Nickname *this, const char *value)
 {
-  strlcpy(this->pass, value, sizeof(this->pass));
-  db_execute_nonquery(SET_NICK_PASSWORD, "s", this->pass);
+  if(db_execute_nonquery(SET_NICK_PASSWORD, "si", value, this->id))
+  {
+    strlcpy(this->pass, value, sizeof(this->pass));
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_salt(Nickname *this, const char *value)
 {
   strlcpy(this->salt, value, sizeof(this->salt));
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_cloak(Nickname *this, const char *value)
 {
-  strlcpy(this->cloak, value, sizeof(this->cloak));
-  db_execute_nonquery(SET_NICK_CLOAK, "s", this->cloak);
+  if(db_execute_nonquery(SET_NICK_CLOAK, "si", value, this->id))
+  {
+    strlcpy(this->cloak, value, sizeof(this->cloak));
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_email(Nickname *this, const char *value)
 {
-  MyFree(this->email);
-  DupString(this->email, value);
-  db_execute_nonquery(SET_NICK_EMAIL, "s", this->email);
+  if(db_execute_nonquery(SET_NICK_EMAIL, "si", value, this->id))
+  {
+    MyFree(this->email);
+    DupString(this->email, value);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_url(Nickname *this, const char *value)
 {
-  MyFree(this->url);
-  DupString(this->url, value);
-  db_execute_nonquery(SET_NICK_URL, "s", this->url);
+  if(db_execute_nonquery(SET_NICK_URL, "si", value, this->id))
+  {
+    MyFree(this->url);
+    DupString(this->url, value);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_last_realname(Nickname *this, const char *value)
 {
-  MyFree(this->last_realname);
-  DupString(this->last_realname, value);
-  db_execute_nonquery(SET_NICK_LAST_REALNAME, "s", this->last_realname);
+  if(db_execute_nonquery(SET_NICK_LAST_REALNAME, "si", value, this->id))
+  {
+    MyFree(this->last_realname);
+    DupString(this->last_realname, value);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_last_host(Nickname *this, const char *value)
 {
-  MyFree(this->last_host);
-  DupString(this->last_host, value);
-  db_execute_nonquery(SET_NICK_LAST_HOST, "s", this->last_host);
+  if(db_execute_nonquery(SET_NICK_LAST_HOST, "si", value, this->id))
+  {
+    MyFree(this->last_host);
+    DupString(this->last_host, value);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_last_quit(Nickname *this, const char *value)
 {
-  MyFree(this->last_quit);
-  DupString(this->last_quit, value);
-  db_execute_nonquery(SET_NICK_LAST_QUIT, "s", this->last_quit);
+  if(db_execute_nonquery(SET_NICK_LAST_QUIT, "si", value, this->id))
+  {
+    MyFree(this->last_quit);
+    DupString(this->last_quit, value);
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_status(Nickname *this, unsigned int value)
 {
   this->status = value;
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_language(Nickname *this, unsigned int value)
 {
-  this->language = value;
-  db_execute_nonquery(SET_NICK_LANGUAGE, "i", value);
+  if(db_execute_nonquery(SET_NICK_LANGUAGE, "ii", value, this->id))
+  {
+    this->language = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_enforce(Nickname *this, unsigned char value)
 {
-  this->enforce = value;
-  db_execute_nonquery(SET_NICK_ENFORCE, "b", value);
+  if(db_execute_nonquery(SET_NICK_ENFORCE, "bi", value, this->id))
+  {
+    this->enforce = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_secure(Nickname *this, unsigned char value)
 {
-  this->secure = value;
-  db_execute_nonquery(SET_NICK_SECURE, "b", value);
+  if(db_execute_nonquery(SET_NICK_SECURE, "bi", value, this->id))
+  {
+    this->secure = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_verified(Nickname *this, unsigned char value)
 {
   this->verified = value;
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_cloak_on(Nickname *this, unsigned char value)
 {
-  this->cloak_on = value;
-  db_execute_nonquery(SET_NICK_CLOAKON, "b", value);
+  if(db_execute_nonquery(SET_NICK_CLOAKON, "bi", value, this->id))
+  {
+    this->cloak_on = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_admin(Nickname *this, unsigned char value)
 {
-  this->admin = value;
-  db_execute_nonquery(SET_NICK_ADMIN, "b", value);
+  if(db_execute_nonquery(SET_NICK_ADMIN, "bi", value, this->id))
+  {
+    this->admin = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_email_verified(Nickname *this, unsigned char value)
 {
   this->email_verified = value;
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_priv(Nickname *this, unsigned char value)
 {
-  this->priv = value;
-  db_execute_nonquery(SET_NICK_PRIVATE, "b", value);
+  if(db_execute_nonquery(SET_NICK_PRIVATE, "bi", value, this->id))
+  {
+    this->priv = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_reg_time(Nickname *this, time_t value)
 {
   this->reg_time = value;
+  return TRUE;
 }
 
-inline void
+inline int
 nickname_set_last_seen(Nickname *this, time_t value)
 {
-  this->last_seen = value;
-  db_execute_nonquery(SET_NICK_LAST_SEEN, "i", value);
+  if(db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", value, this->id))
+  {
+    this->last_seen = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
-inline void
+inline int
 nickname_set_last_quit_time(Nickname *this, time_t value)
 {
-  this->last_quit_time = value;
-  db_execute_nonquery(SET_NICK_LAST_QUITTIME, "i", value);
+  if(db_execute_nonquery(SET_NICK_LAST_QUITTIME, "ii", value, this->id))
+  {
+    this->last_quit_time = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 

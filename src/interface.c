@@ -41,6 +41,7 @@
 #include "channel_mode.h"
 #include "channel.h"
 #include "nickserv.h"
+#include "chanaccess.h"
 
 #include <openssl/hmac.h>
 
@@ -1397,7 +1398,7 @@ check_masterless_channels(unsigned int accid)
     DLINK_FOREACH(ptr, list.head)
     {
       chan = (struct InfoChanList *)ptr->data;
-      if(db_get_num_channel_accesslist_entries(chan->channel_id) == 1)
+      if(chanaccess_count(chan->channel_id) == 1)
       {
         char *nick = nickname_nick_from_id(accid, TRUE);
         struct Channel *chptr;

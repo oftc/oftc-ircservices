@@ -265,67 +265,6 @@ db_insertid(const char *table, const char *column)
 } while(0)
 
 int
-db_set_string(unsigned int key, unsigned int id, const char *value)
-{
-  int ret;
-
-  db_exec(ret, key, value, id);
-
-  if(ret == -1)
-    return FALSE;
-
-  return 1;
-}
-
-int
-db_set_number(unsigned int key, unsigned int id, unsigned long value)
-{
-  int ret;
-
-  db_exec(ret, key, value, id);
-
-  if(ret == -1)
-    return FALSE;
-
-  return 1;
-}
-
-int
-db_set_bool(unsigned int key, unsigned int id, unsigned char value)
-{
-  int ret;
-
-  db_exec(ret, key, value, id);
-
-  if(ret == -1)
-    return FALSE;
-
-  return 1;
-}
-
-int
-db_get_num_channel_accesslist_entries(unsigned int chanid)
-{
-  yada_rc_t *rc, *brc;
-  int count;
-
-  db_query(rc, COUNT_CHANNEL_ACCESS_LIST, chanid);
-
-  if(rc == NULL)
-    return 0;
-
-  brc = Bind("?d", &count);
-
-  if(Fetch(rc, brc) == 0)
-    count = 0;
-
-  Free(brc);
-  Free(rc);
-
-  return count;
-}
-
-int
 db_add_sentmail(unsigned int accid, const char *email)
 {
   int ret;

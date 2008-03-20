@@ -100,6 +100,12 @@ static void m_cert_add(struct Service *, struct Client *, int, char *[]);
 static void m_cert_list(struct Service *, struct Client *, int, char *[]);
 static void m_cert_del(struct Service *, struct Client *, int, char *[]);
 
+static int m_set_flag(struct Service *, struct Client *, char *, char *,
+    unsigned char (*)(Nickname *), int (*)(Nickname *, unsigned char));
+static int m_set_string(struct Service *, struct Client *, const char *,
+    const char *, int, const char *(*)(Nickname *),
+    int(*)(Nickname *, const char*));
+
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, 2, 0, USER_FLAG, NS_HELP_REG_SHORT, NS_HELP_REG_LONG, 
   m_register 
@@ -646,7 +652,7 @@ m_set_password(struct Service *service, struct Client *client,
   
   pass = crypt_pass(password, 1);
   /* XXX: what about the salt?  shouldn't we make a new one and store that too? -- weasel */
-  if(db_set_string(SET_NICK_PASSWORD, nickname_get_id(client->nickname), pass))
+  if(nickname_set_pass(nick, pass))
   {
     reply_user(service, service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
   }
@@ -656,7 +662,6 @@ m_set_password(struct Service *service, struct Client *client,
     MyFree(pass);
     return;
   }
-  nickname_set_pass(nick, pass);
   MyFree(pass);
 }
 
@@ -693,10 +698,9 @@ m_set_language(struct Service *service, struct Client *client,
       reply_user(service, service, client, NS_LANGUAGE_UNAVAIL);
       return;
     }
-    
-    if(db_set_number(SET_NICK_LANGUAGE, nickname_get_id(client->nickname), lang))
+
+    if(nickname_set_language(client->nickname, lang))
     {
-      nickname_set_language(client->nickname, lang);
       reply_user(service, service, client, NS_LANGUAGE_SET,
           service->languages[lang].name, lang); 
     }
@@ -709,69 +713,24 @@ static void
 m_set_url(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  Nickname *nick = client->nickname;
-  
-  if(parc == 0)
-  {
-    reply_user(service, service, client, NS_SET_VALUE, 
-        "URL", (nickname_get_url(nick) == NULL) ? "Not set" : nickname_get_url(nick));
-    return;
-  }
-
-  if(irccmp(parv[1], "-") == 0)
-  {
-    nickname_set_url(nick, NULL);
-    reply_user(service, service, client, NS_SET_SUCCESS, "URL", "Not Set");
-  }
-  else
-  {
-    nickname_set_url(nick, parv[1]);
-    reply_user(service, service, client, NS_SET_SUCCESS, "URL", nickname_get_url(nick));
-  }
+  m_set_string(service, client, "URL", parv[1], parc,
+    &nickname_get_url, &nickname_set_url);
 }
 
 static void
 m_set_email(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  Nickname *nick = client->nickname;
-  
-  if(parc == 0)
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "EMAIL", nickname_get_email(nick));
-    return;
-  }
-  nickname_set_email(nick, parv[1]);
-  reply_user(service, service, client, NS_SET_SUCCESS, "EMAIL", nickname_get_email(nick));
+  m_set_string(service, client, "EMAIL", parv[1], parc,
+    &nickname_get_email, &nickname_set_email);
 }
 
 static void
 m_set_cloak(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname *nick = client->nickname;
-  unsigned char flag;
-  
-  if(parc == 0)
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "CLOAK", 
-        nickname_get_cloak_on(nick) ? "ON" : "OFF");
-    return;
-  }
-
-  if(strcasecmp(parv[1], "ON") == 0)
-    flag = 1;
-  else if(strcasecmp(parv[1], "OFF") == 0)
-    flag = 0;
-  else
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "CLOAK", 
-        nickname_get_cloak_on(nick) ? "ON" : "OFF");
-    return;
-  }
-
-  nickname_set_cloak_on(nick, flag);
-  reply_user(service, service, client, NS_SET_SUCCESS, "CLOAK", flag ? "ON" : "OFF");
+  m_set_flag(service, client, parv[1], "CLOAK",
+    &nickname_get_cloak_on, &nickname_set_cloak_on);
 }
 
 static void
@@ -807,21 +766,16 @@ m_cloakstring(struct Service *service, struct Client *client,
       return;
     }
   }
-    
-  if(db_set_string(SET_NICK_CLOAK, nickname_get_id(nick), parv[2]))
+
+  if(nickname_set_cloak(nick, parv[2]))
   {
     char *reply = parv[2] == NULL ? "Not set" : parv[2];
 
     if(parv[2] == NULL)
-    {
       reply = "Not set";
-      nickname_set_cloak(nick, "\0");
-    }
     else
-    {
       reply = parv[2];
-      nickname_set_cloak(nick, parv[2]);
-    }
+
     reply_user(service, service, client, NS_SET_SUCCESS, "CLOAKSTRING", 
         reply);
     ilog(L_NOTICE, "%s set CLOAKSTRING of %s to %s", client->name, nickname_get_nick(nick),
@@ -837,58 +791,16 @@ static void
 m_set_secure(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  Nickname *nick = client->nickname;
-  unsigned char flag;
-  
-  if(parc == 0)
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "SECURE", 
-        nickname_get_secure(nick) ? "ON" : "OFF");
-    return;
-  }
-
-  if(strcasecmp(parv[1], "ON") == 0)
-    flag = 1;
-  else if(strcasecmp(parv[1], "OFF") == 0)
-    flag = 0;
-  else
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "SECURE", 
-        nickname_get_secure(nick) ? "ON" : "OFF");
-    return;
-  }
-
-  nickname_set_secure(nick, flag);
-  reply_user(service, service, client, NS_SET_SUCCESS, "SECURE", flag ? "ON" : "OFF");
+  m_set_flag(service, client, parv[1], "SECURE",
+    &nickname_get_secure, &nickname_set_secure);
 }
 
 static void
 m_set_enforce(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  Nickname *nick = client->nickname;
-  unsigned char flag;
-  
-  if(parc == 0)
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "ENFORCE", 
-       nickname_get_enforce(nick) ? "ON" : "OFF");
-    return;
-  }
-
-  if(strcasecmp(parv[1], "ON") == 0)
-    flag = 1;
-  else if(strcasecmp(parv[1], "OFF") == 0)
-    flag = 0;
-  else
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "ENFORCE", 
-        nickname_get_enforce(nick) ? "ON" : "OFF");
-    return;
-  }
-
-  nickname_set_enforce(nick, flag);
-  reply_user(service, service, client, NS_SET_SUCCESS, "ENFORCE", flag ? "ON" : "OFF");
+  m_set_flag(service, client, parv[1], "ENFORCE",
+    &nickname_get_enforce, &nickname_set_enforce);
 }
 
 static void
@@ -922,29 +834,8 @@ static void
 m_set_private(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname *nick = client->nickname;
-  unsigned char flag;
-  
-  if(parc == 0)
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "PRIVATE", 
-       nickname_get_priv(nick) ? "ON" : "OFF");
-    return;
-  }
-
-  if(strcasecmp(parv[1], "ON") == 0)
-    flag = 1;
-  else if(strcasecmp(parv[1], "OFF") == 0)
-    flag = 0;
-  else
-  {
-    reply_user(service, service, client, NS_SET_VALUE, "PRIVATE", 
-        nickname_get_priv(nick) ? "ON" : "OFF");
-    return;
-  }
-
-  nickname_set_priv(nick, flag);
-  reply_user(service, service, client, NS_SET_SUCCESS, "PRIVATE", flag ? "ON" : "OFF");
+  m_set_flag(service, client, parv[1], "PRIVATE",
+    &nickname_get_priv, &nickname_set_priv);
 }
 
 
@@ -1562,17 +1453,12 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
   
   pass = crypt_pass(password, 1);
   /* XXX: what about the salt?  shouldn't we make a new one and store that too? -- weasel */
-  if(db_set_string(SET_NICK_PASSWORD, nickname_get_id(nick), pass))
+  if(nickname_set_pass(nick, pass))
     reply_user(service, service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
   else
-  {
     reply_user(service, service, client, NS_SET_FAILED, "PASSWORD", "hidden");
-    MyFree(pass);
-    return;
-  }
-  nickname_set_pass(nick, pass);
-  MyFree(pass);
 
+  MyFree(pass);
   nickname_free(nick);
 }
 
@@ -1728,7 +1614,7 @@ ns_on_nick_change(va_list args)
       send_nick_change(nickserv, client, user->release_name);
       user->release_to = NULL;
       memset(user->release_name, 0, sizeof(user->release_name));
-      db_set_string(SET_NICK_LAST_REALNAME, nickname_get_id(client->nickname), client->info);
+      nickname_set_last_realname(client->nickname, client->info);
       identify_user(client);
     }
     send_nick_change(nickserv, client, user->release_name);
@@ -1756,7 +1642,7 @@ ns_on_nick_change(va_list args)
     if(user->nickname)
     {
       oldid = nickname_get_id(user->nickname);
-      db_set_number(SET_NICK_LAST_SEEN, nickname_get_nickid(user->nickname), CurrentTime);
+      nickname_set_last_seen(user->nickname, CurrentTime);
       nickname_free(user->nickname);
       user->nickname = NULL;
     }
@@ -1920,11 +1806,11 @@ ns_on_quit(va_list args)
 
   if(nick)
   {
-    db_set_string(SET_NICK_LAST_QUIT, nickname_get_id(nick), comment);
-    db_set_string(SET_NICK_LAST_HOST, nickname_get_id(nick), user->host);
-    db_set_string(SET_NICK_LAST_REALNAME, nickname_get_id(nick), user->info);
-    db_set_number(SET_NICK_LAST_QUITTIME, nickname_get_id(nick), CurrentTime);
-    db_set_number(SET_NICK_LAST_SEEN, nickname_get_nickid(nick), CurrentTime);
+    nickname_set_last_quit(nick, comment);
+    nickname_set_last_host(nick, user->host);
+    nickname_set_last_realname(nick, user->info);
+    nickname_set_last_quit_time(nick, CurrentTime);
+    nickname_set_last_seen(nick, CurrentTime);
   }
 
   dlinkFindDelete(&nick_enforce_list, user);
@@ -1998,4 +1884,69 @@ m_status(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, NS_STATUS_OFFLINE, name);
     return;  
   }
+}
+
+static int
+m_set_flag(struct Service *service, struct Client *client,
+           char *toggle, char *flagname,
+           unsigned char (*get_func)(Nickname *),
+           int (*set_func)(Nickname *, unsigned char))
+{
+  Nickname *nick = client->nickname;
+  int on = FALSE;
+
+  if(toggle == NULL)
+  {
+    on = get_func(nick);
+    reply_user(service, service, client, NS_SET_VALUE, flagname,
+      on ? "ON" : "OFF");
+    return TRUE;
+  }
+
+  if(strncasecmp(toggle, "ON", 2) == 0)
+    on = TRUE;
+  else if (strncasecmp(toggle, "OFF", 3) == 0)
+    on = FALSE;
+  else
+  {
+    reply_user(service, service, client, NS_SET_VALUE, flagname,
+      on ? "ON" : "OFF");
+    return TRUE;
+  }
+
+  if(set_func(nick, on))
+    reply_user(service, service, client, NS_SET_SUCCESS, flagname,
+      on ? "ON" : "OFF");
+  else
+    reply_user(service, service, client, NS_SET_FAILED, flagname, on);
+
+  return TRUE;
+}
+
+static int
+m_set_string(struct Service * service, struct Client *client,
+             const char *field, const char *value, int parc,
+             const char *(*get_func)(Nickname *),
+             int(*set_func)(Nickname *, const char*))
+{
+  Nickname *nick = client->nickname;
+  int ret = FALSE;
+
+  if(parc == 0)
+  {
+    const char *resp = get_func(nick);
+    reply_user(service, service, client, NS_SET_VALUE, field,
+      resp == NULL ? "Not Set" : resp);
+    return TRUE;
+  }
+
+  if(irccmp(value, "-") == 0)
+    value = NULL;
+
+  ret = set_func(nick, value);
+
+  reply_user(service, service, client, ret ? NS_SET_SUCCESS : NS_SET_FAILED, field,
+      value == NULL ? "Not Set" : value);
+
+  return ret;
 }
