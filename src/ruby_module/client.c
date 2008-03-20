@@ -2,7 +2,7 @@
 #include "libruby_module.h"
 
 VALUE cClient = Qnil;
-VALUE cNickStruct;
+VALUE cNickname;
 
 static VALUE initialize(VALUE, VALUE);
 static VALUE name(VALUE);
@@ -160,7 +160,7 @@ static VALUE
 nick(VALUE self)
 {
   struct Client *client = value_to_client(self);
-  VALUE nick = rb_cnick2rbnick(client->nickname);
+  VALUE nick = nickname_to_value(client->nickname);
   return nick;
 }
 
@@ -169,9 +169,9 @@ nick_set(VALUE self, VALUE value)
 {
   struct Client *client = value_to_client(self);
 
-  Check_OurType(value, cNickStruct);
+  Check_OurType(value, cNickname);
 
-  client->nickname = rb_rbnick2cnick(value);
+  client->nickname = value_to_nickname(value);
   return value;
 }
 

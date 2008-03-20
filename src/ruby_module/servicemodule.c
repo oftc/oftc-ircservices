@@ -280,7 +280,7 @@ ServiceModule_join_channel(VALUE self, VALUE channame)
 
   join_channel(client, channel);
 
-  return rb_cchannel2rbchannel(channel);
+  return channel_to_value(channel);
 }
 
 static VALUE
@@ -329,7 +329,7 @@ ServiceModule_channels_each(VALUE self)
   {
     /* TODO wrap in protect/ensure */
     DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
-      rb_yield(rb_cchannel2rbchannel(ptr->data));
+      rb_yield(channel_to_value(ptr->data));
   }
 
   return self;
@@ -501,7 +501,7 @@ ServiceModule_ctcp_user(VALUE self, VALUE user, VALUE message)
 static VALUE
 ServiceModule_sendto_channel(VALUE self, VALUE channel, VALUE message)
 {
-  sendto_channel(get_service(self), rb_rbchannel2cchannel(channel), StringValueCStr(message));
+  sendto_channel(get_service(self), value_to_channel(channel), StringValueCStr(message));
   return self;
 }
 
@@ -521,7 +521,7 @@ ServiceModule_find_channel(VALUE self, VALUE name)
   if(channel == NULL)
     return Qnil;
   else
-    return rb_cchannel2rbchannel(channel);
+    return channel_to_value(channel);
 }
 
 static VALUE
@@ -535,7 +535,7 @@ static VALUE
 ServiceModule_send_cmode(VALUE self, VALUE channel, VALUE mode, VALUE param)
 {
   struct Service *service = get_service(self);
-  struct Channel *target = rb_rbchannel2cchannel(channel);
+  struct Channel *target = value_to_channel(channel);
   char *cmode = NULL, *cparam = NULL;
 
   if(!NIL_P(param))

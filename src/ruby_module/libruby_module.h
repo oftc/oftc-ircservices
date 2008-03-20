@@ -29,19 +29,19 @@ VALUE rb_carray2rbarray(int, char **);
 struct Client* value_to_client(VALUE);
 VALUE client_to_value(struct Client*);
 
-struct Channel* rb_rbchannel2cchannel(VALUE);
-VALUE rb_cchannel2rbchannel(struct Channel*);
+struct Channel* value_to_channel(VALUE);
+VALUE channel_to_value(struct Channel*);
 
-struct RegChannel* rb_rbregchan2cregchan(VALUE);
-VALUE rb_cregchan2rbregchan(struct RegChannel*);
+DBChannel* value_to_dbchannel(VALUE);
+VALUE dbchannel_to_value(DBChannel*);
 
-struct Nick* rb_rbnick2cnick(VALUE);
-VALUE rb_cnick2rbnick(struct Nick*);
+Nickname* value_to_nickname(VALUE);
+VALUE nickname_to_value(Nickname*);
 
-void Init_ChannelStruct(void);
-void Init_RegChannel(void);
+void Init_Channel(void);
+void Init_DBChannel(void);
 void Init_Client(void);
-void Init_NickStruct(void);
+void Init_Nickname(void);
 void Init_ServiceModule(void);
 
 enum Ruby_Hooks
@@ -96,10 +96,10 @@ struct rhook_args
 void check_our_type(VALUE obj, VALUE type);
 
 extern VALUE cServiceModule;
-extern VALUE cNickStruct;
+extern VALUE cNickname;
 extern VALUE cClient;
-extern VALUE cRegChannel;
-extern VALUE cChannelStruct;
+extern VALUE cDBChannel;
+extern VALUE cChannel;
 
 #define Check_OurType(x, v) check_our_type((VALUE)(x), (VALUE)(v))
 

@@ -320,10 +320,10 @@ rb_cmode_hdlr(va_list args)
 
   if(param == NULL)
     ret = do_hook(hooks, 5, client_to_value(source_p),
-        rb_cchannel2rbchannel(chptr), INT2NUM(dir), rb_str_new(&letter, 1), 0);
+        channel_to_value(chptr), INT2NUM(dir), rb_str_new(&letter, 1), 0);
   else
     ret = do_hook(hooks, 5, client_to_value(source_p),
-        rb_cchannel2rbchannel(chptr), INT2NUM(dir), rb_str_new(&letter, 1),
+        channel_to_value(chptr), INT2NUM(dir), rb_str_new(&letter, 1),
         rb_str_new2(param));
 
   if(ret != Qfalse)
@@ -374,7 +374,7 @@ rb_privmsg_hdlr(va_list args)
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_PRIVMSG);
 
   ret = do_hook(hooks, 3, client_to_value(source),
-      rb_cchannel2rbchannel(channel), rb_str_new2(message));
+      channel_to_value(channel), rb_str_new2(message));
 
   if(ret != Qfalse)
     return pass_callback(ruby_privmsg_hook, source, channel, message);
@@ -409,7 +409,7 @@ rb_part_hdlr(va_list args)
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_PART);
 
   ret = do_hook(hooks, 4, client_to_value(client), client_to_value(source),
-    rb_cchannel2rbchannel(channel), rb_str_new2(reason));
+    channel_to_value(channel), rb_str_new2(reason));
 
   if(ret != Qfalse)
     return pass_callback(ruby_part_hook, client, source, channel, reason);
@@ -458,7 +458,7 @@ rb_notice_hdlr(va_list args)
   VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_NOTICE);
 
-  ret = do_hook(hooks, 3, client_to_value(source), rb_cchannel2rbchannel(channel),
+  ret = do_hook(hooks, 3, client_to_value(source), channel_to_value(channel),
       rb_str_new2(message));
 
   if(ret != Qfalse)
@@ -474,7 +474,7 @@ rb_chan_create_hdlr(va_list args)
   VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_CREATED);
 
-  ret = do_hook(hooks, 1, rb_cchannel2rbchannel(channel));
+  ret = do_hook(hooks, 1, channel_to_value(channel));
 
   if(ret != Qfalse)
     return pass_callback(ruby_chan_create_hook, channel);
@@ -489,7 +489,7 @@ rb_chan_delete_hdlr(va_list args)
   VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_DELETED);
 
-  ret = do_hook(hooks, 1, rb_cchannel2rbchannel(channel));
+  ret = do_hook(hooks, 1, channel_to_value(channel));
 
   if(ret != Qfalse)
     return pass_callback(ruby_chan_delete_hook, channel);
@@ -530,7 +530,7 @@ rb_chan_reg_hdlr(va_list args)
   VALUE ret;
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CHAN_REG);
 
-  ret = do_hook(hooks, 2, client_to_value(client), rb_cchannel2rbchannel(channel));
+  ret = do_hook(hooks, 2, client_to_value(client), channel_to_value(channel));
 
   if(ret != Qfalse)
     return pass_callback(ruby_chan_reg_hook, client, channel);
@@ -823,9 +823,9 @@ init_ruby(void)
 
   Init_ServiceModule();
   Init_Client();
-  Init_ChannelStruct();
-  Init_RegChannel();
-  Init_NickStruct();
+  Init_Channel();
+  Init_DBChannel();
+  Init_Nickname();
 
   /* Place holder for hooks */
   ruby_server_hooks = rb_ary_new();
