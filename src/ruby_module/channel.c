@@ -157,7 +157,7 @@ members_each(VALUE self)
 void
 Init_Channel(void)
 {
-  cChannel = rb_define_class("ChannelStruct", rb_cObject);
+  cChannel = rb_define_class("Channel", rb_cObject);
 
   rb_define_method(cChannel, "initialize", initialize, 1);
   rb_define_method(cChannel, "name", name, 0);

@@ -35,12 +35,105 @@ static VALUE expirebans(VALUE);
 static VALUE expirebans_set(VALUE, VALUE);
 static VALUE floodserv(VALUE);
 static VALUE floodserv_set(VALUE, VALUE);
+static VALUE autoop(VALUE);
+static VALUE autoop_set(VALUE, VALUE);
+static VALUE autovoice(VALUE);
+static VALUE autovoice_set(VALUE, VALUE);
+static VALUE leaveops(VALUE);
+static VALUE leaveops_set(VALUE, VALUE);
+static VALUE expirebans_lifetime(VALUE);
+static VALUE expirebans_lifetime_set(VALUE, VALUE);
+
+/* Actions */
+static VALUE m_register(VALUE, VALUE);
+static VALUE delete(VALUE);
+
+/* Lists */
+static VALUE masters_each(VALUE);
+static VALUE masters_count(VALUE);
+
+/* Static Methods */
+static VALUE find(VALUE, VALUE);
+static VALUE forbid(VALUE, VALUE);
+static VALUE unforbid(VALUE, VALUE);
+static VALUE is_forbid(VALUE, VALUE);
+static VALUE list_forbid_each(VALUE);
+static VALUE list_all_each(VALUE);
+static VALUE list_regular_each(VALUE);
 
 static inline VALUE m_get_flag(VALUE, char(*)(DBChannel *));
 static inline VALUE m_get_string(VALUE, const char *(*)(DBChannel *));
 
 static inline VALUE m_set_flag(VALUE, VALUE, int(*)(DBChannel *, char));
 static inline VALUE m_set_string(VALUE, VALUE, int(*)(DBChannel *, const char *));
+
+static void m_string_list_each(int(*)(dlink_list *), void(*)(dlink_list *));
+
+void
+Init_DBChannel(void)
+{
+  cDBChannel = rb_define_class("DBChannel", rb_cObject);
+
+  rb_gc_register_address(&cDBChannel);
+
+  /* Get/Setters */
+  rb_define_method(cDBChannel, "initialize", initialize, 1);
+  rb_define_method(cDBChannel, "id", id, 0);
+  rb_define_method(cDBChannel, "id=", id_set, 1);
+  rb_define_method(cDBChannel, "name", name, 0);
+  rb_define_method(cDBChannel, "name=", name_set, 1);
+  rb_define_method(cDBChannel, "description", description, 0);
+  rb_define_method(cDBChannel, "description=", description_set, 1);
+  rb_define_method(cDBChannel, "entrymsg", entrymsg, 0);
+  rb_define_method(cDBChannel, "entrymsg=", entrymsg_set, 1);
+  rb_define_method(cDBChannel, "url", url, 0);
+  rb_define_method(cDBChannel, "url=", url_set, 1);
+  rb_define_method(cDBChannel, "email", email, 0);
+  rb_define_method(cDBChannel, "email=", email_set, 1);
+  rb_define_method(cDBChannel, "topic", topic, 0);
+  rb_define_method(cDBChannel, "topic=", topic_set, 1);
+  rb_define_method(cDBChannel, "mlock", mlock, 0);
+  rb_define_method(cDBChannel, "mlock=", mlock_set, 1);
+  rb_define_method(cDBChannel, "private?", priv, 0);
+  rb_define_method(cDBChannel, "private=", priv_set, 1);
+  rb_define_method(cDBChannel, "restricted?", restricted, 0);
+  rb_define_method(cDBChannel, "restricted=", restricted_set, 1);
+  rb_define_method(cDBChannel, "topic_lock?", topiclock, 0);
+  rb_define_method(cDBChannel, "topic_lock=", topiclock_set, 1);
+  rb_define_method(cDBChannel, "verbose?", verbose, 0);
+  rb_define_method(cDBChannel, "verbose=", verbose_set, 1);
+  rb_define_method(cDBChannel, "autolimit?", autolimit, 0);
+  rb_define_method(cDBChannel, "autolimit=", autolimit_set, 1);
+  rb_define_method(cDBChannel, "expirebans?", expirebans, 0);
+  rb_define_method(cDBChannel, "expirebans=", expirebans_set, 1);
+  rb_define_method(cDBChannel, "floodserv?", floodserv, 0);
+  rb_define_method(cDBChannel, "floodserv=", floodserv_set, 1);
+  rb_define_method(cDBChannel, "autoop?", autoop, 0);
+  rb_define_method(cDBChannel, "autoop=", autoop_set, 1);
+  rb_define_method(cDBChannel, "autovoice?", autovoice, 0);
+  rb_define_method(cDBChannel, "autovoice=", autovoice_set, 1);
+  rb_define_method(cDBChannel, "leaveops?", leaveops, 0);
+  rb_define_method(cDBChannel, "leaveops=", leaveops_set, 1);
+  rb_define_method(cDBChannel, "expirebans_lifetime", expirebans_lifetime, 0);
+  rb_define_method(cDBChannel, "expirebans_lifetime=", expirebans_lifetime_set, 1);
+
+  /* Actions */
+  rb_define_method(cDBChannel, "register", m_register, 1);
+  rb_define_method(cDBChannel, "delete", delete, 0);
+
+  /* Lists */
+  rb_define_method(cDBChannel, "masters_each", masters_each, 0);
+  rb_define_method(cDBChannel, "masters_count", masters_count, 0);
+
+  /* Static Methods */
+  rb_define_singleton_method(cDBChannel, "find", find, 1);
+  rb_define_singleton_method(cDBChannel, "forbid", forbid, 1);
+  rb_define_singleton_method(cDBChannel, "unforbid", unforbid, 1);
+  rb_define_singleton_method(cDBChannel, "is_forbid?", is_forbid, 1);
+  rb_define_singleton_method(cDBChannel, "list_forbid_each", list_forbid_each, 0);
+  rb_define_singleton_method(cDBChannel, "list_all_each", list_all_each, 0);
+  rb_define_singleton_method(cDBChannel, "list_regular_each", list_regular_each, 0);
+}
 
 static inline VALUE
 m_get_flag(VALUE self, char(*get_func)(DBChannel *))
@@ -269,44 +362,181 @@ floodserv_set(VALUE self, VALUE value)
   return m_set_flag(self, value, &dbchannel_set_floodserv);
 }
 
-void
-Init_DBChannel(void)
+static VALUE
+autoop(VALUE self)
 {
-  cDBChannel = rb_define_class("RegChannel", rb_cObject);
+  return m_get_flag(self, &dbchannel_get_autoop);
+}
 
-  rb_gc_register_address(&cDBChannel);
+static VALUE
+autoop_set(VALUE self, VALUE value)
+{
+  return m_set_flag(self, value, &dbchannel_set_autoop);
+}
 
-  rb_define_method(cDBChannel, "initialize", initialize, 1);
-  rb_define_method(cDBChannel, "id", id, 0);
-  rb_define_method(cDBChannel, "id=", id_set, 1);
-  rb_define_method(cDBChannel, "name", name, 0);
-  rb_define_method(cDBChannel, "name=", name_set, 1);
-  rb_define_method(cDBChannel, "description", description, 0);
-  rb_define_method(cDBChannel, "description=", description_set, 1);
-  rb_define_method(cDBChannel, "entrymsg", entrymsg, 0);
-  rb_define_method(cDBChannel, "entrymsg=", entrymsg_set, 1);
-  rb_define_method(cDBChannel, "url", url, 0);
-  rb_define_method(cDBChannel, "url=", url_set, 1);
-  rb_define_method(cDBChannel, "email", email, 0);
-  rb_define_method(cDBChannel, "email=", email_set, 1);
-  rb_define_method(cDBChannel, "topic", topic, 0);
-  rb_define_method(cDBChannel, "topic=", topic_set, 1);
-  rb_define_method(cDBChannel, "mlock", mlock, 0);
-  rb_define_method(cDBChannel, "mlock=", mlock_set, 1);
-  rb_define_method(cDBChannel, "private?", priv, 0);
-  rb_define_method(cDBChannel, "private=", priv_set, 1);
-  rb_define_method(cDBChannel, "restricted?", restricted, 0);
-  rb_define_method(cDBChannel, "restricted=", restricted_set, 1);
-  rb_define_method(cDBChannel, "topic_lock?", topiclock, 0);
-  rb_define_method(cDBChannel, "topic_lock=", topiclock_set, 1);
-  rb_define_method(cDBChannel, "verbose?", verbose, 0);
-  rb_define_method(cDBChannel, "verbose=", verbose_set, 1);
-  rb_define_method(cDBChannel, "autolimit?", autolimit, 0);
-  rb_define_method(cDBChannel, "autolimit=", autolimit_set, 1);
-  rb_define_method(cDBChannel, "expirebans?", expirebans, 0);
-  rb_define_method(cDBChannel, "expirebans=", expirebans_set, 1);
-  rb_define_method(cDBChannel, "floodserv?", floodserv, 0);
-  rb_define_method(cDBChannel, "floodserv=", floodserv_set, 1);
+static VALUE
+autovoice(VALUE self)
+{
+  return m_get_flag(self, &dbchannel_get_autovoice);
+}
+
+static VALUE
+autovoice_set(VALUE self, VALUE value)
+{
+  return m_set_flag(self, value, &dbchannel_set_autovoice);
+}
+
+static VALUE
+leaveops(VALUE self)
+{
+  return m_get_flag(self, &dbchannel_get_leaveops);
+}
+
+static VALUE
+leaveops_set(VALUE self, VALUE value)
+{
+  return m_set_flag(self, value, &dbchannel_set_leaveops);
+}
+
+static VALUE
+expirebans_lifetime(VALUE self)
+{
+  DBChannel *chan = value_to_dbchannel(self);
+  return UINT2NUM(dbchannel_get_expirebans_lifetime(chan));
+}
+
+static VALUE
+expirebans_lifetime_set(VALUE self, VALUE value)
+{
+  DBChannel *chan = value_to_dbchannel(self);
+  return dbchannel_set_expirebans_lifetime(chan, NUM2UINT(value)) == TRUE ? Qtrue : Qfalse;
+}
+
+static VALUE
+m_register(VALUE self, VALUE nick)
+{
+  /* TODO XXX FIXME not implemented */
+  return Qfalse;
+}
+
+static VALUE
+delete(VALUE self)
+{
+  DBChannel *chan = value_to_dbchannel(self);
+  return dbchannel_delete(chan) == TRUE ? Qtrue : Qfalse;
+}
+
+static VALUE
+masters_each(VALUE self)
+{
+  if(rb_block_given_p())
+  {
+    dlink_node *ptr = NULL, *next_ptr = NULL;
+    dlink_list list = { 0 };
+    char *master = NULL;
+    DBChannel *chan = value_to_dbchannel(self);
+
+    dbchannel_masters_list(dbchannel_get_id(chan), &list);
+
+    DLINK_FOREACH_SAFE(ptr, next_ptr, list.head)
+    {
+      master = (char *)ptr->data;
+      rb_yield(rb_str_new2(master));
+    }
+
+    dbchannel_masters_list_free(&list);
+  }
+
+  return self;
+}
+
+static VALUE
+masters_count(VALUE self)
+{
+  DBChannel *chan = value_to_dbchannel(self);
+  int count = 0;
+  if(dbchannel_masters_count(dbchannel_get_id(chan), &count))
+    return INT2NUM(count);
+  else /* TODO XXX FIXME exception? */
+    return INT2NUM(0);
+}
+
+static VALUE
+find(VALUE self, VALUE name)
+{
+  DBChannel *chan = dbchannel_find(StringValueCStr(name));
+  if(chan == NULL)
+    return Qnil;
+  else
+    return dbchannel_to_value(chan);
+}
+
+static VALUE
+forbid(VALUE self, VALUE name)
+{
+  return dbchannel_forbid(StringValueCStr(name)) == TRUE ? Qtrue : Qfalse;
+}
+
+static VALUE
+unforbid(VALUE self, VALUE name)
+{
+  return dbchannel_delete_forbid(StringValueCStr(name)) == TRUE ? Qtrue : Qfalse;
+}
+
+static VALUE
+is_forbid(VALUE self, VALUE name)
+{
+  return dbchannel_is_forbid(StringValueCStr(name)) == TRUE ? Qtrue : Qfalse;
+}
+
+static VALUE
+list_forbid_each(VALUE self)
+{
+  if(rb_block_given_p())
+  {
+    m_string_list_each(&dbchannel_list_forbid, &dbchannel_list_forbid_free);
+  }
+  return self;
+}
+
+static VALUE
+list_all_each(VALUE self)
+{
+  if(rb_block_given_p())
+  {
+    m_string_list_each(&dbchannel_list_all, &dbchannel_list_all_free);
+  }
+
+  return self;
+}
+
+static VALUE
+list_regular_each(VALUE self)
+{
+  if(rb_block_given_p())
+  {
+    m_string_list_each(&dbchannel_list_regular, &dbchannel_list_regular_free);
+  }
+
+  return self;
+}
+
+static void
+m_string_list_each(int(*list_func)(dlink_list *), void(*free_func)(dlink_list*))
+{
+  dlink_node *ptr = NULL, *next_ptr = NULL;
+  dlink_list list = { 0 };
+  char *str = NULL;
+
+  list_func(&list);
+
+  DLINK_FOREACH_SAFE(ptr, next_ptr, list.head)
+  {
+    str = (char *)ptr->data;
+    rb_yield(rb_str_new2(str));
+  }
+
+  free_func(&list);
 }
 
 DBChannel*
