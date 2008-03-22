@@ -31,6 +31,46 @@ static VALUE is_server(VALUE);
 static VALUE is_client(VALUE);
 static VALUE is_me(VALUE);
 static VALUE is_services_client(VALUE);
+static VALUE join(VALUE, VALUE);
+static VALUE part(VALUE, VALUE, VALUE);
+static VALUE m_exit(VALUE, VALUE, VALUE);
+
+void
+Init_Client(void)
+{
+  cClient = rb_define_class("Client", rb_cObject);
+
+  rb_define_method(cClient, "initialize", initialize, 1);
+  rb_define_method(cClient, "name", name, 0);
+  rb_define_method(cClient, "name=", name_set, 1);
+  rb_define_method(cClient, "host", host, 0);
+  rb_define_method(cClient, "host=", host_set, 1);
+  rb_define_method(cClient, "realhost", realhost, 0);
+  rb_define_method(cClient, "realhost=", realhost_set, 1);
+  rb_define_method(cClient, "id", id, 0);
+  rb_define_method(cClient, "id=", id_set, 1);
+  rb_define_method(cClient, "info", info, 0);
+  rb_define_method(cClient, "info=", info_set, 1);
+  rb_define_method(cClient, "username", username, 0);
+  rb_define_method(cClient, "username=", username_set, 1);
+  rb_define_method(cClient, "nick", nick, 0);
+  rb_define_method(cClient, "nick=", nick_set, 1);
+  rb_define_method(cClient, "ctcp_version", ctcp, 0);
+  rb_define_method(cClient, "ctcp_version=", ctcp_set, 1);
+  rb_define_method(cClient, "ts", ts, 0);
+  rb_define_method(cClient, "firsttime", firsttime, 0);
+  rb_define_method(cClient, "from", from, 0);
+  rb_define_method(cClient, "is_oper?", is_oper, 0);
+  rb_define_method(cClient, "is_admin?", is_admin, 0);
+  rb_define_method(cClient, "is_identified?", is_identified, 0);
+  rb_define_method(cClient, "is_server?", is_server, 0);
+  rb_define_method(cClient, "is_client?", is_client, 0);
+  rb_define_method(cClient, "is_me?", is_me, 0);
+  rb_define_method(cClient, "is_services_client?", is_services_client, 0);
+  rb_define_method(cClient, "join", join, 1);
+  rb_define_method(cClient, "part", part, 2);
+  rb_define_method(cClient, "exit", m_exit, 2);
+}
 
 static VALUE
 initialize(VALUE self, VALUE client)
@@ -261,41 +301,66 @@ static VALUE is_services_client(VALUE self)
   return IsMe(client->from) ? Qtrue : Qfalse;
 }
 
-void
-Init_Client(void)
+static VALUE
+join(VALUE self, VALUE channame)
 {
-  cClient = rb_define_class("Client", rb_cObject);
+  struct Client *client = value_to_client(self);
+  const char* chname;
+  struct Channel *channel;
 
-  rb_define_method(cClient, "initialize", initialize, 1);
-  rb_define_method(cClient, "name", name, 0);
-  rb_define_method(cClient, "name=", name_set, 1);
-  rb_define_method(cClient, "host", host, 0);
-  rb_define_method(cClient, "host=", host_set, 1);
-  rb_define_method(cClient, "realhost", realhost, 0);
-  rb_define_method(cClient, "realhost=", realhost_set, 1);
-  rb_define_method(cClient, "id", id, 0);
-  rb_define_method(cClient, "id=", id_set, 1);
-  rb_define_method(cClient, "info", info, 0);
-  rb_define_method(cClient, "info=", info_set, 1);
-  rb_define_method(cClient, "username", username, 0);
-  rb_define_method(cClient, "username=", username_set, 1);
-  rb_define_method(cClient, "nick", nick, 0);
-  rb_define_method(cClient, "nick=", nick_set, 1);
-  rb_define_method(cClient, "ctcp_version", ctcp, 0);
-  rb_define_method(cClient, "ctcp_version=", ctcp_set, 1);
-  rb_define_method(cClient, "ts", ts, 0);
-  rb_define_method(cClient, "firsttime", firsttime, 0);
-  rb_define_method(cClient, "from", from, 0);
-  rb_define_method(cClient, "is_oper?", is_oper, 0);
-  rb_define_method(cClient, "is_admin?", is_admin, 0);
-  rb_define_method(cClient, "is_identified?", is_identified, 0);
-  rb_define_method(cClient, "is_server?", is_server, 0);
-  rb_define_method(cClient, "is_client?", is_client, 0);
-  rb_define_method(cClient, "is_me?", is_me, 0);
-  rb_define_method(cClient, "is_services_client?", is_services_client, 0);
+  Check_Type(channame, T_STRING);
+  chname = StringValueCStr(channame);
+
+  channel = hash_find_channel(chname);
+
+  if(channel == NULL)
+    channel = make_channel(chname);
+
+  join_channel(client, channel);
+
+  return channel_to_value(channel);
 }
 
-struct Client*
+static VALUE
+part(VALUE self, VALUE channame, VALUE reason)
+{
+  struct Client *client = value_to_client(self);
+  const char* chname;
+  char creason[KICKLEN+1];
+
+  Check_Type(channame, T_STRING);
+
+  chname = StringValueCStr(channame);
+
+  creason[0] = '\0';
+
+  if(!NIL_P(reason))
+  {
+    Check_Type(reason, T_STRING);
+    strlcpy(creason, StringValueCStr(reason), sizeof(creason));
+  }
+
+  part_channel(client, chname, creason);
+
+  return self;
+}
+
+static VALUE
+m_exit(VALUE self, VALUE rbsource, VALUE rbreason)
+{
+  struct Client *client = value_to_client(self);
+  struct Client *source = value_to_client(rbsource);
+  char *reason;
+
+  Check_Type(rbreason, T_STRING);
+
+  reason = StringValueCStr(rbreason);
+
+  exit_client(client, source, reason);
+  return Qtrue;
+}
+
+struct Client *
 value_to_client(VALUE self)
 {
   struct Client* out;

@@ -11,11 +11,8 @@ static VALUE ServiceModule_service_name(VALUE, VALUE);
 static VALUE ServiceModule_add_hook(VALUE, VALUE);
 static VALUE ServiceModule_log(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_do_help(VALUE, VALUE, VALUE, VALUE);
-static VALUE ServiceModule_exit_client(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_introduce_server(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_unload(VALUE);
-static VALUE ServiceModule_join_channel(VALUE, VALUE);
-static VALUE ServiceModule_part_channel(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_chain_language(VALUE, VALUE);
 static VALUE ServiceModule_channels_each(VALUE);
 static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
@@ -98,26 +95,6 @@ ServiceModule_register(VALUE self, VALUE commands)
 }
 
 static VALUE
-ServiceModule_exit_client(VALUE self, VALUE rbclient, VALUE rbsource,
-    VALUE rbreason)
-{
-  struct Client *client, *source;
-  char *reason;
-
-  Check_OurType(rbclient, cClient);
-  Check_OurType(rbsource, cClient);
-  Check_Type(rbreason, T_STRING);
-
-  client = value_to_client(rbclient);
-  source = value_to_client(rbsource);
-
-  reason = StringValueCStr(rbreason);
-
-  exit_client(client, source, reason);
-  return Qnil;
-}
-
-static VALUE
 ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE message)
 {
   struct Client *client;
@@ -137,6 +114,7 @@ static VALUE
 ServiceModule_service_name(VALUE self, VALUE name)
 {
   struct Service *ruby_service;
+  struct Client *ruby_client;
 
   Check_Type(name, T_STRING);
 
@@ -152,7 +130,9 @@ ServiceModule_service_name(VALUE self, VALUE name)
   clear_serv_tree_parse(&ruby_service->msg_tree);
   dlinkAdd(ruby_service, &ruby_service->node, &services_list);
   hash_add_service(ruby_service);
-  introduce_client(ruby_service->name, ruby_service->name, TRUE);
+  ruby_client = introduce_client(ruby_service->name, ruby_service->name, TRUE);
+
+  rb_iv_set(self, "@client", client_to_value(ruby_client));
 
   rb_iv_set(self, "@langpath", rb_str_new2(LANGPATH));
 
@@ -259,52 +239,6 @@ static VALUE
 ServiceModule_unload(VALUE self)
 {
   /* place holder, maybe one day we'll have things we need to free here */
-  return self;
-}
-
-static VALUE
-ServiceModule_join_channel(VALUE self, VALUE channame)
-{
-  struct Service *service = get_service(self);
-  struct Client *client = find_client(service->name);
-  const char* chname;
-  struct Channel *channel;
-
-  Check_Type(channame, T_STRING);
-  chname = StringValueCStr(channame);
-
-  channel = hash_find_channel(chname);
-
-  if(channel == NULL)
-    channel = make_channel(chname);
-
-  join_channel(client, channel);
-
-  return channel_to_value(channel);
-}
-
-static VALUE
-ServiceModule_part_channel(VALUE self, VALUE channame, VALUE reason)
-{
-  struct Service *service = get_service(self);
-  struct Client *client = find_client(service->name);
-  const char* chname;
-  char creason[KICKLEN+1];
-
-  Check_Type(channame, T_STRING);
-
-  chname = StringValueCStr(channame);
-
-  creason[0] = '\0';
-
-  if(!NIL_P(reason))
-  {
-    Check_Type(reason, T_STRING);
-    strlcpy(creason, StringValueCStr(reason), sizeof(creason));
-  }
-
-  part_channel(client, chname, creason);
-
   return self;
 }
 
@@ -548,6 +482,12 @@ ServiceModule_send_cmode(VALUE self, VALUE channel, VALUE mode, VALUE param)
   return self;
 }
 
+static VALUE
+ServiceModule_client(VALUE self)
+{
+  return rb_iv_get(self, "@client");
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -600,11 +540,8 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "add_hook", ServiceModule_add_hook, 1);
   rb_define_method(cServiceModule, "log", ServiceModule_log, 2);
   rb_define_method(cServiceModule, "introduce_server", ServiceModule_introduce_server, 2);
-  rb_define_method(cServiceModule, "exit_client", ServiceModule_exit_client, 3);
   rb_define_method(cServiceModule, "do_help", ServiceModule_do_help, 3);
   rb_define_method(cServiceModule, "unload", ServiceModule_unload, 0);
-  rb_define_method(cServiceModule, "join_channel", ServiceModule_join_channel, 1);
-  rb_define_method(cServiceModule, "part_channel", ServiceModule_part_channel, 2);
   rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
   rb_define_method(cServiceModule, "channels_each", ServiceModule_channels_each, 0);
   rb_define_method(cServiceModule, "akill_add", ServiceModule_akill_add, 3);
@@ -620,6 +557,8 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "find_channel", ServiceModule_find_channel, 1);
   rb_define_method(cServiceModule, "add_event", ServiceModule_add_event, 2);
   rb_define_method(cServiceModule, "send_cmode", ServiceModule_send_cmode, 3);
+
+  rb_define_method(cServiceModule, "client", ServiceModule_client, 0);
 }
 
 static void
