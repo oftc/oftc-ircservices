@@ -17,6 +17,7 @@ static VALUE regchan_set(VALUE, VALUE);
 static VALUE members_length(VALUE);
 static VALUE members_each(VALUE);
 static VALUE find(VALUE, VALUE);
+static VALUE all_each(VALUE);
 
 void
 Init_Channel(void)
@@ -40,6 +41,7 @@ Init_Channel(void)
   /*TODO members, invites, bans, excepts, invex */
 
   rb_define_singleton_method(cChannel, "find", find, 1);
+  rb_define_singleton_method(cChannel, "all_each", all_each, 0);
 }
 
 static VALUE
@@ -187,6 +189,21 @@ find(VALUE self, VALUE name)
     return Qnil;
   else
     return channel_to_value(channel);
+}
+
+static VALUE
+all_each(VALUE self)
+{
+  dlink_node *ptr = NULL, *next_ptr = NULL;
+
+  if(rb_block_given_p())
+  {
+    /* TODO wrap in protect/ensure */
+    DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
+      rb_yield(channel_to_value(ptr->data));
+  }
+
+  return self;
 }
 
 struct Channel*

@@ -14,7 +14,6 @@ static VALUE ServiceModule_do_help(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_introduce_server(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_unload(VALUE);
 static VALUE ServiceModule_chain_language(VALUE, VALUE);
-static VALUE ServiceModule_channels_each(VALUE);
 static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
 static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_kill_user(VALUE, VALUE, VALUE);
@@ -249,21 +248,6 @@ ServiceModule_chain_language(VALUE self, VALUE langfile)
   Check_Type(langfile, T_STRING);
 
   load_language(service->languages, StringValueCStr(langfile));
-
-  return self;
-}
-
-static VALUE
-ServiceModule_channels_each(VALUE self)
-{
-  dlink_node *ptr = NULL, *next_ptr = NULL;
-
-  if(rb_block_given_p())
-  {
-    /* TODO wrap in protect/ensure */
-    DLINK_FOREACH_SAFE(ptr, next_ptr, global_channel_list.head)
-      rb_yield(channel_to_value(ptr->data));
-  }
 
   return self;
 }
@@ -532,7 +516,6 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "do_help", ServiceModule_do_help, 3);
   rb_define_method(cServiceModule, "unload", ServiceModule_unload, 0);
   rb_define_method(cServiceModule, "chain_language", ServiceModule_chain_language, 1);
-  rb_define_method(cServiceModule, "channels_each", ServiceModule_channels_each, 0);
   rb_define_method(cServiceModule, "akill_add", ServiceModule_akill_add, 3);
   rb_define_method(cServiceModule, "ctcp_user", ServiceModule_ctcp_user, 2);
   rb_define_method(cServiceModule, "sendto_channel", ServiceModule_sendto_channel, 2);
