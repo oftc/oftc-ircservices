@@ -16,6 +16,31 @@ static VALUE regchan(VALUE);
 static VALUE regchan_set(VALUE, VALUE);
 static VALUE members_length(VALUE);
 static VALUE members_each(VALUE);
+static VALUE find(VALUE, VALUE);
+
+void
+Init_Channel(void)
+{
+  cChannel = rb_define_class("Channel", rb_cObject);
+
+  rb_define_method(cChannel, "initialize", initialize, 1);
+  rb_define_method(cChannel, "name", name, 0);
+  rb_define_method(cChannel, "name=", name_set, 1);
+  rb_define_method(cChannel, "topic", topic, 0);
+  rb_define_method(cChannel, "topic=", topic_set, 1);
+  rb_define_method(cChannel, "topic_info", topicinfo, 0);
+  rb_define_method(cChannel, "topic_info=", topicinfo_set, 1);
+  rb_define_method(cChannel, "mode", mode, 0);
+  rb_define_method(cChannel, "mode=", mode_set, 1);
+  rb_define_method(cChannel, "regchan", regchan, 0);
+  rb_define_method(cChannel, "regchan=", regchan_set, 1);
+  rb_define_method(cChannel, "members_length", members_length, 0);
+  rb_define_method(cChannel, "members_each", members_each, 0);
+
+  /*TODO members, invites, bans, excepts, invex */
+
+  rb_define_singleton_method(cChannel, "find", find, 1);
+}
 
 static VALUE
 initialize(VALUE self, VALUE channel)
@@ -154,26 +179,14 @@ members_each(VALUE self)
   return self;
 }
 
-void
-Init_Channel(void)
+static VALUE
+find(VALUE self, VALUE name)
 {
-  cChannel = rb_define_class("Channel", rb_cObject);
-
-  rb_define_method(cChannel, "initialize", initialize, 1);
-  rb_define_method(cChannel, "name", name, 0);
-  rb_define_method(cChannel, "name=", name_set, 1);
-  rb_define_method(cChannel, "topic", topic, 0);
-  rb_define_method(cChannel, "topic=", topic_set, 1);
-  rb_define_method(cChannel, "topic_info", topicinfo, 0);
-  rb_define_method(cChannel, "topic_info=", topicinfo_set, 1);
-  rb_define_method(cChannel, "mode", mode, 0);
-  rb_define_method(cChannel, "mode=", mode_set, 1);
-  rb_define_method(cChannel, "regchan", regchan, 0);
-  rb_define_method(cChannel, "regchan=", regchan_set, 1);
-  rb_define_method(cChannel, "members_length", members_length, 0);
-  rb_define_method(cChannel, "members_each", members_each, 0);
-
-  /*TODO members, invites, bans, excepts, invex */
+  struct Channel *channel = hash_find_channel(StringValueCStr(name));
+  if(channel == NULL)
+    return Qnil;
+  else
+    return channel_to_value(channel);
 }
 
 struct Channel*

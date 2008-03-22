@@ -21,7 +21,6 @@ static VALUE ServiceModule_kill_user(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_lm(VALUE, VALUE);
 static VALUE ServiceModule_drop_nick(VALUE, VALUE);
-static VALUE ServiceModule_find_channel(VALUE, VALUE);
 static VALUE ServiceModule_add_event(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_send_cmode(VALUE, VALUE, VALUE, VALUE);
 /* Core Functions */
@@ -449,16 +448,6 @@ ServiceModule_drop_nick(VALUE self, VALUE nickname)
 }
 
 static VALUE
-ServiceModule_find_channel(VALUE self, VALUE name)
-{
-  struct Channel *channel = hash_find_channel(StringValueCStr(name));
-  if(channel == NULL)
-    return Qnil;
-  else
-    return channel_to_value(channel);
-}
-
-static VALUE
 ServiceModule_add_event(VALUE self, VALUE method, VALUE time)
 {
   rb_add_event(self, method, time);
@@ -554,7 +543,6 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "lm", ServiceModule_lm, 1);
 
   rb_define_method(cServiceModule, "drop_nick", ServiceModule_drop_nick, 1);
-  rb_define_method(cServiceModule, "find_channel", ServiceModule_find_channel, 1);
   rb_define_method(cServiceModule, "add_event", ServiceModule_add_event, 2);
   rb_define_method(cServiceModule, "send_cmode", ServiceModule_send_cmode, 3);
 
