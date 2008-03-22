@@ -14,7 +14,6 @@ static VALUE ServiceModule_do_help(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_introduce_server(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_unload(VALUE);
 static VALUE ServiceModule_chain_language(VALUE, VALUE);
-static VALUE ServiceModule_regchan_by_name(VALUE, VALUE);
 static VALUE ServiceModule_akill_add(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_kill_user(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
@@ -308,21 +307,6 @@ ServiceModule_kill_user(VALUE self, VALUE who, VALUE reason)
 }
 
 static VALUE
-ServiceModule_regchan_by_name(VALUE self, VALUE name)
-{
-  /*struct RegChannel *channel = NULL;
-  Check_Type(name, T_STRING);
-
-  channel = db_find_chan(StringValueCStr(name));
-
-  if(channel)
-    return rb_cregchan2rbregchan(channel);
-  else
-    return Qnil;*/
-  return Qtrue;
-}
-
-static VALUE
 ServiceModule_load_language(VALUE self, VALUE file)
 {
   VALUE lang_map = rb_iv_get(self, "@lang_map");
@@ -521,7 +505,6 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "sendto_channel", ServiceModule_sendto_channel, 2);
   rb_define_method(cServiceModule, "kill_user", ServiceModule_kill_user, 2);
 
-  rb_define_method(cServiceModule, "regchan_by_name?", ServiceModule_regchan_by_name, 1);
   rb_define_method(cServiceModule, "load_language", ServiceModule_load_language, 1);
   rb_define_method(cServiceModule, "lm", ServiceModule_lm, 1);
 
