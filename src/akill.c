@@ -155,7 +155,7 @@ akill_get_expired(dlink_list *list)
   int error;
   int i;
 
-  results = db_execute(GET_EXPIRED_AKILL, &error, "i", CurrentTime);
+  results = db_execute(GET_EXPIRED_AKILL, &error, "i", &CurrentTime);
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "akill_get_expired: database error %d", error);
@@ -218,10 +218,10 @@ akill_add(struct ServiceBan *akill)
   
   if(akill->setter != 0)
     ret = db_execute_nonquery(INSERT_AKILL, "ssiii", akill->mask,
-        akill->reason, akill->setter, akill->time_set, akill->duration);
+        akill->reason, &akill->setter, &akill->time_set, &akill->duration);
   else
     ret = db_execute_nonquery(INSERT_SERVICES_AKILL, "ssii", akill->mask,
-        akill->reason, akill->time_set, akill->duration);
+        akill->reason, &akill->time_set, &akill->duration);
 
   if(ret == -1)
     return FALSE;

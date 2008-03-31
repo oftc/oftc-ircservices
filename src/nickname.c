@@ -143,8 +143,8 @@ nickname_register(Nickname *nick)
   if(nickid == -1)
     goto failure;
 
-  ret = db_execute_nonquery(INSERT_ACCOUNT, "isssi", nickid, nick->pass,
-      nick->salt, nick->email, CurrentTime);
+  ret = db_execute_nonquery(INSERT_ACCOUNT, "isssi", &nickid, nick->pass,
+      nick->salt, nick->email, &CurrentTime);
 
   if(ret == -1)
     goto failure;
@@ -153,8 +153,8 @@ nickname_register(Nickname *nick)
   if(accid == -1)
     goto failure;
 
-  ret = db_execute_nonquery(INSERT_NICK, "isiii", nickid, nick->nick, accid,
-      CurrentTime, CurrentTime);
+  ret = db_execute_nonquery(INSERT_NICK, "isiii", &nickid, nick->nick, &accid,
+      &CurrentTime, &CurrentTime);
 
   if(ret == -1)
     goto failure;
@@ -165,7 +165,7 @@ nickname_register(Nickname *nick)
 
   assert(tmp == nickid);
 
-  ret = db_execute_nonquery(SET_NICK_MASTER, "ii", nickid, accid);
+  ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nickid, &accid);
   if(ret == -1)
     goto failure;
 
@@ -209,18 +209,18 @@ nickname_delete(Nickname *nick)
   if(nick->nickid == nick->pri_nickid)
   {
     char *tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii",
-        nick->id, nick->nickid);
+        &nick->id, &nick->nickid);
     if(error)
       goto failure;
     if(tmp == NULL)
     {
-      ret = db_execute_nonquery(DELETE_NICK, "i", nick->nickid);
+      ret = db_execute_nonquery(DELETE_NICK, "i", &nick->nickid);
       if(ret == -1)
         goto failure;
-      ret = db_execute_nonquery(DELETE_ACCOUNT_CHACCESS, "i", nick->id);
+      ret = db_execute_nonquery(DELETE_ACCOUNT_CHACCESS, "i", &nick->id);
       if(ret == -1)
         goto failure;
-      ret = db_execute_nonquery(DELETE_ACCOUNT, "i", nick->id);
+      ret = db_execute_nonquery(DELETE_ACCOUNT, "i", &nick->id);
       if(ret == -1)
         goto failure;
     }
@@ -228,14 +228,14 @@ nickname_delete(Nickname *nick)
     {
       newid = atoi(tmp);
       MyFree(tmp);
-      ret = db_execute_nonquery(SET_NICK_MASTER, "ii", newid, nick->id);
+      ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &newid, &nick->id);
       if(ret == -1)
         goto failure;
     }
   }
   else
   {
-    ret = db_execute_nonquery(DELETE_NICK, "i", nick->nickid);
+    ret = db_execute_nonquery(DELETE_NICK, "i", &nick->nickid);
     if(ret == -1)
       goto failure;
   }
@@ -366,9 +366,9 @@ nickname_nick_from_id(int id, int is_accid)
   int error;
 
   if(is_accid)
-    nick = db_execute_scalar(GET_NICK_FROM_ACCID, &error, "i", id);
+    nick = db_execute_scalar(GET_NICK_FROM_ACCID, &error, "i", &id);
   else
-    nick = db_execute_scalar(GET_NICK_FROM_NICKID, &error, "i", id);
+    nick = db_execute_scalar(GET_NICK_FROM_NICKID, &error, "i", &id);
   if(error || nick == NULL)
     return NULL;
 
@@ -420,7 +420,7 @@ nickname_set_master(Nickname *nick, const char *master)
   if(newid == -1)
     return FALSE;
 
-  ret = db_execute_nonquery(SET_NICK_MASTER, "ii", newid, nick->id);
+  ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &newid, &nick->id);
 
   return (ret != -1);
 }
@@ -444,20 +444,20 @@ nickname_link(Nickname *master, Nickname *child)
 
   db_begin_transaction();
 
-  ret = db_execute_nonquery(SET_NICK_LINK, "ii", master->id, child->id);
+  ret = db_execute_nonquery(SET_NICK_LINK, "ii", &master->id, &child->id);
   if(ret == -1)
     goto failure;
 
-  ret = db_execute_nonquery(DELETE_DUPLICATE_CHACCESS, "iiii", child->id,
-      master->id, master->id, child->id);
+  ret = db_execute_nonquery(DELETE_DUPLICATE_CHACCESS, "iiii", &child->id,
+      &master->id, &master->id, &child->id);
   if(ret == -1)
     goto failure;
 
-  ret = db_execute_nonquery(MERGE_CHACCESS, "ii", master->id, child->id);
+  ret = db_execute_nonquery(MERGE_CHACCESS, "ii", &master->id, &child->id);
   if(ret == -1)
     goto failure;
 
-  ret = db_execute_nonquery(DELETE_ACCOUNT, "i", child->id);
+  ret = db_execute_nonquery(DELETE_ACCOUNT, "i", &child->id);
   if(ret == -1)
     goto failure;
 
@@ -488,7 +488,7 @@ nickname_unlink(Nickname *nick)
 
   db_begin_transaction();
 
-  ret = db_execute_nonquery(INSERT_NICK_CLONE, "i", nick->id);
+  ret = db_execute_nonquery(INSERT_NICK_CLONE, "i", &nick->id);
   if(ret == -1)
     goto failure;
 
@@ -498,14 +498,14 @@ nickname_unlink(Nickname *nick)
 
   if(nick->pri_nickid != nick->nickid)
   {
-    ret = db_execute_nonquery(SET_NICK_LINK_EXCLUDE, "iii", newid,
-        nick->id, nick->nickid);
+    ret = db_execute_nonquery(SET_NICK_LINK_EXCLUDE, "iii", &newid,
+        &nick->id, &nick->nickid);
     if(ret == -1)
       goto failure;
   }
 
   tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii",
-      nick->id, nick->pri_nickid);
+      &nick->id, &nick->pri_nickid);
   if(error)
     goto failure;
   new_nickid = atoi(tmp);
@@ -513,23 +513,23 @@ nickname_unlink(Nickname *nick)
 
   if(nick->nickid == nick->pri_nickid)
   {
-    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", nick->pri_nickid,
-        nick->id);
+    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nick->pri_nickid,
+        &nick->id);
     if(ret == -1)
       goto failure;
    
-    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", new_nickid, newid);
+    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &new_nickid, &newid);
     if(ret == -1)
       goto failure;
 
-    ret = db_execute_nonquery(SET_NICK_LINK_EXCLUDE, "iii", newid,
-        nick->id, new_nickid);
+    ret = db_execute_nonquery(SET_NICK_LINK_EXCLUDE, "iii", &newid,
+        &nick->id, &new_nickid);
     if(ret == -1)
       goto failure;
   }
   else
   {
-    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", nick->nickid, newid);
+    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nick->nickid, &newid);
     if(ret == -1)
       goto failure;
   }
@@ -560,8 +560,8 @@ nickname_save(Nickname *nick)
 
   db_begin_transaction();
 
-  ret = db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", nick->nickid,
-      nick->last_seen);
+  ret = db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", &nick->nickid,
+      &nick->last_seen);
   if(ret == -1)
   {
     db_rollback_transaction();
@@ -569,10 +569,10 @@ nickname_save(Nickname *nick)
   }
 
   ret = db_execute_nonquery(SAVE_NICK, "sssbbbbbbbisssii", nick->url,
-      nick->email, nick->cloak, nick->enforce, nick->secure,
-      nick->verified, nick->cloak_on, nick->admin, nick->email_verified,
-      nick->priv, nick->language, nick->last_host, nick->last_realname,
-      nick->last_quit, nick->last_quit_time, nick->id);
+      nick->email, nick->cloak, &nick->enforce, &nick->secure,
+      &nick->verified, &nick->cloak_on, &nick->admin, &nick->email_verified,
+      &nick->priv, &nick->language, nick->last_host, nick->last_realname,
+      nick->last_quit, &nick->last_quit_time, &nick->id);
   if(ret == -1)
   {
     db_rollback_transaction();
@@ -595,7 +595,7 @@ nickname_accesslist_add(struct AccessEntry *entry)
 {
   int ret;
 
-  ret = db_execute_nonquery(INSERT_NICKACCESS, "is", entry->id, entry->value);
+  ret = db_execute_nonquery(INSERT_NICKACCESS, "is", &entry->id, entry->value);
 
   if(ret == -1)
     return FALSE;
@@ -631,7 +631,7 @@ nickname_accesslist_list(Nickname *nick, dlink_list *list)
   result_set_t *results;
   int error, i;
 
-  results = db_execute(GET_NICKACCESS, &error, "i", nick->id);
+  results = db_execute(GET_NICKACCESS, &error, "i", &nick->id);
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "nickname_accesslist_list: database error %d", error);
@@ -659,9 +659,9 @@ nickname_accesslist_delete(Nickname *nick, const char *value, int index)
   int ret;
 
   if(value == NULL)
-    ret = db_execute_nonquery(DELETE_NICKACCESS_IDX, "ii", nick->id, index);
+    ret = db_execute_nonquery(DELETE_NICKACCESS_IDX, "ii", &nick->id, &index);
   else
-    ret = db_execute_nonquery(DELETE_NICKACCESS, "is", nick->id, value);
+    ret = db_execute_nonquery(DELETE_NICKACCESS, "is", &nick->id, value);
 
   if(ret == -1)
     return FALSE;
@@ -719,7 +719,7 @@ nickname_cert_list(Nickname *nick, dlink_list *list)
   result_set_t *results;
   int error, i;
 
-  results = db_execute(GET_NICKCERTS, &error, "i", nick->id);
+  results = db_execute(GET_NICKCERTS, &error, "i", &nick->id);
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "nickname_cert_list: database error %d", error);
@@ -747,9 +747,9 @@ nickname_cert_delete(Nickname *nick, const char *value, int index)
   int ret;
 
   if(value == NULL)
-    ret = db_execute_nonquery(DELETE_NICKCERT_IDX, "ii", nick->id, index);
+    ret = db_execute_nonquery(DELETE_NICKCERT_IDX, "ii", &nick->id, &index);
   else
-    ret = db_execute_nonquery(DELETE_NICKCERT, "is", nick->id, value);
+    ret = db_execute_nonquery(DELETE_NICKCERT, "is", &nick->id, value);
 
   if(ret == -1)
     return FALSE;
@@ -841,7 +841,7 @@ nickname_chan_list(unsigned int id, dlink_list *list)
   int error, i;
   result_set_t *results;
 
-  results = db_execute(GET_NICK_CHAN_INFO, &error, "i", id);
+  results = db_execute(GET_NICK_CHAN_INFO, &error, "i", &id);
 
   if(results == NULL && error != 0)
   {
@@ -1136,7 +1136,7 @@ nickname_set_nick(Nickname *this, const char *value)
 inline int
 nickname_set_pass(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_PASSWORD, "si", value, this->id))
+  if(db_execute_nonquery(SET_NICK_PASSWORD, "si", value, &this->id))
   {
     strlcpy(this->pass, value, sizeof(this->pass));
     return TRUE;
@@ -1155,7 +1155,7 @@ nickname_set_salt(Nickname *this, const char *value)
 inline int
 nickname_set_cloak(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_CLOAK, "si", value, this->id))
+  if(db_execute_nonquery(SET_NICK_CLOAK, "si", value, &this->id))
   {
     strlcpy(this->cloak, value, sizeof(this->cloak));
     return TRUE;
@@ -1167,7 +1167,7 @@ nickname_set_cloak(Nickname *this, const char *value)
 inline int
 nickname_set_email(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_EMAIL, "si", value, this->id))
+  if(db_execute_nonquery(SET_NICK_EMAIL, "si", value, &this->id))
   {
     MyFree(this->email);
     DupString(this->email, value);
@@ -1180,7 +1180,7 @@ nickname_set_email(Nickname *this, const char *value)
 inline int
 nickname_set_url(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_URL, "si", value, this->id))
+  if(db_execute_nonquery(SET_NICK_URL, "si", value, &this->id))
   {
     MyFree(this->url);
     DupString(this->url, value);
@@ -1193,7 +1193,7 @@ nickname_set_url(Nickname *this, const char *value)
 inline int
 nickname_set_last_realname(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_REALNAME, "si", value, this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_REALNAME, "si", value, &this->id))
   {
     MyFree(this->last_realname);
     DupString(this->last_realname, value);
@@ -1206,7 +1206,7 @@ nickname_set_last_realname(Nickname *this, const char *value)
 inline int
 nickname_set_last_host(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_HOST, "si", value, this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_HOST, "si", value, &this->id))
   {
     MyFree(this->last_host);
     DupString(this->last_host, value);
@@ -1219,7 +1219,7 @@ nickname_set_last_host(Nickname *this, const char *value)
 inline int
 nickname_set_last_quit(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_QUIT, "si", value, this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_QUIT, "si", value, &this->id))
   {
     MyFree(this->last_quit);
     DupString(this->last_quit, value);
@@ -1239,7 +1239,7 @@ nickname_set_status(Nickname *this, unsigned int value)
 inline int
 nickname_set_language(Nickname *this, unsigned int value)
 {
-  if(db_execute_nonquery(SET_NICK_LANGUAGE, "ii", value, this->id))
+  if(db_execute_nonquery(SET_NICK_LANGUAGE, "ii", &value, &this->id))
   {
     this->language = value;
     return TRUE;
@@ -1251,7 +1251,7 @@ nickname_set_language(Nickname *this, unsigned int value)
 inline int
 nickname_set_enforce(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_ENFORCE, "bi", value, this->id))
+  if(db_execute_nonquery(SET_NICK_ENFORCE, "bi", &value, &this->id))
   {
     this->enforce = value;
     return TRUE;
@@ -1263,7 +1263,7 @@ nickname_set_enforce(Nickname *this, unsigned char value)
 inline int
 nickname_set_secure(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_SECURE, "bi", value, this->id))
+  if(db_execute_nonquery(SET_NICK_SECURE, "bi", &value, &this->id))
   {
     this->secure = value;
     return TRUE;
@@ -1282,7 +1282,7 @@ nickname_set_verified(Nickname *this, unsigned char value)
 inline int
 nickname_set_cloak_on(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_CLOAKON, "bi", value, this->id))
+  if(db_execute_nonquery(SET_NICK_CLOAKON, "bi", &value, &this->id))
   {
     this->cloak_on = value;
     return TRUE;
@@ -1294,7 +1294,7 @@ nickname_set_cloak_on(Nickname *this, unsigned char value)
 inline int
 nickname_set_admin(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_ADMIN, "bi", value, this->id))
+  if(db_execute_nonquery(SET_NICK_ADMIN, "bi", &value, &this->id))
   {
     this->admin = value;
     return TRUE;
@@ -1313,7 +1313,7 @@ nickname_set_email_verified(Nickname *this, unsigned char value)
 inline int
 nickname_set_priv(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_PRIVATE, "bi", value, this->id))
+  if(db_execute_nonquery(SET_NICK_PRIVATE, "bi", &value, &this->id))
   {
     this->priv = value;
     return TRUE;
@@ -1332,7 +1332,7 @@ nickname_set_reg_time(Nickname *this, time_t value)
 inline int
 nickname_set_last_seen(Nickname *this, time_t value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", value, this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", &value, &this->id))
   {
     this->last_seen = value;
     return TRUE;
@@ -1344,7 +1344,7 @@ nickname_set_last_seen(Nickname *this, time_t value)
 inline int
 nickname_set_last_quit_time(Nickname *this, time_t value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_QUITTIME, "ii", value, this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_QUITTIME, "ii", &value, &this->id))
   {
     this->last_quit_time = value;
     return TRUE;

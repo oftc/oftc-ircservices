@@ -6,7 +6,7 @@
 int
 dbmail_add_sent(unsigned int account, const char *email)
 {
-  if(db_execute_nonquery(INSERT_SENT_MAIL, "isi", account, email, CurrentTime))
+  if(db_execute_nonquery(INSERT_SENT_MAIL, "isi", &account, email, &CurrentTime))
     return TRUE;
   else
     return FALSE;
@@ -17,7 +17,7 @@ dbmail_is_sent(unsigned int account, const char *email)
 {
   int error, ret;
 
-  ret = atoi(db_execute_scalar(GET_SENT_MAIL, &error, "is", account, email));
+  ret = atoi(db_execute_scalar(GET_SENT_MAIL, &error, "is", &account, email));
 
   if(error)
   {
@@ -31,5 +31,5 @@ dbmail_is_sent(unsigned int account, const char *email)
 void
 dbmail_expire_sentmail(void *param)
 {
-  db_execute_nonquery(DELETE_EXPIRED_SENT_MAIL, "ii", Mail.expire_time, CurrentTime);
+  db_execute_nonquery(DELETE_EXPIRED_SENT_MAIL, "ii", &Mail.expire_time, &CurrentTime);
 }

@@ -44,9 +44,9 @@ typedef struct DataBaseModule
   void *connection;
   int last_index;
   int(*connect)(const char *);
-  char*(*execute_scalar)(int, int *, const char *, va_list);
-  result_set_t*(*execute)(int, int *, const char *, va_list);
-  int (*execute_nonquery)(int, const char *, va_list);
+  char*(*execute_scalar)(int, int *, const char *, dlink_list *);
+  result_set_t*(*execute)(int, int *, const char *, dlink_list *);
+  int (*execute_nonquery)(int, const char *, dlink_list *);
   void(*free_result)(result_set_t*);
   int (*prepare)(int, const char *);
   int (*begin_transaction)();

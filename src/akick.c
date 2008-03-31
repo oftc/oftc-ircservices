@@ -131,7 +131,7 @@ akick_list(unsigned int channel, dlink_list *list)
   int error;
   int i;
 
-  results = db_execute(GET_AKICKS, &error, "i", channel);
+  results = db_execute(GET_AKICKS, &error, "i", &channel);
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "akick_list: database error %d", error);
@@ -222,12 +222,12 @@ akick_add(struct ServiceBan *akick)
   akick->type = AKICK_BAN;
 
   if(akick->target != 0)
-    ret = db_execute_nonquery(INSERT_AKICK_ACCOUNT, "iiisii", akick->channel,
-        akick->target, akick->setter, akick->reason, akick->time_set,
-        akick->duration);
+    ret = db_execute_nonquery(INSERT_AKICK_ACCOUNT, "iiisii", &akick->channel,
+        &akick->target, &akick->setter, akick->reason, &akick->time_set,
+        &akick->duration);
   else if(akick->mask != NULL)
-    ret = db_execute_nonquery(INSERT_AKICK_MASK, "iissii", akick->channel,
-        akick->setter, akick->reason, akick->mask, akick->time_set, akick->duration);
+    ret = db_execute_nonquery(INSERT_AKICK_MASK, "iissii", &akick->channel,
+        &akick->setter, akick->reason, akick->mask, &akick->time_set, &akick->duration);
   else
     assert(1 == 0);
 
@@ -240,7 +240,7 @@ akick_add(struct ServiceBan *akick)
 int
 akick_remove_index(unsigned int channel, unsigned int index)
 {
-  int ret = db_execute_nonquery(DELETE_AKICK_IDX, "ii", index, channel);
+  int ret = db_execute_nonquery(DELETE_AKICK_IDX, "ii", &index, &channel);
   if(ret == -1)
     return FALSE;
 
@@ -250,7 +250,7 @@ akick_remove_index(unsigned int channel, unsigned int index)
 int
 akick_remove_mask(unsigned int channel, const char *mask)
 {
-  int ret = db_execute_nonquery(DELETE_AKICK_MASK, "is", channel, mask);
+  int ret = db_execute_nonquery(DELETE_AKICK_MASK, "is", &channel, mask);
   if(ret == -1)
     return FALSE;
 
@@ -260,7 +260,7 @@ akick_remove_mask(unsigned int channel, const char *mask)
 int
 akick_remove_account(unsigned int channel, const char *account)
 {
-  int ret = db_execute_nonquery(DELETE_AKICK_ACCOUNT, "is", channel, account);
+  int ret = db_execute_nonquery(DELETE_AKICK_ACCOUNT, "is", &channel, account);
   return ret == -1 ? FALSE : TRUE;
 }
 

@@ -187,10 +187,18 @@ db_execute_scalar(int query_id, int *error, const char *format, ...)
 {
   va_list args;
   char *result;
+  size_t i;
+  dlink_list list = { 0 };
+  size_t len = strlen(format);
 
   va_start(args, format);
-  result = database->execute_scalar(query_id, error, format, args);
+
+  for(i = 0; i < len; ++i)
+    dlinkAdd(va_arg(args, void *), make_dlink_node(), &list);
+
   va_end(args);
+
+  result = database->execute_scalar(query_id, error, format, &list);
 
   return result;
 }
@@ -199,11 +207,19 @@ result_set_t *
 db_execute(int query_id, int *error, const char *format, ...)
 {
   va_list args;
+  size_t i;
   result_set_t *results;
+  dlink_list list = { 0 };
+  size_t len = strlen(format);
 
   va_start(args, format);
-  results = database->execute(query_id, error, format, args);
+
+  for(i = 0; i < len; ++i)
+    dlinkAdd(va_arg(args, void *), make_dlink_node(), &list);
+
   va_end(args);
+
+  results = database->execute(query_id, error, format, &list);
 
   return results;
 }
@@ -213,10 +229,18 @@ db_execute_nonquery(int query_id, const char *format, ...)
 {
   va_list args;
   int num_rows;
+  size_t i;
+  dlink_list list = { 0 };
+  size_t len = strlen(format);
 
   va_start(args, format);
-  num_rows = database->execute_nonquery(query_id, format, args);
+
+  for(i = 0; i < len; ++i)
+    dlinkAdd(va_arg(args, void *), make_dlink_node(), &list);
+
   va_end(args);
+
+  num_rows = database->execute_nonquery(query_id, format, &list);
 
   return num_rows;
 }

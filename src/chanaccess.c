@@ -72,7 +72,7 @@ chanaccess_list(unsigned int channel, dlink_list *list)
   int error;
   int i;
 
-  results = db_execute(GET_CHAN_ACCESSES, &error, "i", channel);
+  results = db_execute(GET_CHAN_ACCESSES, &error, "i", &channel);
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "chanaccess_list: database error %d", error);
@@ -102,7 +102,7 @@ chanaccess_add(struct ChanAccess *access)
 {
   int ret;
 
-  ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", access->account, access->channel, access->level);
+  ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", &access->account, &access->channel, &access->level);
 
   if(ret == -1)
     return FALSE;
@@ -115,7 +115,7 @@ chanaccess_remove(struct ChanAccess *access)
 {
   int ret;
 
-  ret = db_execute_nonquery(DELETE_CHAN_ACCESS, "ii", access->account, access->channel);
+  ret = db_execute_nonquery(DELETE_CHAN_ACCESS, "ii", &access->account, &access->channel);
 
   if(ret == -1)
     return FALSE;
@@ -130,7 +130,7 @@ chanaccess_find(unsigned int channel, unsigned int account)
   result_set_t *results;
   struct ChanAccess *access;
 
-  results = db_execute(GET_CHAN_ACCESS, &error, "ii", channel, account);
+  results = db_execute(GET_CHAN_ACCESS, &error, "ii", &channel, &account);
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "chanaccess_find: database error %d", error);
@@ -153,7 +153,7 @@ int
 chanaccess_count(unsigned int channel)
 {
   int error = 0;
-  int count = atoi(db_execute_scalar(COUNT_CHANNEL_ACCESS_LIST, &error, "i", channel));
+  int count = atoi(db_execute_scalar(COUNT_CHANNEL_ACCESS_LIST, &error, "i", &channel));
   if(error)
   {
     ilog(L_CRIT, "chanaccess_count: database error %d", error);

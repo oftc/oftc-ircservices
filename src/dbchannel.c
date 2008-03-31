@@ -99,7 +99,7 @@ dbchannel_delete(DBChannel *channel)
 {
   int ret;
 
-  ret = db_execute_nonquery(DELETE_CHAN, "i", channel->id);
+  ret = db_execute_nonquery(DELETE_CHAN, "i", &channel->id);
   if(ret == -1)
     return FALSE;
 
@@ -150,11 +150,12 @@ int
 dbchannel_register(DBChannel *channel, Nickname *founder)
 {
   int ret;
+  unsigned int id, flag;
 
   db_begin_transaction();
 
   ret = db_execute_nonquery(INSERT_CHAN, "ssii", channel->channel, 
-      channel->description, CurrentTime, CurrentTime);
+      channel->description, &CurrentTime, &CurrentTime);
 
   if(ret == -1)
     goto failure;
@@ -163,8 +164,10 @@ dbchannel_register(DBChannel *channel, Nickname *founder)
   if(channel->id == -1)
     goto failure;
 
-  ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", nickname_get_id(founder), channel->id, 
-      MASTER_FLAG);
+  id = nickname_get_id(founder);
+  flag = MASTER_FLAG;
+  ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", &id, &channel->id,
+      &flag);
 
   if(ret == -1)
     goto failure;
@@ -247,7 +250,7 @@ dbchannel_masters_count(unsigned int id, int *count)
 {
   int error;
 
-  *count = atoi(db_execute_scalar(GET_CHAN_MASTER_COUNT, &error, "i", id));
+  *count = atoi(db_execute_scalar(GET_CHAN_MASTER_COUNT, &error, "i", &id));
   if(error)
   {
     *count = -1;
@@ -440,7 +443,7 @@ dbchannel_set_channel(DBChannel *this, const char *name)
 inline int
 dbchannel_set_description(DBChannel *this, const char *description)
 {
-  if(db_execute_nonquery(SET_CHAN_DESC, "si", description, this->id))
+  if(db_execute_nonquery(SET_CHAN_DESC, "si", description, &this->id))
   {
     MyFree(this->description);
     DupString(this->description, description);
@@ -453,7 +456,7 @@ dbchannel_set_description(DBChannel *this, const char *description)
 inline int
 dbchannel_set_entrymsg(DBChannel *this, const char *entrymsg)
 {
-  if(db_execute_nonquery(SET_CHAN_ENTRYMSG, "si", entrymsg, this->id))
+  if(db_execute_nonquery(SET_CHAN_ENTRYMSG, "si", entrymsg, &this->id))
   {
     MyFree(this->entrymsg);
     DupString(this->entrymsg, entrymsg);
@@ -466,7 +469,7 @@ dbchannel_set_entrymsg(DBChannel *this, const char *entrymsg)
 inline int
 dbchannel_set_url(DBChannel *this, const char *url)
 {
-  if(db_execute_nonquery(SET_CHAN_URL, "si", url, this->id))
+  if(db_execute_nonquery(SET_CHAN_URL, "si", url, &this->id))
   {
     MyFree(this->url);
     DupString(this->url, url);
@@ -479,7 +482,7 @@ dbchannel_set_url(DBChannel *this, const char *url)
 inline int
 dbchannel_set_email(DBChannel *this, const char *email)
 {
-  if(db_execute_nonquery(SET_CHAN_EMAIL, "si", email, this->id))
+  if(db_execute_nonquery(SET_CHAN_EMAIL, "si", email, &this->id))
   {
     MyFree(this->email);
     DupString(this->email, email);
@@ -492,7 +495,7 @@ dbchannel_set_email(DBChannel *this, const char *email)
 inline int
 dbchannel_set_topic(DBChannel *this, const char *topic)
 {
-  if(db_execute_nonquery(SET_CHAN_TOPIC, "si", topic, this->id))
+  if(db_execute_nonquery(SET_CHAN_TOPIC, "si", topic, &this->id))
   {
     MyFree(this->topic);
     DupString(this->topic, topic);
@@ -505,7 +508,7 @@ dbchannel_set_topic(DBChannel *this, const char *topic)
 inline int
 dbchannel_set_mlock(DBChannel *this, const char *mlock)
 {
-  if(db_execute_nonquery(SET_CHAN_MLOCK, "si", mlock, this->id))
+  if(db_execute_nonquery(SET_CHAN_MLOCK, "si", mlock, &this->id))
   {
     MyFree(this->mlock);
     DupString(this->mlock, mlock);
@@ -518,7 +521,7 @@ dbchannel_set_mlock(DBChannel *this, const char *mlock)
 inline int
 dbchannel_set_priv(DBChannel *this, char priv)
 {
-  if(db_execute_nonquery(SET_CHAN_PRIVATE, "bi", priv, this->id))
+  if(db_execute_nonquery(SET_CHAN_PRIVATE, "bi", &priv, &this->id))
   {
     this->priv = priv;
     return TRUE;
@@ -530,7 +533,7 @@ dbchannel_set_priv(DBChannel *this, char priv)
 inline int
 dbchannel_set_restricted(DBChannel *this, char restricted)
 {
-  if(db_execute_nonquery(SET_CHAN_RESTRICTED, "bi", restricted, this->id))
+  if(db_execute_nonquery(SET_CHAN_RESTRICTED, "bi", &restricted, &this->id))
   {
     this->restricted = restricted;
     return TRUE;
@@ -542,7 +545,7 @@ dbchannel_set_restricted(DBChannel *this, char restricted)
 inline int
 dbchannel_set_topic_lock(DBChannel *this, char topic_lock)
 {
-  if(db_execute_nonquery(SET_CHAN_TOPICLOCK, "bi", topic_lock, this->id))
+  if(db_execute_nonquery(SET_CHAN_TOPICLOCK, "bi", &topic_lock, &this->id))
   {
     this->topic_lock = topic_lock;
     return TRUE;
@@ -554,7 +557,7 @@ dbchannel_set_topic_lock(DBChannel *this, char topic_lock)
 inline int
 dbchannel_set_verbose(DBChannel *this, char verbose)
 {
-  if(db_execute_nonquery(SET_CHAN_VERBOSE, "bi", verbose, this->id))
+  if(db_execute_nonquery(SET_CHAN_VERBOSE, "bi", &verbose, &this->id))
   {
     this->verbose = verbose;
     return TRUE;
@@ -566,7 +569,7 @@ dbchannel_set_verbose(DBChannel *this, char verbose)
 inline int
 dbchannel_set_autolimit(DBChannel *this, char autolimit)
 {
-  if(db_execute_nonquery(SET_CHAN_AUTOLIMIT, "bi", autolimit, this->id))
+  if(db_execute_nonquery(SET_CHAN_AUTOLIMIT, "bi", &autolimit, &this->id))
   {
     this->autolimit = autolimit;
     return TRUE;
@@ -578,7 +581,7 @@ dbchannel_set_autolimit(DBChannel *this, char autolimit)
 inline int
 dbchannel_set_expirebans(DBChannel *this, char expirebans)
 {
-  if(db_execute_nonquery(SET_CHAN_EXPIREBANS, "bi", expirebans, this->id))
+  if(db_execute_nonquery(SET_CHAN_EXPIREBANS, "bi", &expirebans, &this->id))
   {
     this->expirebans = expirebans;
     return TRUE;
@@ -590,7 +593,7 @@ dbchannel_set_expirebans(DBChannel *this, char expirebans)
 inline int
 dbchannel_set_floodserv(DBChannel *this, char floodserv)
 {
-  if(db_execute_nonquery(SET_CHAN_FLOODSERV, "bi", floodserv, this->id))
+  if(db_execute_nonquery(SET_CHAN_FLOODSERV, "bi", &floodserv, &this->id))
   {
     this->floodserv = floodserv;
     return TRUE;
@@ -602,7 +605,7 @@ dbchannel_set_floodserv(DBChannel *this, char floodserv)
 inline int
 dbchannel_set_autoop(DBChannel *this, char autoop)
 {
-  if(db_execute_nonquery(SET_CHAN_AUTOOP, "bi", autoop, this->id))
+  if(db_execute_nonquery(SET_CHAN_AUTOOP, "bi", &autoop, &this->id))
   {
     this->autoop = autoop;
     return TRUE;
@@ -614,7 +617,7 @@ dbchannel_set_autoop(DBChannel *this, char autoop)
 inline int
 dbchannel_set_autovoice(DBChannel *this, char autovoice)
 {
-  if(db_execute_nonquery(SET_CHAN_AUTOVOICE, "bi", autovoice, this->id))
+  if(db_execute_nonquery(SET_CHAN_AUTOVOICE, "bi", &autovoice, &this->id))
   {
     this->autovoice = autovoice;
     return TRUE;
@@ -626,7 +629,7 @@ dbchannel_set_autovoice(DBChannel *this, char autovoice)
 inline int
 dbchannel_set_leaveops(DBChannel *this, char leaveops)
 {
-  if(db_execute_nonquery(SET_CHAN_LEAVEOPS, "bi", leaveops, this->id))
+  if(db_execute_nonquery(SET_CHAN_LEAVEOPS, "bi", &leaveops, &this->id))
   {
     this->leaveops = leaveops;
     return TRUE;
@@ -638,7 +641,7 @@ dbchannel_set_leaveops(DBChannel *this, char leaveops)
 inline int
 dbchannel_set_expirebans_lifetime(DBChannel *this, unsigned int time)
 {
-  if(db_execute_nonquery(SET_EXPIREBANS_LIFETIME, "ii", time, this->id))
+  if(db_execute_nonquery(SET_EXPIREBANS_LIFETIME, "ii", &time, &this->id))
   {
     this->expirebans_lifetime = time;
     return TRUE;

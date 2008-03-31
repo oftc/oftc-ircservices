@@ -141,7 +141,7 @@ jupe_add(struct JupeEntry *entry)
 {
   int ret;
 
-  ret = db_execute_nonquery(INSERT_JUPE, "iss", entry->setter, entry->name, entry->reason);
+  ret = db_execute_nonquery(INSERT_JUPE, "iss", &entry->setter, entry->name, entry->reason);
 
   if(ret == -1)
     return FALSE;
