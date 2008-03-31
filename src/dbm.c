@@ -319,7 +319,7 @@ db_string_list_by_id(unsigned int query, dlink_list *list, unsigned int id)
   int error, i;
   result_set_t *results;
 
-  results = db_execute(query, &error, "i", id);
+  results = db_execute(query, &error, "i", &id);
 
   if(results == NULL && error != 0)
   {
