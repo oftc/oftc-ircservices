@@ -359,9 +359,15 @@ void_to_char(char fmt, char **dst, void *src)
   switch(fmt)
   {
     case 'i':
-    case 'b':
       snprintf(tmp, sizeof(tmp), "%d", *(int *)src);
       DupString(*dst, tmp);
+      return TRUE;
+      break;
+    case 'b':
+      if(((char *)src)[0])
+        DupString(*dst, "1");
+      else
+        DupString(*dst, "0");
       return TRUE;
       break;
     case 's':

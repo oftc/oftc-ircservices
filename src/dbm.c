@@ -194,7 +194,7 @@ db_execute_scalar(int query_id, int *error, const char *format, ...)
   va_start(args, format);
 
   for(i = 0; i < len; ++i)
-    dlinkAdd(va_arg(args, void *), make_dlink_node(), &list);
+    dlinkAddTail(va_arg(args, void *), make_dlink_node(), &list);
 
   va_end(args);
 
@@ -215,7 +215,7 @@ db_execute(int query_id, int *error, const char *format, ...)
   va_start(args, format);
 
   for(i = 0; i < len; ++i)
-    dlinkAdd(va_arg(args, void *), make_dlink_node(), &list);
+    dlinkAddTail(va_arg(args, void *), make_dlink_node(), &list);
 
   va_end(args);
 
@@ -236,7 +236,7 @@ db_execute_nonquery(int query_id, const char *format, ...)
   va_start(args, format);
 
   for(i = 0; i < len; ++i)
-    dlinkAdd(va_arg(args, void *), make_dlink_node(), &list);
+    dlinkAddTail(va_arg(args, void *), make_dlink_node(), &list);
 
   va_end(args);
 
