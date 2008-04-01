@@ -38,11 +38,21 @@ VALUE dbchannel_to_value(DBChannel*);
 Nickname* value_to_nickname(VALUE);
 VALUE nickname_to_value(Nickname*);
 
+result_set_t* value_to_dbresult(VALUE);
+VALUE dbresult_to_value(result_set_t*);
+
+row_t* value_to_dbrow(VALUE);
+VALUE dbrow_to_value(row_t*);
+
 void Init_Channel(void);
 void Init_DBChannel(void);
 void Init_Client(void);
 void Init_Nickname(void);
 void Init_ServiceModule(void);
+
+void Init_DB(void);
+void Init_DBResult(void);
+void Init_DBRow(void);
 
 enum Ruby_Hooks
 {
@@ -100,6 +110,10 @@ extern VALUE cNickname;
 extern VALUE cClient;
 extern VALUE cDBChannel;
 extern VALUE cChannel;
+
+extern VALUE cDB;
+extern VALUE cDBResult;
+extern VALUE cDBRow;
 
 #define Check_OurType(x, v) check_our_type((VALUE)(x), (VALUE)(v))
 

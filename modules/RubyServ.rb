@@ -9,6 +9,7 @@ class RubyServ < ServiceModule
       ["COLLECT", 0, 0, 0, ADMIN_FLAG, lm('RS_HELP_COLLECT_SHORT'), lm('RS_HELP_COLLECT_LONG')],
       ["JOIN", 1, 0, SFLG_NOMAXPARAM, ADMIN_FLAG, lm('RS_HELP_JOIN_SHORT'), lm('RS_HELP_JOIN_LONG')],
       ["PART", 1, 0, SFLG_NOMAXPARAM, ADMIN_FLAG, lm('RS_HELP_PART_SHORT'), lm('RS_HELP_PART_LONG')],
+      ["QUERY", 1, 0, SFLG_NOMAXPARAM, ADMIN_FLAG, lm('RS_HELP_PART_SHORT'), lm('RS_HELP_PART_LONG')],
       ])
     add_hook([
       [CMODE_HOOK, 'cmode'],
@@ -25,12 +26,14 @@ class RubyServ < ServiceModule
       [EOB_HOOK, 'eob'],
     ])
     #add_event('timer', 3)
+
+    @queryid = DB.prepare("SELECT nick,account_id,reg_time FROM nickname WHERE lower(nick) = lower($1)")
   end
 
   def loaded()
-    chan = join_channel("#test")
+    chan = @client.join("#test")
     send_cmode(chan, "+s", "")
-    self.channels_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
+    Channel.all_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
   end
 
   def timer()
@@ -53,13 +56,13 @@ class RubyServ < ServiceModule
   end
   def JOIN(client, parv = [])
     log(LOG_DEBUG, "RUBY Joining channel #{parv[1]}")
-    join_channel(parv[1])
+    @client.join(parv[1])
   end
   def PART(client, parv = [])
     reason = nil
     reason = parv[2, parv.length-2].join(' ') if parv.length > 2
     log(LOG_DEBUG, "RUBY Parting channel #{parv[1]}: #{reason}")
-    part_channel(parv[1], reason)
+    @client.part(parv[1], reason)
   end
   def umode(client, what, mode)
     log(LOG_DEBUG, "RUBY UMODE client.name: #{client.name} what: #{what} mode: %08x" % [mode])
@@ -78,11 +81,11 @@ class RubyServ < ServiceModule
   end
   def join(source, channel)
     log(LOG_DEBUG, "RUBY #{source.name} joined #{channel}")
-    rchannel = find_channel(channel)
+    rchannel = Channel.find(channel)
     rchannel.members_each { |x| log(LOG_DEBUG, "#{x.name} is also in #{rchannel.name}") }
   end
   def part(client, source, channel, reason)
-    part_channel('#floodtest', nil) if channel.name.downcase == '#floodtest' and channel.members_length == 1
+    @client.part('#floodtest', nil) if channel.name.downcase == '#floodtest' and channel.members_length == 1
   end
   def nick(source, oldnick)
     log(LOG_DEBUG, "RUBY #{oldnick} is now #{source.name}")
@@ -92,7 +95,7 @@ class RubyServ < ServiceModule
   end
   def chan_created(channel)
     log(LOG_DEBUG, "RUBY #{channel.name} created")
-    join_channel("#floodtest") if channel.name.downcase == "#floodtest"
+    @client.join("#floodtest") if channel.name.downcase == "#floodtest"
   end
   def chan_deleted(channel)
     log(LOG_NOTICE, "#{channel.name} has been deleted")
@@ -103,21 +106,13 @@ class RubyServ < ServiceModule
   def eob()
     log(LOG_NOTICE, "EOB IS DONE")
   end
-end
 
-#this class is declared in C, but you can use it in Ruby
-#everything is readonly
-#class ClientStruct
-#	def name
-#	end
-#	def host
-#	end
-#	def id
-#	end
-#	def info
-#	end
-#	def username
-#	end
-#	def umodes
-#	end
-#end
+  def QUERY(client, parv = [])
+    result = DB.execute(@queryid, "s", parv[1])
+    reply_user(client, "#{result.row_count} results")
+    result.row_each { |row|
+      reply_user(client, "Nick: #{row[0]} Account: #{row[1]} RegTime: #{row[2]}")
+    }
+    result.free
+  end
+end

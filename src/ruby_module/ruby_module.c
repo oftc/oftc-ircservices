@@ -827,6 +827,10 @@ init_ruby(void)
   Init_DBChannel();
   Init_Nickname();
 
+  Init_DB();
+  Init_DBResult();
+  Init_DBRow();
+
   /* Place holder for hooks */
   ruby_server_hooks = rb_ary_new();
   for(i=0; i < RB_HOOKS_COUNT; ++i)

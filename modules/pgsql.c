@@ -313,6 +313,8 @@ pg_prepare(int id, const char *query)
     return 0;
   }
 
+  db_log("PG prepared: %s (%s)", name, query);
+
   return 1;
 }
 
@@ -348,7 +350,7 @@ pg_connect(const char *connection_string)
 static inline int
 void_to_char(char fmt, char **dst, void *src)
 {
-  static char tmp[TEMP_BUFSIZE];
+  char tmp[TEMP_BUFSIZE];
 
   if(src == NULL)
   {
@@ -413,8 +415,16 @@ internal_execute(int id, int *error, const char *format,
   for(i = 0; i < len; i++)
     MyFree(params[i]);
 
-  db_log("Executing query %d (%s) Parameters: [%s]", id, queries[id].name, 
+  if(id < QUERY_COUNT)
+  {
+    db_log("Executing query %d (%s) Parameters: [%s]", id, queries[id].name, 
       len > 0 ? log_params : "None");
+  }
+  else
+  {
+    db_log("Execute dynamic query %d Parameters: [%s]", id,
+      len > 0 ? log_params : "None");
+  }
 
   if(result == NULL)
   {

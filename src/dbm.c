@@ -177,6 +177,7 @@ db_prepare(int id, const char *query)
   if(id == -1)
     id = database->last_index++;
 
+  /* TODO FIXME XXX check return */
   database->prepare(id, query);
 
   return id;
@@ -203,6 +204,12 @@ db_execute_scalar(int query_id, int *error, const char *format, ...)
   return result;
 }
 
+char *
+db_vexecute_scalar(int query_id, int *error, const char *format, dlink_list *list)
+{
+  return database->execute_scalar(query_id, error, format, list);
+}
+
 result_set_t *
 db_execute(int query_id, int *error, const char *format, ...)
 {
@@ -224,6 +231,12 @@ db_execute(int query_id, int *error, const char *format, ...)
   return results;
 }
 
+result_set_t *
+db_vexecute(int query_id, int *error, const char *format, dlink_list *list)
+{
+  return database->execute(query_id, error, format, list);
+}
+
 int
 db_execute_nonquery(int query_id, const char *format, ...)
 {
@@ -243,6 +256,12 @@ db_execute_nonquery(int query_id, const char *format, ...)
   num_rows = database->execute_nonquery(query_id, format, &list);
 
   return num_rows;
+}
+
+int
+db_vexecute_nonquery(int query_id, const char *format, dlink_list *list)
+{
+  return database->execute_nonquery(query_id, format, list);
 }
 
 int

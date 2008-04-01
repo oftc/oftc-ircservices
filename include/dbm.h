@@ -190,6 +190,10 @@ char *db_execute_scalar(int, int*, const char *, ...);
 result_set_t *db_execute(int, int *, const char *, ...);
 int db_execute_nonquery(int, const char *, ...);
 
+char *db_vexecute_scalar(int, int*, const char *, dlink_list *);
+result_set_t *db_vexecute(int, int *, const char *, dlink_list *);
+int db_vexecute_nonquery(int, const char *, dlink_list *);
+
 void db_free_result(result_set_t *result);
 
 int64_t db_nextid(const char *, const char *);
