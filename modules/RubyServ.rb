@@ -31,7 +31,7 @@ class RubyServ < ServiceModule
   end
 
   def loaded()
-    chan = @client.join("#test")
+    chan = self.client.join("#test")
     send_cmode(chan, "+s", "")
     Channel.all_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
   end
@@ -56,13 +56,13 @@ class RubyServ < ServiceModule
   end
   def JOIN(client, parv = [])
     log(LOG_DEBUG, "RUBY Joining channel #{parv[1]}")
-    @client.join(parv[1])
+    self.client.join(parv[1])
   end
   def PART(client, parv = [])
     reason = nil
     reason = parv[2, parv.length-2].join(' ') if parv.length > 2
     log(LOG_DEBUG, "RUBY Parting channel #{parv[1]}: #{reason}")
-    @client.part(parv[1], reason)
+    self.client.part(parv[1], reason)
   end
   def umode(client, what, mode)
     log(LOG_DEBUG, "RUBY UMODE client.name: #{client.name} what: #{what} mode: %08x" % [mode])
@@ -85,7 +85,7 @@ class RubyServ < ServiceModule
     rchannel.members_each { |x| log(LOG_DEBUG, "#{x.name} is also in #{rchannel.name}") }
   end
   def part(client, source, channel, reason)
-    @client.part('#floodtest', nil) if channel.name.downcase == '#floodtest' and channel.members_length == 1
+    self.client.part('#floodtest', nil) if channel.name.downcase == '#floodtest' and channel.members_length == 1
   end
   def nick(source, oldnick)
     log(LOG_DEBUG, "RUBY #{oldnick} is now #{source.name}")
@@ -95,7 +95,7 @@ class RubyServ < ServiceModule
   end
   def chan_created(channel)
     log(LOG_DEBUG, "RUBY #{channel.name} created")
-    @client.join("#floodtest") if channel.name.downcase == "#floodtest"
+    self.client.join("#floodtest") if channel.name.downcase == "#floodtest"
   end
   def chan_deleted(channel)
     log(LOG_NOTICE, "#{channel.name} has been deleted")

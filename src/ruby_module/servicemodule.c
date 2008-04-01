@@ -292,7 +292,7 @@ static VALUE
 ServiceModule_kill_user(VALUE self, VALUE who, VALUE reason)
 {
   struct Service *service = get_service(self);
-  struct Client *client = find_client(service->name);
+  struct Client *client = value_to_client(rb_iv_get(self, "@client"));
   const char *creason;
 
   Check_Type(reason, T_STRING);
