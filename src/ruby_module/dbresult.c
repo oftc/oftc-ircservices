@@ -7,6 +7,7 @@ static VALUE initialize(VALUE, VALUE);
 static VALUE row_count(VALUE);
 static VALUE row_each(VALUE);
 static VALUE m_free(VALUE);
+static VALUE row_index(VALUE, VALUE);
 
 void
 Init_DBResult(void)
@@ -17,6 +18,7 @@ Init_DBResult(void)
   rb_define_method(cDBResult, "row_count", row_count, 0);
   rb_define_method(cDBResult, "row_each", row_each, 0);
   rb_define_method(cDBResult, "free", m_free, 0);
+  rb_define_method(cDBResult, "[]", row_index, 1);
 }
 
 static VALUE
@@ -55,6 +57,17 @@ m_free(VALUE self)
   result_set_t *result = value_to_dbresult(self);
   db_free_result(result);
   return self;
+}
+
+static VALUE
+row_index(VALUE self, VALUE index)
+{
+  result_set_t *result = value_to_dbresult(self);
+  int idx = NUM2INT(index);
+  if(idx < result->row_count)
+    return dbrow_to_value(&result->rows[idx]);
+  else
+    return Qnil; /* TODO XXX FIXME Throw exception? */
 }
 
 result_set_t*
