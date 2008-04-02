@@ -40,22 +40,28 @@
 static FBFILE *db_log_fb;
 static database_t *database;
 
+/* A dynamically sized array is probably nicer here, as deletions will be linear */
+static dlink_list dynamic_queries = { 0 };
+struct QueryItem
+{
+  int id;
+  char *query;
+};
+
 void
 init_db()
 {
-  //char *dbstr;
   char logpath[LOG_BUFSIZE];
   char port[128] = {'\0'};
-  //int len;
-  char foo[128];
+  char module[128];
   char cstring[IRC_BUFSIZE];
 
-  strcpy(foo, "pgsql.la");
+  snprintf(module, sizeof(module), "%s.la", Database.driver);
 
   if(Database.port != 0)
     snprintf(port, 127, "%d", Database.port);
 
-  database = load_module(foo);
+  database = load_module(module);
 
   snprintf(cstring, sizeof(cstring), "host='%s' user='%s' password='%s' dbname='%s'",
     Database.hostname, Database.username, Database.password,
@@ -63,7 +69,9 @@ init_db()
 
   if(!database->connect(cstring))
   {
-    ilog(L_CRIT, "Cannot connect to database");
+    ilog(L_CRIT, "%s module could not connect to %s database on %s as %s %s a password",
+      Database.driver, Database.dbname, Database.hostname, Database.username,
+      strlen(Database.password) > 0 ? "with" : "without");
     exit(-1);
   }
 
@@ -82,8 +90,20 @@ void
 cleanup_db()
 {
   struct Module *mod;
+  dlink_node *ptr, *next_ptr;
+  char module[128];
 
-  mod = find_module("pgsql.la", 0);
+  DLINK_FOREACH_SAFE(ptr, next_ptr, dynamic_queries.head)
+  {
+    struct QueryItem *q = (struct QueryItem *)ptr->data;
+    dlinkDelete(ptr, &dynamic_queries);
+    MyFree(q->query);
+    MyFree(q);
+  }
+
+  snprintf(module, sizeof(module), "%s.la", Database.driver);
+
+  mod = find_module(module, 0);
   unload_module(mod);
   fbclose(db_log_fb);
 }
@@ -142,18 +162,27 @@ db_load_driver()
 void
 db_try_reconnect()
 {
-  /*
   int num_attempts = 0;
+  char cstring[IRC_BUFSIZE];
 
   ilog(L_NOTICE, "Database connection lost! Attempting reconnect.");
   send_queued_all();
 
+  snprintf(cstring, sizeof(cstring), "host='%s' user='%s' password='%s' dbname='%s'",
+    Database.hostname, Database.username, Database.password,
+    Database.dbname);
+
   while(num_attempts++ < 30)
   {
-    if(Database.yada->connect(Database.yada, Database.username,
-          Database.password) != 0)
+    if(database->connect(cstring))
     {
+      dlink_node *ptr = NULL;
 
+      DLINK_FOREACH(ptr, dynamic_queries.head)
+      {
+        struct QueryItem *q = (struct QueryItem *)ptr->data;
+        database->prepare(q->id, q->query);
+      }
       ilog(L_NOTICE, "Database connection restored after %d seconds",
           num_attempts * 5);
       return;
@@ -163,9 +192,8 @@ db_try_reconnect()
         num_attempts);
     send_queued_all();
   }
-  ilog(L_ERROR, "Database reconnect failed: %s", Database.yada->errmsg);
+  ilog(L_ERROR, "Database reconnect failed");
   services_die("Could not reconnect to database.", 0);
-  */
 }
 
 int
@@ -178,9 +206,23 @@ db_prepare(int id, const char *query)
     id = database->last_index++;
 
   /* TODO FIXME XXX check return */
-  database->prepare(id, query);
-
-  return id;
+  if(database->prepare(id, query))
+  {
+    if(id >= QUERY_COUNT) /* not a builtin, add to linked list */
+    {
+      struct QueryItem *query_item = MyMalloc(sizeof(struct QueryItem));
+      query_item->id = id;
+      query_item->query = MyMalloc(sizeof(char)*strlen(query));
+      DupString(query_item->query, query);
+      dlinkAddTail(query_item, make_dlink_node(), &dynamic_queries);
+    }
+    return id;
+  }
+  else
+  {
+    database->last_index--;
+    return -1;
+  }
 }
 
 char *
@@ -199,6 +241,9 @@ db_execute_scalar(int query_id, int *error, const char *format, ...)
 
   va_end(args);
 
+  if(!database->is_connected())
+    db_try_reconnect();
+
   result = database->execute_scalar(query_id, error, format, &list);
 
   return result;
@@ -207,6 +252,9 @@ db_execute_scalar(int query_id, int *error, const char *format, ...)
 char *
 db_vexecute_scalar(int query_id, int *error, const char *format, dlink_list *list)
 {
+  if(!database->is_connected())
+    db_try_reconnect();
+
   return database->execute_scalar(query_id, error, format, list);
 }
 
@@ -226,6 +274,9 @@ db_execute(int query_id, int *error, const char *format, ...)
 
   va_end(args);
 
+  if(!database->is_connected())
+    db_try_reconnect();
+
   results = database->execute(query_id, error, format, &list);
 
   return results;
@@ -234,6 +285,9 @@ db_execute(int query_id, int *error, const char *format, ...)
 result_set_t *
 db_vexecute(int query_id, int *error, const char *format, dlink_list *list)
 {
+  if(!database->is_connected())
+    db_try_reconnect();
+
   return database->execute(query_id, error, format, list);
 }
 
@@ -253,6 +307,9 @@ db_execute_nonquery(int query_id, const char *format, ...)
 
   va_end(args);
 
+  if(!database->is_connected())
+    db_try_reconnect();
+
   num_rows = database->execute_nonquery(query_id, format, &list);
 
   return num_rows;
@@ -261,24 +318,36 @@ db_execute_nonquery(int query_id, const char *format, ...)
 int
 db_vexecute_nonquery(int query_id, const char *format, dlink_list *list)
 {
+  if(!database->is_connected())
+    db_try_reconnect();
+
   return database->execute_nonquery(query_id, format, list);
 }
 
 int
 db_begin_transaction()
 {
+  if(!database->is_connected())
+    db_try_reconnect();
+
   return database->begin_transaction();
 }
 
 int
 db_commit_transaction()
 {
+  if(!database->is_connected())
+    db_try_reconnect();
+
   return database->commit_transaction();
 }
 
 int
 db_rollback_transaction()
 {
+  if(!database->is_connected())
+    db_try_reconnect();
+
   return database->rollback_transaction();
 }
 
@@ -291,12 +360,18 @@ db_free_result(result_set_t *result)
 int64_t
 db_nextid(const char *table, const char *column)
 {
+  if(!database->is_connected())
+    db_try_reconnect();
+
   return database->next_id(table, column);
 }
 
 int64_t
 db_insertid(const char *table, const char *column)
 {
+  if(!database->is_connected())
+    db_try_reconnect();
+
   return database->insert_id(table, column);
 }
 

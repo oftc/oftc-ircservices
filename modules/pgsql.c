@@ -57,6 +57,7 @@ static int pg_commit_transaction();
 static int pg_rollback_transaction();
 static void pg_free_result(result_set_t *);
 static int void_to_char(char, char **, void *);
+static int pg_is_connected();
 
 static query_t queries[QUERY_COUNT] = { 
   { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
@@ -278,6 +279,7 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
   pgsql->rollback_transaction = pg_rollback_transaction;
   pgsql->insert_id = pg_insertid;
   pgsql->next_id = pg_nextid;
+  pgsql->is_connected = pg_is_connected;
 
   return pgsql;
 }
@@ -345,6 +347,15 @@ pg_connect(const char *connection_string)
   }
 
   return 1;
+}
+
+static int
+pg_is_connected()
+{
+  if(pgsql->connection != NULL && PQstatus(pgsql->connection) == CONNECTION_OK)
+    return TRUE;
+  else
+    return FALSE;
 }
 
 static inline int

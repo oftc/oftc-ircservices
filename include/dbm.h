@@ -54,6 +54,7 @@ typedef struct DataBaseModule
   int (*rollback_transaction)();
   int64_t (*next_id)(const char *, const char *);
   int64_t (*insert_id)(const char *, const char *);
+  int (*is_connected)();
 } database_t;
 
 enum db_queries

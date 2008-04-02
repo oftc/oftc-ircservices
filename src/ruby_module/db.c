@@ -101,10 +101,11 @@ create_db_list(int argc, VALUE *argv, VALUE self,
 static void
 cleanup_db_list(dlink_list *list)
 {
-  dlink_node *ptr = NULL;
-  DLINK_FOREACH(ptr, list->head)
+  dlink_node *ptr = NULL, *next_ptr = NULL;
+  DLINK_FOREACH_SAFE(ptr, next_ptr, list->head)
   {
     MyFree(ptr->data);
+    dlinkDelete(ptr, list);
   }
 }
 
