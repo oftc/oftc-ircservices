@@ -959,6 +959,21 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
 
   join_params(value, parc-1, &parv[2]);
 
+  if(value != NULL && ircncmp(value, "-", strlen(value)) == 0)
+  {
+    if(dbchannel_set_topic(regchptr, NULL))
+      reply_user(service, service, client, CS_SET_FAILED, "MLOCK",
+        "Not Set", dbchannel_get_channel(regchptr));
+    else
+      reply_user(service, service, client, CS_SET_FAILED, "MLOCK",
+        "Not Set", dbchannel_get_channel(regchptr));
+
+    if(chptr == NULL)
+      dbchannel_free(regchptr);
+
+    return;
+  }
+
   result = enforce_mode_lock(service, chptr, value, mode, &nolimit);
 
   if(result > 0)
