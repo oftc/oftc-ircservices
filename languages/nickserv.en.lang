@@ -410,6 +410,9 @@ NS_REG_FAIL
 	problem within services or a database problem. Please try again in a short
 	while. If this is not the first time you have received this message, please
 	contact network support.
+NS_REG_FAIL_TOOSHORT
+	The nick you are trying to register is invalid, please choose another nick to
+	complete your registration
 NS_REG_FIRST
 	Nickname %s is not registered. The nickname you specify must be a
 	registered nickname. See HELP REGISTER for more information. If you believe

@@ -438,6 +438,12 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
     
+  if(strlen(client->name) < 3) /* TODO XXX FIXME configurable? */
+  {
+    reply_user(service, service, client, NS_REG_FAIL_TOOSHORT);
+    return;
+  }
+
   if((nick = nickname_find(client->name)) != NULL)
   {
     reply_user(service, service, client, NS_ALREADY_REG, client->name); 
