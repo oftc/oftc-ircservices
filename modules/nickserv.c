@@ -437,10 +437,18 @@ m_register(struct Service *service, struct Client *client,
     reply_user(service, service, client, NS_ALREADY_REG, client->name);
     return;
   }
-    
+
   if(strlen(client->name) < 3) /* TODO XXX FIXME configurable? */
   {
     reply_user(service, service, client, NS_REG_FAIL_TOOSHORT);
+    return;
+  }
+
+  if(CurrentTime - client->firsttime < 60) /* TODO XXX FIXME configurable? */
+  {
+    ilog(L_NOTICE, "Warning: %s tried to register after %ld seconds online",
+        client->name, CurrentTime - client->firsttime);
+    reply_user(service, service, client, NS_REG_FAIL);
     return;
   }
 

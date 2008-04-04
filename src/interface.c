@@ -277,7 +277,7 @@ introduce_server(const char *name, const char *gecos)
     client->servptr = &me;
     dlinkAdd(client, &client->lnode, &client->servptr->server_list);
 
-    client->tsinfo = CurrentTime;
+    client->firsttime = client->tsinfo = CurrentTime;
 
     strlcpy(client->name, name, sizeof(client->name));
     strlcpy(client->info, gecos, sizeof(client->info));

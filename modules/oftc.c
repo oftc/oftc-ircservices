@@ -203,7 +203,7 @@ client_from_server(struct Client *client_p, struct Client *source_p, int parc,
   dlinkAdd(source_p, &source_p->node, &global_client_list);
 
   source_p->hopcount = atoi(parv[2]);
-  source_p->tsinfo = newts;
+  source_p->firsttime = source_p->tsinfo = newts;
 
   /* copy the nick in place */
   strcpy(source_p->name, nick);
