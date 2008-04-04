@@ -950,43 +950,42 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
   struct Channel *chptr;
   DBChannel *regchptr;
   char value[IRC_BUFSIZE+1];
-  char limit_cache;
+  char mode[MODEBUFLEN+1];
+  int nolimit;
+  unsigned int result;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
   join_params(value, parc-1, &parv[2]);
 
-  if(parc == 1)
+  result = enforce_mode_lock(service, chptr, value, mode, &nolimit);
+
+  if(result > 0)
   {
-    m_set_string(service, client, parv[1], "MLOCK", value, parc,
-        &dbchannel_get_mlock, &dbchannel_set_mlock);
-    if(chptr == NULL)
-      dbchannel_free(regchptr);
+    /* Invalid MLOCK */
+    /* TODO FIXME XXX reply with illegal mode configuration */
+    reply_user(service, service, client, CS_SET_FAILED, "MLOCK",
+        value, dbchannel_get_channel(regchptr));
     return;
   }
 
-  limit_cache = dbchannel_get_autolimit(regchptr);
-  if(set_mode_lock(service, parv[1], client, value, TRUE))
+  if(nolimit && dbchannel_get_autolimit(regchptr))
   {
-    if(limit_cache != dbchannel_get_autolimit(regchptr))
-    {
-      m_set_flag(service, client, parv[1], "OFF", "AUTOLIMIT",
-        &dbchannel_get_autolimit, &dbchannel_set_autolimit);
-      if(chptr != NULL)
-        m_delete_autolimit(chptr);
-      reply_user(service, service, client, CS_MLOCK_CONFLICT_LIMIT);
-    }
+    dbchannel_set_autolimit(regchptr, FALSE);
+    reply_user(service, service, client, CS_MLOCK_CONFLICT_LIMIT);
+  }
 
+  if(dbchannel_set_mlock(regchptr, mode))
+  {
     reply_user(service, service, client, CS_SET_SUCCESS, "MLOCK",
-        dbchannel_get_mlock(regchptr) == NULL ? "Not set" : dbchannel_get_mlock(regchptr), 
+        dbchannel_get_mlock(regchptr) == NULL ? "Not set" : dbchannel_get_mlock(regchptr),
         dbchannel_get_channel(regchptr));
   }
   else
   {
-    reply_user(service, service, client, CS_SET_FAILED, "MLOCK", 
-        value, parv[1]);
-    dbchannel_set_autolimit(regchptr, limit_cache);
+    reply_user(service, service, client, CS_SET_FAILED, "MLOCK",
+        mode, dbchannel_get_channel(regchptr));
   }
 
   if(chptr == NULL)
@@ -1477,6 +1476,7 @@ m_clear_modes(struct Service *service, struct Client *client, int parc,
   struct Channel *chptr;
   char mbuf[MODEBUFLEN+1];
   char buf[MODEBUFLEN+1] = "-";
+  int tmp;
 
   chptr = hash_find_channel(parv[1]);
 
@@ -1509,12 +1509,12 @@ m_clear_modes(struct Service *service, struct Client *client, int parc,
   send_cmode(service, chptr, buf, "");
   chptr->mode.mode &= ~chptr->mode.mode;
 
-  /* Only set_mode_lock if MLOCK is on */
+  /* Only enforce if MLOCK is on */
   if(dbchannel_get_mlock(chptr->regchan) != NULL)
   {
     ilog(L_DEBUG, "ChanServ CLEAR MODES: %s setting MLOCK %s", chptr->chname,
       dbchannel_get_mlock(chptr->regchan));
-    set_mode_lock(service, chptr->chname, NULL, dbchannel_get_mlock(chptr->regchan), FALSE);
+    enforce_mode_lock(chanserv, chptr, NULL, NULL, &tmp);
   }
 
   reply_user(service, service, client, CS_CLEAR_MODES, chptr->chname);
@@ -2149,9 +2149,10 @@ cs_on_cmode_change(va_list args)
   int  dir  = va_arg(args, int);
   char mode = (char)va_arg(args, int);
   char *param = va_arg(args, char *);
+  int tmp;
 
   if(chptr->regchan != NULL && dbchannel_get_mlock(chptr->regchan) != NULL)
-    set_mode_lock(chanserv, chptr->chname, NULL, dbchannel_get_mlock(chptr->regchan), FALSE);
+    enforce_mode_lock(chanserv, chptr, NULL, NULL, &tmp);
   
   /* last function to call in this func */
   return pass_callback(cs_cmode_hook, source, chptr, dir, mode, param);
@@ -2269,11 +2270,12 @@ static void *
 cs_on_channel_create(va_list args)
 {
   struct Channel *chptr = va_arg(args, struct Channel *);
+  int tmp;
 
   if(chptr->regchan != NULL)
   {
     if(dbchannel_get_mlock(chptr->regchan) != NULL)
-      set_mode_lock(chanserv, chptr->chname, NULL, dbchannel_get_mlock(chptr->regchan), FALSE);
+      enforce_mode_lock(chanserv, chptr, NULL, NULL, &tmp);
 
     if(!IsConnecting(me.uplink))
     {

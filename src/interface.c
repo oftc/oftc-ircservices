@@ -949,6 +949,215 @@ get_modestring(unsigned int modes, char *modbuf, int len)
   modbuf[j] = '\0';
 }
 
+/* given a channel mode string (without params) this function will determine
+ * the bitstring on and off modes, as well as the relative position of the
+ * limit and key parameters if present
+ */
+void
+separate_modes(const char *in_mode, unsigned int *on_modes, unsigned int *off_modes,
+  int *key_pos, int *limit_pos)
+{
+  size_t len, i;
+  int direction = -1;
+  int para = 1;
+
+  len = strlen(in_mode);
+
+  *key_pos = 0;
+  *limit_pos = 0;
+
+  for(i = 0; i < len; ++i)
+  {
+    char c = *(in_mode+i);
+    switch(c)
+    {
+      case '+':
+        direction = TRUE;
+        continue;
+        break;
+      case '-':
+        direction = FALSE;
+        continue;
+        break;
+      case ' ':
+        return;
+        break;
+      case 'k':
+        if(direction)
+          *key_pos = para++;
+        else
+          *key_pos = -1;
+        break;
+      case 'l':
+        if(direction)
+          *limit_pos = para++;
+        else
+          *limit_pos = -1;
+        break;
+      default:
+        if(direction == -1)
+        {
+          ilog(L_CRIT, "Separate Modes: No Direction Specified %s", in_mode);
+          assert(1 == 0);
+        }
+        if(direction)
+          *on_modes  |= get_mode_from_letter(c);
+        else
+          *off_modes |= get_mode_from_letter(c);
+        break;
+    }
+  }
+}
+
+unsigned int
+enforce_mode_lock(struct Service *service, struct Channel *channel, const char *mlock, char *dst, int *nolimit)
+{
+  unsigned int on_modes, off_modes, on_diff, off_diff;
+  int key_pos, limit_pos;
+  const char *parv[3] = { NULL, NULL, NULL };
+  char *p, *tmp;
+
+  p = tmp = NULL;
+  key_pos = limit_pos = 0;
+  *nolimit = FALSE;
+  on_modes = off_modes = on_diff = off_diff = 0;
+
+  if(mlock != NULL)
+    parv[0] = mlock;
+  else
+    parv[0] = dbchannel_get_mlock(channel->regchan);
+
+  tmp = (char *)parv[0];
+
+  /* Find first space, everything before it is the mlock */
+  if((p = strchr(tmp, ' ')) != NULL)
+  {
+    *p++ = '\0';
+    tmp = p;
+
+    /* split the rest if they exist to key and limit, but we don't know which comes first */
+    parv[1] = tmp;
+    if((p = strchr(tmp, ' ')) != NULL)
+    {
+      *p++ = '\0';
+      tmp = p;
+
+      parv[2] = tmp;
+      if((p = strchr(tmp, ' ')) != NULL)
+        *p++ = '\0';
+    }
+  }
+
+  separate_modes(parv[0], &on_modes, &off_modes, &key_pos, &limit_pos);
+
+  /* at first I tried to be clever on mlock set and only send the addtional
+   * modes, but set is rarely called, so it's really not a problem to resend
+   * all mlock modes
+   */
+  if(dst != NULL)
+  {
+    on_diff  = on_modes;
+    off_diff = off_modes;
+  }
+  else
+  {
+    on_diff  = on_modes - (on_modes & channel->mode.mode);
+    off_diff = off_modes & channel->mode.mode;
+  }
+
+  if((on_diff & off_diff) > 0)
+  {
+    /* Invalid MLOCK */
+    return (on_diff & off_diff);
+  }
+
+  /* At first I wanted only to do the rest of this logic if there was something
+   * to change, but the logic to check cost more and made the code ugly so we
+   * always do the rest, and only send if the mode_diff has something
+   */
+  /*if(on_diff > 0 || off_diff > 0 || key_limit)*/
+  {
+    char mode_diff[MODEBUFLEN+1], off_string[MODEBUFLEN+1], on_string[MODEBUFLEN+1];
+    char *param = MyMalloc(MODEBUFLEN+1);
+    int ison, isoff;
+
+    ison = isoff = FALSE;
+
+    get_modestring(on_diff, on_string, MODEBUFLEN+1);
+    get_modestring(off_diff, off_string, MODEBUFLEN+1);
+
+    /* semi-tristate usage, -1 for off, 0 for in different, 1 or 2 for position
+     * in parv that we parsed out above
+     */
+    if(key_pos == -1)
+    {
+      strlcat(off_string, "k", sizeof(off_diff));
+      isoff = TRUE;
+      if(channel != NULL)
+        channel->mode.key[0] = '\0';
+    }
+
+    if(limit_pos == -1)
+    {
+      strlcat(off_string, "l", sizeof(off_diff));
+      isoff = TRUE;
+
+      /* maybe this should be tristate, -1 off, 0 not present, 1 on
+       * or maybe we don't mind +l in MLOCK, it could set a floor for AUTOLIMIT?
+       */
+      *nolimit = TRUE; /* to determine if -l is set and we have autolimit on */
+
+      if(channel != NULL)
+        channel->mode.limit = 0;
+    }
+
+    if(on_diff > 0)
+      ison = TRUE;
+
+    if(off_diff > 0)
+      isoff = TRUE;
+
+    snprintf(mode_diff, sizeof(mode_diff), "%s%s%s%s",  isoff ? "-" : "",
+        isoff ? off_string : "", ison > 0 ? "+" : "",
+        ison > 0 ? on_string : "");
+
+    /* our separate_modes routine allows us to determine if +l or +k exist, and
+     * preserves positioning, add +lk if need be since they're not in the bitmodes
+     */
+    if(limit_pos > 0 && parv[limit_pos] != NULL)
+    {
+      strlcat(mode_diff, "l", sizeof(mode_diff));
+      snprintf(param, MODEBUFLEN, "%s ", parv[limit_pos]);
+      if(channel != NULL)
+        channel->mode.limit = atoi(parv[limit_pos]);
+    }
+
+    if(key_pos > 0 && parv[key_pos] != NULL)
+    {
+      strlcat(mode_diff, "k", sizeof(mode_diff));
+      strlcat(param, parv[key_pos], MODEBUFLEN);
+      if(channel != NULL)
+        strlcpy(channel->mode.key, parv[key_pos], sizeof(channel->mode.key));
+    }
+
+    if(channel != NULL)
+    {
+      channel->mode.mode -= off_diff;
+      channel->mode.mode += on_diff;
+      if(strlen(mode_diff) > 0)
+        send_cmode(service, channel, mode_diff, param);
+    }
+
+    /* only on set */
+    if(dst != NULL)
+      snprintf(dst, MODEBUFLEN+1, "%s %s", mode_diff, param);
+
+    MyFree(param);
+
+    return 0;
+  }
+}
+
 /* 
  * The reason this function looks a bit overkill is it doubles as a valdation
  * and setting function which can be called both by the chanserv module when
