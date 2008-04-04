@@ -1136,7 +1136,8 @@ nickname_set_nick(Nickname *this, const char *value)
 inline int
 nickname_set_pass(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_PASSWORD, "si", value, &this->id))
+  /* on registration we need to set before the DB knows it */
+  if(this->id == 0 || db_execute_nonquery(SET_NICK_PASSWORD, "si", value, &this->id))
   {
     strlcpy(this->pass, value, sizeof(this->pass));
     return TRUE;
@@ -1167,7 +1168,8 @@ nickname_set_cloak(Nickname *this, const char *value)
 inline int
 nickname_set_email(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_EMAIL, "si", value, &this->id))
+  /* on registration we need to set before the DB knows it */
+  if(this->id == 0 || db_execute_nonquery(SET_NICK_EMAIL, "si", value, &this->id))
   {
     MyFree(this->email);
     DupString(this->email, value);
