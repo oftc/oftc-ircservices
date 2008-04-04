@@ -973,11 +973,9 @@ separate_modes(const char *in_mode, unsigned int *on_modes, unsigned int *off_mo
     {
       case '+':
         direction = TRUE;
-        continue;
         break;
       case '-':
         direction = FALSE;
-        continue;
         break;
       case ' ':
         return;
@@ -1010,7 +1008,8 @@ separate_modes(const char *in_mode, unsigned int *on_modes, unsigned int *off_mo
 }
 
 unsigned int
-enforce_mode_lock(struct Service *service, struct Channel *channel, const char *mlock, char *dst, int *nolimit)
+enforce_mode_lock(struct Service *service, struct Channel *channel,
+    const char *mlock, char *dst, int *nolimit)
 {
   unsigned int on_modes, off_modes, on_diff, off_diff;
   int key_pos, limit_pos;
@@ -1111,7 +1110,7 @@ enforce_mode_lock(struct Service *service, struct Channel *channel, const char *
         channel->mode.limit = 0;
     }
 
-    if(on_diff > 0)
+    if(on_diff > 0 || key_pos > 0 || limit_pos > 0)
       ison = TRUE;
 
     if(off_diff > 0)
