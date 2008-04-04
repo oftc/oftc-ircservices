@@ -68,6 +68,7 @@ EXTERN unsigned int user_modes[];
 #define UMODE_OPER         0x40000 /* Operator */
 #define UMODE_ADMIN        0x80000 /* Admin on server */
 #define UMODE_IDENTIFIED  0x100000 /* Registered with nickserv */
+#define UMODE_GOD          0x10000000 /* Operator is God */
 #define UMODE_ALL    UMODE_SERVNOTICE
 
 #define HasID(x)		((x)->id[0] != '\0')
@@ -102,6 +103,7 @@ EXTERN unsigned int user_modes[];
 #define IsOper(x)               ((x)->umodes & UMODE_OPER)
 #define IsIdentified(x)         ((x)->umodes & UMODE_IDENTIFIED)
 #define IsAdmin(x)              ((x)->umodes & UMODE_ADMIN)
+#define IsGod(x)                ((x)->umodes & UMODE_GOD)
 
 #define SetOper(x)              ((x)->umodes |= UMODE_OPER)
 #define SetIdentified(x)        ((x)->umodes |= UMODE_IDENTIFIED)

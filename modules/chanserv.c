@@ -2228,7 +2228,8 @@ cs_on_client_join(va_list args)
     MyFree(access);
   }
 
-  if(dbchannel_get_restricted(regchptr) && level < MEMBER_FLAG && !IsMe(source_p->from))
+  if(dbchannel_get_restricted(regchptr) && level < MEMBER_FLAG &&
+    !MyConnect(source_p) && !IsGod(source_p))
   {
     char ban[IRC_BUFSIZE+1];
 
