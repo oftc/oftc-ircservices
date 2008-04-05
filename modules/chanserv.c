@@ -1360,6 +1360,7 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
   DBChannel *regchptr;
   dlink_node *ptr, *nptr;
   int numbans = 0;
+  dlink_list list = { 0 };
  
   chptr = hash_find_channel(parv[1]);
 
@@ -1373,13 +1374,16 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
   DLINK_FOREACH_SAFE(ptr, nptr, chptr->banlist.head)
   {
     const struct Ban *banptr = ptr->data;
-    char ban[IRC_BUFSIZE+1];
+    char *ban = MyMalloc(IRC_BUFSIZE+1);
 
     snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
         banptr->host);
-    unban_mask(service, chptr, ban);
+
+    dlinkAdd(ban, make_dlink_node(), &list);
     numbans++;
   }
+
+  unban_mask_many(service, chptr, &list);
 
   reply_user(service, service, client, CS_CLEAR_BANS, numbans, 
       dbchannel_get_channel(regchptr));
@@ -1392,6 +1396,7 @@ m_clear_quiets(struct Service *service, struct Client *client, int parc,
   struct Channel *chptr;
   DBChannel *regchptr;
   dlink_node *ptr, *nptr;
+  dlink_list list = { 0 };
   int numbans = 0;
 
   chptr = hash_find_channel(parv[1]);
@@ -1406,13 +1411,15 @@ m_clear_quiets(struct Service *service, struct Client *client, int parc,
   DLINK_FOREACH_SAFE(ptr, nptr, chptr->quietlist.head)
   {
     const struct Ban *banptr = ptr->data;
-    char ban[IRC_BUFSIZE+1];
+    char *ban = MyMalloc(IRC_BUFSIZE+1);
 
     snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
         banptr->host);
-    unquiet_mask(service, chptr, ban);
+    dlinkAdd(ban, make_dlink_node(), &list);
     numbans++;
   }
+
+  unquiet_mask_many(service, chptr, &list);
 
   reply_user(service, service, client, CS_CLEAR_QUIETS, numbans,
       dbchannel_get_channel(regchptr));

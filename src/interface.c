@@ -764,6 +764,15 @@ ban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 }
 
 void
+ban_mask_many(struct Service *service, struct Channel *chptr, dlink_list *list)
+{
+  if(ServicesState.debugmode)
+    return;
+
+  clump_masks(service, chptr, "b", TRUE, CHFL_BAN, list);
+}
+
+void
 unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
   if(ServicesState.debugmode)
@@ -771,6 +780,12 @@ unban_mask(struct Service *service, struct Channel *chptr, const char *mask)
 
   send_cmode(service, chptr, "-b", mask);
   del_id(chptr, (char*)mask, CHFL_BAN);
+}
+
+void
+unban_mask_many(struct Service *service, struct Channel *chptr, dlink_list *list)
+{
+  clump_masks(service, chptr, "b", FALSE, CHFL_BAN, list);
 }
 
 void
@@ -785,6 +800,12 @@ quiet_mask(struct Service *service, struct Channel *chptr, const char *mask)
 }
 
 void
+quiet_mask_many(struct Service *service, struct Channel *chptr, dlink_list *list)
+{
+  clump_masks(service, chptr, "q", TRUE, CHFL_QUIET, list);
+}
+
+void
 unquiet_mask(struct Service *service, struct Channel *chptr, const char *mask)
 {
   if(ServicesState.debugmode)
@@ -792,6 +813,12 @@ unquiet_mask(struct Service *service, struct Channel *chptr, const char *mask)
 
   send_cmode(service, chptr, "-q", mask);
   del_id(chptr, (char*)mask, CHFL_QUIET);
+}
+
+void
+unquiet_mask_many(struct Service *service, struct Channel *chptr, dlink_list *list)
+{
+  clump_masks(service, chptr, "q", FALSE, CHFL_QUIET, list);
 }
 
 void
@@ -1702,3 +1729,63 @@ drop_nickname(struct Service *service, struct Client *client, const char *target
   return 0;
 }
 
+void
+clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
+  int dir, int id, dlink_list *list)
+{
+  struct Client *client = find_client(service->name);
+  char modes[IRC_BUFSIZE+1], masks[IRC_BUFSIZE+1];
+  char *cur = NULL;
+  size_t max_size = IRC_BUFSIZE - (strlen(chptr->chname) + strlen(me.name) + 4 + 5);
+
+  modes[0] = '\0';
+  masks[0] = '\0';
+
+  while(list->length > 0)
+  {
+    if(cur != NULL)
+    {
+      send_cmode(service, chptr, modes, masks);
+      modes[0] = '\0';
+      masks[0] = '\0';
+      MyFree(cur);
+      cur = NULL;
+    }
+    else
+    {
+      cur = (char *)list->tail->data;
+      dlinkDelete(list->tail, list);
+    }
+
+    if(strlen(modes) == 0)
+    {
+      if(dir)
+        strlcat(modes, "+", IRC_BUFSIZE);
+      else
+        strlcat(modes, "-", IRC_BUFSIZE);
+    }
+
+    if(strlen(cur) + strlen(masks) + strlen(modes) < max_size)
+    {
+      if(dir)
+        add_id(client, chptr, cur, id);
+      else
+        del_id(chptr, cur, id);
+
+      strlcat(modes, mode, IRC_BUFSIZE);
+      strlcat(masks, cur, IRC_BUFSIZE);
+      strlcat(masks, " ", IRC_BUFSIZE);
+      MyFree(cur);
+      cur = NULL;
+    }
+  }
+
+  if(strlen(masks) > 0)
+    send_cmode(service, chptr, modes, masks);
+
+  if(cur != NULL)
+  {
+    MyFree(cur);
+    cur = NULL;
+  }
+}

@@ -149,9 +149,13 @@ void devoice_user(struct Service *, struct Channel *, struct Client *);
 void invite_user(struct Service *, struct Channel *, struct Client *);
 void kill_user(struct Service *, struct Client *, const char *);
 void ban_mask(struct Service *, struct Channel *, const char *);
+void ban_mask_many(struct Service *, struct Channel *, dlink_list *);
 void unban_mask(struct Service *, struct Channel *, const char *);
+void unban_mask_many(struct Service *, struct Channel *, dlink_list *);
 void quiet_mask(struct Service *, struct Channel *, const char *);
+void quiet_mask_many(struct Service *, struct Channel *, dlink_list *);
 void unquiet_mask(struct Service *, struct Channel *, const char *);
+void unquiet_mask_many(struct Service *, struct Channel *, dlink_list *);
 int valid_wild_card(const char *);
 
 void free_serviceban(struct ServiceBan *);
@@ -173,4 +177,7 @@ int drop_nickname(struct Service *, struct Client *, const char *);
 
 extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
+
+void clump_masks(struct Service *, struct Channel *, const char *, int, int,
+  dlink_list *);
 #endif /* INCLUDED_interface_h */
