@@ -231,6 +231,8 @@ introduce_client(const char *name, const char *gecos, char isservice)
   client = find_client(name);
   if(client == NULL)
   {
+    const char *uid = uid_get();
+
     client = make_client(&me);
     client->firsttime = client->tsinfo = CurrentTime;
     dlinkAdd(client, &client->node, &global_client_list);
@@ -238,6 +240,12 @@ introduce_client(const char *name, const char *gecos, char isservice)
     /* copy the nick in place */
     strlcpy(client->name, name, sizeof(client->name));
     hash_add_client(client);
+
+    while(hash_find_id(uid) != NULL)
+      uid = uid_get();
+
+    strlcpy(client->id, uid, sizeof(client->id));
+    hash_add_id(client);
 
     register_remote_user(&me, client, "services", me.name, me.name, gecos);
   }

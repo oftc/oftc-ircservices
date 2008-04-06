@@ -237,6 +237,7 @@ int main(int argc, char *argv[])
   
   read_services_conf(TRUE);
   init_db();
+  init_uid();
  
   write_pidfile(ServicesState.pidfile);
   ilog(L_NOTICE, "Services Ready");

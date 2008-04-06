@@ -838,3 +838,88 @@ valid_hostname(const char *hostname)
   return 1;
 }
 
+static char new_uid[TOTALSIDUID + 1];     /* allow for \0 */
+
+/*
+ * init_uid()
+ *
+ * inputs	- NONE
+ * output	- NONE
+ * side effects	- new_uid is filled in with server id portion (sid)
+ *		  (first 3 bytes) or defaulted to 'A'.
+ *	          Rest is filled in with 'A'
+ */
+void
+init_uid(void)
+{
+  int i;
+
+  memset(new_uid, 0, sizeof(new_uid));
+
+  if (HasID(&me))
+  {
+    strlcpy(new_uid, me.id, sizeof(new_uid));
+  }
+
+  for (i = 0; i < IRC_MAXSID; i++)
+    if (new_uid[i] == '\0') 
+      new_uid[i] = 'A';
+
+  /* NOTE: if IRC_MAXUID != 6, this will have to be rewritten */
+  /* Yes nenolod, I have known it was off by one ever since I wrote it
+   * But *JUST* for you, though, it really doesn't look as *pretty*
+   * -Dianora
+   */
+  memcpy(new_uid + IRC_MAXSID, "AAAAA@", IRC_MAXUID);
+
+  /*entering_umode_cb = register_callback("entering_umode", NULL);
+  umode_cb = register_callback("changing_umode", change_simple_umode);
+  uid_get_cb = register_callback("uid_get", uid_get);*/
+}
+
+/*
+ * add_one_to_uid
+ *
+ * inputs	- index number into new_uid
+ * output	- NONE
+ * side effects	- new_uid is incremented by one
+ *		  note this is a recursive function
+ */
+static void
+add_one_to_uid(int i)
+{
+  if (i != IRC_MAXSID)    /* Not reached server SID portion yet? */
+  {
+    if (new_uid[i] == 'Z')
+      new_uid[i] = '0';
+    else if (new_uid[i] == '9')
+    {
+      new_uid[i] = 'A';
+      add_one_to_uid(i-1);
+    }
+    else
+      ++new_uid[i];
+  }
+  else
+  {
+    /* NOTE: if IRC_MAXUID != 6, this will have to be rewritten */
+    if (new_uid[i] == 'Z')
+      memcpy(new_uid + IRC_MAXSID, "AAAAAA", IRC_MAXUID);
+    else
+      ++new_uid[i];
+  }
+}
+
+/*
+ * uid_get
+ *
+ * inputs       - struct Client *
+ * output       - new UID is returned to caller
+ * side effects - new_uid is incremented by one.
+ */
+void *
+uid_get()
+{
+  add_one_to_uid(TOTALSIDUID - 1);    /* index from 0 */
+  return new_uid;
+}

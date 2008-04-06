@@ -46,6 +46,8 @@ static void *oftc_sendmsg_svsnick(va_list);
 //static void *oftc_sendmsg_svsjoin(va_list);
 static void *oftc_identify(va_list);
 static void *oftc_chops_notice(va_list);
+static void *oftc_sendmsg_newuser(va_list);
+static void *oftc_sendmsg_notice(va_list);
 
 static dlink_node *oftc_gnotice_hook;
 static dlink_node *oftc_umode_hook;
@@ -55,6 +57,8 @@ static dlink_node *oftc_svsnick_hook;
 static dlink_node *oftc_identify_hook;
 static dlink_node *oftc_connected_hook;
 static dlink_node *oftc_chops_notice_hook;
+static dlink_node *oftc_newuser_hook;
+static dlink_node *oftc_notice_hook;
 
 static void m_pass(struct Client *, struct Client *, int, char *[]);
 static void m_server(struct Client *, struct Client *, int, char *[]);
@@ -150,6 +154,8 @@ INIT_MODULE(oftc, "$Revision$")
   oftc_svsnick_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsnick);
   oftc_identify_hook  = install_hook(on_identify_cb, oftc_identify);
   oftc_chops_notice_hook = install_hook(send_chops_notice_cb, oftc_chops_notice);
+  oftc_newuser_hook = install_hook(send_newuser_cb, oftc_sendmsg_newuser);
+  oftc_notice_hook = install_hook(send_notice_cb, oftc_sendmsg_notice);
   mod_add_cmd(&gnotice_msgtab);
   mod_add_cmd(&pass_msgtab);
   mod_add_cmd(&server_msgtab);
@@ -185,6 +191,8 @@ CLEANUP_MODULE
   uninstall_hook(send_cloak_cb, oftc_sendmsg_svscloak);
   uninstall_hook(on_identify_cb, oftc_identify);
   uninstall_hook(connected_cb, oftc_server_connected);
+  uninstall_hook(send_newuser_cb, oftc_sendmsg_newuser);
+  uninstall_hook(send_notice_cb, oftc_sendmsg_notice);
 }
 
 /*
@@ -678,4 +686,63 @@ oftc_chops_notice(va_list args)
   }
 
   return pass_callback(oftc_chops_notice_hook, uplink, source, chptr, notice);
+}
+
+static void*
+oftc_sendmsg_newuser(va_list args)
+{
+  struct Client *client = va_arg(args, struct Client*);
+  char          *nick   = va_arg(args, char *);
+  char          *user   = va_arg(args, char *);
+  char          *host   = va_arg(args, char *);
+  char          *info   = va_arg(args, char *);
+  char          *umode  = va_arg(args, char *);
+
+  char ubuf[MODEBUFLEN+1];
+  struct Client *target = find_client(nick);
+
+  ubuf[0] = '+';
+  ubuf[1] = '\0';
+  strlcat(ubuf, umode, sizeof(ubuf));
+
+  /*sendto_one(uplink, ":%s UID %s %d %lu %s %s %s %s %s :%s",
+    source_p->servptr->id,
+    source_p->name,
+    source_p->hopcount+1,
+    (unsigned long)source_p->tsinfo,
+    ubuf,
+    source_p->username,
+    source_p->host,
+    (MyClient(source_p) && IsIPSpoof(source_p)) ? "0" : source_p->sockhost,
+    source_p->id,
+    source_p->info);*/
+
+  ilog(L_DEBUG, ":%s UID %s 1 %lu %s %s %s %s %s :%s",
+    me.id, nick, (unsigned long)target->tsinfo, ubuf, user, host,
+    "255.255.255.255", target->id, info);
+
+  sendto_server(client, ":%s UID %s 1 %lu %s %s %s %s %s :%s",
+    me.id, nick, (unsigned long)target->tsinfo, ubuf, user, host,
+    "255.255.255.255", target->id, info);
+
+  return NULL;
+}
+
+static void*
+oftc_sendmsg_notice(va_list args)
+{
+  struct Client *client = va_arg(args, struct Client *);
+  char          *source = va_arg(args, char *);
+  char          *target = va_arg(args, char *);
+  char          *text   = va_arg(args, char *);
+
+  struct Client *source_p = find_client(source);
+  struct Client *target_p = find_client(target);
+
+  sendto_server(client, ":%s NOTICE %s :%s",
+    HasID(source_p) ? source_p->id : source_p->name,
+    HasID(target_p) ? target_p->id : target_p->name,
+    text);
+
+  return NULL;
 }

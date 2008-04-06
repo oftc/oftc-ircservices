@@ -182,6 +182,7 @@ struct Client
 } Client;
 
 void init_client();
+void init_uid();
 void cleanup_client();
 struct Client *make_client(struct Client*);
 struct Server *make_server(struct Client*);
@@ -199,5 +200,7 @@ void nick_from_server(struct Client *, struct Client *, int,
 void register_remote_user(struct Client *, struct Client *,
                          const char *, const char *, const char *, const char *);
 int valid_hostname(const char *);
+
+void *uid_get();
 
 #endif /* INCLUDED_client_h */
