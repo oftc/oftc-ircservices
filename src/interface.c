@@ -541,7 +541,10 @@ send_chops_notice(struct Service *service, struct Channel *chptr,
 void
 send_umode(struct Service *service, struct Client *client, const char *mode)
 {
-  execute_callback(send_umode_cb, me.uplink, client->name, mode);
+  if(!HasID(client))
+    execute_callback(send_umode_cb, me.uplink, client->name, mode);
+  else
+    execute_callback(send_umode_cb, me.uplink, client->id, mode);
 }
 
 void

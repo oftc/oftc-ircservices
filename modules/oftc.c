@@ -612,8 +612,12 @@ oftc_sendmsg_svscloak(va_list args)
   char *cloakstring = va_arg(args, char *);
 
   if (cloakstring != NULL) {
-    sendto_server(client, ":%s SVSCLOAK %s :%s", 
-      me.name, client->name, cloakstring);
+    if(!HasID(client))
+      sendto_server(client, ":%s SVSCLOAK %s :%s",
+        me.name, client->name, cloakstring);
+    else
+      sendto_server(client, ":%s SVSCLOAK %s :%s",
+        me.name, client->id, cloakstring);
   }
   
   return pass_callback(oftc_svscloak_hook, client, cloakstring);
@@ -638,7 +642,10 @@ oftc_sendmsg_svsnick(va_list args)
   struct Client *user   = va_arg(args, struct Client *);
   char          *newnick= va_arg(args, char *);
 
-  sendto_server(uplink, ":%s SVSNICK %s :%s", me.name, user->name, newnick);
+  if(!HasID(user))
+    sendto_server(uplink, ":%s SVSNICK %s :%s", me.name, user->name, newnick);
+  else
+    sendto_server(uplink, ":%s SVSNICK %s :%s", me.name, user->id, newnick);
   
   return pass_callback(oftc_svsnick_hook, uplink, user, newnick);
 }
@@ -662,8 +669,12 @@ oftc_chops_notice(va_list args)
     if ((ms->flags & CHFL_CHANOP) == 0)
       continue;
 
-    sendto_server(uplink, ":%s NOTICE %s :%s", source->name, target->name, 
-        notice);
+    if(!HasID(target))
+      sendto_server(uplink, ":%s NOTICE %s :%s", source->name, target->name,
+          notice);
+    else
+      sendto_server(uplink, ":%s NOTICE %s :%s", source->name, target->id,
+          notice);
   }
 
   return pass_callback(oftc_chops_notice_hook, uplink, source, chptr, notice);
