@@ -1524,7 +1524,7 @@ free_jupeentry(struct JupeEntry *entry)
 int 
 check_nick_pass(struct Client *client, Nickname *nick, const char *password)
 {
-  char fullpass[PASSLEN*2+1];
+  char *fullpass;
   char *pass;
   int ret;
 
@@ -1537,9 +1537,12 @@ check_nick_pass(struct Client *client, Nickname *nick, const char *password)
       return 1;
   }
   
-  snprintf(fullpass, sizeof(fullpass), "%s%s", password, nickname_get_salt(nick));
+  fullpass = MyMalloc(strlen(password) + SALTLEN + 1);
+  snprintf(fullpass, strlen(password) + SALTLEN, "%s%s", password, 
+      nickname_get_salt(nick));
   
   pass = crypt_pass(fullpass, 1);
+  MyFree(fullpass);
   if(strncasecmp(nickname_get_pass(nick), pass, PASSLEN*2) == 0)
     ret = 1;
   else 

@@ -82,7 +82,8 @@ crypt_pass_old(char *password)
   return servcrypt(password, generate_md5_salt(salt, 16));
 }
 
-char *crypt_pass(char *password, int encode)
+char *
+crypt_pass(char *password, int encode)
 {
   EVP_MD_CTX mdctx;
   const EVP_MD *md;

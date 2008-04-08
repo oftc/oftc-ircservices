@@ -117,6 +117,7 @@ static query_t queries[QUERY_COUNT] = {
   { INSERT_SERVICES_AKILL, "INSERT INTO akill (mask, reason, time, duration) "
       "VALUES($1, $2, $3, $4)", EXECUTE },
   { SET_NICK_PASSWORD, "UPDATE account SET password=$1 WHERE id=$2", EXECUTE },
+  { SET_NICK_SALT, "UPDATE account SET salt=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_URL, "UPDATE account SET url=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_EMAIL, "UPDATE account SET email=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_CLOAK, "UPDATE account SET cloak=lower($1) WHERE id=$2", EXECUTE },

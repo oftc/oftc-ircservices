@@ -1149,8 +1149,14 @@ nickname_set_pass(Nickname *this, const char *value)
 inline int
 nickname_set_salt(Nickname *this, const char *value)
 {
-  strlcpy(this->salt, value, sizeof(this->salt));
-  return TRUE;
+  if(this->id == 0 || db_execute_nonquery(SET_NICK_SALT, "si", value,
+        &this->id))
+  {
+    strlcpy(this->salt, value, sizeof(this->salt));
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
 inline int

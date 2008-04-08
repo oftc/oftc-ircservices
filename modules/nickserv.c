@@ -411,7 +411,7 @@ m_register(struct Service *service, struct Client *client,
 {
   Nickname *nick;
   char *pass;
-  char password[PASSLEN+SALTLEN+1];
+  char *password;
   char salt[SALTLEN+1];
 
   if(strncasecmp(client->name, "guest", 5) == 0)
@@ -463,13 +463,16 @@ m_register(struct Service *service, struct Client *client,
 
   make_random_string(salt, sizeof(salt));
   nickname_set_salt(nick, salt);
-  snprintf(password, sizeof(password), "%s%s", parv[1], nickname_get_salt(nick));
+  password = MyMalloc(strlen(parv[1]) + SALTLEN + 1);
+  snprintf(password, strlen(parv[1]) + SALTLEN, "%s%s", parv[1], 
+        nickname_get_salt(nick));
 
   pass = crypt_pass(password, TRUE);
   nickname_set_pass(nick, pass);
   nickname_set_nick(nick, client->name);
   nickname_set_email(nick, parv[2]);
   MyFree(pass);
+  MyFree(password);
 
   if(nickname_register(nick))
   {
@@ -659,16 +662,21 @@ m_set_password(struct Service *service, struct Client *client,
 {
   Nickname *nick;
   char *pass;
-  char password[PASSLEN+SALTLEN+1];
+  char *password;
+  char salt[SALTLEN+1];
   
   nick = client->nickname;
 
-  snprintf(password, sizeof(password), "%s%s", parv[1], nickname_get_salt(nick));
+  make_random_string(salt, sizeof(salt));
+  password = MyMalloc(strlen(parv[1]) + SALTLEN + 1);
+  snprintf(password, strlen(parv[1]) + SALTLEN, "%s%s", parv[1], 
+      salt);
   
   pass = crypt_pass(password, 1);
-  /* XXX: what about the salt?  shouldn't we make a new one and store that too? -- weasel */
+  MyFree(password);
   if(nickname_set_pass(nick, pass))
   {
+    nickname_set_salt(nick, salt);
     reply_user(service, service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
   }
   else
