@@ -1640,6 +1640,14 @@ ns_on_nick_change(va_list args)
       nickname_set_last_realname(client->nickname, client->info);
       identify_user(client);
     }
+    else if(client != NULL)
+    {
+      if((target = find_client(nickname_get_nick(client->nickname))) != NULL)
+      {
+        if(target != client)
+          kill_user(nickserv, target, "This nickname is registered and protected");
+      }
+    }
     send_nick_change(nickserv, client, user->release_name);
     user->release_to = NULL;
     memset(user->release_name, 0, sizeof(user->release_name));
