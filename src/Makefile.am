@@ -4,6 +4,9 @@ SUBDIRS=conf
 if USE_RUBY
 SUBDIRS+=ruby_module
 endif
+if USE_PYTHON
+SUBDIRS+=python_module
+endif
 bin_PROGRAMS=services
 services_SOURCES= akick.c					\
 									akill.c					\
@@ -35,6 +38,10 @@ services_LDFLAGS=
 if USE_RUBY
 services_LDFLAGS+=@RUBY_LDFLAGS@
 services_LDADD+=ruby_module/libruby_module.a
+endif
+if USE_PYTHON
+services_LDFLAGS+=@PYTHON_LDFLAGS@
+services_LDADD+=python_module/libpython_module.a
 endif
 services_LDFLAGS+=-export-dynamic
 services_CFLAGS=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/languages

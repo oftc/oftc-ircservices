@@ -25,6 +25,7 @@
 #include "conf/conf.h"
 #include "conf/service.h"
 #include "ruby_module.h"
+#include "python_module.h"
 #include <sys/types.h>
 #include <dirent.h>
 #include <ltdl.h>
@@ -169,6 +170,13 @@ load_shared_module(const char *name, const char *dir, const char *fname)
       mod->type = MODTYPE_RUBY;
     }
 #endif
+#ifdef HAVE_PYTHON
+    if(strcmp(tmpext, "py") == 0)
+    {
+      result = load_python_module(name, dir, fname);
+      mod->type = MODTYPE_PYTHON;
+    }
+#endif
 
     if(result > -1)
     {
@@ -287,6 +295,15 @@ unload_module(struct Module *mod)
   if (mod->type == MODTYPE_RUBY)
   {
     unload_ruby_module(mod->name);
+    MyFree(mod->name);
+    MyFree(mod);
+    mod = NULL;
+  }
+#endif
+#ifdef HAVE_PYTHON
+  if(mod->type == MODTYPE_PYTHON)
+  {
+    unload_python_module(mod->name);
     MyFree(mod->name);
     MyFree(mod);
     mod = NULL;
@@ -458,6 +475,12 @@ mod_add_module(void *value, void *unused)
 
   DupString(name, (char *) value);
   dlinkAddTail(name, make_dlink_node(), &mod_extra);
+}
+
+dlink_list *
+get_modpaths()
+{
+  return &mod_paths;
 }
 
 /*

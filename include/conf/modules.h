@@ -28,6 +28,7 @@
 enum ModType
 {
   MODTYPE_RUBY,
+  MODTYPE_PYTHON,
   MODTYPE_SO
 };
 
@@ -64,6 +65,7 @@ EXTERN struct Module *find_module(const char *, int);
 EXTERN void * load_module(const char *);
 EXTERN void unload_module(struct Module *);
 EXTERN void boot_modules(char);
-EXTERN void cleanup_modules(void);
+EXTERN void cleanup_modules();
+EXTERN dlink_list* get_modpaths();
 
 #endif /* INCLUDED_conf_modules_h */

@@ -35,6 +35,33 @@ AC_DEFUN([AX_CHECK_LIB_RUBY],[
   fi
   AM_CONDITIONAL([USE_RUBY], [test "$have_ruby" = "yes"])
 ])dnl }}}
+dnl {{{ ax_check_lib_python
+AC_DEFUN([AX_CHECK_LIB_PYTHON],[
+  AC_ARG_ENABLE([python],[AC_HELP_STRING([--disable-python],[Disable Python scripting engine])],[use_python="$enableval"],[use_python="yes"])
+  if test "$use_python" = "no"; then
+    have_python="no"
+  else
+    AC_PATH_PROG([PYTHON],[python],[no])
+    if test "$PYTHON" = "no" ; then
+      have_python="no"
+    else
+			have_python="yes"
+      AC_SEARCH_LIBS([Py_Initialize],[python2.4],[have_python="yes"],[have_python="no"])
+      if test "$have_python" = "yes" ; then
+        python_cflags=$($PYTHON -c "import distutils.sysconfig; print distutils.sysconfig.get_python_inc();")
+				python_cflags="-I$python_cflags"
+        python_ldflags=$($PYTHON -c "from distutils.sysconfig import *; from string import join; print join(get_config_vars('VERSION'))")
+				python_ldflags=`$PYTHON -c "from distutils.sysconfig import *; from string import join; print '-L' + get_python_lib(0,1) ;"`
+        AC_SUBST([PYTHON_CFLAGS],["$python_cflags"])
+        AC_SUBST([PYTHON_LDFLAGS],["$python_ldflags"])
+				AC_DEFINE_UNQUOTED([HAVE_PYTHON], [$have_python], [Is python enabled])
+      else
+        AC_MSG_WARN([python not found, disabling])
+      fi
+    fi
+  fi
+  AM_CONDITIONAL([USE_PYTHON], [test "$have_python" = "yes"])
+])dnl }}}
 dnl {{{ ax_check_lib_openssl
 AC_DEFUN([AX_CHECK_LIB_OPENSSL],[
   AC_CHECK_HEADER([openssl/sha.h],,[AC_MSG_ERROR([openssl header files not found])])

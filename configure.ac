@@ -28,6 +28,7 @@ AC_PATH_PROG([TAIL],[tail])
 
 # Checks for libraries.
 AX_CHECK_LIB_RUBY
+AX_CHECK_LIB_PYTHON
 AX_CHECK_LIB_OPENSSL
 AX_CHECK_LIB_PGSQL(8.3)
 AX_CHECK_LIB_IPV4
@@ -83,6 +84,6 @@ AC_DEFINE_DIR([LIBDIR],[libdir],[Set to libdir.])
 AC_DEFINE_DIR([DATADIR],[datadir],[Set to datadir.])
 AC_DEFINE_DIR([LOCALSTATEDIR],[localstatedir],[Set to localstatedir.])
 AC_DEFINE([SHARED_SUFFIX],[".so"],[Suffix for shared libraries on this platform.]) # wtf is this needed? replace libdl with libltdl to correct
-AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile src/ruby_module/Makefile languages/Makefile include/Makefile include/conf/Makefile sql/Makefile])
+AC_CONFIG_FILES([Makefile libio/Makefile libio/comm/Makefile libio/mem/Makefile libio/misc/Makefile libio/net/Makefile libio/string/Makefile etc/Makefile modules/Makefile src/Makefile src/conf/Makefile src/ruby_module/Makefile src/python_module/Makefile languages/Makefile include/Makefile include/conf/Makefile sql/Makefile])
 AC_CONFIG_SUBDIRS(libltdl)
 AC_OUTPUT

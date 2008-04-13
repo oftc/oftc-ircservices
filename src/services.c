@@ -26,6 +26,7 @@
 #include "conf.h"
 #include "conf/conf.h"
 #include "ruby_module.h"
+#include "python_module.h"
 #include "parse.h"
 #include "dbm.h"
 #include "language.h"
@@ -239,6 +240,10 @@ int main(int argc, char *argv[])
   init_db();
   init_uid();
  
+#ifdef HAVE_PYTHON
+  init_python();
+#endif
+
   write_pidfile(ServicesState.pidfile);
   ilog(L_NOTICE, "Services Ready");
 
