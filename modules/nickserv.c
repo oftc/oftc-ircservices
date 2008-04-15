@@ -464,7 +464,7 @@ m_register(struct Service *service, struct Client *client,
   make_random_string(salt, sizeof(salt));
   nickname_set_salt(nick, salt);
   password = MyMalloc(strlen(parv[1]) + SALTLEN + 1);
-  snprintf(password, strlen(parv[1]) + SALTLEN, "%s%s", parv[1], 
+  snprintf(password, strlen(parv[1]) + SALTLEN + 1, "%s%s", parv[1], 
         nickname_get_salt(nick));
 
   pass = crypt_pass(password, TRUE);
@@ -669,7 +669,7 @@ m_set_password(struct Service *service, struct Client *client,
 
   make_random_string(salt, sizeof(salt));
   password = MyMalloc(strlen(parv[1]) + SALTLEN + 1);
-  snprintf(password, strlen(parv[1]) + SALTLEN, "%s%s", parv[1], 
+  snprintf(password, strlen(parv[1]) + SALTLEN + 1, "%s%s", parv[1], 
       salt);
   
   pass = crypt_pass(password, 1);

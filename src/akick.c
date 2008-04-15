@@ -35,12 +35,12 @@
 #include "hostmask.h"
 #include "akick.h"
 
-static struct ServiceBan *
+static struct ServiceMask *
 row_to_akick(row_t *row)
 {
-  struct ServiceBan *sban;
+  struct ServiceMask *sban;
 
-  sban = MyMalloc(sizeof(struct ServiceBan));
+  sban = MyMalloc(sizeof(struct ServiceMask));
   sban->id = atoi(row->cols[0]);
   sban->channel = atoi(row->cols[1]);
   if(row->cols[2] != NULL)
@@ -52,7 +52,7 @@ row_to_akick(row_t *row)
   DupString(sban->reason, row->cols[5]);
   sban->time_set = atoi(row->cols[6]);
   sban->duration = atoi(row->cols[7]);
-  sban->type = AKICK_BAN;
+  sban->type = AKICK_MASK;
 
   return sban;
 }
@@ -110,14 +110,14 @@ void
 akick_list_free(dlink_list *list)
 {
   dlink_node *ptr, *next;
-  struct ServiceBan *sban;
+  struct ServiceMask *sban;
 
   ilog(L_DEBUG, "Freeing akick list %p of length %lu", list, 
       dlink_list_length(list));
 
   DLINK_FOREACH_SAFE(ptr, next, list->head)
   {
-    sban = (struct ServiceBan *)ptr->data;
+    sban = (struct ServiceMask *)ptr->data;
     free_serviceban(sban);
     dlinkDelete(ptr, list);
     free_dlink_node(ptr);
@@ -146,7 +146,7 @@ akick_list(unsigned int channel, dlink_list *list)
   for(i = 0; i < results->row_count; i++)
   {
     row_t *row = &results->rows[i];
-    struct ServiceBan *sban = row_to_akick(row);
+    struct ServiceMask *sban = row_to_akick(row);
 
     dlinkAdd(sban, make_dlink_node(), list);
   }
@@ -158,7 +158,7 @@ akick_list(unsigned int channel, dlink_list *list)
 
 static int
 akick_enforce_one(struct Service *service, struct Channel *chptr,
-  struct Client *client, struct ServiceBan *sban)
+  struct Client *client, struct ServiceMask *sban)
 {
   char host[HOSTLEN+1];
 
@@ -202,7 +202,7 @@ akick_check_client(struct Service *service, struct Channel *chptr, struct Client
 
   DLINK_FOREACH(ptr, list.head)
   {
-    struct ServiceBan *sban = (struct ServiceBan *)ptr->data;
+    struct ServiceMask *sban = (struct ServiceMask *)ptr->data;
     if(akick_enforce_one(service, chptr, client, sban))
     {
       akick_list_free(&list);
@@ -215,11 +215,11 @@ akick_check_client(struct Service *service, struct Channel *chptr, struct Client
 }
 
 int
-akick_add(struct ServiceBan *akick)
+akick_add(struct ServiceMask *akick)
 {
   int ret;
 
-  akick->type = AKICK_BAN;
+  akick->type = AKICK_MASK;
 
   if(akick->target != 0)
     ret = db_execute_nonquery(INSERT_AKICK_ACCOUNT, "iiisii", &akick->channel,
@@ -266,7 +266,7 @@ akick_remove_account(unsigned int channel, const char *account)
 
 int
 akick_enforce(struct Service *service, struct Channel *chptr,
-  struct ServiceBan *akick)
+  struct ServiceMask *akick)
 {
   dlink_node *ptr;
   dlink_node *next_ptr;

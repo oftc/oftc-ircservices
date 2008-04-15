@@ -451,7 +451,7 @@ static void
 m_akill_add(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ServiceBan *akill, *tmp;
+  struct ServiceMask *akill, *tmp;
   char reason[IRC_BUFSIZE+1] = "\0";
   char mask_buf[IRC_BUFSIZE+1] = "\0";
   int para_start = 2;
@@ -535,7 +535,7 @@ m_akill_add(struct Service *service, struct Client *client,
 
   join_params(reason, parc-1, &parv[para_start]);
 
-  akill = MyMalloc(sizeof(struct ServiceBan));
+  akill = MyMalloc(sizeof(struct ServiceMask));
 
   akill->setter = nickname_get_id(client->nickname);
   akill->time_set = CurrentTime;
@@ -559,7 +559,7 @@ static void
 m_akill_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ServiceBan *akill;
+  struct ServiceMask *akill;
   char *set, *expire;
   int i = 1;
   dlink_node *ptr;
@@ -571,7 +571,7 @@ m_akill_list(struct Service *service, struct Client *client,
   {
     char *setter;
 
-    akill = (struct ServiceBan *)ptr->data;
+    akill = (struct ServiceMask *)ptr->data;
     setter = nickname_nick_from_id(akill->setter, TRUE);
 
     DupString(set, smalldate(akill->time_set));
@@ -595,7 +595,7 @@ m_akill_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   int ret = 0;
-  struct ServiceBan *akill;
+  struct ServiceMask *akill;
   char *expire_time, *set_time;
 
   if((akill = akill_find(parv[1])) == NULL)
@@ -766,7 +766,7 @@ os_on_quit(va_list param)
 static void
 expire_akills(void *param)
 {
-  struct ServiceBan *akill;
+  struct ServiceMask *akill;
   char *setter;
   dlink_list list = { 0 };
   dlink_node *ptr;
@@ -775,7 +775,7 @@ expire_akills(void *param)
 
   DLINK_FOREACH(ptr, list.head)
   {
-    akill = (struct ServiceBan *)ptr->data;
+    akill = (struct ServiceMask *)ptr->data;
     setter = nickname_nick_from_id(akill->setter, TRUE);
     ilog(L_NOTICE, "AKill Expired: %s set by %s on %s(%s)",
         akill->mask, setter, smalldate(akill->time_set), akill->reason);

@@ -458,7 +458,7 @@ fs_on_privmsg(va_list args)
   struct Channel *channel = va_arg(args, struct Channel *);
   char *message = va_arg(args, char *);
   struct MessageQueue *queue = NULL, *gqueue = NULL;
-  struct ServiceBan *akill;
+  struct ServiceMask *akill;
   int enforce = MQUEUE_NONE;
   char mask[IRC_BUFSIZE+1];
   char host[HOSTLEN+1];
@@ -506,7 +506,7 @@ fs_on_privmsg(va_list args)
           return pass_callback(fs_privmsg_hook, source, channel, message);
         }
 
-        akill = MyMalloc(sizeof(struct ServiceBan));
+        akill = MyMalloc(sizeof(struct ServiceMask));
 
         akill->setter = 0;
         akill->time_set = CurrentTime;

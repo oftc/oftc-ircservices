@@ -11,10 +11,13 @@
 struct Service;
 struct Client;
 
-enum ServiceBanType
+enum ServiceMaskType
 {
-  AKICK_BAN = 0,
-  AKILL_BAN
+  AKICK_MASK = 0,
+  AKILL_MASK,
+  INVEX_MASK,
+  EXCPT_MASK,
+  QUIET_MASK,
 };
 
 struct Service
@@ -29,7 +32,7 @@ struct Service
   void *data;
 };
 
-struct ServiceBan
+struct ServiceMask
 {
   unsigned int id;
   unsigned int type;
@@ -120,10 +123,10 @@ void do_help(struct Service *, struct Client *, const char *, int, char **);
 void identify_user(struct Client *);
 void send_nick_change(struct Service *, struct Client *, const char *);
 void send_umode(struct Service *, struct Client *, const char *);
-void send_akill(struct Service *, char *, struct ServiceBan *);
+void send_akill(struct Service *, char *, struct ServiceMask *);
 void send_resv(struct Service *, char *, char *, time_t);
 void send_unresv(struct Service *, char *);
-void remove_akill(struct Service *, struct ServiceBan *);
+void remove_akill(struct Service *, struct ServiceMask *);
 void send_cmode(struct Service *, struct Channel *, const char *, const char *);
 void send_topic(struct Service *, struct Channel *, struct Client *, 
     const char *);
@@ -142,9 +145,9 @@ int check_nick_pass(struct Client *, Nickname *, const char *);
 void make_random_string(char *, size_t);
 int enforce_matching_serviceban(struct Service *, struct Channel *, 
     struct Client *);
-int enforce_akick(struct Service *, struct Channel *, struct ServiceBan *);
+int enforce_akick(struct Service *, struct Channel *, struct ServiceMask *);
 int enforce_client_serviceban(struct Service *, struct Channel *, struct Client *,
-    struct ServiceBan *);
+    struct ServiceMask *);
 
 void kick_user(struct Service *, struct Channel *, const char *, const char *);
 void op_user(struct Service *, struct Channel *, struct Client *);
@@ -163,7 +166,7 @@ void unquiet_mask(struct Service *, struct Channel *, const char *);
 void unquiet_mask_many(struct Service *, struct Channel *, dlink_list *);
 int valid_wild_card(const char *);
 
-void free_serviceban(struct ServiceBan *);
+void free_serviceban(struct ServiceMask *);
 void free_jupeentry(struct JupeEntry *);
 
 void ctcp_user(struct Service *, struct Client *, const char *);

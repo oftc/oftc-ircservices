@@ -1190,7 +1190,7 @@ static void
 m_akick_add(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  struct ServiceBan *akick;
+  struct ServiceMask *akick;
   Nickname *nick;
   struct Channel *chptr;
   DBChannel *regchptr;
@@ -1199,8 +1199,8 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  akick = MyMalloc(sizeof(struct ServiceBan));
-  akick->type = AKICK_BAN;
+  akick = MyMalloc(sizeof(struct ServiceMask));
+  akick->type = AKICK_MASK;
   if(strchr(parv[2], '@') == NULL)
   {
     /* Nickname based akick */
@@ -1259,7 +1259,7 @@ static void
 m_akick_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ServiceBan *akick = NULL;
+  struct ServiceMask *akick = NULL;
   int i = 1;
   struct Channel *chptr;
   DBChannel *regchptr;
@@ -1274,7 +1274,7 @@ m_akick_list(struct Service *service, struct Client *client,
   DLINK_FOREACH(ptr, list.head)
   {
     char *who, *whoset;
-    akick = (struct ServiceBan *)ptr->data;
+    akick = (struct ServiceMask *)ptr->data;
 
     if(akick->target == 0)
       who = akick->mask;

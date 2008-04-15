@@ -567,7 +567,7 @@ send_nick_change(struct Service *service, struct Client *client,
 }
 
 void
-send_akill(struct Service *service, char *setter, struct ServiceBan *akill)
+send_akill(struct Service *service, char *setter, struct ServiceMask *akill)
 {
   if(!ServicesState.debugmode)
   {
@@ -600,7 +600,7 @@ send_unresv(struct Service *service, char *resv)
 }
 
 void
-remove_akill(struct Service *service, struct ServiceBan *akill)
+remove_akill(struct Service *service, struct ServiceMask *akill)
 {
   execute_callback(send_unakill_cb, me.uplink, service, akill->mask);
 }
@@ -1502,7 +1502,7 @@ set_mode_lock(struct Service *service, const char *channel,
 }
 
 void
-free_serviceban(struct ServiceBan *ban)
+free_serviceban(struct ServiceMask *ban)
 {
   ilog(L_DEBUG, "Freeing serviceban %p for %s", ban, ban->mask);
   MyFree(ban->mask);
@@ -1527,20 +1527,23 @@ check_nick_pass(struct Client *client, Nickname *nick, const char *password)
   char *fullpass;
   char *pass;
   int ret;
+  size_t len;
 
   assert(nick);
   assert(nickname_get_salt(nick));
+
+  len = strlen(password) + SALTLEN + 1;
 
   if(*client->certfp != '\0')
   {
     if(nickname_cert_check(nick, client->certfp))
       return 1;
   }
-  
-  fullpass = MyMalloc(strlen(password) + SALTLEN + 1);
-  snprintf(fullpass, strlen(password) + SALTLEN, "%s%s", password, 
+
+  fullpass = MyMalloc(len);
+  len = snprintf(fullpass, len, "%s%s", password,
       nickname_get_salt(nick));
-  
+
   pass = crypt_pass(fullpass, 1);
   MyFree(fullpass);
   if(strncasecmp(nickname_get_pass(nick), pass, PASSLEN*2) == 0)

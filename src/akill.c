@@ -32,19 +32,19 @@
 #include "hostmask.h"
 #include "nickname.h"
 
-static struct ServiceBan *
+static struct ServiceMask *
 row_to_akill(row_t *row)
 {
-  struct ServiceBan *sban;
+  struct ServiceMask *sban;
 
-  sban = MyMalloc(sizeof(struct ServiceBan));
+  sban = MyMalloc(sizeof(struct ServiceMask));
   sban->id = atoi(row->cols[0]);
   sban->setter = atoi(row->cols[1]);
   DupString(sban->mask, row->cols[2]);
   DupString(sban->reason, row->cols[3]);
   sban->time_set = atoi(row->cols[4]);
   sban->duration = atoi(row->cols[5]);
-  sban->type = AKILL_BAN;
+  sban->type = AKILL_MASK;
 
   return sban;
 }
@@ -102,14 +102,14 @@ void
 akill_list_free(dlink_list *list)
 {
   dlink_node *ptr, *next;
-  struct ServiceBan *sban;
+  struct ServiceMask *sban;
 
   ilog(L_DEBUG, "Freeing akill list %p of length %lu", list, 
       dlink_list_length(list));
 
   DLINK_FOREACH_SAFE(ptr, next, list->head)
   {
-    sban = (struct ServiceBan *)ptr->data;
+    sban = (struct ServiceMask *)ptr->data;
     free_serviceban(sban);
     dlinkDelete(ptr, list);
     free_dlink_node(ptr);
@@ -138,7 +138,7 @@ akill_list(dlink_list *list)
   for(i = 0; i < results->row_count; i++)
   {
     row_t *row = &results->rows[i];
-    struct ServiceBan *sban = row_to_akill(row);
+    struct ServiceMask *sban = row_to_akill(row);
 
     dlinkAdd(sban, make_dlink_node(), list);
   }
@@ -170,7 +170,7 @@ akill_get_expired(dlink_list *list)
   for(i = 0; i < results->row_count; i++)
   {
     row_t *row = &results->rows[i];
-    struct ServiceBan *sban = row_to_akill(row);
+    struct ServiceMask *sban = row_to_akill(row);
 
     dlinkAdd(sban, make_dlink_node(), list);
   }
@@ -190,7 +190,7 @@ akill_check_client(struct Service *service, struct Client *client)
 
   DLINK_FOREACH(ptr, list.head)
   {
-    struct ServiceBan *sban = (struct ServiceBan *)ptr->data;
+    struct ServiceMask *sban = (struct ServiceMask *)ptr->data;
 
     if(akill_check_mask(client, sban->mask))
     {
@@ -210,11 +210,11 @@ akill_check_client(struct Service *service, struct Client *client)
 }
 
 int
-akill_add(struct ServiceBan *akill)
+akill_add(struct ServiceMask *akill)
 {
   int ret;
   
-  akill->type = AKILL_BAN;
+  akill->type = AKILL_MASK;
   
   if(akill->setter != 0)
     ret = db_execute_nonquery(INSERT_AKILL, "ssiii", akill->mask,
@@ -229,12 +229,12 @@ akill_add(struct ServiceBan *akill)
   return TRUE;
 }
 
-struct ServiceBan *
+struct ServiceMask *
 akill_find(const char *mask)
 {
   int error;
   result_set_t *results;
-  struct ServiceBan *akill;
+  struct ServiceMask *akill;
 
   results = db_execute(GET_AKILL, &error, "s", mask);
   if(error || results == NULL)

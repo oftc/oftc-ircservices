@@ -25,9 +25,9 @@
 #ifndef INCLUDED_akick_h
 #define INCLUDED_akick_h
 
-int akick_add(struct ServiceBan *);
+int akick_add(struct ServiceMask *);
 int akick_check_client(struct Service *, struct Channel *, struct Client *);
-int akick_enforce(struct Service *, struct Channel *, struct ServiceBan *);
+int akick_enforce(struct Service *, struct Channel *, struct ServiceMask *);
 int akick_list(unsigned int, dlink_list *);
 void akick_list_free(dlink_list *);
 int akick_remove_mask(unsigned int, const char *);
