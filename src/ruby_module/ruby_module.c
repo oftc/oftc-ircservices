@@ -76,14 +76,6 @@ static VALUE rb_do_hook_each(VALUE key, VALUE name, VALUE params);
 static void unhook_callbacks(const char *);
 static void unhook_events(VALUE);
 
-char *
-strupr(char *s)
-{
-  char *c;
-  for (c=s; c && *c; c++) if (*c >= 'a' && *c <= 'z') *c -= 32;
-  return c;
-}
-
 static void
 ruby_script_error()
 {

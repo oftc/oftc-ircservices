@@ -3,6 +3,11 @@
 #ifndef INCLUDED_interface_h
 #define INCLUDED_interface_h
 
+#include "jupe.h"
+#include "nickname.h"
+#include "parse.h"
+#include "language.h"
+
 struct Service;
 struct Client;
 

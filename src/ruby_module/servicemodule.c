@@ -524,7 +524,7 @@ m_generic(struct Service *service, struct Client *client,
   VALUE real_client, self;
   ID class_command;
 
-  strupr(command);
+  strupper(command);
   class_command = rb_intern(command);
  
   rbparams = rb_ary_new();

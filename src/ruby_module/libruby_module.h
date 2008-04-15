@@ -87,8 +87,6 @@ int ruby_handle_error(int);
 VALUE do_ruby(VALUE, ID, int, ...);
 VALUE do_ruby_ret(VALUE, ID, int, ...);
 
-char *strupr(char *);
-
 struct ruby_args
 {
   VALUE recv;

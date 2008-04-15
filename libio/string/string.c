@@ -36,6 +36,14 @@
 #define INT16SZ 2
 #endif
 
+char *
+strupper(char *s)
+{
+  char *c;
+  for (c=s; c && *c; c++) if (*c >= 'a' && *c <= 'z') *c -= 32;
+  return c;
+}
+
 /*
  * myctime - This is like standard ctime()-function, but it zaps away
  *   the newline from the end of that string. Also, it takes
