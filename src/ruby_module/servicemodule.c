@@ -519,7 +519,7 @@ static void
 m_generic(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  char *command = strdup(service->last_command);
+  char *command = service->last_command;
   VALUE rbparams, rbparv;
   VALUE real_client, self;
   ID class_command;
