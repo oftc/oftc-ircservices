@@ -43,7 +43,8 @@ CREATE TABLE channel_akick(
   mask                VARCHAR(255), -- If a mask akick
   reason              VARCHAR(512) NOT NULL,
   time                INTEGER NOT NULL,
-  duration            INTEGER NOT NULL
+  duration            INTEGER NOT NULL,
+  chmode              INTEGER NOT NULL DEFAULT 0
 	CHECK (((target IS NULL) OR (mask IS NULL)) AND NOT ((target IS NULL) AND 
 	(mask IS NULL)))
 );
@@ -54,3 +55,4 @@ CREATE TABLE forbidden_channel (
 );
 -- this is not so much for performance as for unique constraint reasons:
 CREATE UNIQUE INDEX forbidden_channel_channel_idx ON forbidden_channel ((lower(channel)));
+CREATE UNIQUE INDEX channel_akick_mode_mask_target_idx ON channel_akick(channel_id, chmode, mask, target);
