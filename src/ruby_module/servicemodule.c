@@ -229,6 +229,8 @@ ServiceModule_do_help(VALUE self, VALUE client, VALUE value, VALUE parv)
       MyFree(argv[i]);
   }
 
+  MyFree(cvalue);
+
   return self;
 }
 

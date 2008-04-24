@@ -159,7 +159,42 @@ Service_register(Service *self, PyObject *args)
 static PyObject *
 Service_do_help(Service *self, PyObject *args)
 {
-  ilog(L_DEBUG, "Service_do_help!");
+  PyObject *array;
+  PClient *pclient;
+  struct Client *client;
+  struct Service *service;
+  char *command;
+  char **parv;
+  int parc, i;
+
+  service = (struct Service *)PyCObject_AsVoidPtr(self->cservice);
+
+  if(!PyArg_ParseTuple(args, "OsO:do_help", &pclient, &command, &array))
+    return NULL;
+
+  if(*command == '\0')
+    command = NULL;
+
+  if(!PyTuple_Check(array))
+    return NULL;
+
+  parc = PyTuple_Size(array);
+  parv = MyMalloc(parc * sizeof(char *));
+
+  for(i = 0; i < parc; i++)
+  {
+    PyObject *ele;
+
+    ele = PyTuple_GetItem(array, i);
+    parv[i] = PyString_AsString(ele);
+  }
+
+  client = (struct Client *)PyCObject_AsVoidPtr(pclient->client);
+
+  do_help(service, client, command, parc, parv);
+
+  MyFree(parv);
+
   return Py_None;
 }
 
