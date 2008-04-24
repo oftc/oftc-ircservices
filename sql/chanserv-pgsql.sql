@@ -55,4 +55,5 @@ CREATE TABLE forbidden_channel (
 );
 -- this is not so much for performance as for unique constraint reasons:
 CREATE UNIQUE INDEX forbidden_channel_channel_idx ON forbidden_channel ((lower(channel)));
-CREATE UNIQUE INDEX channel_akick_mode_mask_target_idx ON channel_akick(channel_id, chmode, mask, target);
+CREATE UNIQUE INDEX channel_akick_mode_mask_idx ON channel_akick(channel_id, chmode, mask);
+CREATE UNIQUE INDEX channel_akick_mode_target_idx ON channel_akick(channel_id, chmode, target);
