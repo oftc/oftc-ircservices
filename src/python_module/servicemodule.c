@@ -151,7 +151,7 @@ Service_register(Service *self, PyObject *args)
   }
   
   client = introduce_client(service->name, service->name, TRUE);
-  self->client = PyCObject_FromVoidPtr((void *)client, NULL);
+  self->client = (PyObject*)PClient_from_client(client);
 
   return Py_None;
 }
@@ -163,22 +163,24 @@ Service_do_help(Service *self, PyObject *args)
   return Py_None;
 }
 
-void
+PyObject *
 init_python_servicemodule()
 {
   PyObject *m;
 
   if(PyType_Ready(&ServiceType) < 0)
-    return;
+    return NULL;
 
   m = Py_InitModule3("ServiceModule", ServiceModule_methods,
       "base class for Service modules.");
 
   if(m == NULL)
-    return;
+    return NULL;
 
   Py_INCREF(&ServiceType);
   PyModule_AddObject(m, "Service", (PyObject *)&ServiceType);
+
+  return m;
 }
 
 static void
@@ -187,6 +189,7 @@ m_generic(struct Service *service, struct Client *client, int parc,
 {
   char *command = service->last_command;
   PyObject *pservice, *func, *args, *strargs, *value;
+  PClient *pclient;
 
   pservice = service->data;
   strupper(command);
@@ -197,8 +200,8 @@ m_generic(struct Service *service, struct Client *client, int parc,
     int i;
 
     args = PyTuple_New(2);
-    strargs = PyTuple_New(parc);
-    for(i = 0; i < parc; i++)
+    strargs = PyTuple_New(parc+1);
+    for(i = 0; i <= parc; i++)
     {
       value = PyString_FromString(parv[i]);
       if(value == NULL)
@@ -210,7 +213,8 @@ m_generic(struct Service *service, struct Client *client, int parc,
       PyTuple_SetItem(strargs, i, value);
     }
 
-    PyTuple_SetItem(args, 0, strargs);
+    pclient = PClient_from_client(client);
+    PyTuple_SetItem(args, 0, (PyObject*)pclient);
     PyTuple_SetItem(args, 1, strargs);
     value = PyObject_CallObject(func, args);
 

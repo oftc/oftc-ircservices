@@ -10,6 +10,7 @@ init_python()
 {
   dlink_list *modpaths = get_modpaths();
   dlink_node *ptr;
+  PyObject *module;
 
   Py_Initialize();
 
@@ -22,7 +23,14 @@ init_python()
     PyRun_SimpleString(str);
   }
 
-  init_python_servicemodule();
+  module = init_python_servicemodule();
+  if(module == NULL)
+  {
+    PyErr_Print();
+    return;
+  }
+
+  init_python_client(module);
 }
 
 void

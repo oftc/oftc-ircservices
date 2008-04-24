@@ -10,7 +10,11 @@ class PythonServ(Service):
 	def HELP(self, client, parv):
 		print self
 		print client
+		print client.name
+		print client.host
+		print client.username
 		print parv
+		print len(parv)
 		if len(parv) == 1:
 			self.do_help(client, "", parv)
 		else:
