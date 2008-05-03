@@ -10,15 +10,7 @@
 
 struct Service;
 struct Client;
-
-enum ServiceMaskType
-{
-  AKICK_MASK = 0,
-  AKILL_MASK,
-  INVEX_MASK,
-  EXCPT_MASK,
-  QUIET_MASK,
-};
+struct ServiceMask;
 
 struct Service
 {
@@ -30,19 +22,6 @@ struct Service
   char *last_command;
   struct LanguageFile languages[LANG_LAST];
   void *data;
-};
-
-struct ServiceMask
-{
-  unsigned int id;
-  unsigned int type;
-  unsigned int channel;
-  unsigned int target;
-  unsigned int setter;
-  char *mask;
-  char *reason;
-  time_t time_set;
-  time_t duration;
 };
 
 struct ModeList
@@ -145,7 +124,6 @@ int check_nick_pass(struct Client *, Nickname *, const char *);
 void make_random_string(char *, size_t);
 int enforce_matching_serviceban(struct Service *, struct Channel *, 
     struct Client *);
-int enforce_akick(struct Service *, struct Channel *, struct ServiceMask *);
 int enforce_client_serviceban(struct Service *, struct Channel *, struct Client *,
     struct ServiceMask *);
 
@@ -166,7 +144,6 @@ void unquiet_mask(struct Service *, struct Channel *, const char *);
 void unquiet_mask_many(struct Service *, struct Channel *, dlink_list *);
 int valid_wild_card(const char *);
 
-void free_serviceban(struct ServiceMask *);
 void free_jupeentry(struct JupeEntry *);
 
 void ctcp_user(struct Service *, struct Client *, const char *);

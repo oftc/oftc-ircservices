@@ -42,6 +42,7 @@
 #include "channel.h"
 #include "nickserv.h"
 #include "chanaccess.h"
+#include "servicemask.h"
 
 #include <openssl/hmac.h>
 
@@ -1499,15 +1500,6 @@ set_mode_lock(struct Service *service, const char *channel,
   }
 
   return TRUE;
-}
-
-void
-free_serviceban(struct ServiceMask *ban)
-{
-  ilog(L_DEBUG, "Freeing serviceban %p for %s", ban, ban->mask);
-  MyFree(ban->mask);
-  MyFree(ban->reason);
-  MyFree(ban);
 }
 
 void

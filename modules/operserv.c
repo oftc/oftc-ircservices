@@ -42,6 +42,7 @@
 #include "akill.h"
 #include "send.h"
 #include "hash.h"
+#include "servicemask.h"
 
 static struct Service *operserv = NULL;
 
@@ -522,7 +523,7 @@ m_akill_add(struct Service *service, struct Client *client,
   if((tmp = akill_find(mask_buf)) != NULL)
   {
     reply_user(service, service, client, OS_AKILL_ALREADY, mask_buf);
-    free_serviceban(tmp);
+    free_servicemask(tmp);
     return;
   }
 
@@ -546,13 +547,13 @@ m_akill_add(struct Service *service, struct Client *client,
   if(!akill_add(akill))
   {
     reply_user(service, service, client, OS_AKILL_ADDFAIL, mask_buf);
-    free_serviceban(akill);
+    free_servicemask(akill);
     return;
   }
 
   send_akill(service, client->name, akill);
   reply_user(service, service, client, OS_AKILL_ADDOK, mask_buf);
-  free_serviceban(akill);
+  free_servicemask(akill);
 }
 
 static void
@@ -623,7 +624,7 @@ m_akill_del(struct Service *service, struct Client *client,
       MyFree(expire_time);
     MyFree(set_time);
   }
-  free_serviceban(akill);
+  free_servicemask(akill);
   reply_user(service, service, client, OS_AKILL_DEL, ret);
 }
 

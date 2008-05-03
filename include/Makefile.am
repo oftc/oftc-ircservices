@@ -31,5 +31,6 @@ noinst_HEADERS= akick.h						\
 								parse.h						\
 								ruby_module.h			\
 								send.h						\
+								servicemask.h			\
 								services.h				\
 								stdinc.h

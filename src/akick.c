@@ -34,28 +34,7 @@
 #include "client.h"
 #include "hostmask.h"
 #include "akick.h"
-
-static struct ServiceMask *
-row_to_akick(row_t *row)
-{
-  struct ServiceMask *sban;
-
-  sban = MyMalloc(sizeof(struct ServiceMask));
-  sban->id = atoi(row->cols[0]);
-  sban->channel = atoi(row->cols[1]);
-  if(row->cols[2] != NULL)
-    sban->target = atoi(row->cols[2]);
-  else
-    sban->target = 0;
-  sban->setter = atoi(row->cols[3]);
-  DupString(sban->mask, row->cols[4]);
-  DupString(sban->reason, row->cols[5]);
-  sban->time_set = atoi(row->cols[6]);
-  sban->duration = atoi(row->cols[7]);
-  sban->type = AKICK_MASK;
-
-  return sban;
-}
+#include "servicemask.h"
 
 static int
 akick_check_mask(struct Client *client, const char *mask)
@@ -106,55 +85,6 @@ akick_check_mask(struct Client *client, const char *mask)
   return found;
 }
 
-void
-akick_list_free(dlink_list *list)
-{
-  dlink_node *ptr, *next;
-  struct ServiceMask *sban;
-
-  ilog(L_DEBUG, "Freeing akick list %p of length %lu", list, 
-      dlink_list_length(list));
-
-  DLINK_FOREACH_SAFE(ptr, next, list->head)
-  {
-    sban = (struct ServiceMask *)ptr->data;
-    free_serviceban(sban);
-    dlinkDelete(ptr, list);
-    free_dlink_node(ptr);
-  }
-}
-
-int
-akick_list(unsigned int channel, dlink_list *list)
-{
-  result_set_t *results;
-  int error;
-  int i;
-
-  results = db_execute(GET_AKICKS, &error, "i", &channel);
-  if(results == NULL && error != 0)
-  {
-    ilog(L_CRIT, "akick_list: database error %d", error);
-    return FALSE;
-  }
-  else if(results == NULL)
-    return FALSE;
-
-  if(results->row_count == 0)
-    return FALSE;
-
-  for(i = 0; i < results->row_count; i++)
-  {
-    row_t *row = &results->rows[i];
-    struct ServiceMask *sban = row_to_akick(row);
-
-    dlinkAdd(sban, make_dlink_node(), list);
-  }
-
-  db_free_result(results);
-
-  return dlink_list_length(list);
-}
 
 static int
 akick_enforce_one(struct Service *service, struct Channel *chptr,
@@ -198,43 +128,20 @@ akick_check_client(struct Service *service, struct Channel *chptr, struct Client
   if(chptr->regchan == NULL)
     return FALSE;
 
-  akick_list(dbchannel_get_id(chptr->regchan), &list);
+  servicemask_list_akick(dbchannel_get_id(chptr->regchan), &list);
 
   DLINK_FOREACH(ptr, list.head)
   {
     struct ServiceMask *sban = (struct ServiceMask *)ptr->data;
     if(akick_enforce_one(service, chptr, client, sban))
     {
-      akick_list_free(&list);
+      servicemask_list_free(&list);
       return TRUE;
     }
   }
 
-  akick_list_free(&list);
+  servicemask_list_free(&list);
   return FALSE;
-}
-
-int
-akick_add(struct ServiceMask *akick)
-{
-  int ret;
-
-  akick->type = AKICK_MASK;
-
-  if(akick->target != 0)
-    ret = db_execute_nonquery(INSERT_AKICK_ACCOUNT, "iiisii", &akick->channel,
-        &akick->target, &akick->setter, akick->reason, &akick->time_set,
-        &akick->duration);
-  else if(akick->mask != NULL)
-    ret = db_execute_nonquery(INSERT_AKICK_MASK, "iissii", &akick->channel,
-        &akick->setter, akick->reason, akick->mask, &akick->time_set, &akick->duration);
-  else
-    assert(1 == 0);
-
-  if(ret == -1)
-    return FALSE;
-
-  return TRUE;
 }
 
 int
@@ -245,23 +152,6 @@ akick_remove_index(unsigned int channel, unsigned int index)
     return FALSE;
 
   return TRUE;
-}
-
-int
-akick_remove_mask(unsigned int channel, const char *mask)
-{
-  int ret = db_execute_nonquery(DELETE_AKICK_MASK, "is", &channel, mask);
-  if(ret == -1)
-    return FALSE;
-
-  return TRUE;
-}
-
-int
-akick_remove_account(unsigned int channel, const char *account)
-{
-  int ret = db_execute_nonquery(DELETE_AKICK_ACCOUNT, "is", &channel, account);
-  return ret == -1 ? FALSE : TRUE;
 }
 
 int

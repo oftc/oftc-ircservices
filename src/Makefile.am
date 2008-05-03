@@ -30,6 +30,7 @@ services_SOURCES= akick.c					\
 									nickname.c			\
 									packet.c				\
 									parse.c					\
+									servicemask.c		\
 									services.c			\
 									send.c
 

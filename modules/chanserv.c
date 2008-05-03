@@ -39,6 +39,7 @@
 #include "hash.h"
 #include "akick.h"
 #include "chanaccess.h"
+#include "servicemask.h"
 
 static struct Service *chanserv = NULL;
 static struct Client *chanserv_client = NULL;
@@ -1190,69 +1191,70 @@ static void
 m_akick_add(struct Service *service, struct Client *client, int parc, 
     char *parv[])
 {
-  struct ServiceMask *akick;
   Nickname *nick;
   struct Channel *chptr;
   DBChannel *regchptr;
-  char reason[IRC_BUFSIZE+1];
+  char *reason;
+  int ret;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  akick = MyMalloc(sizeof(struct ServiceMask));
-  akick->type = AKICK_MASK;
+  if(parv[3] != NULL)
+  {
+    reason = MyMalloc(IRC_BUFSIZE+1);
+    join_params(reason, parc-2, &parv[3]);
+  }
+  else
+    DupString(reason, "You are not permitted on this channel");
+
   if(strchr(parv[2], '@') == NULL)
   {
     /* Nickname based akick */
     if((nick = nickname_find(parv[2])) == NULL)
     {
       reply_user(service, service, client, CS_AKICK_NONICK, parv[2]);
-      MyFree(akick);
       if(chptr == NULL)
         dbchannel_free(regchptr);
+      if(reason != NULL)
+        MyFree(reason);
       return;
     }
-    akick->mask = NULL;
-    akick->target = nickname_get_id(nick);
+
+    ret = servicemask_add_akick_target(nickname_get_id(nick),
+        nickname_get_id(client->nickname), dbchannel_get_id(regchptr),
+        CurrentTime, 0, reason);
+
     nickname_free(nick);
   }
   else
   {
     /* mask based akick */
-    akick->target = 0;
-    DupString(akick->mask, parv[2]);
+    ret = servicemask_add_akick(parv[2], nickname_get_id(client->nickname),
+        dbchannel_get_id(regchptr), CurrentTime, 0, reason);
   }
 
-  akick->setter = nickname_get_id(client->nickname);
-  akick->channel = dbchannel_get_id(regchptr);
-  akick->time_set = CurrentTime;
-  akick->duration = 0;
-
-  if(parv[3] != NULL)
-  {
-    join_params(reason, parc-2, &parv[3]);
-    DupString(akick->reason, reason);
-  }
-  else
-    DupString(akick->reason, "You are not permitted on this channel");
-
-  if(akick_add(akick))
+  if(ret)
     reply_user(service, service, client, CS_AKICK_ADDED, parv[2]);
   else
     reply_user(service, service, client, CS_AKICK_ADDFAIL, parv[2]);
 
   if(chptr == NULL)
     dbchannel_free(regchptr);
-  else
+  else if(ret) /* Only enforce if a mask was added */
   {
-    int numkicks = 0;
-
-    numkicks = akick_enforce(service, chptr, akick);
-    reply_user(service, service, client, CS_AKICK_ENFORCE, numkicks, 
-        dbchannel_get_channel(regchptr));
+    /* a successful addition will trigger an enforcement of all akicks */
+    char **parv = MyMalloc(2 * sizeof(char *));
+    DupString(parv[0], "ENFORCE");
+    DupString(parv[1], chptr->chname);
+    m_akick_enforce(service, client, 2, parv);
+    MyFree(parv[0]);
+    MyFree(parv[1]);
+    MyFree(parv);
   }
 
-  free_serviceban(akick);
+  if(reason != NULL)
+    MyFree(reason);
 }
 
 static void
@@ -1270,7 +1272,7 @@ m_akick_list(struct Service *service, struct Client *client,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  akick_list(dbchannel_get_id(regchptr), &list);
+  servicemask_list_akick(dbchannel_get_id(regchptr), &list);
   DLINK_FOREACH(ptr, list.head)
   {
     char *who, *whoset;
@@ -1291,7 +1293,7 @@ m_akick_list(struct Service *service, struct Client *client,
       MyFree(who);
     MyFree(whoset);
   }
-  akick_list_free(&list);
+  servicemask_list_free(&list);
 
   reply_user(service, service, client, CS_AKICK_LISTEND, parv[1]);
 
@@ -1305,18 +1307,18 @@ m_akick_del(struct Service *service, struct Client *client,
 {
   struct Channel *chptr;
   DBChannel *regchptr;
-  int index, ret;
+  int ret;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  index = atoi(parv[2]);
+  /*index = atoi(parv[2]);
   if(index > 0)
-    ret = akick_remove_index(dbchannel_get_id(regchptr), index);
-  else if(strchr(parv[2], '@') != NULL)
-    ret = akick_remove_mask(dbchannel_get_id(regchptr), parv[2]);
+    ret = akick_remove_index(dbchannel_get_id(regchptr), index);*/
+  if(strchr(parv[2], '@') != NULL)
+    ret = servicemask_remove_akick(dbchannel_get_id(regchptr), parv[2]);
   else
-    ret = akick_remove_account(dbchannel_get_id(regchptr), parv[2]);
+    ret = servicemask_remove_akick_target(dbchannel_get_id(regchptr), parv[2]);
 
   if(chptr == NULL)
     dbchannel_free(regchptr);

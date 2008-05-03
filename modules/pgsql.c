@@ -178,19 +178,20 @@ static query_t queries[QUERY_COUNT] = {
   { DELETE_CHAN_FORBID, "DELETE FROM forbidden_channel WHERE lower(channel)=lower($1)",
     EXECUTE },
   { INSERT_AKICK_ACCOUNT, "INSERT INTO channel_akick (channel_id, target, setter, reason, "
-    "time, duration) VALUES ($1, $2, $3, $4, $5, $6)", EXECUTE },
+    "time, duration, chmode) VALUES ($1, $2, $3, $4, $5, $6, $7)", EXECUTE },
   { INSERT_AKICK_MASK, "INSERT INTO channel_akick (channel_id, setter, reason, mask, "
-    "time, duration) VALUES ($1, $2, $3, $4, $5, $6)", EXECUTE },
-  { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, reason, time, duration FROM "
-    "channel_akick WHERE channel_id=$1 ORDER BY channel_akick.id", QUERY },
+    "time, duration, chmode) VALUES ($1, $2, $3, $4, $5, $6, $7)", EXECUTE },
+  { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, "
+    "reason, time, duration, chmode FROM "
+    "channel_akick WHERE channel_id=$1 AND chmode = $2 ORDER BY channel_akick.id", QUERY },
   { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
           "(SELECT id FROM channel_akick AS a WHERE $1 = "
           "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
           "b.channel_id = $2) AND channel_id = $2)", EXECUTE },
-  { DELETE_AKICK_MASK, "DELETE FROM channel_akick WHERE channel_id=$1 AND mask=$2", 
-    EXECUTE },
+  { DELETE_AKICK_MASK, "DELETE FROM channel_akick WHERE channel_id=$1 AND mask=$2 "
+    " AND chmode = $3", EXECUTE },
   { DELETE_AKICK_ACCOUNT, "DELETE FROM channel_akick WHERE channel_id=$1 AND target IN (SELECT account_id "
-    "FROM nickname WHERE lower(nick)=lower($2))", EXECUTE },
+    "FROM nickname WHERE lower(nick)=lower($2)) AND chmode = $3", EXECUTE },
   { SET_NICK_MASTER, "UPDATE account SET primary_nick=$1 WHERE id=$2", EXECUTE },
   { DELETE_AKILL, "DELETE FROM akill WHERE mask=$1", EXECUTE },
   { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=$1 AND level=4",

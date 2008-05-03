@@ -38,6 +38,7 @@
 #include "floodserv.h"
 #include "mqueue.h"
 #include "akill.h"
+#include "servicemask.h"
 
 static struct Service *floodserv = NULL;
 static struct Client  *fsclient  = NULL;
@@ -502,7 +503,7 @@ fs_on_privmsg(va_list args)
         if((akill = akill_find(mask)) != NULL)
         {
           ilog(L_NOTICE, "Flood AKILL Already Exists");
-          free_serviceban(akill);
+          free_servicemask(akill);
           return pass_callback(fs_privmsg_hook, source, channel, message);
         }
 
@@ -518,7 +519,7 @@ fs_on_privmsg(va_list args)
         send_akill(floodserv, fsclient->name, akill);
 
         if(akill != NULL)
-          free_serviceban(akill);
+          free_servicemask(akill);
 
         return pass_callback(fs_privmsg_hook, source, channel, message);
         break;

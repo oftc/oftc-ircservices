@@ -31,6 +31,7 @@
 #include "client.h"
 #include "hostmask.h"
 #include "nickname.h"
+#include "servicemask.h"
 
 static struct ServiceMask *
 row_to_akill(row_t *row)
@@ -110,7 +111,7 @@ akill_list_free(dlink_list *list)
   DLINK_FOREACH_SAFE(ptr, next, list->head)
   {
     sban = (struct ServiceMask *)ptr->data;
-    free_serviceban(sban);
+    free_servicemask(sban);
     dlinkDelete(ptr, list);
     free_dlink_node(ptr);
   }
