@@ -365,6 +365,72 @@ CS_HELP_UNFORBID_LONG
 	This option is only available to services admins.
 	
 	See also: FORBID
+CS_HELP_INVITES_SHORT
+	%s: Manage permanent INVITE exceptions for a channel
+CS_HELP_INVITES_LONG
+	Manage permanent INVITE exceptions for a channel
+CS_HELP_INVITES_ADD_SHORT
+	%s: Add a mask
+CS_HELP_INVITES_ADD_LONG
+	Usage: INVITES channel ADD user@host [option reason]
+	
+	Adds the specified mask to the channel INVITE exception list
+CS_HELP_INVITES_DEL_SHORT
+	%s: Deletes a mask
+CS_HELP_INVITES_DEL_LONG
+	Usage: INVITES channel DEL user@host
+	
+	Deletes the specified mask fromt he channel INVITE exception list
+CS_HELP_INVITES_LIST_SHORT
+	%s: Lists all INVITES
+CS_HELP_INVITES_LIST_LONG
+	Usage: INVITES channel LIST
+	
+	Lists all INVITES in the list
+CS_HELP_EXCEPTS_SHORT
+	%s: Manage permanent ban exceptions for a channel
+CS_HELP_EXCEPTS_LONG
+	Manage permanent ban exceptions for a channel
+CS_HELP_EXCEPTS_ADD_SHORT
+	%s: Add a mask
+CS_HELP_EXCEPTS_ADD_LONG
+	Usage: EXCEPTS channel ADD user@host [option reason]
+	
+	Adds the specified mask to the channel ban exception list
+CS_HELP_EXCEPTS_DEL_SHORT
+	%s: Deletes a mask
+CS_HELP_EXCEPTS_DEL_LONG
+	Usage: EXCEPTS channel DEL user@host
+	
+	Deletes the specified mask from the channel ban exception list
+CS_HELP_EXCEPTS_LIST_SHORT
+	%s: Lists all ban exceptions
+CS_HELP_EXCEPTS_LIST_LONG
+	Usage: EXCEPTS channel LIST
+	
+	Lists all ban exceptions in the list
+CS_HELP_QUIETS_SHORT
+	%s: Manage permanent QUIETS for a channel
+CS_HELP_QUIETS_LONG
+	Manage permanent QUIETS for a channel
+CS_HELP_QUIETS_ADD_SHORT
+	%s: Add a mask
+CS_HELP_QUIETS_ADD_LONG
+	Usage: QUIETS channel ADD user@host [option reason]
+	
+	Adds the specified mask to the channel QUIET list
+CS_HELP_QUIETS_DEL_SHORT
+	%s: Deletes a mask
+CS_HELP_QUIETS_DEL_LONG
+	Usage: QUIETS channel DEL user@host
+	
+	Deletes the specified mask from the channel QUIETS list
+CS_HELP_QUIETS_LIST_SHORT
+	%s: Lists all QUIETS
+CS_HELP_QUIETS_LIST_LONG
+	Usage: QUIETS channel LIST
+	
+	Lists all QUIETS in the list
 CS_REGISTER_NICK
 	Nick %s is not registered. The nickname you specify must be currently
 	registered with nickname services.
@@ -434,9 +500,9 @@ CS_AKICK_ADDFAIL
 CS_AKICK_LIST
 	%d: %s (%s) Set by %s at: %s.
 CS_AKICK_LISTEND
-	End of AKICK list for %s.
+	End of %s list for %s.
 CS_AKICK_DEL
-	%d AKICK entries deleted.
+	%d %s entries deleted.
 CS_AKICK_ENFORCE
 	%d users affected by AKICK enforcement on channel %s.
 CS_CHAN_NOT_USED
@@ -548,3 +614,7 @@ CS_FS_NOT_LOADED
 	FloodServ is not currently connected; when it returns it will join %s.
 CS_EXPIREBANS_LIFETIME
 	Expirebans lifetime set to %d.
+CS_SERVICEMASK_ADD_FAILED
+	Failed to ADD %s to %s list.
+CS_SERVICEMASK_ADD_SUCCESS
+	Successfully addedd %s (%s) to %s list.

@@ -115,6 +115,18 @@ static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_del(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
 
+static void m_invites_add(struct Service *, struct Client *, int, char *[]);
+static void m_invites_del(struct Service *, struct Client *, int, char *[]);
+static void m_invites_list(struct Service *, struct Client *, int, char *[]);
+
+static void m_excepts_add(struct Service *, struct Client *, int, char *[]);
+static void m_excepts_del(struct Service *, struct Client *, int, char *[]);
+static void m_excepts_list(struct Service *, struct Client *, int, char *[]);
+
+static void m_quiets_add(struct Service *, struct Client *, int, char *[]);
+static void m_quiets_del(struct Service *, struct Client *, int, char *[]);
+static void m_quiets_list(struct Service *, struct Client *, int, char *[]);
+
 /* private */
 static int m_set_flag(struct Service *, struct Client *, char *, char *, char *,
     char (*)(DBChannel *), int (*)(DBChannel *, char));
@@ -122,6 +134,13 @@ static int m_set_string(struct Service *, struct Client *, const char *,
     const char *, const char *, int, const char *(*)(DBChannel *),
     int(*)(DBChannel *, const char*));
 static void m_delete_autolimit(struct Channel *chptr);
+static int m_mask_add(struct Client *, int, char *[], const char *,
+  int (*)(const char *, unsigned int, unsigned int, unsigned int, unsigned int,
+                  const char *));
+static void m_mask_list(struct Client *, const char *, const char *,
+  int (*)(unsigned int, dlink_list *));
+static int m_mask_del(struct Client *, const char *, const char *, const char *,
+  int (*) (unsigned int, const char *))
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, CHIDENTIFIED_FLAG, 
@@ -205,6 +224,51 @@ static struct ServiceMessage akick_sub[] = {
 static struct ServiceMessage akick_msgtab = {
   akick_sub, "AKICK", 0, 2, 2, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG, 
   CS_HELP_AKICK_SHORT, CS_HELP_AKICK_LONG, NULL
+};
+
+static struct ServiceMessage invites_sub[] = {
+  { NULL, "ADD", 0, 2, 3, SFLG_NOMAXPARAM|SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
+    CS_HELP_INVITES_ADD_SHORT, CS_HELP_INVITES_ADD_LONG, m_invites_add },
+  { NULL, "DEL", 0, 2, 3, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
+    CS_HELP_INVITES_DEL_SHORT, CS_HELP_INVITES_DEL_LONG, m_invites_del },
+  { NULL, "LIST", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG,
+    CS_HELP_INVITES_LIST_SHORT, CS_HELP_INVITES_LIST_LONG, m_invites_list },
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
+};
+
+static struct ServiceMessage invites_msgtab = {
+  invites_sub, "INVITES", 0, 2, 2, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG,
+  CS_HELP_INVITES_SHORT, CS_HELP_INVITES_LONG, NULL
+};
+
+static struct ServiceMessage excepts_sub[] = {
+  { NULL, "ADD", 0, 2, 3, SFLG_NOMAXPARAM|SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
+    CS_HELP_EXCEPTS_ADD_SHORT, CS_HELP_EXCEPTS_ADD_LONG, m_excepts_add },
+  { NULL, "DEL", 0, 2, 3, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
+    CS_HELP_EXCEPTS_DEL_SHORT, CS_HELP_EXCEPTS_DEL_LONG, m_excepts_del },
+  { NULL, "LIST", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG,
+    CS_HELP_EXCEPTS_LIST_SHORT, CS_HELP_EXCEPTS_LIST_LONG, m_excepts_list },
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
+};
+
+static struct ServiceMessage excepts_msgtab = {
+  excepts_sub, "EXCEPTS", 0, 2, 2, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG,
+  CS_HELP_EXCEPTS_SHORT, CS_HELP_EXCEPTS_LONG, NULL
+};
+
+static struct ServiceMessage quiets_sub[] = {
+  { NULL, "ADD", 0, 2, 3, SFLG_NOMAXPARAM|SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
+    CS_HELP_QUIETS_ADD_SHORT, CS_HELP_QUIETS_ADD_LONG, m_quiets_add },
+  { NULL, "DEL", 0, 2, 3, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
+    CS_HELP_QUIETS_DEL_SHORT, CS_HELP_QUIETS_DEL_LONG, m_quiets_del },
+  { NULL, "LIST", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG,
+    CS_HELP_QUIETS_LIST_SHORT, CS_HELP_QUIETS_LIST_LONG, m_quiets_list },
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
+};
+
+static struct ServiceMessage quiets_msgtab = {
+  quiets_sub, "QUIETS", 0, 2, 2, SFLG_KEEPARG|SFLG_CHANARG, MEMBER_FLAG,
+  CS_HELP_QUIETS_SHORT, CS_HELP_QUIETS_LONG, NULL
 };
 
 static struct ServiceMessage drop_msgtab = {
@@ -324,6 +388,9 @@ INIT_MODULE(chanserv, "$Revision$")
   mod_add_servcmd(&chanserv->msg_tree, &list_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &forbid_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &unforbid_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &invites_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &excepts_msgtab);
+  mod_add_servcmd(&chanserv->msg_tree, &quiets_msgtab);
 
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
@@ -1261,44 +1328,7 @@ static void
 m_akick_list(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  struct ServiceMask *akick = NULL;
-  int i = 1;
-  struct Channel *chptr;
-  DBChannel *regchptr;
-  char setbuf[TIME_BUFFER + 1];
-  dlink_node *ptr;
-  dlink_list list = { 0 };
-
-  chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
-
-  servicemask_list_akick(dbchannel_get_id(regchptr), &list);
-  DLINK_FOREACH(ptr, list.head)
-  {
-    char *who, *whoset;
-    akick = (struct ServiceMask *)ptr->data;
-
-    if(akick->target == 0)
-      who = akick->mask;
-    else
-      who = nickname_nick_from_id(akick->target, TRUE);
-
-    whoset = nickname_nick_from_id(akick->setter, TRUE);
-
-    strtime(client, akick->time_set, setbuf);
-
-    reply_user(service, service, client, CS_AKICK_LIST, i++, who, akick->reason,
-        whoset, setbuf);
-    if(akick->target != 0)
-      MyFree(who);
-    MyFree(whoset);
-  }
-  servicemask_list_free(&list);
-
-  reply_user(service, service, client, CS_AKICK_LISTEND, parv[1]);
-
-  if(chptr == NULL)
-    dbchannel_free(regchptr);
+  m_mask_list(client, parv[1], "AKICK", &servicemask_list_akick);
 }
 
 static void
@@ -1323,7 +1353,7 @@ m_akick_del(struct Service *service, struct Client *client,
   if(chptr == NULL)
     dbchannel_free(regchptr);
 
-  reply_user(service, service, client, CS_AKICK_DEL, ret);
+  reply_user(service, service, client, CS_AKICK_DEL, ret, "AKICK");
 }
 
 static void
@@ -2159,6 +2189,158 @@ m_unforbid(struct Service *service, struct Client *client, int parc, char *parv[
 
   reply_user(service, service, client, CS_UNFORBID_OK, parv[1]);
 }
+
+static int
+m_mask_add(struct Client *client, int parc, char *parv[], const char *modename,
+  int (*add_func)(const char *, unsigned int, unsigned int, unsigned int, unsigned int,
+                  const char *))
+{
+  DBChannel *regchptr;
+  struct Channel *chptr;
+  int ret;
+  char reason[IRC_BUFSIZE+1] = { '\0' };
+
+  chptr = hash_find_channel(parv[1]);
+  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
+
+  if(parv[2] != NULL)
+    join_params(reason, parc-2, &parv[3]);
+  else
+    strlcat(reason, "No Reason Given", IRC_BUFSIZE);
+
+  ret = add_func(parv[2], nickname_get_id(client->nickname), dbchannel_get_id(regchptr),
+                 CurrentTime, 0, reason);
+
+  if(ret)
+    reply_user(chanserv, chanserv, client, CS_SERVICEMASK_ADD_SUCCESS, parv[1], reason, modename);
+  else
+    reply_user(chanserv, chanserv, client, CS_SERVICEMASK_ADD_FAILED, parv[1], modename);
+
+  if(chptr == NULL)
+    dbchannel_free(regchptr);
+
+  return ret;
+}
+
+static void
+m_mask_list(struct Client *client, const char* channel, const char* modename,
+  int (*list_func)(unsigned int, dlink_list *))
+{
+  struct ServiceMask *akick = NULL;
+  int i = 1;
+  struct Channel *chptr;
+  DBChannel *regchptr;
+  char setbuf[TIME_BUFFER + 1];
+  dlink_node *ptr;
+  dlink_list list = { 0 };
+
+  chptr = hash_find_channel(channel);
+  regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
+
+  list_func(dbchannel_get_id(regchptr), &list);
+  DLINK_FOREACH(ptr, list.head)
+  {
+    char *who, *whoset;
+    akick = (struct ServiceMask *)ptr->data;
+
+    if(akick->target == 0)
+      who = akick->mask;
+    else
+      who = nickname_nick_from_id(akick->target, TRUE);
+
+    whoset = nickname_nick_from_id(akick->setter, TRUE);
+
+    strtime(client, akick->time_set, setbuf);
+
+    reply_user(chanserv, chanserv, client, CS_AKICK_LIST, i++, who, akick->reason,
+        whoset, setbuf);
+    if(akick->target != 0)
+      MyFree(who);
+    MyFree(whoset);
+  }
+  servicemask_list_free(&list);
+
+  reply_user(chanserv, chanserv, client, CS_AKICK_LISTEND, modename, channel);
+
+  if(chptr == NULL)
+    dbchannel_free(regchptr);
+}
+
+static int
+m_mask_del(struct Client *client, const char *channel, const char *mask, const char *modename,
+  int (*del_func) (unsigned int, const char *))
+{
+  struct Channel *chptr;
+  DBChannel *regchptr;
+  int ret;
+
+  chptr = hash_find_channel(channel);
+  regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
+
+  ret = del_func(dbchannel_get_id(regchptr), mask);
+
+  if(chptr == NULL)
+    dbchannel_free(regchptr);
+
+  reply_user(chanserv, chanserv, client, CS_AKICK_DEL, ret, modename);
+
+  return ret;
+}
+
+static void
+m_invites_add(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_add(client, parc, parv, "INVITES", &servicemask_add_invex);
+}
+
+static void
+m_invites_del(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_del(client, parv[1], parv[2], "INVITES", &servicemask_remove_invex);
+}
+
+static void
+m_invites_list(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_list(client, parv[1], "INVITES", &servicemask_list_invex);
+}
+
+static void
+m_excepts_add(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_add(client, parc, parv, "EXCEPTS", &servicemask_add_excpt);
+}
+
+static void
+m_excepts_del(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_del(client, parv[1], parv[2], "EXCEPTS", &servicemask_remove_excpt);
+}
+
+static void
+m_excepts_list(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_list(client, parv[1], "EXCEPTS", &servicemask_list_excpt);
+}
+
+static void
+m_quiets_add(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_add(client, parc, parv, "QUIETS", &servicemask_add_quiet);
+}
+
+static void
+m_quiets_del(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_del(client, parv[1], parv[2], "QUIETS", &servicemask_remove_quiet);
+}
+
+static void
+m_quiets_list(struct Service *service, struct Client *client, int parc, char * parv[])
+{
+  m_mask_list(client, parv[1], "QUIETS", &servicemask_list_quiet);
+}
+
 
 /**
  * @brief CS Callback when a ModeChange is received for a Channel
