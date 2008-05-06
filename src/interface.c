@@ -1810,31 +1810,26 @@ clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
 {
   struct Client *client = find_client(service->name);
   char modes[IRC_BUFSIZE+1], masks[IRC_BUFSIZE+1];
-  char *cur = NULL;
   size_t max_size = IRC_BUFSIZE - (strlen(chptr->chname) + strlen(me.name) + 4 + 5);
-  int i = 0;
-  dlink_node *ptr = list->tail;
+  dlink_node *ptr;
 
   modes[0] = '\0';
   masks[0] = '\0';
 
-  if(dlink_list_length(list) == 0)
-    return;
-
-  while(i < dlink_list_length(list))
+  DLINK_FOREACH(ptr, list->head)
   {
-    if(cur != NULL)
+    char *cur = ptr->data;
+
+    if(dir)
+      add_id(client, chptr, cur, id);
+    else
+      del_id(chptr, cur, id);
+
+    if(strlen(cur) + strlen(masks) + strlen(modes) > max_size)
     {
       send_cmode(service, chptr, modes, masks);
       modes[0] = '\0';
-      masks[0] = '\0';
-      cur = NULL;
-    }
-    else
-    {
-      cur = (char *)ptr->data;
-      ptr = ptr->prev;
-      ++i;
+      modes[0] = '\0';
     }
 
     if(strlen(modes) == 0)
@@ -1845,18 +1840,9 @@ clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
         strlcat(modes, "-", IRC_BUFSIZE);
     }
 
-    if(strlen(cur) + strlen(masks) + strlen(modes) < max_size)
-    {
-      if(dir)
-        add_id(client, chptr, cur, id);
-      else
-        del_id(chptr, cur, id);
-
-      strlcat(modes, mode, IRC_BUFSIZE);
-      strlcat(masks, cur, IRC_BUFSIZE);
-      strlcat(masks, " ", IRC_BUFSIZE);
-      cur = NULL;
-    }
+    strlcat(modes, mode, IRC_BUFSIZE);
+    strlcat(masks, cur, IRC_BUFSIZE);
+    strlcat(masks, " ", IRC_BUFSIZE);
   }
 
   if(strlen(masks) > 0)
