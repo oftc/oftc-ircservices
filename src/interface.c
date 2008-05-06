@@ -1812,24 +1812,29 @@ clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
   char modes[IRC_BUFSIZE+1], masks[IRC_BUFSIZE+1];
   char *cur = NULL;
   size_t max_size = IRC_BUFSIZE - (strlen(chptr->chname) + strlen(me.name) + 4 + 5);
+  int i = 0;
+  dlink_node *ptr = list->tail;
 
   modes[0] = '\0';
   masks[0] = '\0';
 
-  while(list->length > 0)
+  if(dlink_list_length(list) == 0)
+    return;
+
+  while(i < dlink_list_length(list))
   {
     if(cur != NULL)
     {
       send_cmode(service, chptr, modes, masks);
       modes[0] = '\0';
       masks[0] = '\0';
-      MyFree(cur);
       cur = NULL;
     }
     else
     {
-      cur = (char *)list->tail->data;
-      dlinkDelete(list->tail, list);
+      cur = (char *)ptr->data;
+      ptr = ptr->prev;
+      ++i;
     }
 
     if(strlen(modes) == 0)
@@ -1850,17 +1855,10 @@ clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
       strlcat(modes, mode, IRC_BUFSIZE);
       strlcat(masks, cur, IRC_BUFSIZE);
       strlcat(masks, " ", IRC_BUFSIZE);
-      MyFree(cur);
       cur = NULL;
     }
   }
 
   if(strlen(masks) > 0)
     send_cmode(service, chptr, modes, masks);
-
-  if(cur != NULL)
-  {
-    MyFree(cur);
-    cur = NULL;
-  }
 }

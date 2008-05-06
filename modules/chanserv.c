@@ -1418,6 +1418,8 @@ m_clear_bans(struct Service *service, struct Client *client, int parc,
 
   unban_mask_many(service, chptr, &list);
 
+  db_string_list_free(&list);
+
   reply_user(service, service, client, CS_CLEAR_BANS, numbans, 
       dbchannel_get_channel(regchptr));
 }
@@ -1453,6 +1455,8 @@ m_clear_quiets(struct Service *service, struct Client *client, int parc,
   }
 
   unquiet_mask_many(service, chptr, &list);
+
+  db_string_list_free(&list);
 
   reply_user(service, service, client, CS_CLEAR_QUIETS, numbans,
       dbchannel_get_channel(regchptr));
@@ -2487,9 +2491,7 @@ cs_on_channel_create(va_list args)
 {
   struct Channel *chptr = va_arg(args, struct Channel *);
   int tmp;
-  dlink_list sm_list = { 0 };
   dlink_list m_list = { 0 };
-  dlink_node *ptr = NULL;
 
   if(chptr->regchan != NULL)
   {
@@ -2502,38 +2504,17 @@ cs_on_channel_create(va_list args)
           dbchannel_get_topic(chptr->regchan)); 
     }
 
-    servicemask_list_invex(dbchannel_get_id(chptr->regchan), &sm_list);
-    DLINK_FOREACH(ptr, sm_list.head)
-    {
-      struct ServiceMask *sm = (struct ServiceMask *)ptr->data;
-      char *mask = MyMalloc(IRC_BUFSIZE+1);
-      DupString(mask, sm->mask);
-      dlinkAdd(mask, make_dlink_node(), &m_list);
-    }
-    servicemask_list_free(&sm_list);
+    servicemask_list_invex_masks(dbchannel_get_id(chptr->regchan), &m_list);
     invex_mask_many(chanserv, chptr, &m_list);
+    servicemask_list_masks_free(&m_list);
 
-    servicemask_list_quiet(dbchannel_get_id(chptr->regchan), &sm_list);
-    DLINK_FOREACH(ptr, sm_list.head)
-    {
-      struct ServiceMask *sm = (struct ServiceMask *)ptr->data;
-      char *mask = MyMalloc(IRC_BUFSIZE+1);
-      DupString(mask, sm->mask);
-      dlinkAdd(mask, make_dlink_node(), &m_list);
-    }
-    servicemask_list_free(&sm_list);
+    servicemask_list_quiet_masks(dbchannel_get_id(chptr->regchan), &m_list);
     quiet_mask_many(chanserv, chptr, &m_list);
+    servicemask_list_masks_free(&m_list);
 
-    servicemask_list_excpt(dbchannel_get_id(chptr->regchan), &sm_list);
-    DLINK_FOREACH(ptr, sm_list.head)
-    {
-      struct ServiceMask *sm = (struct ServiceMask *)ptr->data;
-      char *mask = MyMalloc(IRC_BUFSIZE+1);
-      DupString(mask, sm->mask);
-      dlinkAdd(mask, make_dlink_node(), &m_list);
-    }
-    servicemask_list_free(&sm_list);
+    servicemask_list_excpt_masks(dbchannel_get_id(chptr->regchan), &m_list);
     except_mask_many(chanserv, chptr, &m_list);
+    servicemask_list_masks_free(&m_list);
   }
 
   return pass_callback(cs_channel_create_hook, chptr);

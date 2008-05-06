@@ -207,3 +207,66 @@ servicemask_list_quiet(unsigned int channel, dlink_list *list)
 {
   return servicemask_list(channel, QUIET_MASK, list);
 }
+
+static int
+servicemask_list_masks(unsigned int channel, unsigned int mode, dlink_list *list)
+{
+  int error, i;
+  result_set_t *results;
+
+  results = db_execute(GET_SERVICEMASK_MASKS, &error, "ii", &channel, &mode);
+
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "servicemask_list_masks: CHMODE %d CHANNEL %d ERROR %d",
+      channel, mode, error);
+    return FALSE;
+  }
+  else if(results == NULL)
+    return FALSE;
+
+  if(results->row_count == 0)
+    return FALSE;
+
+  for(i = 0; i < results->row_count; ++i)
+  {
+    char *tmp;
+    row_t *row = &results->rows[i];
+    DupString(tmp, row->cols[0]);
+    dlinkAdd(tmp, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+void
+servicemask_list_masks_free(dlink_list *list)
+{
+  db_string_list_free(list);
+}
+
+int
+servicemask_list_akick_masks(unsigned int channel, dlink_list *list)
+{
+  return servicemask_list_masks(channel, AKICK_MASK, list);
+}
+
+int
+servicemask_list_invex_masks(unsigned int channel, dlink_list *list)
+{
+  return servicemask_list_masks(channel, INVEX_MASK, list);
+}
+
+int
+servicemask_list_quiet_masks(unsigned int channel, dlink_list *list)
+{
+  return servicemask_list_masks(channel, QUIET_MASK, list);
+}
+
+int
+servicemask_list_excpt_masks(unsigned int channel, dlink_list *list)
+{
+  return servicemask_list_masks(channel, EXCPT_MASK, list);
+}

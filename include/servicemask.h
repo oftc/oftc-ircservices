@@ -72,4 +72,10 @@ int servicemask_list_invex(unsigned int, dlink_list *);
 int servicemask_list_excpt(unsigned int, dlink_list *);
 int servicemask_list_quiet(unsigned int, dlink_list *);
 
+void servicemask_list_masks_free(dlink_list *);
+int servicemask_list_akick_masks(unsigned int, dlink_list *);
+int servicemask_list_invex_masks(unsigned int, dlink_list *);
+int servicemask_list_excpt_masks(unsigned int, dlink_list *);
+int servicemask_list_quiet_masks(unsigned int, dlink_list *);
+
 #endif

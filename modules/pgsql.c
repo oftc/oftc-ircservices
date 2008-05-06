@@ -263,6 +263,8 @@ static query_t queries[QUERY_COUNT] = {
     "fingerprint=upper($1) AND account_id=$2", QUERY },
   { SET_EXPIREBANS_LIFETIME, "UPDATE channel SET expirebans_lifetime=$1 WHERE "
     "id=$2", EXECUTE },
+  { GET_SERVICEMASK_MASKS, "SELECT mask FROM channel_akick WHERE channel_id = $1 "
+    " AND chmode = $2", QUERY },
 };
 
 
