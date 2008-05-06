@@ -834,6 +834,72 @@ unquiet_mask_many(struct Service *service, struct Channel *chptr, dlink_list *li
 }
 
 void
+invex_mask(struct Service *service, struct Channel *chptr, const char *mask)
+{
+  struct Client *client = find_client(service->name);
+  if(ServicesState.debugmode)
+    return;
+
+  send_cmode(service, chptr, "+I", mask);
+  add_id(client, chptr, (char *)mask, CHFL_INVEX);
+}
+
+void
+uninvex_mask(struct Service *service, struct Channel *chptr, const char *mask)
+{
+  if(ServicesState.debugmode)
+    return;
+
+  send_cmode(service, chptr, "-I", mask);
+  del_id(chptr, (char *)mask, CHFL_INVEX);
+}
+
+void
+invex_mask_many(struct Service *service, struct Channel *chptr, dlink_list *list)
+{
+  clump_masks(service, chptr, "I", TRUE, CHFL_INVEX, list);
+}
+
+void
+uninvex_mask_many(struct Service *service, struct Channel *chptr, dlink_list *list)
+{
+  clump_masks(service, chptr, "I", FALSE, CHFL_INVEX, list);
+}
+
+void
+except_mask(struct Service *service, struct Channel *chptr, const char *mask)
+{
+  struct Client *client = find_client(service->name);
+  if(ServicesState.debugmode)
+    return;
+
+  send_cmode(service, chptr, "+e", mask);
+  add_id(client, chptr, (char *)mask, CHFL_EXCEPTION);
+}
+
+void
+unexcept_mask(struct Service *service, struct Channel *chptr, const char *mask)
+{
+  if(ServicesState.debugmode)
+    return;
+
+  send_cmode(service, chptr, "-e", mask);
+  del_id(chptr, (char *)mask, CHFL_EXCEPTION);
+}
+
+void
+except_mask_many(struct Service *service, struct Channel *chptr, dlink_list *list)
+{
+  clump_masks(service, chptr, "e", TRUE, CHFL_EXCEPTION, list);
+}
+
+void
+unexcept_mask_many(struct Service *service, struct Channel *chptr, dlink_list *list)
+{
+  clump_masks(service, chptr, "e", TRUE, CHFL_EXCEPTION, list);
+}
+
+void
 identify_user(struct Client *client)
 {
   Nickname *nick = client->nickname;

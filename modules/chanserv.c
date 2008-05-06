@@ -135,12 +135,13 @@ static int m_set_string(struct Service *, struct Client *, const char *,
     int(*)(DBChannel *, const char*));
 static void m_delete_autolimit(struct Channel *chptr);
 static int m_mask_add(struct Client *, int, char *[], const char *,
-  int (*)(const char *, unsigned int, unsigned int, unsigned int, unsigned int,
-                  const char *));
+  int (*)(const char *, unsigned int, unsigned int, unsigned int, unsigned int, const char *),
+  void (*)(struct Service *, struct Channel *, const char *));
 static void m_mask_list(struct Client *, const char *, const char *,
   int (*)(unsigned int, dlink_list *));
 static int m_mask_del(struct Client *, const char *, const char *, const char *,
-  int (*) (unsigned int, const char *))
+  int (*) (unsigned int, const char *),
+  void (*) (struct Service *, struct Channel *, const char *));
 
 static struct ServiceMessage register_msgtab = {
   NULL, "REGISTER", 0, 2, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, CHIDENTIFIED_FLAG, 
@@ -2192,8 +2193,8 @@ m_unforbid(struct Service *service, struct Client *client, int parc, char *parv[
 
 static int
 m_mask_add(struct Client *client, int parc, char *parv[], const char *modename,
-  int (*add_func)(const char *, unsigned int, unsigned int, unsigned int, unsigned int,
-                  const char *))
+  int (*add_func)(const char *, unsigned int, unsigned int, unsigned int, unsigned int, const char *),
+  void (*mask_func)(struct Service *, struct Channel *, const char *))
 {
   DBChannel *regchptr;
   struct Channel *chptr;
@@ -2212,7 +2213,12 @@ m_mask_add(struct Client *client, int parc, char *parv[], const char *modename,
                  CurrentTime, 0, reason);
 
   if(ret)
+  {
+    if(chptr != NULL)
+      mask_func(chanserv, chptr, parv[2]);
+
     reply_user(chanserv, chanserv, client, CS_SERVICEMASK_ADD_SUCCESS, parv[1], reason, modename);
+  }
   else
     reply_user(chanserv, chanserv, client, CS_SERVICEMASK_ADD_FAILED, parv[1], modename);
 
@@ -2268,7 +2274,8 @@ m_mask_list(struct Client *client, const char* channel, const char* modename,
 
 static int
 m_mask_del(struct Client *client, const char *channel, const char *mask, const char *modename,
-  int (*del_func) (unsigned int, const char *))
+  int (*del_func) (unsigned int, const char *),
+  void (*unmask_func) (struct Service *, struct Channel *, const char *))
 {
   struct Channel *chptr;
   DBChannel *regchptr;
@@ -2281,6 +2288,8 @@ m_mask_del(struct Client *client, const char *channel, const char *mask, const c
 
   if(chptr == NULL)
     dbchannel_free(regchptr);
+  else if(ret > 0)
+    unmask_func(chanserv, chptr, mask);
 
   reply_user(chanserv, chanserv, client, CS_AKICK_DEL, ret, modename);
 
@@ -2290,13 +2299,13 @@ m_mask_del(struct Client *client, const char *channel, const char *mask, const c
 static void
 m_invites_add(struct Service *service, struct Client *client, int parc, char * parv[])
 {
-  m_mask_add(client, parc, parv, "INVITES", &servicemask_add_invex);
+  m_mask_add(client, parc, parv, "INVITES", &servicemask_add_invex, &invex_mask);
 }
 
 static void
 m_invites_del(struct Service *service, struct Client *client, int parc, char * parv[])
 {
-  m_mask_del(client, parv[1], parv[2], "INVITES", &servicemask_remove_invex);
+  m_mask_del(client, parv[1], parv[2], "INVITES", &servicemask_remove_invex, &uninvex_mask);
 }
 
 static void
@@ -2308,13 +2317,13 @@ m_invites_list(struct Service *service, struct Client *client, int parc, char * 
 static void
 m_excepts_add(struct Service *service, struct Client *client, int parc, char * parv[])
 {
-  m_mask_add(client, parc, parv, "EXCEPTS", &servicemask_add_excpt);
+  m_mask_add(client, parc, parv, "EXCEPTS", &servicemask_add_excpt, &except_mask);
 }
 
 static void
 m_excepts_del(struct Service *service, struct Client *client, int parc, char * parv[])
 {
-  m_mask_del(client, parv[1], parv[2], "EXCEPTS", &servicemask_remove_excpt);
+  m_mask_del(client, parv[1], parv[2], "EXCEPTS", &servicemask_remove_excpt, &unexcept_mask);
 }
 
 static void
@@ -2326,13 +2335,13 @@ m_excepts_list(struct Service *service, struct Client *client, int parc, char * 
 static void
 m_quiets_add(struct Service *service, struct Client *client, int parc, char * parv[])
 {
-  m_mask_add(client, parc, parv, "QUIETS", &servicemask_add_quiet);
+  m_mask_add(client, parc, parv, "QUIETS", &servicemask_add_quiet, &quiet_mask);
 }
 
 static void
 m_quiets_del(struct Service *service, struct Client *client, int parc, char * parv[])
 {
-  m_mask_del(client, parv[1], parv[2], "QUIETS", &servicemask_remove_quiet);
+  m_mask_del(client, parv[1], parv[2], "QUIETS", &servicemask_remove_quiet, &unquiet_mask);
 }
 
 static void
@@ -2478,6 +2487,9 @@ cs_on_channel_create(va_list args)
 {
   struct Channel *chptr = va_arg(args, struct Channel *);
   int tmp;
+  dlink_list sm_list = { 0 };
+  dlink_list m_list = { 0 };
+  dlink_node *ptr = NULL;
 
   if(chptr->regchan != NULL)
   {
@@ -2489,6 +2501,39 @@ cs_on_channel_create(va_list args)
       send_topic(chanserv, chptr, find_client(chanserv->name), 
           dbchannel_get_topic(chptr->regchan)); 
     }
+
+    servicemask_list_invex(dbchannel_get_id(chptr->regchan), &sm_list);
+    DLINK_FOREACH(ptr, sm_list.head)
+    {
+      struct ServiceMask *sm = (struct ServiceMask *)ptr->data;
+      char *mask = MyMalloc(IRC_BUFSIZE+1);
+      DupString(mask, sm->mask);
+      dlinkAdd(mask, make_dlink_node(), &m_list);
+    }
+    servicemask_list_free(&sm_list);
+    invex_mask_many(chanserv, chptr, &m_list);
+
+    servicemask_list_quiet(dbchannel_get_id(chptr->regchan), &sm_list);
+    DLINK_FOREACH(ptr, sm_list.head)
+    {
+      struct ServiceMask *sm = (struct ServiceMask *)ptr->data;
+      char *mask = MyMalloc(IRC_BUFSIZE+1);
+      DupString(mask, sm->mask);
+      dlinkAdd(mask, make_dlink_node(), &m_list);
+    }
+    servicemask_list_free(&sm_list);
+    quiet_mask_many(chanserv, chptr, &m_list);
+
+    servicemask_list_excpt(dbchannel_get_id(chptr->regchan), &sm_list);
+    DLINK_FOREACH(ptr, sm_list.head)
+    {
+      struct ServiceMask *sm = (struct ServiceMask *)ptr->data;
+      char *mask = MyMalloc(IRC_BUFSIZE+1);
+      DupString(mask, sm->mask);
+      dlinkAdd(mask, make_dlink_node(), &m_list);
+    }
+    servicemask_list_free(&sm_list);
+    except_mask_many(chanserv, chptr, &m_list);
   }
 
   return pass_callback(cs_channel_create_hook, chptr);

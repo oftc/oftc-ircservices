@@ -142,6 +142,14 @@ void quiet_mask(struct Service *, struct Channel *, const char *);
 void quiet_mask_many(struct Service *, struct Channel *, dlink_list *);
 void unquiet_mask(struct Service *, struct Channel *, const char *);
 void unquiet_mask_many(struct Service *, struct Channel *, dlink_list *);
+void invex_mask(struct Service *, struct Channel *, const char *);
+void invex_mask_many(struct Service *, struct Channel *, dlink_list *);
+void uninvex_mask(struct Service *, struct Channel *, const char *);
+void uninvex_mask_many(struct Service *, struct Channel *, dlink_list *);
+void except_mask(struct Service *, struct Channel *, const char *);
+void except_mask_many(struct Service *, struct Channel *, dlink_list *);
+void unexcept_mask(struct Service *, struct Channel *, const char *);
+void unexcept_mask_many(struct Service *, struct Channel *, dlink_list *);
 int valid_wild_card(const char *);
 
 void free_jupeentry(struct JupeEntry *);
