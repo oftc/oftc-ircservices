@@ -225,6 +225,18 @@ db_prepare(int id, const char *query)
   }
 }
 
+static void
+db_execute_list_free(dlink_list *list)
+{
+  dlink_node *ptr, *nptr;
+
+  DLINK_FOREACH_SAFE(ptr, nptr, list->head)
+  {
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
+}
+
 char *
 db_execute_scalar(int query_id, int *error, const char *format, ...)
 {
@@ -245,6 +257,8 @@ db_execute_scalar(int query_id, int *error, const char *format, ...)
     db_try_reconnect();
 
   result = database->execute_scalar(query_id, error, format, &list);
+
+  db_execute_list_free(&list);
 
   return result;
 }
@@ -279,6 +293,8 @@ db_execute(int query_id, int *error, const char *format, ...)
 
   results = database->execute(query_id, error, format, &list);
 
+  db_execute_list_free(&list);
+
   return results;
 }
 
@@ -311,6 +327,8 @@ db_execute_nonquery(int query_id, const char *format, ...)
     db_try_reconnect();
 
   num_rows = database->execute_nonquery(query_id, format, &list);
+
+  db_execute_list_free(&list);
 
   return num_rows;
 }
@@ -443,14 +461,13 @@ void
 db_string_list_free(dlink_list *list)
 {
   dlink_node *ptr, *next;
-  char *tmp;
 
   ilog(L_DEBUG, "Freeing string list %p of length %lu", list,
     dlink_list_length(list));
 
   DLINK_FOREACH_SAFE(ptr, next, list->head)
   {
-    tmp = (char *)ptr->data;
+    char *tmp = (char *)ptr->data;
     MyFree(tmp);
     dlinkDelete(ptr, list);
     free_dlink_node(ptr);

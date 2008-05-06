@@ -477,6 +477,7 @@ pg_execute_scalar(int id, int *error, const char *format, dlink_list *args)
   if(PQntuples(result) == 0 || PQgetisnull(result, 0, 0))
   {
     *error = 0;
+    PQclear(result);
     return NULL;
   }
 

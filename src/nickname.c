@@ -271,17 +271,18 @@ nickname_is_forbid(const char *nickname)
   {
     ilog(L_CRIT, "Database error %d trying to test forbidden nickname %s",
         error, nickname);
-    return 0;
+    MyFree(nick);
+    return FALSE;
   }
 
   if(nick == NULL)
   {
     MyFree(nick);
-    return 0;
+    return FALSE;
   }
 
   MyFree(nick);
-  return 1;
+  return TRUE;
 }
 
 /*
