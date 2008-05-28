@@ -1759,6 +1759,12 @@ drop_nickname(struct Service *service, struct Client *client, const char *target
   char *channel;
   Nickname *nick = nickname_find(target);
 
+  if(nick == NULL)
+  {
+    ilog(L_NOTICE, "%s Failed to drop %s because it's not registered.", service->name, target);
+    return FALSE;
+  }
+
   if((channel = check_masterless_channels(nickname_get_id(nick))) != NULL)
   {
     if(client != NULL)
