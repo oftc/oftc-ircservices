@@ -165,7 +165,7 @@ class GanneffServ < ServiceModule
     # In case its not a "monitoronly" channel lets enforce it and kill
     # everyone who is in it.
     if enforce
-      channel = find_channel(parv[1])
+      channel = Channel.find(parv[1])
       do_enforce(channel, parv[-1]) if channel
     end # if enforce
 
@@ -335,8 +335,8 @@ class GanneffServ < ServiceModule
     end # if @nicks... or @nicks...
 
     # Check if join and register both happened within @delay seconds from connect
-    rdiff = @nicks[nick]["registered"] - client.ts
-    jdiff = @nicks[nick]["jointime"] - client.ts
+    rdiff = @nicks[nick]["registered"] - client.firsttime
+    jdiff = @nicks[nick]["jointime"] - client.firsttime
     debug(LOG_DEBUG, "#{client.name} rdiff is #{rdiff}, jdiff is #{jdiff}")
 
     if rdiff < @delay and jdiff < @delay
@@ -356,7 +356,7 @@ class GanneffServ < ServiceModule
     debug(LOG_DEBUG, "#{client.name} registered its nick")
     ret = true
     now = Time.new.to_i
-    diff = now - client.ts
+    diff = now - client.firsttime
 
     if diff < 60
       # If the nick got registered in the first 60 seconds after connect we save this and warn about it
@@ -380,7 +380,7 @@ class GanneffServ < ServiceModule
     return unless command == 'VERSION'
     msg = ""
     if @nicks.has_key?(client.name)
-      diff = @nicks[client.name]["registered"] - @nicks[client.name]["client"].ts
+      diff = @nicks[client.name]["registered"] - @nicks[client.name]["client"].firsttime
 
       if diff < 60
         msg = " (online for #{diff} seconds) "
@@ -394,7 +394,7 @@ class GanneffServ < ServiceModule
 
   # A new user connected
   def newuser(client)
-    debug(LOG_DEBUG, "#{client.name} connected at timestamp #{client.ts}")
+    debug(LOG_DEBUG, "#{client.name} connected at timestamp #{client.firsttime}")
     @nicks[client.name] = Hash.new
     @nicks[client.name]["client"] = client
     true
@@ -465,11 +465,12 @@ class GanneffServ < ServiceModule
     end # if not reason.include?
     reason = "#{reason}|#{operreason}"
 
-    if host == "tor-irc.dnsbl.oftc.net"
+    #client.host is always filled, check it for the cloak value
+    if client.host == "tor-irc.dnsbl.oftc.net"
       debug(LOG_DEBUG, "Using /kill instead of AKILL for Tor user #{client.name}")
       ret = kill_user(client, reason)
-    elsif host =~ /.*(noc|netop|netrep|chair|ombudsman|advisor).oftc.net/
-      debug(LOG_DEBUG, "Not issuing AKILL for #{client.name} having cloak #{host}, real host #{client.realhost}")
+    elsif client.host =~ /.*(noc|netop|netrep|chair|ombudsman|advisor).oftc.net/ # should this have an $ ending?
+      debug(LOG_DEBUG, "Not issuing AKILL for #{client.name} having cloak #{client.host}, real host #{client.realhost}")
       ret = false # continue with callbacks, we haven't set any kill
     else # if host
       debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} days")
@@ -506,7 +507,7 @@ class GanneffServ < ServiceModule
         return true # Nothing to do here
       else # if @channels...monitoronly
         debug(LOG_NOTICE, "Asked to enforce #{cname} with reason \"#{reason}\"")
-        chan = find_channel(cname)
+        chan = Channel.find(cname)
         chan.members_each do |client|
           akill(client, reason, "J: #{cname}", cname)
         end # chan.members_each
@@ -566,7 +567,7 @@ class GanneffServ < ServiceModule
   # Cleanup - remove old nicks from @nicks
   def clean()
     @nicks.each_pair do |nick, data|
-      diff = Time.new.to_i - data["client"].ts
+      diff = Time.new.to_i - data["client"].firsttime
       debug(LOG_DEBUG, "Looking at #{nick} which I know for #{diff} seconds.")
       if diff > 120
         debug(LOG_DEBUG, "Deleting knowledge of #{nick}, known for #{diff} seconds now.")
