@@ -163,20 +163,33 @@ load_shared_module(const char *name, const char *dir, const char *fname)
     DupString(mod->name, name);
     DupString(mod->fullname, path);
 
-#ifdef HAVE_RUBY
     if(strcmp(tmpext, "rb") == 0)
     {
+#ifdef HAVE_RUBY
       result = load_ruby_module(name, dir, fname);
       mod->type = MODTYPE_RUBY;
-    }
+#else
+      ilog(L_NOTICE, "Trying to load ruby module %s, but ruby is disabled", fname);
+      MyFree(mod->name);
+      MyFree(mod->fullname);
+      MyFree(mod);
+      return NULL;
 #endif
-#ifdef HAVE_PYTHON
+    }
+
     if(strcmp(tmpext, "py") == 0)
     {
+#ifdef HAVE_PYTHON
       result = load_python_module(name, dir, fname);
       mod->type = MODTYPE_PYTHON;
-    }
+#else
+      ilog(L_NOTICE, "Trying to load python module %s, but python is disabled", fname);
+      MyFree(mod->name);
+      MyFree(mod->fullname);
+      MyFree(mod);
+      return NULL;
 #endif
+    }
 
     if(result > -1)
     {
