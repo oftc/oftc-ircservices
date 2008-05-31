@@ -505,6 +505,8 @@ CS_AKICK_DEL
 	%d %s entries deleted.
 CS_AKICK_ENFORCE
 	%d users affected by AKICK enforcement on channel %s.
+CS_RESTRICTED_ENFORCE
+	%d users affected by RESTRICTED enforcement on channel %s.
 CS_CHAN_NOT_USED
 	Unable to execute command because %s is not in use.
 CS_CLEAR_BANS

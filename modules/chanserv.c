@@ -1095,8 +1095,57 @@ static void
 m_set_restricted(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  m_set_flag(service, client, parv[1], parv[2], "RESTRICTED",
-    &dbchannel_get_restricted, &dbchannel_set_restricted);
+  if(m_set_flag(service, client, parv[1], parv[2], "RESTRICTED",
+    &dbchannel_get_restricted, &dbchannel_set_restricted) == 0)
+  {
+    struct Channel *chptr = hash_find_channel(parv[1]);
+    if(chptr != NULL && dbchannel_get_restricted(chptr->regchan) &&
+       strncasecmp(parv[2], "ON", 2) == 0)
+    {
+      dlink_node *ptr;
+      dlink_node *next_ptr;
+      int numkicks = 0;
+
+      DLINK_FOREACH_SAFE(ptr, next_ptr, chptr->members.head)
+      {
+        struct Membership *ms = ptr->data;
+        struct Client *client = ms->client_p;
+        unsigned int level;
+        struct ChanAccess *access;
+
+        if(client->nickname == NULL)
+          level = CHUSER_FLAG;
+        else
+        {
+          access = chanaccess_find(dbchannel_get_id(chptr->regchan),
+                                   nickname_get_id(client->nickname));
+          if(access == NULL)
+            level = CHIDENTIFIED_FLAG;
+          else
+            level = access->level;
+
+          MyFree(access);
+        }
+
+        if(level < MEMBER_FLAG && !MyConnect(client) && !IsGod(client))
+        {
+          char ban[IRC_BUFSIZE+1];
+
+          snprintf(ban, IRC_BUFSIZE, "*!%s@%s", client->username, client->host);
+          ban_mask(chanserv, chptr, ban);
+          kick_user(chanserv, chptr, client->name,
+            "Access to this channel is restricted");
+          numkicks++;
+        }
+      }
+
+      if(numkicks > 0)
+      {
+        reply_user(service, service, client, CS_RESTRICTED_ENFORCE, numkicks,
+          chptr->chname);
+      }
+    }
+  }
 }
 
 static void
