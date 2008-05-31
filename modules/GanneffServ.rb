@@ -178,7 +178,7 @@ class GanneffServ < ServiceModule
   def DEL(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} called DEL and the parms are #{parv.join(",")}")
     return unless @channels.has_key?(parv[1])
-    debug(LOG_NOTICE, "#{client.name} deleted channel #{parv[1]}. It's old reason was #{@channels[parv[1]]["reason"]} and monitoring only was #{@channels[parv[1]]["monitoronly"]}")
+    debug(LOG_NOTICE, "#{client.name} deleted channel #{parv[1]}. Its old reason was #{@channels[parv[1]]["reason"]} and monitoring only was #{@channels[parv[1]]["monitoronly"]}")
     @channels.delete(parv[1])
 
     save_data
