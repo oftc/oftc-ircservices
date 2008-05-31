@@ -407,7 +407,7 @@ class GanneffServ < ServiceModule
     debug(LOG_NOTICE, "EOB is done, enforcing channels")
     @channels.each_pair do |name, data|
       debug(LOG_DEBUG, "I see #{name} with #{data}")
-      chan = find_channel(name)
+      chan = Channel.find(name)
       if chan
         debug(LOG_DEBUG, "I found that channel #{name} exists, enforcing")
         do_enforce(chan, data["reason"])
