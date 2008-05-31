@@ -443,7 +443,7 @@ dbchannel_set_channel(DBChannel *this, const char *name)
 inline int
 dbchannel_set_description(DBChannel *this, const char *description)
 {
-  if(db_execute_nonquery(SET_CHAN_DESC, "si", description, &this->id))
+  if(this->id == 0 || db_execute_nonquery(SET_CHAN_DESC, "si", description, &this->id))
   {
     MyFree(this->description);
     DupString(this->description, description);

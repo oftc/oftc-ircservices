@@ -627,7 +627,7 @@ rb_add_event(VALUE self, VALUE method, VALUE time)
     rb_hash_aset(ruby_server_events, sn, events);
   }
 
-  ilog(L_DEBUG, "{%s} Adding Event: %s Every %d", StringValueCStr(sn), StringValueCStr(method), NUM2INT(time));
+  ilog(L_DEBUG, "{%s} Adding Event: %s Every %lu", StringValueCStr(sn), StringValueCStr(method), NUM2INT(time));
   rb_ary_push(events, event);
 }
 
