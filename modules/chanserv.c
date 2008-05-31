@@ -328,7 +328,7 @@ static struct ServiceMessage clear_sub[] = {
     CS_HELP_CLEAR_VOICES_SHORT, CS_HELP_CLEAR_VOICES_LONG, m_clear_voices },
   { NULL, "MODES", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, CHANOP_FLAG,
     CS_HELP_CLEAR_MODES_SHORT, CS_HELP_CLEAR_MODES_LONG, m_clear_modes },
-  { NULL, "USERS", 0, 1, 1, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
+  { NULL, "USERS", 0, 1, 1, SFLG_NOMAXPARAM|SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG, 
     CS_HELP_CLEAR_USERS_SHORT, CS_HELP_CLEAR_USERS_LONG, m_clear_users },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
 };
@@ -1647,7 +1647,16 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
   }
   regchptr = chptr->regchan;
 
-  snprintf(buf, IRC_BUFSIZE, "CLEAR USERS command used by %s", client->name);
+  if(parc > 1)
+  {
+    char reason[IRC_BUFSIZE+1];
+    join_params(reason, parc-1, &parv[2]);
+    snprintf(buf, IRC_BUFSIZE, "CLEAR USERS command used by %s (%s)", client->name, reason);
+  }
+  else
+  {
+    snprintf(buf, IRC_BUFSIZE, "CLEAR USERS command used by %s (No Reason)", client->name);
+  }
 
   DLINK_FOREACH_SAFE(ptr, nptr, chptr->members.head)
   {
@@ -1659,7 +1668,7 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
   }
 
   reply_user(service, service, client, CS_CLEAR_USERS, usercount, 
-      dbchannel_get_channel(regchptr));
+      parv[1]);
 }
 
 static void

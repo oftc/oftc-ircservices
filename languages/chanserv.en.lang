@@ -302,9 +302,10 @@ CS_HELP_CLEAR_MODES_LONG
 CS_HELP_CLEAR_USERS_SHORT
 	%s: Remove all users from the channel.
 CS_HELP_CLEAR_USERS_LONG
-	Usage CLEAR channel USERS
+	Usage CLEAR channel USERS [reason]
 	
 	Removes all the users from the channel. (Including you if you are on it!)
+	You may include an optional message.
 CS_HELP_ACCESS_ADD_SHORT
 	%s: Add a nickname to the channel access list.
 CS_HELP_ACCESS_ADD_LONG
