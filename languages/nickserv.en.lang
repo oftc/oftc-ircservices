@@ -118,7 +118,7 @@ NS_HELP_CERT_LONG
 NS_HELP_CERT_ADD_SHORT
 	%s
 NS_HELP_CERT_ADD_LONG
-	Usage: CERT ADD [fingerprint]
+	Usage: CERT ADD [fingerprint [nickname]]
 	
 	Add an access entry to your client certificate list. If you connect to IRC with
 	SSL, and provide the client certificate with a fingerprint on your
@@ -126,6 +126,9 @@ NS_HELP_CERT_ADD_LONG
 	without having to use the IDENTIFY command. If you are currently connected
 	via SSL and have provided a valid client certificate, you may omit the
 	fingerprint parameter.
+	
+	You can provide an optional nickname, when set services will automatically
+	GHOST any client using that nick, IDENTIFY you, and SVSNICK you to that nick.
 	
 	Examples:
 	    CERT ADD
@@ -490,6 +493,10 @@ NS_CERT_ADDFAIL
 	Failed to add CERT list entry %s. This may have been an internal error,
 	please try again shortly. If this is not the first time you have seen this
 	message please contact network support.
+NS_CERT_ADDFAIL_NONICK
+	Failed to add CERT list entry because %s is not registered.
+NS_CERT_ADDFAIL_NOTYOURNICK
+	Failed to add CERT list entry because %s is not registered by you.
 NS_CERT_INVALID
 	CERT list entry %s is not a valid fingerprint. Please try again with
 	a valid fingerprint. Fingerprints may only contain the letters a-z and the
@@ -502,7 +509,7 @@ NS_CERT_EXISTS
 NS_CERT_START
 	CERT list:
 NS_CERT_ENTRY
-	%d  %s
+	%d  %s  %s
 NS_CERT_EMPTY
 	No certificates found.
 NS_CERT_DEL

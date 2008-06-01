@@ -60,6 +60,8 @@ CREATE TABLE account_fingerprint (
   id                  SERIAL PRIMARY KEY,
   account_id          INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
   fingerprint         VARCHAR(40) NOT NULL,
+  nickname_id         INTEGER REFERENCES nickname(id) ON DELETE SET NULL,
   UNIQUE(account_id, fingerprint)
 );
 CREATE INDEX account_fingerprint_account_id_idx ON account_fingerprint (account_id);
+CREATE UNIQUE INDEX account_fingerprint_fingerprint_idx ON account_fingerprint (fingerprint);

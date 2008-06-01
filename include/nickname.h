@@ -60,6 +60,7 @@ struct AccessEntry
 {
   unsigned int id;
   char *value;
+  unsigned int nickname_id;
 };
 
 Nickname* nickname_find(const char *);

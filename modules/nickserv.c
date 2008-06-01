@@ -165,7 +165,7 @@ static struct ServiceMessage cloakstring_msgtab = {
 }; 
 
 static struct ServiceMessage cert_sub[] = {
-  { NULL, "ADD", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_CERT_ADD_SHORT, 
+  { NULL, "ADD", 0, 0, 2, 0, IDENTIFIED_FLAG, NS_HELP_CERT_ADD_SHORT, 
     NS_HELP_CERT_ADD_LONG, m_cert_add },
   { NULL, "LIST", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_CERT_LIST_SHORT, 
     NS_HELP_CERT_LIST_LONG, m_cert_list },
@@ -951,8 +951,30 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
     reply_user(service, service, client, NS_CERT_EXISTS, certfp);
     return;
   }
+
   access.id = nickname_get_id(nick);
   access.value = certfp;
+  access.nickname_id = 0;
+
+  if(parc > 1)
+  {
+    Nickname *dest_nick = nickname_find(parv[2]);
+    if(dest_nick == NULL)
+    {
+      reply_user(service, service, client, NS_CERT_ADDFAIL_NONICK, parv[2]);
+      return;
+    }
+
+    if(nickname_get_id(nick) != nickname_get_id(dest_nick))
+    {
+      reply_user(service, service, client, NS_CERT_ADDFAIL_NOTYOURNICK, parv[2]);
+      return;
+    }
+
+    access.nickname_id = nickname_get_nickid(dest_nick);
+    MyFree(dest_nick);
+  }
+
   if(nickname_cert_add(&access))
     reply_user(service, service, client, NS_CERT_ADD, access.value);
   else
@@ -973,17 +995,28 @@ m_cert_list(struct Service *service, struct Client *client, int parc,
 
   nickname_cert_list(nick, &list);
 
+  if(dlink_list_length(&list) == 0)
+  {
+    reply_user(service, service, client, NS_CERT_EMPTY);
+    return;
+  }
+
   reply_user(service, service, client, NS_CERT_START);
 
   DLINK_FOREACH(ptr, list.head)
   {
+    char *dest_nick;
     entry = (struct AccessEntry *)ptr->data;
+    
+    if(entry->nickname_id > 0)
+      dest_nick = nickname_nick_from_id(entry->nickname_id, FALSE);
+    else
+      dest_nick = "";
 
-    reply_user(service, service, client, NS_CERT_ENTRY, i++, entry->value);
-    MyFree(entry->value);
-    MyFree(entry);
+    reply_user(service, service, client, NS_CERT_ENTRY, i++, entry->value,
+      dest_nick);
   }
-  
+
   nickname_certlist_free(&list);
 }
 
@@ -995,7 +1028,10 @@ m_cert_del(struct Service *service, struct Client *client, int parc,
   int index, ret;
 
   index = atoi(parv[1]);
-  ret = nickname_cert_delete(nick, parv[1], index);
+  if(index >= 1)
+    ret = nickname_cert_delete(nick, NULL, index);
+  else
+    ret = nickname_cert_delete(nick, parv[1], 0);
   
   reply_user(service, service, client, NS_CERT_DEL, ret);
 }

@@ -236,16 +236,16 @@ static query_t queries[QUERY_COUNT] = {
       "flag_admin=$8, flag_email_verified=$9, flag_private=$10, language=$11, "
       "last_host=$12, last_realname=$13, last_quit_msg=$14, last_quit_time=$15 "
       "WHERE id=$16", EXECUTE },
-  { INSERT_NICKCERT, "INSERT INTO account_fingerprint (account_id, fingerprint) "
-    "VALUES($1, upper($2))", EXECUTE },
-  { GET_NICKCERTS, "SELECT id, fingerprint FROM account_fingerprint WHERE "
-    "account_id=$1 ORDER BY id", QUERY },
+  { INSERT_NICKCERT, "INSERT INTO account_fingerprint (account_id, fingerprint, "
+    "nickname_id) VALUES($1, upper($2), $3)", EXECUTE },
+  { GET_NICKCERTS, "SELECT id, fingerprint, nickname_id FROM account_fingerprint "
+    "WHERE account_id=$1 ORDER BY id", QUERY },
   { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
     "account_id=$1 AND fingerprint=upper($2)", EXECUTE },
   { DELETE_NICKCERT_IDX, "DELETE FROM account_fingerprint WHERE id = "
           "(SELECT id FROM account_fingerprint AS a WHERE $1 = "
           "(SELECT COUNT(id)+1 FROM account_fingerprint AS b WHERE b.id < a.id AND "
-          "b.account_id = $2) AND account_id = $3)", EXECUTE },
+          "b.account_id = $2) AND account_id = $2)", EXECUTE },
   { DELETE_ALL_NICKACCESS, "DELETE FROM account_fingerprint WHERE "
     "account_id=$1", EXECUTE },
   { INSERT_JUPE, "INSERT INTO jupes (setter, name, reason) VALUES($1, $2, $3)",
@@ -399,6 +399,26 @@ void_to_char(char fmt, char **dst, void *src)
   return FALSE;
 }
 
+size_t
+join_log_params(char *target, int parc, char *parv[])
+{
+  size_t length = 0;
+  int i;
+
+  if(parv[0] != NULL)
+    length += strlcpy(target, parv[0], IRC_BUFSIZE);
+  for(i = 1; i < parc; i++)
+  {
+    length += strlcat(target, ", ", IRC_BUFSIZE);
+    if(parv[i] != NULL)
+      length += strlcat(target, parv[i], IRC_BUFSIZE);
+    else
+      length += strlcat(target, "NULL", IRC_BUFSIZE);
+  }
+
+  return length;
+}
+
 static PGresult *
 internal_execute(int id, int *error, const char *format,
     dlink_list *args)
@@ -422,7 +442,7 @@ internal_execute(int id, int *error, const char *format,
 
   snprintf(name, sizeof(name), "Query: %d", id);
   if(len > 0)
-    join_params(log_params, len, (char**)params);
+    join_log_params(log_params, len, (char**)params);
 
   result = PQexecPrepared(pgsql->connection, name, len, (const char**)params,
       NULL, NULL, 0);

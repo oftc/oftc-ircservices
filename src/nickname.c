@@ -611,6 +611,10 @@ row_to_access_entry(row_t *row)
 
   entry->id = atoi(row->cols[0]);
   DupString(entry->value, row->cols[1]);
+  if(row->cols[2] != NULL)
+    entry->nickname_id = atoi(row->cols[2]);
+  else
+    entry->nickname_id = 0;
 
   return entry;
 }
@@ -740,6 +744,18 @@ nickname_cert_list(Nickname *nick, dlink_list *list)
   db_free_result(results);
 
   return dlink_list_length(list);
+}
+
+int
+nickname_cert_add(struct AccessEntry *access)
+{
+  int ret = db_execute_nonquery(INSERT_NICKCERT, "isi", &access->id, access->value,
+    access->nickname_id > 0 ? &access->nickname_id : NULL);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
 }
 
 int
