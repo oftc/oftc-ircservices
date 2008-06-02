@@ -294,7 +294,8 @@ conf_assign(int type, struct ConfField *field, void *value)
       field->handler(&list, field->param);
   }
   else
-    parse_error("type mismatch, expected %s", field_types[type]);
+    parse_error("type mismatch, got %s expected %s", field_types[type],
+      field_types[field->type]);
 }
 
 /*
