@@ -4,6 +4,9 @@
 VALUE cNickname = Qnil;
 
 static VALUE initialize(VALUE, VALUE);
+static VALUE account_id(VALUE);
+static VALUE nickname_id(VALUE);
+static VALUE primary_nickname_id(VALUE);
 static VALUE nick(VALUE);
 static VALUE nick_set(VALUE, VALUE);
 static VALUE pass(VALUE);
@@ -97,6 +100,27 @@ initialize(VALUE self, VALUE nick)
 {
   rb_iv_set(self, "@realptr", nick);
   return self;
+}
+
+static VALUE
+account_id(VALUE self)
+{
+  Nickname *nick = value_to_nickname(self);
+  return UINT2NUM(nickname_get_id(nick));
+}
+
+static VALUE
+nickname_id(VALUE self)
+{
+  Nickname *nick = value_to_nickname(self);
+  return UINT2NUM(nickname_get_nickid(nick));
+}
+
+static VALUE
+primary_nickname_id(VALUE self)
+{
+  Nickname *nick = value_to_nickname(self);
+  return UINT2NUM(nickname_get_pri_nickid(nick));
 }
 
 static VALUE
@@ -387,6 +411,9 @@ Init_Nickname(void)
   cNickname = rb_define_class("Nickname", rb_cObject);
 
   rb_define_method(cNickname, "initialize", initialize, 1);
+  rb_define_method(cNickname, "account_id", account_id, 0);
+  rb_define_method(cNickname, "nickname_id", nickname_id, 0);
+  rb_define_method(cNickname, "primary_nickname_id", primary_nickname_id, 0);
   rb_define_method(cNickname, "nick", nick, 0);
   rb_define_method(cNickname, "nick=", nick_set, 1);
   rb_define_method(cNickname, "pass", pass, 0);

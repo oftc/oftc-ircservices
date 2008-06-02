@@ -41,9 +41,6 @@ class GanneffServ < ServiceModule
     # @channels[channel]["kills"]       - How many kills for this channel
     @channels = Hash.new
 
-    # Now load the data.
-    load_data
-
     # A hash to store all the nicks we saw connecting
     # Gets cleaned from timer function cleanup_event
     # @nicks is built up like:
@@ -88,6 +85,16 @@ class GanneffServ < ServiceModule
     add_event('save_data', 600)
 
     debug(LOG_DEBUG, "Startup done, lets wait for trolls to kill.")
+
+    @dbq = Hash.new
+    @dbq['GET_ALL_CHANNELS'] = DB.prepare('SELECT channel, reason, kills,
+      monitor_only FROM ganneffserv')
+    @dbq['INSERT_CHAN'] = DB.prepare('INSERT INTO ganneffserv(setter, time,
+      channel, reason, monitor_only) VALUES($1, $2, $3, $4, $5)')
+    @dbq['DELETE_CHAN'] = DB.prepare('DELETE FROM ganneffserv WHERE channel =
+      lower($1)')
+    @dbq['INCREASE_KILLS'] = DB.prepare('UPDATE ganneffserv SET kills = kills+1
+      WHERE channel = lower($1)')
   end # def initialize
 
 ########################################################################
@@ -153,21 +160,29 @@ class GanneffServ < ServiceModule
       return true
     end # if parv[2]
 
+    ret = DB.execute_nonquery(@dbq['INSERT_CHAN'], 'iissb', client.nick.account_id,
+      Time.now.to_i, parv[1], parv[-1], @channels[parv[1]]['monitoronly'])
+    
     @channels[parv[1]]["reason"] = parv[-1]
     @channels[parv[1]]["kills"] = 0
 
-    debug(LOG_NOTICE, "#{client.name} added #{parv[1]}, type #{parv[2]}, reason #{parv[-1]}")
+    if ret then
+      debug(LOG_NOTICE, "#{client.name} added #{parv[1]}, type #{parv[2]}, reason #{parv[-1]}")
 
-    save_data
+      #save_data
 
-    reply_user(client, "Channel #{parv[1]} successfully added")
+      reply_user(client, "Channel #{parv[1]} successfully added")
 
-    # In case its not a "monitoronly" channel lets enforce it and kill
-    # everyone who is in it.
-    if enforce
-      channel = Channel.find(parv[1])
-      do_enforce(channel, parv[-1]) if channel
-    end # if enforce
+      # In case its not a "monitoronly" channel lets enforce it and kill
+      # everyone who is in it.
+      if enforce
+        channel = Channel.find(parv[1])
+        do_enforce(channel, parv[-1]) if channel
+      end # if enforce
+    else
+      @channels.delete(parv[1])
+      reply_user(client, "Failed to add #{parv[1]}")
+    end
 
     true
   end # def ADD
@@ -178,12 +193,19 @@ class GanneffServ < ServiceModule
   def DEL(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} called DEL and the parms are #{parv.join(",")}")
     return unless @channels.has_key?(parv[1])
-    debug(LOG_NOTICE, "#{client.name} deleted channel #{parv[1]}. Its old reason was #{@channels[parv[1]]["reason"]} and monitoring only was #{@channels[parv[1]]["monitoronly"]}")
-    @channels.delete(parv[1])
 
-    save_data
+    ret = DB.execute_nonquery(@dbq['DELETE_CHAN'], 's', parv[1])
 
-    reply_user(client, "Channel #{parv[1]} successfully deleted.")
+    if ret then
+      debug(LOG_NOTICE, "#{client.name} deleted channel #{parv[1]}. Its old reason was #{@channels[parv[1]]["reason"]} and monitoring only was #{@channels[parv[1]]["monitoronly"]}")
+      @channels.delete(parv[1])
+
+      #save_data
+
+      reply_user(client, "Channel #{parv[1]} successfully deleted.")
+    else
+      reply_user(client, "Failed to delete channel #{parv[1]}.")
+    end
 
     true
   end # def DEL
@@ -282,6 +304,14 @@ class GanneffServ < ServiceModule
 # Hook functions                                                       #
 ########################################################################
 ########################################################################
+
+  #this method is sure to be called after EOB (if a conf loaded module) and
+  #after a reload. this means we know we're connected to the network and the
+  #database is alive
+  def loaded()
+    # Now load the data.
+    load_data
+  end
 
   # Called via event handlers, every X seconds.
   def cleanup_event()
@@ -479,6 +509,7 @@ class GanneffServ < ServiceModule
 
     if channel.length > 0 and not @channels[channel].nil?
       @channels[channel]["kills"]+=1
+      DB.execute_nonquery(@dbq['INCREASE_KILLS'], 's', channel)
     end # if channel.lenght
 
     @tkills+=1
@@ -520,6 +551,7 @@ class GanneffServ < ServiceModule
   # Load data from yaml
   def load_data()
     debug(LOG_DEBUG, "Loading channel data")
+=begin
     if File.exists?("#{@langpath}/ganneffserv-channels.yaml")
       @channels = YAML::load( File.open( "#{@langpath}/ganneffserv-channels.yaml" ) )
     end # if File.exists
@@ -537,6 +569,17 @@ class GanneffServ < ServiceModule
       end # @channels.each_pair
 
     end # if not @channels
+=end
+    result = DB.execute(@dbq['GET_ALL_CHANNELS'], '')
+    @channels = Hash.new
+
+    result.row_each { |row|
+      @channels[row[0]] = Hash.new
+      @channels[row[0]]['reason'] = row[1]
+      @channels[row[0]]['kills'] = row[2]
+      @channels[row[0]]['monitoronly'] = row[3]
+    }
+    result.free
     debug(LOG_DEBUG, "All channel data successfully loaded")
   end # def load_data
 
