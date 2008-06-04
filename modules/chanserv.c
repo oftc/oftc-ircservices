@@ -692,6 +692,9 @@ m_info(struct Service *service, struct Client *client,
   reply_user(service, service, client, CS_INFO_OPTION, "AUTOVOICE",
       dbchannel_get_autovoice(regchptr) ? "ON" : "OFF");
 
+  reply_user(service, service, client, CS_INFO_OPTION, "AUTOSAVE",
+      dbchannel_get_autosave(regchptr) ? "ON" : "OFF");
+
   reply_user(service, service, client, CS_INFO_OPTION, "LEAVEOPS",
       dbchannel_get_leaveops(regchptr) ? "ON" : "OFF");
 
