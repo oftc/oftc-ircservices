@@ -141,47 +141,50 @@ class GanneffServ < ServiceModule
     debug(LOG_DEBUG, "#{client.name} called ADD and the parms are #{parv.join(",")}")
     enforce = false
 
-    if @channels.has_key?(parv[1])
+    channel = parv[1].downcase
+    param   = parv[2].downcase
+
+    if @channels.has_key?(channel)
       reply_user(client, "Channel #{parv[1]} is already known")
       return true
     end # if @channels.has_key?
 
-    debug(LOG_DEBUG, "Param 2 was #{parv[2]}")
-    if parv[2] == "CRFJ"
-      @channels[parv[1]] = Hash.new
-      @channels[parv[1]]["monitoronly"] = true
-    elsif parv[2] == "J"
-      @channels[parv[1]] = Hash.new
-      @channels[parv[1]]["monitoronly"] = false
+    debug(LOG_DEBUG, "Param 2 was #{param}")
+    if param == "crfj"
+      @channels[channel] = Hash.new
+      @channels[channel]["monitoronly"] = true
+    elsif param == "j"
+      @channels[channel] = Hash.new
+      @channels[channel]["monitoronly"] = false
       enforce=true
     else # None of the known values -> don't add channel
       debug(LOG_DEBUG, "Param 2 was invalid.")
-      reply_user(client, "<type> value #{parv[2]} is unknown, has to be one of J/CRFJ, see help.")
+      reply_user(client, "<type> value #{param} is unknown, has to be one of J/CRFJ, see help.")
       return true
     end # if parv[2]
 
     ret = DB.execute_nonquery(@dbq['INSERT_CHAN'], 'iissb', client.nick.account_id,
-      Time.now.to_i, parv[1], parv[-1], @channels[parv[1]]['monitoronly'])
+      Time.now.to_i, channel, parv[-1], @channels[channel]['monitoronly'])
     
-    @channels[parv[1]]["reason"] = parv[-1]
-    @channels[parv[1]]["kills"] = 0
+    @channels[channel]["reason"] = parv[-1]
+    @channels[channel]["kills"] = 0
 
     if ret then
-      debug(LOG_NOTICE, "#{client.name} added #{parv[1]}, type #{parv[2]}, reason #{parv[-1]}")
+      debug(LOG_NOTICE, "#{client.name} added #{parv[1]}, type #{param}, reason #{parv[-1]}")
 
       #save_data
 
-      reply_user(client, "Channel #{parv[1]} successfully added")
+      reply_user(client, "Channel #{channel} successfully added")
 
       # In case its not a "monitoronly" channel lets enforce it and kill
       # everyone who is in it.
       if enforce
-        channel = Channel.find(parv[1])
-        do_enforce(channel, parv[-1]) if channel
+        chan = Channel.find(channel)
+        do_enforce(chan, parv[-1]) if chan
       end # if enforce
     else
-      @channels.delete(parv[1])
-      reply_user(client, "Failed to add #{parv[1]}")
+      @channels.delete(channel)
+      reply_user(client, "Failed to add #{channel}")
     end
 
     true
@@ -192,19 +195,20 @@ class GanneffServ < ServiceModule
   # Delete a channel from the monitoring
   def DEL(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} called DEL and the parms are #{parv.join(",")}")
-    return unless @channels.has_key?(parv[1])
+    channel = parv[1].downcase
+    return unless @channels.has_key?(channel)
 
-    ret = DB.execute_nonquery(@dbq['DELETE_CHAN'], 's', parv[1])
+    ret = DB.execute_nonquery(@dbq['DELETE_CHAN'], 's', channel)
 
     if ret then
-      debug(LOG_NOTICE, "#{client.name} deleted channel #{parv[1]}. Its old reason was #{@channels[parv[1]]["reason"]} and monitoring only was #{@channels[parv[1]]["monitoronly"]}")
-      @channels.delete(parv[1])
+      debug(LOG_NOTICE, "#{client.name} deleted channel #{channel}. Its old reason was #{@channels[channel]["reason"]} and monitoring only was #{@channels[channel]["monitoronly"]}")
+      @channels.delete(channel)
 
       #save_data
 
-      reply_user(client, "Channel #{parv[1]} successfully deleted.")
+      reply_user(client, "Channel #{channel} successfully deleted.")
     else
-      reply_user(client, "Failed to delete channel #{parv[1]}.")
+      reply_user(client, "Failed to delete channel #{channel}.")
     end
 
     true
@@ -327,7 +331,8 @@ class GanneffServ < ServiceModule
   # Someone joined some channel
   def join_hook(client, channel)
     debug(LOG_DEBUG, "#{client.name} joined #{channel}")
-    nick=client.name
+    nick=client.name.downcase
+    channel.downcase!
     ret=true
     if not client.is_services_client?
       if @channels.has_key?(channel)
@@ -352,7 +357,7 @@ class GanneffServ < ServiceModule
   # Triggered by join in a channel who is set to monitoronly (def join_hook) or
   # by a fast (within 60seconds) nick registration
   def timecheck(client)
-    nick = client.name
+    nick = client.name.downcase!
     debug(LOG_DEBUG, "Checking connect/register/join time for #{client.name}")
     ret = true
 
@@ -387,13 +392,14 @@ class GanneffServ < ServiceModule
     ret = true
     now = Time.new.to_i
     diff = now - client.firsttime
+    nick = client.name.downcase
 
     if diff < 60
       # If the nick got registered in the first 60 seconds after connect we save this and warn about it
       debug(LOG_NOTICE, "#{client.name} registered the nick after being online for only #{diff} seconds")
 
-      @nicks[client.name] = Hash.new unless @nicks[client.name]  # in case we dont know them already (like services restarted)
-      @nicks[client.name]["registered"] = now
+      @nicks[nick] = Hash.new unless @nicks[nick]  # in case we dont know them already (like services restarted)
+      @nicks[nick]["registered"] = now
 
       # Now ctcp them so we record versions of such nicks.
       ctcp_user(client, "VERSION") unless client.is_services_client?
@@ -409,24 +415,26 @@ class GanneffServ < ServiceModule
     debug(LOG_DEBUG, "Got a ctcp reply for #{client.name} and command #{command}")
     return unless command == 'VERSION'
     msg = ""
-    if @nicks.has_key?(client.name)
-      diff = @nicks[client.name]["registered"] - @nicks[client.name]["client"].firsttime
+    nick = client.name.downcase
+    if @nicks.has_key?(nick)
+      diff = @nicks[nick]["registered"] - @nicks[nick]["client"].firsttime
 
       if diff < 60
         msg = " (online for #{diff} seconds) "
       end # if diff
 
     end # if @nicks.has_key
-    debug(LOG_NOTICE, "#{client.name} #{msg} CTCP'd #{command}: #{arg}")
+    debug(LOG_NOTICE, "#{nick} #{msg} CTCP'd #{command}: #{arg}")
   end
 
 # ------------------------------------------------------------------------
 
   # A new user connected
   def newuser(client)
-    debug(LOG_DEBUG, "#{client.name} connected at timestamp #{client.firsttime}")
-    @nicks[client.name] = Hash.new
-    @nicks[client.name]["client"] = client
+    debug(LOG_DEBUG, "#{nick} connected at timestamp #{client.firsttime}")
+    nick = client.name.downcase
+    @nicks[nick] = Hash.new
+    @nicks[nick]["client"] = client
     true
   end # def newuser
 
@@ -452,7 +460,7 @@ class GanneffServ < ServiceModule
   # A client quits, lets delete his entry in @nicks
   def quit(client, reason)
     debug(LOG_DEBUG, "#{client.name} quits")
-    @nicks.delete(client.name)
+    @nicks.delete(client.name.downcase)
     true
   end # def quit
 
@@ -461,10 +469,12 @@ class GanneffServ < ServiceModule
   # Nick changed, track it. You can run, but you can't hide!
   def nick_changed(client, oldnick)
     debug(LOG_DEBUG, "#{oldnick} is now #{client.name}")
+    nick = client.name.downcase
+    oldnick.downcase!
     if not @nicks[oldnick].nil?
-      @nicks[client.name] = Hash.new
-      @nicks[client.name]["client"] = client
-      @nicks[client.name]["registered"] = @nicks[oldnick]["registered"] unless @nicks[oldnick]["registered"].nil?
+      @nicks[nick] = Hash.new
+      @nicks[nick]["client"] = client
+      @nicks[nick]["registered"] = @nicks[oldnick]["registered"] unless @nicks[oldnick]["registered"].nil?
       @nicks.delete(oldnick)
     end # if not
     true
@@ -507,6 +517,8 @@ class GanneffServ < ServiceModule
       ret = akill_add("*@#{host}", reason, @akill_duration)
     end # if host
 
+    channel.downcase!
+
     if channel.length > 0 and not @channels[channel].nil?
       @channels[channel]["kills"]+=1
       DB.execute_nonquery(@dbq['INCREASE_KILLS'], 's', channel)
@@ -533,6 +545,8 @@ class GanneffServ < ServiceModule
       cname=channel.name
     end # if channel.name.nil?
 
+    cname.downcase!
+
     if @channels.has_key?(cname)
       if @channels[cname]["monitoronly"]
         return true # Nothing to do here
@@ -551,33 +565,16 @@ class GanneffServ < ServiceModule
   # Load data from yaml
   def load_data()
     debug(LOG_DEBUG, "Loading channel data")
-=begin
-    if File.exists?("#{@langpath}/ganneffserv-channels.yaml")
-      @channels = YAML::load( File.open( "#{@langpath}/ganneffserv-channels.yaml" ) )
-    end # if File.exists
-
-    if not @channels
-      @channels = Hash.new
-    else # if not @channels
-
-      @channels.each_pair do |name, data|
-        if data["kills"].nil?
-          @channels[name]["kills"] = 0
-        else
-          @tkills += data["kills"]
-        end # if data["kills"].nil?
-      end # @channels.each_pair
-
-    end # if not @channels
-=end
     result = DB.execute(@dbq['GET_ALL_CHANNELS'], '')
     @channels = Hash.new
 
     result.row_each { |row|
-      @channels[row[0]] = Hash.new
-      @channels[row[0]]['reason'] = row[1]
-      @channels[row[0]]['kills'] = row[2]
-      @channels[row[0]]['monitoronly'] = row[3]
+      channel = row[0].downcase
+      @channels[channel] = Hash.new
+      @channels[channel]['reason'] = row[1]
+      @channels[channel]['kills'] = row[2]
+      @channels[channel]['monitoronly'] = row[3]
+      @tkills += row[2]
     }
     result.free
     debug(LOG_DEBUG, "All channel data successfully loaded")
@@ -588,10 +585,10 @@ class GanneffServ < ServiceModule
   # Save data to yaml
   def save_data()
     debug(LOG_DEBUG, "Saving channel data")
-    File.open("#{@langpath}/ganneffserv-channels.yaml", 'w') do |out|
-      YAML.dump(@channels, out)
-    end # gs-channels
-    debug(LOG_DEBUG, "All channel data successfully saved")
+    #File.open("#{@langpath}/ganneffserv-channels.yaml", 'w') do |out|
+    #  YAML.dump(@channels, out)
+    #end # gs-channels
+    #debug(LOG_DEBUG, "All channel data successfully saved")
   end # def save_data
 
 # ------------------------------------------------------------------------
