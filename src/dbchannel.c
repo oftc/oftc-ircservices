@@ -64,6 +64,7 @@ row_to_dbchannel(row_t *row)
   if(row->cols[18] != NULL)
     DupString(channel->mlock, row->cols[18]);
   channel->expirebans_lifetime = atoi(row->cols[19]);
+  channel->autosave = atoi(row->cols[20]);
 
   return channel;
 }
@@ -381,6 +382,12 @@ dbchannel_get_autovoice(DBChannel *this)
 }
 
 inline char
+dbchannel_get_autosave(DBChannel *this)
+{
+  return this->autosave;
+}
+
+inline char
 dbchannel_get_leaveops(DBChannel *this)
 {
   return this->leaveops;
@@ -620,6 +627,18 @@ dbchannel_set_autovoice(DBChannel *this, char autovoice)
   if(db_execute_nonquery(SET_CHAN_AUTOVOICE, "bi", &autovoice, &this->id))
   {
     this->autovoice = autovoice;
+    return TRUE;
+  }
+  else
+    return FALSE;
+}
+
+inline int
+dbchannel_set_autosave(DBChannel *this, char autosave)
+{
+  if(db_execute_nonquery(SET_CHAN_AUTOSAVE, "bi", &autosave, &this->id))
+  {
+    this->autosave = autosave;
     return TRUE;
   }
   else

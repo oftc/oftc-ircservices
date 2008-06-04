@@ -98,8 +98,8 @@ static query_t queries[QUERY_COUNT] = {
   { GET_FULL_CHAN, "SELECT id, channel, description, entrymsg, reg_time, "
       "flag_private, flag_restricted, flag_topic_lock, flag_verbose, "
       "flag_autolimit, flag_expirebans, flag_floodserv, flag_autoop, "
-      "flag_autovoice, flag_leaveops, url, email, topic, mlock, expirebans_lifetime FROM "
-      "channel WHERE lower(channel)=lower($1)", QUERY },
+      "flag_autovoice, flag_leaveops, url, email, topic, mlock, expirebans_lifetime, "
+      "flag_autosave FROM channel WHERE lower(channel)=lower($1)", QUERY },
   { INSERT_CHAN, "INSERT INTO channel (channel, description, reg_time, last_used) "
     "VALUES($1, $2, $3, $4)", EXECUTE },
   { INSERT_CHANACCESS, "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
@@ -166,6 +166,7 @@ static query_t queries[QUERY_COUNT] = {
   { SET_CHAN_FLOODSERV, "UPDATE channel SET flag_floodserv=$1 WHERE id=$2", EXECUTE },
   { SET_CHAN_AUTOOP, "UPDATE channel SET flag_autoop=$1 WHERE id=$2", EXECUTE },
   { SET_CHAN_AUTOVOICE, "UPDATE channel SET flag_autovoice=$1 WHERE id=$2", EXECUTE },
+  { SET_CHAN_AUTOSAVE, "UPDATE channel SET flag_autosave=$1 WHERE id=$2", EXECUTE },
   { SET_CHAN_LEAVEOPS, "UPDATE channel SET flag_leaveops=$1 WHERE id=$2", EXECUTE },
   { INSERT_FORBID, "INSERT INTO forbidden_nickname (nick) VALUES ($1)", EXECUTE },
   { GET_FORBID, "SELECT nick FROM forbidden_nickname WHERE lower(nick)=lower($1)",

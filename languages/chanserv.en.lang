@@ -131,6 +131,18 @@ CS_HELP_SET_AUTOVOICE_LONG
 	If this option is set, when users join the channel, if they are on the
 	access list at level MEMBER or above, they will automatically be given voice
 	status on the channel.
+CS_HELP_SET_AUTOSAVE_SHORT
+	%s: Set whether certain channel modes are saved.
+CS_HELP_SET_AUTOSAVE_LONG
+	Usage: SET channel AUTOSAVE [ON|OFF]
+	
+	If this option is set, when users change modes in the channel they are added
+	to their respective lists, like INVITES QUIETS EXCEPTS
+	
+	See Also:
+		HELP INVITES
+		HELP QUIETS
+		HELP EXCEPTS
 CS_HELP_SET_LEAVEOPS_SHORT
 	%s: Set whether ops are kept in a channel even though a person is not on the
 	channel access list at CHANOP level.

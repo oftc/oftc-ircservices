@@ -12,6 +12,7 @@ CREATE TABLE channel(
   flag_autoop           BOOLEAN NOT NULL DEFAULT 'False', -- CHANOP or above get op on join
   flag_autovoice        BOOLEAN NOT NULL DEFAULT 'False', -- MEMBER or above get voice on join
   flag_leaveops         BOOLEAN NOT NULL DEFAULT 'False', -- Don't deop people who get chanop but shouldnt
+  flag_autosave         BOOLEAN NOT NULL DEFAULT 'False', -- Manually issued CMODEs are persisted in the DB
   description           VARCHAR(512) NOT NULL,
   url                   VARCHAR(255),
   email                 VARCHAR(255),

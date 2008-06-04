@@ -448,7 +448,8 @@ m_tmode(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
     if (has_member_flags(member, CHFL_DEOPPED))
       return;
 
-    set_channel_mode(me.uplink, client_p, chptr, member, parc - 3, parv + 3, chptr->chname);
+    //set_channel_mode(me.uplink, client_p, chptr, member, parc - 3, parv + 3, chptr->chname);
+    set_channel_mode(client_p, source_p, chptr, member, parc - 3, parv + 3, chptr->chname);
   }
 }
 

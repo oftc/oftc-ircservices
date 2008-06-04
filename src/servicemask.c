@@ -9,11 +9,17 @@ row_to_servicemask(row_t *row)
   sban = MyMalloc(sizeof(struct ServiceMask));
   sban->id = atoi(row->cols[0]);
   sban->channel = atoi(row->cols[1]);
+
   if(row->cols[2] != NULL)
     sban->target = atoi(row->cols[2]);
   else
     sban->target = 0;
-  sban->setter = atoi(row->cols[3]);
+
+  if(row->cols[3] != NULL)
+    sban->setter = atoi(row->cols[3]);
+  else
+    sban->setter = 0;
+
   DupString(sban->mask, row->cols[4]);
   DupString(sban->reason, row->cols[5]);
   sban->time_set = atoi(row->cols[6]);
@@ -40,7 +46,7 @@ servicemask_add(const char *mask, unsigned int setter, unsigned int channel,
   int ret;
 
   ret = db_execute_nonquery(INSERT_AKICK_MASK, "iissiii", &channel,
-      &setter, reason, mask, &time_set, &duration, &mode);
+		setter == 0 ? NULL : &setter, reason, mask, &time_set, &duration, &mode);
 
   if(ret == -1)
     return FALSE;
@@ -56,7 +62,7 @@ servicemask_add_akick_target(unsigned int target, unsigned int setter, unsigned 
   unsigned int type = AKICK_MASK;
 
   ret = db_execute_nonquery(INSERT_AKICK_ACCOUNT, "iiisiii", &channel, &target,
-    &setter, reason, &time_set, &duration, &type);
+    setter == 0 ? NULL : &setter, reason, &time_set, &duration, &type);
 
   if(ret == -1)
     return FALSE;

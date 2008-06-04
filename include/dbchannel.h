@@ -50,6 +50,7 @@ typedef struct
   char autoop;
   char autovoice;
   char leaveops;
+  char autosave;
   unsigned int expirebans_lifetime;
   /* Per Host */
   struct MessageQueue **flood_hash;
@@ -96,6 +97,7 @@ char dbchannel_get_expirebans(DBChannel *);
 char dbchannel_get_floodserv(DBChannel *);
 char dbchannel_get_autoop(DBChannel *);
 char dbchannel_get_autovoice(DBChannel *);
+char dbchannel_get_autosave(DBChannel *);
 char dbchannel_get_leaveops(DBChannel *);
 unsigned int dbchannel_get_expirebans_lifetime(DBChannel *);
 
@@ -124,6 +126,7 @@ inline int dbchannel_set_expirebans(DBChannel *, char);
 inline int dbchannel_set_floodserv(DBChannel *, char);
 inline int dbchannel_set_autoop(DBChannel *, char);
 inline int dbchannel_set_autovoice(DBChannel *, char);
+inline int dbchannel_set_autosave(DBChannel *, char);
 inline int dbchannel_set_leaveops(DBChannel *, char);
 inline int dbchannel_set_expirebans_lifetime(DBChannel *, unsigned int);
 

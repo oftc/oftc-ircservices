@@ -89,6 +89,7 @@ static void m_set_mlock(struct Service *, struct Client *, int, char *[]);
 static void m_set_autoop(struct Service *, struct Client *, int, char *[]);
 static void m_set_autovoice(struct Service *, struct Client *, int, char *[]);
 static void m_set_leaveops(struct Service *, struct Client *, int, char *[]);
+static void m_set_autosave(struct Service *, struct Client *, int, char *[]);
 
 static void m_akick_add(struct Service *, struct Client *, int, char *[]);
 static void m_akick_list(struct Service *, struct Client *, int, char *[]);
@@ -184,6 +185,8 @@ static struct ServiceMessage set_sub[] = {
     CS_HELP_SET_AUTOOP_SHORT, CS_HELP_SET_AUTOOP_LONG, m_set_autoop },
   { NULL, "AUTOVOICE", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
     CS_HELP_SET_AUTOVOICE_SHORT, CS_HELP_SET_AUTOVOICE_LONG, m_set_autovoice },
+  { NULL, "AUTOSAVE", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
+    CS_HELP_SET_AUTOSAVE_SHORT, CS_HELP_SET_AUTOSAVE_LONG, m_set_autosave },
   { NULL, "LEAVEOPS", 0, 1, 2, SFLG_KEEPARG|SFLG_CHANARG, MASTER_FLAG,
     CS_HELP_SET_LEAVEOPS_SHORT, CS_HELP_SET_LEAVEOPS_LONG, m_set_leaveops },
   { NULL, NULL, 0, 0, 0, SFLG_KEEPARG|SFLG_CHANARG, 0, 0, 
@@ -1170,6 +1173,14 @@ m_set_autovoice(struct Service *service, struct Client *client,
 {
   m_set_flag(service, client, parv[1], parv[2], "AUTOVOICE",
     &dbchannel_get_autovoice, &dbchannel_set_autovoice);
+}
+
+static void
+m_set_autosave(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  m_set_flag(service, client, parv[1], parv[2], "AUTOSAVE",
+    &dbchannel_get_autosave, &dbchannel_set_autosave);
 }
 
 static void
@@ -2431,6 +2442,94 @@ cs_on_cmode_change(va_list args)
   if(chptr->regchan != NULL && dbchannel_get_mlock(chptr->regchan) != NULL)
     enforce_mode_lock(chanserv, chptr, NULL, NULL, &tmp);
   
+  if(chptr->regchan != NULL && dbchannel_get_autosave(chptr->regchan))
+  {
+    char buf[IRC_BUFSIZE+1];
+    char ret;
+    snprintf(buf, IRC_BUFSIZE, "AUTOSAVED: (%s)", source->name);
+    switch(mode)
+    {
+      case 'I':
+        if(dir == MODE_ADD)
+          ret = servicemask_add_invex(param, 0, dbchannel_get_id(chptr->regchan),
+            CurrentTime, 0, buf);
+        else
+          ret = servicemask_remove_invex(dbchannel_get_id(chptr->regchan), param);
+
+        break;
+      case 'q':
+        if(dir == MODE_ADD)
+          ret = servicemask_add_quiet(param, 0, dbchannel_get_id(chptr->regchan),
+            CurrentTime, 0, buf);
+        else
+          ret = servicemask_remove_quiet(dbchannel_get_id(chptr->regchan), param);
+        break;
+      case 'e':
+        if(dir == MODE_ADD)
+          ret = servicemask_add_excpt(param, 0, dbchannel_get_id(chptr->regchan),
+            CurrentTime, 0, buf);
+        else
+          ret = servicemask_remove_excpt(dbchannel_get_id(chptr->regchan), param);
+        break;
+      default:
+      /* Don't futz with MLOCK for now
+        unsigned int mode_val = get_mode_from_letter(mode);
+        if(mode_val > 0)
+        {
+          char saved_modes[MODEBUFLEN+1];
+          char off_string[MODEBUFLEN+1];
+          char on_string[MODEBUFLEN+1];
+          char *existing_modes = dbchannel_get_mlock(chptr->regchan);
+          unsigned int on_modes = 0, off_modes = 0;
+          int key_pos, limit_pos;
+          char ison, isoff;
+
+          separate_modes(existing_modes, &on_modes, &off_modes, &key_pos, &limit_pos);
+
+          if(dir == MODE_ADD)
+            on_modes  |= mode_val;
+          else
+            off_modes |= mode_val;
+
+          get_modestring(on_modes, on_string, MODEBUFLEN);
+          get_modestring(off_modes, off_string, MODEBUFLEN);
+
+          if(limit_pos > 0)
+          {
+            //XXX TODO FIXME add limit count as well
+            strlcat(on_string, "l", MODEBUFLEN);
+          }
+          else if(limit_pos < 0)
+            strlcat(off_string, "l", MODEBUFLEN);
+
+          if(key_pos > 0)
+          {
+            //XXX TODO FIXME add key param as well
+            strlcat(on_string, "k", MODEBUFLEN);
+          }
+          else if(key_pos < 0)
+            strlcat(off_string, "k", MODEBUFLEN);
+
+          if(strlen(on_string) > 0)
+            ison = TRUE;
+          else
+            ison = FALSE;
+
+          sprintf(saved_modes, MODEBUFLEN, "%s%s%s%s", strlen(off_string) > 0 ? "-" : "",
+            strlen(off_string) > 0 ? off_string : "", strlen(on_string) > 0 ? "+" : "",
+            strlen(on_string) > 0 ? on_string : "");
+
+          dbchannel_set_mlock(chptr->regchan, saved_modes);
+        }
+      */
+        break;
+    }
+
+    if(ret)
+      send_chops_notice(chanserv, chptr, "AUTOSAVED: %c%c %s FROM %s",
+        dir == MODE_ADD ? '+' : '-', mode, param, source->name);
+  }
+
   /* last function to call in this func */
   return pass_callback(cs_cmode_hook, source, chptr, dir, mode, param);
 }
