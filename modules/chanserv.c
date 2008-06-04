@@ -2273,27 +2273,45 @@ m_mask_add(struct Client *client, int parc, char *parv[], const char *modename,
   struct Channel *chptr;
   int ret;
   char reason[IRC_BUFSIZE+1] = { '\0' };
+  char name[NICKLEN];
+  char user[USERLEN+1];
+  char host[HOSTLEN+1];
+  char mask[HOSTLEN+USERLEN+1];
+  struct split_nuh_item nuh;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  if(parv[2] != NULL)
+  if(parv[3] != NULL)
     join_params(reason, parc-2, &parv[3]);
   else
     strlcat(reason, "No Reason Given", IRC_BUFSIZE);
 
-  ret = add_func(parv[2], nickname_get_id(client->nickname), dbchannel_get_id(regchptr),
+  nuh.nuhmask = parv[2];
+  nuh.nickptr = name;
+  nuh.userptr = user;
+  nuh.hostptr = host;
+
+  nuh.nicksize = sizeof(name);
+  nuh.usersize = sizeof(user);
+  nuh.hostsize = sizeof(host);
+
+  split_nuh(&nuh);
+
+  snprintf(mask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
+
+  ret = add_func(mask, nickname_get_id(client->nickname), dbchannel_get_id(regchptr),
                  CurrentTime, 0, reason);
 
   if(ret)
   {
     if(chptr != NULL)
-      mask_func(chanserv, chptr, parv[2]);
+      mask_func(chanserv, chptr, mask);
 
-    reply_user(chanserv, chanserv, client, CS_SERVICEMASK_ADD_SUCCESS, parv[1], reason, modename);
+    reply_user(chanserv, chanserv, client, CS_SERVICEMASK_ADD_SUCCESS, mask, reason, modename);
   }
   else
-    reply_user(chanserv, chanserv, client, CS_SERVICEMASK_ADD_FAILED, parv[1], modename);
+    reply_user(chanserv, chanserv, client, CS_SERVICEMASK_ADD_FAILED, mask, modename);
 
   if(chptr == NULL)
     dbchannel_free(regchptr);
@@ -2353,16 +2371,34 @@ m_mask_del(struct Client *client, const char *channel, const char *mask, const c
   struct Channel *chptr;
   DBChannel *regchptr;
   int ret;
+  char name[NICKLEN];
+  char user[USERLEN+1];
+  char host[HOSTLEN+1];
+  char hostmask[HOSTLEN+USERLEN+1];
+  struct split_nuh_item nuh;
 
   chptr = hash_find_channel(channel);
   regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
 
-  ret = del_func(dbchannel_get_id(regchptr), mask);
+  nuh.nuhmask = (char *)mask;
+  nuh.nickptr = name;
+  nuh.userptr = user;
+  nuh.hostptr = host;
+
+  nuh.nicksize = sizeof(name);
+  nuh.usersize = sizeof(user);
+  nuh.hostsize = sizeof(host);
+
+  split_nuh(&nuh);
+
+  snprintf(hostmask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
+
+  ret = del_func(dbchannel_get_id(regchptr), hostmask);
 
   if(chptr == NULL)
     dbchannel_free(regchptr);
   else if(ret > 0)
-    unmask_func(chanserv, chptr, mask);
+    unmask_func(chanserv, chptr, hostmask);
 
   reply_user(chanserv, chanserv, client, CS_AKICK_DEL, ret, modename);
 

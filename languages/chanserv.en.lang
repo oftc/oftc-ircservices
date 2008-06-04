@@ -632,4 +632,4 @@ CS_EXPIREBANS_LIFETIME
 CS_SERVICEMASK_ADD_FAILED
 	Failed to ADD %s to %s list.
 CS_SERVICEMASK_ADD_SUCCESS
-	Successfully addedd %s (%s) to %s list.
+	Successfully added %s (%s) to %s list.
