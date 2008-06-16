@@ -88,7 +88,9 @@ class GanneffServ < ServiceModule
 
     @dbq = Hash.new
     @dbq['GET_ALL_CHANNELS'] = DB.prepare('SELECT channel, reason, kills,
-      monitor_only FROM ganneffserv')
+      monitor_only, nick, time FROM ganneffserv, account, nickname WHERE
+      ganneffserv.setter = account.primary_nick AND
+      account.primary_nick = nickname.id')
     @dbq['INSERT_CHAN'] = DB.prepare('INSERT INTO ganneffserv(setter, time,
       channel, reason, monitor_only) VALUES($1, $2, $3, $4, $5)')
     @dbq['DELETE_CHAN'] = DB.prepare('DELETE FROM ganneffserv WHERE channel =
@@ -220,18 +222,23 @@ class GanneffServ < ServiceModule
   def LIST(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} called LIST")
     reply_user(client, "Known Channels\n\n")
-    reply_user(client, "%-20s %-6s %s" % [ "Channel", "Type", "Action" ])
+    reply_user(client, "%-20s %-4s %-10s %-19s %s" % [ "Channel", "Type", "By", "When", "Action" ])
 
-    @channels.sort.each do |name, data|
+    result = DB.execute(@dbq['GET_ALL_CHANNELS'], '')
+
+    result.row_each { |row|
       check = "J"
-      if data["monitoronly"]
-        check = "CRFJ"
-      end # if data
+      check = "CRJF" if row[3]
+      
+      chan = row[0]
+      by = row[4]
+      time = Time.at(row[5].to_i).strftime('%Y-%m-%d %H:%M:%S')
+      reason = row[1]
+      reply_user(client, "%-20s %-4s %-10s %-19s %s" % [ chan, check, by, time, "AKILL: #{reason}" ])
+    }
+    result.free
 
-      reply_user(client, "%-20s %-6s %s" % [ name, check, "AKILL: #{data["reason"]}" ])
-    end # @channels.each_pair
-
-    reply_user(client, "\n\nCRFJ - checks Connect, Register nick, Join channel within 15 seconds (i.e. Fast)")
+    reply_user(client, "\nCRFJ - checks Connect, Register nick, Join channel within 15 seconds (i.e. Fast)")
     reply_user(client, "J - triggers on every Join")
 
     true
@@ -431,8 +438,8 @@ class GanneffServ < ServiceModule
 
   # A new user connected
   def newuser(client)
-    debug(LOG_DEBUG, "#{nick} connected at timestamp #{client.firsttime}")
     nick = client.name.downcase
+    debug(LOG_DEBUG, "#{nick} connected at timestamp #{client.firsttime}")
     @nicks[nick] = Hash.new
     @nicks[nick]["client"] = client
     true
@@ -568,13 +575,16 @@ class GanneffServ < ServiceModule
     result = DB.execute(@dbq['GET_ALL_CHANNELS'], '')
     @channels = Hash.new
 
+    count = 0
     result.row_each { |row|
+      debug(LOG_DEBUG, "Checking row #{count}")
       channel = row[0].downcase
       @channels[channel] = Hash.new
       @channels[channel]['reason'] = row[1]
       @channels[channel]['kills'] = row[2]
       @channels[channel]['monitoronly'] = row[3]
-      @tkills += row[2]
+      @tkills += row[2].to_i
+      count += 1
     }
     result.free
     debug(LOG_DEBUG, "All channel data successfully loaded")
