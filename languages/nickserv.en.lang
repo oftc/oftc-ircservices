@@ -396,6 +396,13 @@ NS_HELP_STATUS_LONG
 	
 	Shows the identified status of a nickname, determining if they were identified
 	via password, access list, SSL cert or otherwise.
+NS_HELP_RESETPASS_SHORT
+	%s: Reset a password for a given nickname
+NS_HELP_RESETPASS_LONG
+	Usage: RESETPASS nick
+	
+	Reset a password for the given nickname, if successful the new password will
+	be replied to you.
 NS_ALREADY_REG
 	Nickname %s is already registered. If this is your nickname you may try
 	IDENTIFY instead. If this is not your nickname then it may have been
@@ -704,3 +711,7 @@ NS_STATUS_NOTREG
 	1 (online, not identified)
 NS_STATUS_OFFLINE
 	0 (not online)
+NS_RESETPASS_FAIL
+	Failed to reset to a random password
+NS_RESETPASS_SUCCESS
+	Successfully reset password for %s to %s

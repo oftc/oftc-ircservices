@@ -31,6 +31,7 @@
 #include "chanserv.h"
 #include "interface.h"
 #include "msg.h"
+#include "crypt.h"
 
 /*
  * row_to_nickname:
@@ -967,6 +968,56 @@ nickname_free(Nickname *nick)
   MyFree(nick->last_host);
   MyFree(nick->last_realname);
   MyFree(nick);
+}
+
+inline unsigned int
+nickname_reset_pass(Nickname *this, char **clear_pass)
+{
+  char new_pass[SALTLEN+1];
+  char new_salt[SALTLEN+1];
+  char old_pass[PASSLEN+1];
+  char old_salt[SALTLEN+1];
+  char *tmp_pass;
+  char *cry_pass;
+  int ret = TRUE;
+
+  strlcpy(old_pass, this->pass, PASSLEN);
+  strlcpy(old_salt, this->salt, SALTLEN);
+
+  make_random_string(new_pass, sizeof(new_pass));
+  make_random_string(new_salt, sizeof(new_salt));
+
+  tmp_pass = MyMalloc(strlen(new_pass) + SALTLEN + 1);
+  snprintf(tmp_pass, strlen(new_pass) + SALTLEN + 1, "%s%s", new_pass, new_salt);
+
+  cry_pass = crypt_pass(tmp_pass, TRUE);
+
+  db_begin_transaction();
+
+  if(!nickname_set_salt(this, new_salt))
+    ret = FALSE;
+
+  if(!nickname_set_pass(this, cry_pass))
+    ret = FALSE;
+
+  if(ret == FALSE)
+  {
+    db_rollback_transaction();
+    strlcpy(this->pass, old_pass, PASSLEN);
+    strlcpy(this->salt, old_salt, SALTLEN);
+    ilog(L_DEBUG, "Failed to reset pass");
+  }
+  else
+  {
+    db_commit_transaction();
+    *clear_pass = MyMalloc(strlen(new_pass) + 1);
+    strlcpy(*clear_pass, new_pass, strlen(new_pass) + 1);
+  }
+
+  MyFree(tmp_pass);
+  MyFree(cry_pass);
+
+  return ret;
 }
 
 /* Nickname getters */

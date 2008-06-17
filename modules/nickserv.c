@@ -92,6 +92,7 @@ static void m_set_cloak(struct Service *, struct Client *, int, char *[]);
 static void m_cloakstring(struct Service *, struct Client *, int, char *[]);
 static void m_set_master(struct Service *, struct Client *, int, char *[]);
 static void m_set_private(struct Service *, struct Client *, int, char *[]);
+static void m_resetpass(struct Service *, struct Client *, int, char *[]);
 
 static void m_access_add(struct Service *, struct Client *, int, char *[]);
 static void m_access_list(struct Service *, struct Client *, int, char *[]);
@@ -163,6 +164,11 @@ static struct ServiceMessage cloakstring_msgtab = {
   NULL, "CLOAKSTRING", 0, 1, 2, 0, ADMIN_FLAG, NS_HELP_CLOAKSTRING_SHORT, 
     NS_HELP_CLOAKSTRING_LONG, m_cloakstring 
 }; 
+
+static struct ServiceMessage resetpass_msgtab = {
+  NULL, "RESETPASS", 0, 1, 1, 0, ADMIN_FLAG, NS_HELP_RESETPASS_SHORT,
+    NS_HELP_RESETPASS_LONG, m_resetpass
+};
 
 static struct ServiceMessage cert_sub[] = {
   { NULL, "ADD", 0, 0, 2, 0, IDENTIFIED_FLAG, NS_HELP_CERT_ADD_SHORT, 
@@ -290,6 +296,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &list_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &status_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &enslave_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &resetpass_msgtab);
   
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -812,6 +819,33 @@ m_cloakstring(struct Service *service, struct Client *client,
   }
   else
     reply_user(service, service, client, NS_SET_FAILED, "CLOAKSTRING", parv[2]);
+
+  nickname_free(nick);
+}
+
+static void
+m_resetpass(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  Nickname *nick = nickname_find(parv[1]);
+  char *new_pass;
+
+  if(nick == NULL)
+  {
+    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
+    return;
+  }
+
+  if(!nickname_reset_pass(nick, &new_pass))
+  {
+    reply_user(service, service, client, NS_RESETPASS_FAIL);
+  }
+  else
+  {
+    reply_user(service, service, client, NS_RESETPASS_SUCCESS, parv[1], new_pass);
+    MyFree(new_pass);
+    ilog(L_NOTICE, "%s reset the password for %s", client->name, parv[1]);
+  }
 
   nickname_free(nick);
 }
