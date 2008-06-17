@@ -228,7 +228,7 @@ class GanneffServ < ServiceModule
 
     result.row_each { |row|
       check = "J"
-      check = "CRJF" if row[3]
+      check = "CRJF" if row[3].to_i == 1
       
       chan = row[0]
       by = row[4]
@@ -344,7 +344,7 @@ class GanneffServ < ServiceModule
     if not client.is_services_client?
       if @channels.has_key?(channel)
         debug(LOG_DEBUG, "#{nick} is not some services instance joining #{channel}")
-        if @channels[channel]["monitoronly"]
+        if @channels[channel]["monitoronly"] == true
           @nicks[nick]["joined"] = channel
           @nicks[nick]["jointime"] = Time.new.to_i
           ret = timecheck(client)
@@ -555,7 +555,7 @@ class GanneffServ < ServiceModule
     cname.downcase!
 
     if @channels.has_key?(cname)
-      if @channels[cname]["monitoronly"]
+      if @channels[cname]["monitoronly"] == true
         return true # Nothing to do here
       else # if @channels...monitoronly
         debug(LOG_NOTICE, "Asked to enforce #{cname} with reason \"#{reason}\"")
@@ -581,8 +581,14 @@ class GanneffServ < ServiceModule
       channel = row[0].downcase
       @channels[channel] = Hash.new
       @channels[channel]['reason'] = row[1]
-      @channels[channel]['kills'] = row[2]
-      @channels[channel]['monitoronly'] = row[3]
+      @channels[channel]['kills'] = row[2].to_i
+      mo = row[3].to_i
+      if mo == 1 then
+        mo = true
+      else
+        mo = false
+      end
+      @channels[channel]['monitoronly'] = mo
       @tkills += row[2].to_i
       count += 1
     }
