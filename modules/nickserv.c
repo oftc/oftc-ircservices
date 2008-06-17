@@ -229,6 +229,11 @@ static struct ServiceMessage regain_msgtab = {
   NS_HELP_REGAIN_LONG, m_regain
 };
 
+static struct ServiceMessage reclaim_msgtab = {
+  NULL, "RECLAIM", 0, 2, 2, 0, USER_FLAG, NS_HELP_REGAIN_SHORT, 
+  NS_HELP_REGAIN_LONG, m_regain
+};
+
 static struct ServiceMessage sudo_msgtab = {
   NULL, "SUDO", 0, 2, 2, SFLG_NOMAXPARAM, ADMIN_FLAG, NS_HELP_SUDO_SHORT,
   NS_HELP_SUDO_LONG, m_sudo
@@ -277,6 +282,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &forbid_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &unforbid_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &regain_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &reclaim_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &id_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &sudo_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &cloakstring_msgtab);
