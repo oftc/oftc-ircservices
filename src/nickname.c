@@ -970,7 +970,7 @@ nickname_free(Nickname *nick)
   MyFree(nick);
 }
 
-inline unsigned int
+unsigned int
 nickname_reset_pass(Nickname *this, char **clear_pass)
 {
   char new_pass[SALTLEN+1];
@@ -981,8 +981,8 @@ nickname_reset_pass(Nickname *this, char **clear_pass)
   char *cry_pass;
   int ret = TRUE;
 
-  strlcpy(old_pass, this->pass, PASSLEN);
-  strlcpy(old_salt, this->salt, SALTLEN);
+  strlcpy(old_pass, this->pass, sizeof(old_pass));
+  strlcpy(old_salt, this->salt, sizeof(old_salt));
 
   make_random_string(new_pass, sizeof(new_pass));
   make_random_string(new_salt, sizeof(new_salt));
@@ -1011,7 +1011,7 @@ nickname_reset_pass(Nickname *this, char **clear_pass)
   {
     db_commit_transaction();
     *clear_pass = MyMalloc(strlen(new_pass) + 1);
-    strlcpy(*clear_pass, new_pass, strlen(new_pass) + 1);
+    strlcpy(*clear_pass, new_pass, sizeof(new_pass));
   }
 
   MyFree(tmp_pass);

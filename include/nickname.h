@@ -114,7 +114,7 @@ void nickname_list_admins_free(dlink_list *);
 Nickname *nickname_new();
 inline void nickname_free(Nickname *);
 
-inline unsigned int nickname_reset_pass(Nickname *, char **);
+unsigned int nickname_reset_pass(Nickname *, char **);
 
 /* Nickname getters */
 dlink_node nickname_get_node(Nickname *);
