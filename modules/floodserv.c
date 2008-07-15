@@ -22,6 +22,35 @@
  *  $Id: floodservc 864 2007-04-19 00:02:51Z tjfontaine $
  */
 
+/*
+ * FloodServ is a very unintelligent beast, and has the potential for mass annoyance
+ *
+ * Basic data structure is a MessageQueue which keeps the list of messages and the
+ * last time a message was added to the queue, and the allowable metrics for the
+ * queue
+ *
+ * A FloodEntry which contains the TS and Message
+ *
+ * New messages are added to the end of the dlink_list and when the list has
+ * more than the max entries it can contain it pops entries off the front
+ *
+ * For each user that is joined to a channel that FloodServ inhabits there exist
+ * two queues, one per channel that they share with FloodServ and a larger global
+ * queue. For each channel that has FloodServ there exists queue just for that
+ * channel as well.
+ *
+ * Enforcement: when a new message arrives for a channel that FloodServ is in
+ * the message is added to the users global queue and checked for network level
+ * enforcement if this is triggered they're akilled from the network. The
+ * message is then added to the channel queue and checked for enforcement in
+ * which the offending host will be +q'd, after this the entry is added to the
+ * uses queue and checked for enforcement and will also be +q'd.
+ *
+ * Every so often FloodServ runs a garbage collection routine and removes
+ * old queues that haven't been used in a while. Also, FloodServ will unenforce
+ * any +q's it determines it has set.
+ */
+
 #include "stdinc.h"
 #include "nickname.h"
 #include "dbchannel.h"
@@ -294,6 +323,7 @@ mqueue_add_message(struct MessageQueue *queue, const char *message)
 
   assert(queue->name != NULL);
 
+  /* We have too many messages, remove the oldest which is at the head */
   if(queue->entries.length >= queue->max)
   {
     entry = queue->entries.head->data;
@@ -301,6 +331,7 @@ mqueue_add_message(struct MessageQueue *queue, const char *message)
     floodmsg_free(entry);
   }
 
+  /* Add new messages to the end of the queue */
   dlinkAddTail(floodmsg_new(message), make_dlink_node(), &queue->entries);
 
   queue->last_used = CurrentTime;
@@ -313,9 +344,11 @@ mqueue_enforce(struct MessageQueue *queue)
   time_t age = 0;
   int enforce = 1;
 
-  oldest = queue->entries.tail->data;
-  newest = queue->entries.head->data;
+  /* Old entries at the head, New at the tail */
+  oldest = queue->entries.head->data;
+  newest = queue->entries.tail->data;
 
+  /* we don't have enough entries to worry about checking for violators */
   if(queue->entries.length < queue->max
     || oldest == NULL || newest == NULL
     || oldest == newest)
@@ -323,6 +356,7 @@ mqueue_enforce(struct MessageQueue *queue)
 
   assert(newest != oldest);
 
+  /* if you don't have the order right, this will always be true */
   age = newest->time - oldest->time;
 
 /*  if(queue->type != MQUEUE_GLOB && age <= queue->lne_enforce_time)
@@ -464,15 +498,19 @@ fs_on_privmsg(va_list args)
   char mask[IRC_BUFSIZE+1];
   char host[HOSTLEN+1];
 
+  /* only continue if this is a floodserv channel */
   if(channel->regchan != NULL && dbchannel_get_flood_hash(channel->regchan) != NULL &&
     !IsOper(source))
   {
+    /* if they have a realhost this means they have a cloak, we want their realhost */
     if(*source->realhost != '\0')
       strlcpy(host, source->realhost, sizeof(host));
     else
       strlcpy(host, source->host, sizeof(host));
 
+    /* per user per channel queue */
     queue = hash_find_mqueue_host(dbchannel_get_flood_hash(channel->regchan), host);
+    /* Network wide queue will result in an akill if enforced */
     gqueue = hash_find_mqueue_host(global_msg_queue, host);
 
     if(queue == NULL)
@@ -490,8 +528,8 @@ fs_on_privmsg(va_list args)
       dlinkAdd(gqueue, &gqueue->node, &global_msg_list);
     }
 
-    mqueue_add_message(gqueue, message);
-    enforce = mqueue_enforce(gqueue);
+    mqueue_add_message(gqueue, message); /* add the message to the global queue */
+    enforce = mqueue_enforce(gqueue); /* check for network enforcement */
 
     switch(enforce)
     {
@@ -525,6 +563,7 @@ fs_on_privmsg(va_list args)
         break;
     }
 
+    /* this is the channel 'global' queue if 6 people say the same thing this will trigger */
     mqueue_add_message(dbchannel_get_gqueue(channel->regchan), message);
     enforce = mqueue_enforce(dbchannel_get_gqueue(channel->regchan));
 
@@ -539,6 +578,7 @@ fs_on_privmsg(va_list args)
         break;
     }
 
+    /* Finallly add the message to the per user per channel queue */
     mqueue_add_message(queue, message);
     enforce = mqueue_enforce(queue);
     switch(enforce)
