@@ -135,10 +135,10 @@ static query_t queries[QUERY_COUNT] = {
   { DELETE_NICKACCESS, "DELETE FROM account_access WHERE account_id=$1 AND entry=$2",
     EXECUTE },
   { DELETE_ALL_NICKACCESS, "DELETE FROM account_access WHERE account_id=$1", EXECUTE },
-  { DELETE_NICKACCESS_IDX, "DELETE FROM account_access WHERE id = "
+  /*{ DELETE_NICKACCESS_IDX, "DELETE FROM account_access WHERE id = "
           "(SELECT a.id FROM account_access AS a WHERE $1 = "
           "(SELECT COUNT(b.id)+1 FROM account_access AS b WHERE b.id < a.id AND "
-          "b.account_id = $2) AND a.account_id = $3)", EXECUTE },
+          "b.account_id = $2) AND a.account_id = $2)", EXECUTE },*/
   { SET_NICK_LINK, "UPDATE nickname SET account_id=$1 WHERE account_id=$2", EXECUTE },
   { SET_NICK_LINK_EXCLUDE, "UPDATE nickname SET account_id=$1 WHERE account_id=$2 AND id=$3", EXECUTE },
   { INSERT_NICK_CLONE, "INSERT INTO account (primary_nick, password, salt, url, email, cloak, " 
@@ -185,10 +185,10 @@ static query_t queries[QUERY_COUNT] = {
   { GET_AKICKS, "SELECT channel_akick.id, channel_id, target, setter, mask, "
     "reason, time, duration, chmode FROM "
     "channel_akick WHERE channel_id=$1 AND chmode = $2 ORDER BY channel_akick.id", QUERY },
-  { DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
+  /*{ DELETE_AKICK_IDX, "DELETE FROM channel_akick WHERE id = "
           "(SELECT id FROM channel_akick AS a WHERE $1 = "
           "(SELECT COUNT(id)+1 FROM channel_akick AS b WHERE b.id < a.id AND "
-          "b.channel_id = $2) AND channel_id = $2)", EXECUTE },
+          "b.channel_id = $2) AND channel_id = $2)", EXECUTE },*/
   { DELETE_AKICK_MASK, "DELETE FROM channel_akick WHERE channel_id=$1 AND mask=$2 "
     " AND chmode = $3", EXECUTE },
   { DELETE_AKICK_ACCOUNT, "DELETE FROM channel_akick WHERE channel_id=$1 AND target IN (SELECT account_id "
@@ -243,10 +243,10 @@ static query_t queries[QUERY_COUNT] = {
     "WHERE account_id=$1 ORDER BY id", QUERY },
   { DELETE_NICKCERT, "DELETE FROM account_fingerprint WHERE "
     "account_id=$1 AND fingerprint=upper($2)", EXECUTE },
-  { DELETE_NICKCERT_IDX, "DELETE FROM account_fingerprint WHERE id = "
+  /*{ DELETE_NICKCERT_IDX, "DELETE FROM account_fingerprint WHERE id = "
           "(SELECT id FROM account_fingerprint AS a WHERE $1 = "
           "(SELECT COUNT(id)+1 FROM account_fingerprint AS b WHERE b.id < a.id AND "
-          "b.account_id = $2) AND account_id = $2)", EXECUTE },
+          "b.account_id = $2) AND account_id = $2)", EXECUTE },*/
   { DELETE_ALL_NICKACCESS, "DELETE FROM account_fingerprint WHERE "
     "account_id=$1", EXECUTE },
   { INSERT_JUPE, "INSERT INTO jupes (setter, name, reason) VALUES($1, $2, $3)",

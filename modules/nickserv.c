@@ -941,7 +941,10 @@ m_access_list(struct Service *service, struct Client *client, int parc,
   nickname_accesslist_list(nick, &list);
 
   DLINK_FOREACH(ptr, list.head)
+  {
+    entry = ptr->data;
     reply_user(service, service, client, NS_ACCESS_ENTRY, i++, entry->value);
+  }
 
   nickname_accesslist_free(&list);
 }
@@ -951,11 +954,10 @@ m_access_del(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   Nickname *nick = client->nickname;
-  int index, ret;
+  int ret;
 
-  index = atoi(parv[1]);
-  ret = nickname_accesslist_delete(nick, parv[1], index);
-  
+  ret = nickname_accesslist_delete(nick, parv[1]);
+
   reply_user(service, service, client, NS_ACCESS_DEL, ret);
 }
 
@@ -1065,14 +1067,10 @@ m_cert_del(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   Nickname *nick = client->nickname;
-  int index, ret;
+  int ret;
 
-  index = atoi(parv[1]);
-  if(index >= 1)
-    ret = nickname_cert_delete(nick, NULL, index);
-  else
-    ret = nickname_cert_delete(nick, parv[1], 0);
-  
+  ret = nickname_cert_delete(nick, parv[1]);
+
   reply_user(service, service, client, NS_CERT_DEL, ret);
 }
 

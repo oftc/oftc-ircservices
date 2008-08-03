@@ -31,7 +31,6 @@ int akick_enforce(struct Service *, struct Channel *, struct ServiceMask *);
 int akick_list(unsigned int, dlink_list *);
 void akick_list_free(dlink_list *);
 int akick_remove_mask(unsigned int, const char *);
-int akick_remove_index(unsigned int, unsigned int);
 int akick_remove_account(unsigned int, const char *);
 
 #endif

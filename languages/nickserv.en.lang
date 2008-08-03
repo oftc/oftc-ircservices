@@ -46,7 +46,7 @@ NS_HELP_ACCESS_SHORT
 	%s: Maintains the nickname ACCESS list.
 NS_HELP_ACCESS_LONG
 	Usage: ACCESS ADD mask
-	       ACCESS DEL (mask|number)
+	       ACCESS DEL mask
 	       ACCESS LIST
 	
 	Maintains the nickname access list.  If your IRC userhost matches an entry
@@ -59,7 +59,6 @@ NS_HELP_ACCESS_LONG
 	Examples:
 	    ACCESS ADD foo@*.org
 	    ACCESS DEL foo@*.org
-	    ACCESS DEL 1
 	    ACCESS LIST
 	
 	The following are valid options to this command:
@@ -88,19 +87,17 @@ NS_HELP_ACCESS_LIST_LONG
 NS_HELP_ACCESS_DEL_SHORT
 	%s
 NS_HELP_ACCESS_DEL_LONG
-	Usage: ACCESS DEL (index|mask)
+	Usage: ACCESS DEL mask
 	
-	Delete an entry from your access list. You can either delete by entry index
-	or by userhost matching. Index values will change after each delete.
+	Delete an entry from your access list.
 	
 	Examples:
-	    ACCESS DEL 1
 	    ACCESS DEL foo@*.org
 NS_HELP_CERT_SHORT
 	%s: Maintains the nickname client certificate list.
 NS_HELP_CERT_LONG
 	Usage: CERT ADD fingerprint
-	       CERT DEL (fingerprint|number)
+	       CERT DEL fingerprint
 	       CERT LIST
 	
 	Maintains the nickname client certificate list.  If you connect to IRC with
@@ -111,7 +108,6 @@ NS_HELP_CERT_LONG
 	Examples:
 	    CERT ADD 994EB294C15F4EE647FB5A426C11444E697B1814
 	    CERT DEL 994EB294C15F4EE647FB5A426C11444E697B1814
-	    CERT DEL 1
 	    CERT LIST
 	
 	The following are valid options to this command:
@@ -145,14 +141,11 @@ NS_HELP_CERT_LIST_LONG
 NS_HELP_CERT_DEL_SHORT
 	%s
 NS_HELP_CERT_DEL_LONG
-	Usage: CERT DEL (index|mask)
+	Usage: CERT DEL mask
 	
-	Delete an entry from your client certificate list. You can either delete by
-	entry index or by fingerprint matching. Index values will change after each
-	delete.
+	Delete an entry from your client certificate list.
 	
 	Examples:
-	    CERT DEL 1
 	    CERT DEL 994EB294C15F4EE647FB5A426C11444E697B1814
 	
 NS_HELP_SET_SHORT

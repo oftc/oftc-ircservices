@@ -660,14 +660,11 @@ nickname_accesslist_list(Nickname *nick, dlink_list *list)
 }
 
 int
-nickname_accesslist_delete(Nickname *nick, const char *value, int index)
+nickname_accesslist_delete(Nickname *nick, const char *value)
 {
   int ret;
 
-  if(value == NULL)
-    ret = db_execute_nonquery(DELETE_NICKACCESS_IDX, "ii", &nick->id, &index);
-  else
-    ret = db_execute_nonquery(DELETE_NICKACCESS, "is", &nick->id, value);
+  ret = db_execute_nonquery(DELETE_NICKACCESS, "is", &nick->id, value);
 
   if(ret == -1)
     return FALSE;
@@ -760,14 +757,11 @@ nickname_cert_add(struct AccessEntry *access)
 }
 
 int
-nickname_cert_delete(Nickname *nick, const char *value, int index)
+nickname_cert_delete(Nickname *nick, const char *value)
 {
   int ret;
 
-  if(value == NULL)
-    ret = db_execute_nonquery(DELETE_NICKCERT_IDX, "ii", &nick->id, &index);
-  else
-    ret = db_execute_nonquery(DELETE_NICKCERT, "is", &nick->id, value);
+  ret = db_execute_nonquery(DELETE_NICKCERT, "is", &nick->id, value);
 
   if(ret == -1)
     return FALSE;

@@ -84,13 +84,13 @@ int nickname_save(Nickname *);
 int nickname_accesslist_add(struct AccessEntry *);
 int nickname_accesslist_list(Nickname *, dlink_list *);
 int nickname_accesslist_check(Nickname *, const char *);
-int nickname_accesslist_delete(Nickname *, const char *, int);
+int nickname_accesslist_delete(Nickname *, const char *);
 void nickname_accesslist_free(dlink_list *);
 
 int nickname_cert_add(struct AccessEntry *);
 int nickname_cert_list(Nickname *, dlink_list *);
 int nickname_cert_check(Nickname *, const char *);
-int nickname_cert_delete(Nickname *, const char *, int);
+int nickname_cert_delete(Nickname *, const char *);
 void nickname_certlist_free(dlink_list *);
 
 int nickname_link_list(unsigned int, dlink_list *);

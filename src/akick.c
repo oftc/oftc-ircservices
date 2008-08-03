@@ -145,16 +145,6 @@ akick_check_client(struct Service *service, struct Channel *chptr, struct Client
 }
 
 int
-akick_remove_index(unsigned int channel, unsigned int index)
-{
-  int ret = db_execute_nonquery(DELETE_AKICK_IDX, "ii", &index, &channel);
-  if(ret == -1)
-    return FALSE;
-
-  return TRUE;
-}
-
-int
 akick_enforce(struct Service *service, struct Channel *chptr,
   struct ServiceMask *akick)
 {

@@ -1406,9 +1406,6 @@ m_akick_del(struct Service *service, struct Client *client,
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  /*index = atoi(parv[2]);
-  if(index > 0)
-    ret = akick_remove_index(dbchannel_get_id(regchptr), index);*/
   if(strchr(parv[2], '@') != NULL)
     ret = servicemask_remove_akick(dbchannel_get_id(regchptr), parv[2]);
   else
