@@ -505,7 +505,10 @@ dbchannel_set_topic(DBChannel *this, const char *topic)
   if(db_execute_nonquery(SET_CHAN_TOPIC, "si", topic, &this->id))
   {
     MyFree(this->topic);
-    DupString(this->topic, topic);
+    if(topic != NULL)
+      DupString(this->topic, topic);
+    else
+      this->topic = NULL;
     return TRUE;
   }
   else

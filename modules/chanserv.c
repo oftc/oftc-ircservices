@@ -1010,7 +1010,8 @@ m_set_topic(struct Service *service, struct Client *client,
     changetopic = TRUE;
 
   if((changetopic || ((topic == NULL && (dbchannel_get_topic(regchptr) != NULL)))) && (chptr != NULL))
-    send_topic(service, chptr, client, dbchannel_get_topic(regchptr));
+    send_topic(service, chptr, client,
+      dbchannel_get_topic(regchptr) == NULL ? "" : dbchannel_get_topic(regchptr));
 
   MyFree(topic);
 
@@ -2069,8 +2070,12 @@ m_set_flag(struct Service *service, struct Client *client,
   }
 
   if(set_func(regchptr, on))
+  {
     reply_user(service, service, client, CS_SET_SUCCESS,
         flagname, on ? "ON" : "OFF", channel);
+    send_chops_notice(service, chptr, "[%s ChanOps] %s SET %s to %s",
+        chptr->chname, client->name, flagname, on ? "ON" : "OFF");
+  }
   else
     reply_user(service, service, client, CS_SET_FAILED, flagname, channel);
 
