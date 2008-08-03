@@ -914,6 +914,9 @@ identify_user(struct Client *client)
   if(nickname_get_cloak(nick)[0] != '\0' && nickname_get_cloak_on(nick))
     cloak_user(client, nickname_get_cloak(nick));
 
+  nickname_set_last_realname(nick, client->info);
+  nickname_set_last_host(nick, client->host);
+
   client->num_badpass = 0;
 
   execute_callback(on_identify_cb, me.uplink, client);

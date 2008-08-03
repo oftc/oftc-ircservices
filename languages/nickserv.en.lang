@@ -563,6 +563,7 @@ NS_INFO_START
 	Nickname information for %s (%s)
 NS_INFO
 	Last quit message: %s
+	        Last host: %s
 	              URL: %s
 	     Cloak string: %s
 NS_INFO_MASTER

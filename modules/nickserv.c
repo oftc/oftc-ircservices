@@ -1266,10 +1266,11 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
   reply_time(service, client, NS_INFO_REGTIME_FULL, nickname_get_reg_time(nick));
   reply_time(service, client, NS_INFO_QUITTIME_FULL, nickname_get_last_quit_time(nick));
- 
-  reply_user(service, service, client, NS_INFO, 
-      (nickname_get_last_quit(nick) == NULL) ? "Unknown" : nickname_get_last_quit(nick),  
-      (nickname_get_url(nick) == NULL) ? "Not set" : nickname_get_url(nick), 
+
+  reply_user(service, service, client, NS_INFO,
+      (nickname_get_last_quit(nick) == NULL) ? "Unknown" : nickname_get_last_quit(nick),
+      (nickname_get_last_host(nick) == NULL) ? "Unknown" : nickname_get_last_host(nick),
+      (nickname_get_url(nick) == NULL) ? "Not set" : nickname_get_url(nick),
       (nickname_get_cloak(nick)[0] == '\0') ? "Not set" : nickname_get_cloak(nick));
 
   if((IsIdentified(client) && (nickname_get_id(client->nickname) == nickname_get_id(nick))) || 
