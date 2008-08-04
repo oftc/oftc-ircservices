@@ -775,7 +775,7 @@ m_access_add(struct Service *service, struct Client *client,
       MyFree(access);
       return;
     }
-    chanaccess_remove(access);
+    chanaccess_remove(oldaccess);
     MyFree(oldaccess);
   }
 
