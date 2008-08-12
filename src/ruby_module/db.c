@@ -61,10 +61,20 @@ create_db_list(int argc, VALUE *argv, VALUE self,
     switch(*(*format+i))
     {
       case 'i':
-        Check_Type(arg, T_FIXNUM);
-        iptr = MyMalloc(sizeof(int));
-        *iptr = NUM2INT(arg);
-        ptr = iptr;
+        //Check_Type(arg, T_BIGNUM);
+        if(TYPE(arg) == T_BIGNUM || TYPE(arg) == T_FIXNUM)
+        {
+          iptr = MyMalloc(sizeof(int));
+          *iptr = NUM2INT(arg);
+          ptr = iptr;
+        }
+        else
+        {
+          //FIXME TODO XXX
+          //throw proper exception
+          ilog(L_DEBUG, "[RUBY] format string for db execute wrong, didn't get integer");
+          rb_raise(arg, "format string for db execute wrong, didn't get integer");
+        }
         break;
       case 'b':
         if(arg == Qtrue || arg == Qfalse)
