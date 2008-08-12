@@ -1827,12 +1827,15 @@ clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
 
   DLINK_FOREACH(ptr, list->head)
   {
+    char tmp[NICKLEN+USERLEN+HOSTLEN+1] = "";
     char *cur = ptr->data;
 
+    snprintf(tmp, NICKLEN+USERLEN+HOSTLEN, "%s", cur);
+
     if(dir)
-      add_id(client, chptr, cur, id);
+      add_id(client, chptr, tmp, id);
     else
-      del_id(chptr, cur, id);
+      del_id(chptr, tmp, id);
 
     if(strlen(cur) + strlen(masks) + strlen(modes) > max_size)
     {
