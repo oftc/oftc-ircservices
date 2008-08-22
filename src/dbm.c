@@ -104,7 +104,8 @@ cleanup_db()
   snprintf(module, sizeof(module), "%s.la", Database.driver);
 
   mod = find_module(module, 0);
-  unload_module(mod);
+  if(mod != NULL)
+    unload_module(mod);
   fbclose(db_log_fb);
 }
 
