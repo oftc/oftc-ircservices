@@ -485,8 +485,16 @@ NS_ACCESS_START
 	ACCESS list:
 NS_ACCESS_ENTRY
 	%d  %s
+NS_ACCESS_LIST_NONE
+	Your ACCESS list is empty and contains no entries.
 NS_ACCESS_DEL
-	%d ACCESS entries deleted.
+	ACCESS entry %s deleted.
+NS_ACCESS_DEL_NONE
+	%s was not found on the ACCESS list.
+NS_ACCESS_DEL_ERROR
+	An error occured attempting to delete the ACCESS list entry.  Please try
+	again.  If this is not the first time you have seen this message please
+	contact network support.
 NS_CERT_ADD
 	CERT list entry %s added.
 NS_CERT_ADDFAIL

@@ -669,7 +669,7 @@ nickname_accesslist_delete(Nickname *nick, const char *value)
   if(ret == -1)
     return FALSE;
 
-  return TRUE;
+  return ret;
 }
 
 void

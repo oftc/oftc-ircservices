@@ -936,9 +936,13 @@ m_access_list(struct Service *service, struct Client *client, int parc,
 
   nick = client->nickname;
 
-  reply_user(service, service, client, NS_ACCESS_START);
 
   nickname_accesslist_list(nick, &list);
+
+  if(dlink_list_length(&list) == 0)
+    reply_user(service, service, client, NS_ACCESS_LIST_NONE);
+  else
+    reply_user(service, service, client, NS_ACCESS_START);
 
   DLINK_FOREACH(ptr, list.head)
   {
@@ -957,8 +961,12 @@ m_access_del(struct Service *service, struct Client *client, int parc,
   int ret;
 
   ret = nickname_accesslist_delete(nick, parv[1]);
-
-  reply_user(service, service, client, NS_ACCESS_DEL, ret);
+  if(ret > 0)
+    reply_user(service, service, client, NS_ACCESS_DEL, parv[1]);
+  else if(ret == 0)
+    reply_user(service, service, client, NS_ACCESS_DEL_NONE, parv[1]);
+  else
+    reply_user(service, service, client, NS_ACCESS_DEL_ERROR);
 }
 
 static void
