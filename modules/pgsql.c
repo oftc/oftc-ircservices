@@ -346,7 +346,7 @@ pg_connect(const char *connection_string)
       continue;
     if(!pg_prepare(i, query->name))
     {
-      ilog(L_CRIT, "Prepare: %d Failed.", i);
+      ilog(L_CRIT, "Prepare: %d Failed (%s)", i, PQerrorMessage(pgsql->connection));
       return 0;
     }
   }
