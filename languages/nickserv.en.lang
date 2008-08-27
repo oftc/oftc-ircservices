@@ -500,11 +500,11 @@ NS_ACCESS_DEL_ERROR
 	again.  If this is not the first time you have seen this message please
 	contact network support.
 NS_CERT_ADD
-	CERT list entry %s added.
+	CERT list entry %s added to nickname %s.
 NS_CERT_ADDFAIL
-	Failed to add CERT list entry %s. This may have been an internal error,
-	please try again shortly. If this is not the first time you have seen this
-	message please contact network support.
+	Failed to add CERT list entry %s to nickname %s.  This may have been 
+	an internal error, please try again shortly. If this is not the first time 
+	you have seen this message please contact network support.
 NS_CERT_ADDFAIL_NONICK
 	Failed to add CERT list entry because %s is not registered.
 NS_CERT_ADDFAIL_NOTYOURNICK

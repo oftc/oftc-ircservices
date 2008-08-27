@@ -974,26 +974,65 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   Nickname *nick = client->nickname;
-  char *certfp;
+  Nickname *dest_nick = NULL;
+  char *certfp, *nickstr;
   struct AccessEntry access = { 0 };
+  unsigned int id, nickid;
 
-  if(parv[1] == NULL)
+  id = nickid = 0;
+
+  /* 
+   * If we only have one paramter, it's either a nickname of a certfp.  If
+   * it's a nick we take the cert from the client. If we have two parameters, 
+   * we should have a cert followed by a nickname.
+   *
+   */
+  if(parc == 0)
   {
-    if(*client->certfp == '\0')
-    {
-      reply_user(service, service, client, NS_CERT_YOUHAVENONE);
-      return;
-    }
     certfp = client->certfp;
+    nickstr = nick->nick;
+  }
+  else if(parc == 1)
+  {
+    certfp = client->certfp;
+    if((dest_nick = nickname_find(parv[1])) == NULL)
+    {
+      if(*certfp == '\0')
+      {
+        reply_user(service, service, client, NS_CERT_YOUHAVENONE);
+        return;
+      }
+      nickstr = nick->nick;
+    }
+    else
+    {
+      nickstr = parv[1];
+    }
   }
   else
   {
-    if(strlen(parv[1]) != 40)
+    certfp = parv[1];
+    nickstr = parv[2];
+    if((dest_nick = nickname_find(nickstr)) == NULL)
     {
-      reply_user(service, service, client, NS_CERT_INVALID, parv[1]);
+      reply_user(service, service, client, NS_CERT_ADDFAIL_NONICK, nickstr);
       return;
     }
-    certfp = parv[1];
+  }
+
+  if(dest_nick != NULL)
+  {
+    id = nickname_get_id(dest_nick);
+    nickid = nickname_get_nickid(dest_nick);
+    nickname_free(dest_nick);
+  }
+  else
+    nickid = nickname_get_nickid(nick);
+
+  if(strlen(certfp) != 40)
+  {
+    reply_user(service, service, client, NS_CERT_INVALID, certfp);
+    return;
   }
 
   if(nickname_cert_check(nick, certfp))
@@ -1002,33 +1041,20 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
     return;
   }
 
-  access.id = nickname_get_id(nick);
-  access.value = certfp;
-  access.nickname_id = 0;
-
-  if(parc > 1)
+  if(id != 0 && nickname_get_id(nick) != id)
   {
-    Nickname *dest_nick = nickname_find(parv[2]);
-    if(dest_nick == NULL)
-    {
-      reply_user(service, service, client, NS_CERT_ADDFAIL_NONICK, parv[2]);
-      return;
-    }
-
-    if(nickname_get_id(nick) != nickname_get_id(dest_nick))
-    {
-      reply_user(service, service, client, NS_CERT_ADDFAIL_NOTYOURNICK, parv[2]);
-      return;
-    }
-
-    access.nickname_id = nickname_get_nickid(dest_nick);
-    MyFree(dest_nick);
+    reply_user(service, service, client, NS_CERT_ADDFAIL_NOTYOURNICK, nickstr);
+    return;
   }
 
+  access.id = nickname_get_id(nick);
+  access.value = certfp;
+  access.nickname_id = nickid;
+
   if(nickname_cert_add(&access))
-    reply_user(service, service, client, NS_CERT_ADD, access.value);
+    reply_user(service, service, client, NS_CERT_ADD, access.value, nickstr);
   else
-    reply_user(service, service, client, NS_CERT_ADDFAIL, access.value);
+    reply_user(service, service, client, NS_CERT_ADDFAIL, access.value, nickstr);
 }
 
 static void
