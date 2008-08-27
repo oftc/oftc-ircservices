@@ -1079,7 +1079,12 @@ m_cert_del(struct Service *service, struct Client *client, int parc,
 
   ret = nickname_cert_delete(nick, parv[1]);
 
-  reply_user(service, service, client, NS_CERT_DEL, ret);
+  if(ret < 0)
+    reply_user(service, service, client, NS_CERT_DEL_ERROR);
+  else if(ret == 0)
+    reply_user(service, service, client, NS_CERT_DEL_NONE, parv[1]);
+  else if(ret > 0)
+    reply_user(service, service, client, NS_CERT_DEL, parv[1]);
 }
 
 static void

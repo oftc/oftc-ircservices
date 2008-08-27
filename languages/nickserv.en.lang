@@ -123,12 +123,16 @@ NS_HELP_CERT_ADD_LONG
 	via SSL and have provided a valid client certificate, you may omit the
 	fingerprint parameter.
 	
-	You can provide an optional nickname, when set services will automatically
-	GHOST any client using that nick, IDENTIFY you, and SVSNICK you to that nick.
+	If you specify a nickname to add this fingerprint to, when you connect to
+	the network, providing this fingerpritn, you will automatically be
+	identified to your account, and services will change your nickname to that
+	nickname.  The nickname you specify must be one linked to your account.
 	
 	Examples:
 	    CERT ADD
+	    CERT ADD testnick
 	    CERT ADD 994EB294C15F4EE647FB5A426C11444E697B1814
+	    CERT ADD 994EB294C15F4EE647FB5A426C11444E697B1814 testnick
 NS_HELP_CERT_LIST_SHORT
 	%s
 NS_HELP_CERT_LIST_LONG
@@ -521,7 +525,12 @@ NS_CERT_ENTRY
 NS_CERT_EMPTY
 	No certificates found.
 NS_CERT_DEL
-	%d CERT entries deleted.
+	%s removed from the CERT list.
+NS_CERT_DEL_NONE
+	%s was not found on the CERT list.
+NS_CERT_DEL_ERROR
+	An error occured attempting to modify the CERT list.  If this is not the
+	first time you have seen this message, please contact network support.
 NS_REGAIN_SUCCESS
 	REGAIN succeed on nickname %s. You have been changed to your nickname.
 NS_REGAIN_FAILED
