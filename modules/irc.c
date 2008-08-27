@@ -1266,9 +1266,6 @@ m_squit(struct Client *client, struct Client *source, int parc, char *parv[])
     comment[REASONLEN] = '\0';
 
   exit_client(target, source, comment);
-
-  if(target == me.uplink)
-    me.uplink = NULL;
 }
 
 /*

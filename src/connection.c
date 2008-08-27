@@ -130,7 +130,7 @@ try_reconnect(void *param)
 {
   if(me.uplink == NULL)
   {
-    ilog(L_DEBUG, "Uplink went away, trying to reconnect");
+    ilog(L_ERROR, "Uplink went away, trying to reconnect");
     connect_server();
   }
 }

@@ -174,7 +174,7 @@ read_packet(fde_t *fd, void *data)
       if (length < 0 && ignoreErrno(errno))
         break;
 
-      ilog(L_ERROR, "Lost server connection, trying reconnect");
+      ilog(L_ERROR, "Lost server connection. (Their side).");
       exit_client(me.uplink, &me, "Connection lost");
       me.uplink = NULL;
       return;
@@ -183,7 +183,15 @@ read_packet(fde_t *fd, void *data)
     execute_callback(iorecv_cb, client, length, readBuf);
     parse_client_queued(client);
   } while (length == sizeof(readBuf));
-  comm_setselect(fd, COMM_SELECT_READ, read_packet, client, 0);
+
+  if(fd->fd != 0)
+    comm_setselect(fd, COMM_SELECT_READ, read_packet, client, 0);
+  else
+  {
+    ilog(L_ERROR, "Lost server connection. (Our side).");
+    exit_client(me.uplink, &me, "Connection lost");
+    me.uplink = NULL;
+  }
 }
 
 /*
