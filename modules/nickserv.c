@@ -1686,9 +1686,9 @@ m_enslave(struct Service *service, struct Client *client, int parc, char *parv[]
   reply_user(service, service, client, NS_LINK_OK, parv[1], nickname_get_nick(nick));
   
   nickname_free(slave_nick);
+  client->nickname = nickname_find(nick->nick);
   nickname_free(nick);
 
-  client->nickname = nickname_find(parv[1]);
   assert(client->nickname != NULL);
 }
 
