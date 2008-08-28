@@ -1235,7 +1235,10 @@ nickname_set_email(Nickname *this, const char *value)
   if(this->id == 0 || db_execute_nonquery(SET_NICK_EMAIL, "si", value, &this->id))
   {
     MyFree(this->email);
-    DupString(this->email, value);
+    if(value != NULL)
+      DupString(this->email, value);
+    else 
+      this->email = NULL;
     return TRUE;
   }
   else
@@ -1248,7 +1251,10 @@ nickname_set_url(Nickname *this, const char *value)
   if(db_execute_nonquery(SET_NICK_URL, "si", value, &this->id))
   {
     MyFree(this->url);
-    DupString(this->url, value);
+    if(value != NULL)
+      DupString(this->url, value);
+    else
+      this->url = NULL;
     return TRUE;
   }
   else
