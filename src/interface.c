@@ -1597,7 +1597,7 @@ check_nick_pass(struct Client *client, Nickname *nick, const char *password)
 
   if(*client->certfp != '\0')
   {
-    if(nickname_cert_check(nick, client->certfp))
+    if(nickname_cert_check(nick, client->certfp, NULL))
       return 1;
   }
 

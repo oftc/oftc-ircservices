@@ -775,7 +775,8 @@ nickname_certlist_free(dlink_list *list)
 }
 
 int
-nickname_cert_check(Nickname *nick, const char *value)
+nickname_cert_check(Nickname *nick, const char *value, 
+    struct AccessEntry **retentry)
 {
   dlink_list list = { 0 };
   dlink_node *ptr;
@@ -790,6 +791,11 @@ nickname_cert_check(Nickname *nick, const char *value)
     if(match(entry->value, value))
     {
       found = TRUE;
+      if(retentry != NULL)
+      {
+        *retentry = MyMalloc(sizeof(struct AccessEntry));
+        memcpy(*retentry, entry, sizeof(struct AccessEntry));
+      }
       break;
     }
   }

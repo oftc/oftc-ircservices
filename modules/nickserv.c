@@ -1027,7 +1027,7 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
     nickname_free(dest_nick);
   }
   else
-    nickid = nickname_get_nickid(nick);
+    nickid = 0;
 
   if(strlen(certfp) != 40)
   {
@@ -1035,7 +1035,7 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
     return;
   }
 
-  if(nickname_cert_check(nick, certfp))
+  if(nickname_cert_check(nick, certfp, NULL))
   {
     reply_user(service, service, client, NS_CERT_EXISTS, certfp);
     return;
@@ -1824,7 +1824,7 @@ ns_on_nick_change(va_list args)
  
   snprintf(userhost, USERHOSTLEN, "%s@%s", user->username, user->host);
 
-  if(*user->certfp != '\0' && nickname_cert_check(nick_p, user->certfp))
+  if(*user->certfp != '\0' && nickname_cert_check(nick_p, user->certfp, NULL))
   {
     if(user->nickname != NULL)
       nickname_free(user->nickname);
@@ -1970,6 +1970,8 @@ ns_on_certfp(va_list args)
 {
   struct Client *user = va_arg(args, struct Client *);
   Nickname *nick = nickname_find(user->name);
+  struct AccessEntry *cert;
+  char *newnick;
 
   if(nick == NULL)
     return pass_callback(ns_certfp_hook, user);
@@ -1981,17 +1983,19 @@ ns_on_certfp(va_list args)
     return pass_callback(ns_certfp_hook, user);
   }
 
-  if(nickname_cert_check(nick, user->certfp))
-  {
-    if(user->nickname != NULL)
-      nickname_free(user->nickname);
-    user->nickname = nick;
-    dlinkFindDelete(&nick_enforce_list, user);
-    identify_user(user);
-    SetSentCert(user);
-    reply_user(nickserv, nickserv, user, NS_IDENTIFY_CERT, user->name);
-  }
+  if(!nickname_cert_check(nick, user->certfp, &cert))
+    return pass_callback(ns_certfp_hook, user);
   
+  if(user->nickname != NULL)
+    nickname_free(user->nickname);
+
+  newnick = nickname_nick_from_id(cert->nickname_id, FALSE);
+
+  user->nickname = nick;
+  SetSentCert(user);
+  handle_nick_change(nickserv, user, newnick, NS_IDENTIFY_CERT);
+
+  MyFree(cert);
   return pass_callback(ns_certfp_hook, user);
 }
 
