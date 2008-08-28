@@ -232,6 +232,9 @@ nickname_delete(Nickname *nick)
       ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &newid, &nick->id);
       if(ret == -1)
         goto failure;
+      ret = db_execute_nonquery(DELETE_NICK, "i", &nick->nickid);
+      if(ret == -1)
+        goto failure;
     }
   }
   else
