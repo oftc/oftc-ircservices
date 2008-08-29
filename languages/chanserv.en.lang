@@ -584,6 +584,9 @@ CS_ACCESS_DELFAIL
 CS_ACCESS_NOMASTERS
 	You cannot remove %s from the access list of %s because it is the
 	last MASTER entry. Add another MASTER to the access list and try again.
+CS_ACCESS_ALREADY_ON
+	You cannot add %s to the access list of %s because they are already
+	on the list at that level.
 CS_ACCESS_NOTLISTED
 	%s is not on the access list of %s.
 CS_ENTRYMSG

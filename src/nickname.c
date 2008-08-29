@@ -401,6 +401,19 @@ nickname_id_from_nick(const char *nick, int is_accid)
   else
     ret = db_execute_scalar(GET_NICKID_FROM_NICK, &error, "s", nick);
 
+  if(error)
+  {
+    ilog(L_CRIT, "Database error %d trying to find id for nickname %s", error,
+        nick);
+    return -1;
+  }
+
+  if(ret == NULL)
+  {
+    ilog(L_DEBUG, "Nickname %s not found(id lookup)", nick);
+    return 0;
+  }
+
   id = atoi(ret);
   MyFree(ret);
 

@@ -764,6 +764,17 @@ m_access_add(struct Service *service, struct Client *client,
   if((oldaccess = chanaccess_find(access->channel, access->account)) != NULL)
   {
     int mcount = -1;
+
+    if(oldaccess->account == access->account && oldaccess->level == access->level)
+    {
+      reply_user(service, service, client, CS_ACCESS_ALREADY_ON, parv[2],
+          dbchannel_get_channel(regchptr));
+      if(chptr == NULL)
+        dbchannel_free(regchptr);
+      MyFree(oldaccess);
+      MyFree(access);
+      return;
+    }
     dbchannel_masters_count(dbchannel_get_id(regchptr), &mcount);
     if(oldaccess->level == MASTER_FLAG && mcount <= 1)
     {
