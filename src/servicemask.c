@@ -101,19 +101,14 @@ servicemask_add_quiet(const char *mask, unsigned int setter, unsigned int channe
 static int
 servicemask_remove(unsigned int channel, const char *mask, unsigned int mode)
 {
-  int ret = db_execute_nonquery(DELETE_AKICK_MASK, "isi", &channel, mask, &mode);
-  if(ret == -1)
-    return FALSE;
-
-  return TRUE;
+  return db_execute_nonquery(DELETE_AKICK_MASK, "isi", &channel, mask, &mode);
 }
 
 int
 servicemask_remove_akick_target(unsigned int channel, const char *account)
 {
   unsigned int mode = AKICK_MASK;
-  int ret = db_execute_nonquery(DELETE_AKICK_ACCOUNT, "isi", &channel, account, &mode);
-  return ret == -1 ? FALSE : TRUE;
+  return db_execute_nonquery(DELETE_AKICK_ACCOUNT, "isi", &channel, account, &mode);
 }
 
 int
