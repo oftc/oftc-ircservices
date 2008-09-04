@@ -984,7 +984,8 @@ do_help(struct Service *service, struct Client *client,
     { 
       while(sub != NULL && sub->cmd != NULL)
       {
-        if(strncasecmp(sub->cmd, parv[2], strlen(sub->cmd)) == 0)
+        if(strncasecmp(sub->cmd, parv[2], strlen(sub->cmd)) == 0 &&
+            strlen(parv[2]) == strlen(sub->cmd))
         {
           reply_user(service, NULL, client, SERV_SUB_HELP_HEADER, msg->cmd,
               sub->cmd);
