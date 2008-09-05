@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+1.2.2
+-----
+o Fix a minor bug in the userhost splitting that caused an akill of *@*.
+o Add a safety check to the akill function to stop akills going out that are
+wilder than the configuration is supposed to allow.
+o Add a configure parameter --with-topiclen to set the topiclen and remove the
+#define for it.
+o Fix a bug caused by trying to delete from a channel's access list as sudo.
+
 1.2.1
 -----
 o GanneffServ Bugfixes.
