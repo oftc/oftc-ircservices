@@ -323,6 +323,7 @@ class GanneffServ < ServiceModule
   def loaded()
     # Now load the data.
     load_data
+    eob
   end
 
   # Called via event handlers, every X seconds.
