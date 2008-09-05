@@ -1,6 +1,41 @@
 Release Notes
 =============
 
+1.3.0
+-----
+o Remove yada from the source tree
+o Instead, implement a custom database module model.  Currently only postgres
+is implemented.
+o Add the beginnings of python support.  This is a work in progress.
+o Fix a bug in the auto reconnect functionality.  Services will now
+successfully reconnect to servers after losing its link.
+o Various TS6 enhancements to make services make more use of TS6.
+o Implment mask clumping to prevent mode spam on channels.
+o Add QUIET/INVEX/EXCEPT lists to chanserv.
+o Set the nickname last host and last realname on identify.
+o Fix a bug in services help causing it to give help for commands that started
+with the text you searched for but wasn't the entry you wanted. eg TOPIC
+instead of TOPICLOCK.
+o The first request issued after a db connection is restored will no longer 
+fail.
+o Enhance the ruby wrapper to make use of the new db layer.
+o Add the ability to assign a certificate fingerprint to a specific nickname
+in order to auto change to that nick on login.
+o Add some database indexes
+o Add the RESETPASS command to nickserv, to reset the password on a nickname,
+for some reason.
+o Disallow short nicknames from being registered.
+o Correct the use_logging entry in the example config.
+
+1.2.2
+-----
+o Fix a minor bug in the userhost splitting that caused an akill of *@*.
+o Add a safety check to the akill function to stop akills going out that are
+wilder than the configuration is supposed to allow.
+o Add a configure parameter --with-topiclen to set the topiclen and remove the
+#define for it.
+o Fix a bug caused by trying to delete from a channel's access list as sudo.
+
 1.2.1
 -----
 o GanneffServ Bugfixes.
