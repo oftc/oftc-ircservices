@@ -140,9 +140,9 @@ CS_HELP_SET_AUTOSAVE_LONG
 	to their respective lists, like INVEX QUIET EXCEPT
 	
 	See Also:
-		HELP INVEX
-		HELP QUIET
-		HELP EXCEPT
+	  HELP INVEX
+	  HELP QUIET
+	  HELP EXCEPT
 CS_HELP_SET_LEAVEOPS_SHORT
 	%s: Set whether ops are kept in a channel even though a person is not on the
 	channel access list at CHANOP level.
