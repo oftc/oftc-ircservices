@@ -1,5 +1,7 @@
 #include <ruby.h>
 #include "libruby_module.h"
+#include "servicemask.h"
+#include "akill.h"
 
 VALUE cServiceModule = Qnil;
 VALUE cClient;
@@ -256,19 +258,18 @@ ServiceModule_chain_language(VALUE self, VALUE langfile)
 static VALUE
 ServiceModule_akill_add(VALUE self, VALUE mask, VALUE reason, VALUE duration)
 {
-  //TODO XXX FIXME
-  /*struct Service *service = get_service(self);
-  struct Client *client = find_client(service->name);
+  struct Service *service = get_service(self);
+  struct Client *client = value_to_client(rb_iv_get(self, "@client"));
   const char *creason;
   const char *cmask;
-  struct ServiceBan *akill;
+  struct ServiceMask *akill;
 
   Check_Type(mask, T_STRING);
   cmask = StringValueCStr(mask);
 
-  if((akill = db_find_akill(cmask)) != NULL)
+  if((akill = akill_find(cmask)) != NULL)
   {
-    free_serviceban(akill);
+    free_servicemask(akill);
     return Qfalse;
   }
 
@@ -278,16 +279,27 @@ ServiceModule_akill_add(VALUE self, VALUE mask, VALUE reason, VALUE duration)
   Check_Type(reason, T_STRING);
   creason = StringValueCStr(reason);
 
-  akill = akill_add(service, client, cmask, creason, NUM2INT(duration));
+  akill = MyMalloc(sizeof(struct ServiceMask));
 
-  if(akill == NULL)
+  akill->time_set = CurrentTime;
+  akill->duration = NUM2INT(duration);
+  DupString(akill->mask, cmask);
+  DupString(akill->reason, creason);
+
+  if(!akill_add(akill))
+  {
+    ilog(L_NOTICE, "%s Failed to add akill on %s", client->name, cmask);
+    free_servicemask(akill);
     return Qfalse;
+  }
   else
   {
-    free_serviceban(akill);
+    ilog(L_NOTICE, "%s Added akill on %s because %s for %ld seconds",
+      client->name, cmask, creason, akill->duration);
+    send_akill(service, client->name, akill);
+    free_servicemask(akill);
     return Qtrue;
-  }*/
-  return Qfalse;
+  }
 }
 
 static VALUE

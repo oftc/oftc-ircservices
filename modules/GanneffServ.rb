@@ -89,8 +89,7 @@ class GanneffServ < ServiceModule
     @dbq = Hash.new
     @dbq['GET_ALL_CHANNELS'] = DB.prepare('SELECT channel, reason, kills,
       monitor_only, nick, time FROM ganneffserv, account, nickname WHERE
-      ganneffserv.setter = account.primary_nick AND
-      account.primary_nick = nickname.id')
+      ganneffserv.setter = account.id AND account.primary_nick = nickname.id')
     @dbq['INSERT_CHAN'] = DB.prepare('INSERT INTO ganneffserv(setter, time,
       channel, reason, monitor_only) VALUES($1, $2, $3, $4, $5)')
     @dbq['DELETE_CHAN'] = DB.prepare('DELETE FROM ganneffserv WHERE channel =
@@ -225,6 +224,8 @@ class GanneffServ < ServiceModule
     reply_user(client, "%-20s %-4s %-10s %-19s %s" % [ "Channel", "Type", "By", "When", "Action" ])
 
     result = DB.execute(@dbq['GET_ALL_CHANNELS'], '')
+
+    debug(LOG_DEBUG, "LIST #{result.row_count}")
 
     result.row_each { |row|
       check = "J"
@@ -520,7 +521,7 @@ class GanneffServ < ServiceModule
       debug(LOG_DEBUG, "Not issuing AKILL for #{client.name} having cloak #{client.host}, real host #{client.realhost}")
       ret = false # continue with callbacks, we haven't set any kill
     else # if host
-      debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} days")
+      debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
       ret = akill_add("*@#{host}", reason, @akill_duration)
     end # if host
 

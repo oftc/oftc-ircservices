@@ -40,7 +40,12 @@ row_to_akill(row_t *row)
 
   sban = MyMalloc(sizeof(struct ServiceMask));
   sban->id = atoi(row->cols[0]);
-  sban->setter = atoi(row->cols[1]);
+
+  if(row->cols[1] != NULL)
+    sban->setter = atoi(row->cols[1]);
+  else
+    sban->setter = 0;
+
   DupString(sban->mask, row->cols[2]);
   DupString(sban->reason, row->cols[3]);
   sban->time_set = atoi(row->cols[4]);

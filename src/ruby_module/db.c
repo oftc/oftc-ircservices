@@ -145,6 +145,8 @@ execute(int argc, VALUE *argv, VALUE self)
       return Qnil;
     }
 
+    db_log("Ruby Result Count: %d", results->row_count);
+
     dbresult = dbresult_to_value(results);
     cleanup_db_list(&list);
     return dbresult;
