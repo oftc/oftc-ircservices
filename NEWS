@@ -26,6 +26,7 @@ o Add the RESETPASS command to nickserv, to reset the password on a nickname,
 for some reason.
 o Disallow short nicknames from being registered.
 o Correct the use_logging entry in the example config.
+o Fix the horribly formatted outgoing mails
 
 1.2.2
 -----

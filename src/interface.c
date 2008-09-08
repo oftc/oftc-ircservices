@@ -451,13 +451,16 @@ void
 reply_mail(struct Service *service, struct Client *client,
     unsigned int subjectid, unsigned int langid, ...)
 {
-  char *buf, *bufptr;
+  char *buf;
   char *langstr = NULL;
   char *subjectstr;
   struct LanguageFile *languages;
   va_list ap;
   FILE *ptr;
   int count = 0;
+  char currline[72 + 1] = {'\0'}; /* 72 characters + '\0' */
+  int srcidx, dstidx, lastspace, laststart;
+  char currchar;
 
   if(service == NULL)
     languages = ServicesLanguages;
@@ -476,7 +479,11 @@ reply_mail(struct Service *service, struct Client *client,
   }
 
   va_start(ap, langid);
-  vasprintf(&buf, langstr, ap);
+  if(vasprintf(&buf, langstr, ap) < 0)
+  {
+    ilog(L_ERROR, "Error formatting email");
+    return;
+  }
   va_end(ap);
 
   if((ptr = popen(Mail.command, "w")) == NULL)
@@ -490,29 +497,65 @@ reply_mail(struct Service *service, struct Client *client,
   fprintf(ptr, "Subject: %s\n", subjectstr);
   fprintf(ptr, "Precedence: junk\n");
 
-  bufptr = buf;
-  while(*bufptr != '\0')
+  srcidx = dstidx = lastspace = laststart = 0;
+  currchar = buf[srcidx];
+
+  while(currchar != '\0')
   {
-    if(*bufptr == '\n')
+    if(currchar == ' ')
+      lastspace = srcidx;
+
+    if(currchar == '\n')
     {
-      bufptr++;
-      if(*bufptr == '\n')
+      srcidx++;
+      currchar = buf[srcidx];
+      if(currchar == '\n')
       {
+        fputs(currline, ptr);
+        memset(currline, '\0', sizeof(currline));
         fputc('\n', ptr);
-        count = 0;
+        fputc('\n', ptr);
+        srcidx++;
+        currchar = buf[srcidx];
+        dstidx = 0;
+        laststart = srcidx;
+        continue;
       }
+      currline[dstidx++] = ' ';
+      continue;
     }
 
-    if(count == 72)
+    currline[dstidx++] = currchar;
+
+    if(dstidx > 71)
     {
+      int diff = lastspace - laststart;
+
+      if(diff > 72)
+        strlcpy(currline, currline, sizeof(currline));
+      else
+        strlcpy(currline, currline, diff + 1);
+
+      laststart = srcidx = laststart + diff;
+
+      fputs(currline, ptr);
+      fputc(' ', ptr);
       fputc('\n', ptr);
-      count = -1;
+      memset(currline, '\0', sizeof(currline));
+
+      dstidx = count = 0;
     }
-    fputc(*bufptr++, ptr);
     count++;
+    srcidx++;
+    currchar = buf[srcidx];
   }
 
+  if(dstidx != 0)
+    fputs(currline, ptr);
   fputc('\n', ptr);
+  fputc('\n', ptr);
+
+
   MyFree(buf);
   pclose(ptr);
 }

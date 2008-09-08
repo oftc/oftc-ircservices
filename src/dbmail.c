@@ -16,8 +16,13 @@ int
 dbmail_is_sent(unsigned int account, const char *email)
 {
   int error, ret;
+  char *result;
 
-  ret = atoi(db_execute_scalar(GET_SENT_MAIL, &error, "is", &account, email));
+  result = db_execute_scalar(GET_SENT_MAIL, &error, "is", &account, email);
+  if(result != NULL)
+    ret = atoi(result);
+  else
+    ret = FALSE;
 
   if(error)
   {
