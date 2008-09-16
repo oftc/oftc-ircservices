@@ -452,7 +452,7 @@ irc_sendmsg_akill(va_list args)
 
   /* Safety check the result from split_nuh */
   snprintf(userhost, USERLEN+HOSTLEN, "%s@%s", user, host);
-  if(!valid_mask(userhost))
+  if(!valid_wild_card(userhost))
   {
     ilog(L_CRIT, "split_nuh tried to akill %s@%s, which is more wild than our configuration!",
         user, host);
