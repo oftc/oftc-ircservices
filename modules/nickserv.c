@@ -1986,14 +1986,21 @@ ns_on_certfp(va_list args)
   if(!nickname_cert_check(nick, user->certfp, &cert))
     return pass_callback(ns_certfp_hook, user);
   
-  if(user->nickname != NULL)
-    nickname_free(user->nickname);
-
   newnick = nickname_nick_from_id(cert->nickname_id, FALSE);
 
-  user->nickname = nick;
-  SetSentCert(user);
-  handle_nick_change(nickserv, user, newnick, NS_IDENTIFY_CERT);
+  if(newnick != NULL)
+    handle_nick_change(nickserv, user, newnick, NS_IDENTIFY_CERT);
+  else
+  {
+    if(user->nickname != NULL) 
+      nickname_free(user->nickname); 
+    
+    user->nickname = nick; 
+    dlinkFindDelete(&nick_enforce_list, user); 
+    identify_user(user); 
+    SetSentCert(user); 
+    reply_user(nickserv, nickserv, user, NS_IDENTIFY_CERT, user->name); 
+  }
 
   MyFree(cert);
   return pass_callback(ns_certfp_hook, user);
