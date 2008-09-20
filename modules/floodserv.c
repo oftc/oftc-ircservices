@@ -534,8 +534,8 @@ fs_on_privmsg(va_list args)
     switch(enforce)
     {
       case MQUEUE_MESG:
-        ilog(L_NOTICE, "Flood %s@%s TRIGGERED NETWORK MSG FLOOD Message: %s",
-          source->name, host, message);
+        ilog(L_NOTICE, "Flood %s@%s TRIGGERED NETWORK MSG FLOOD Message: %s [%s]",
+          source->name, host, message, channel->chname);
         snprintf(mask, IRC_BUFSIZE, "*@%s", host);
 
         if((akill = akill_find(mask)) != NULL)
