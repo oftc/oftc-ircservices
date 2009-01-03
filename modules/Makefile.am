@@ -4,11 +4,11 @@ INCLUDES=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/languages
 if USE_SHARED_MODULES
 AM_LDFLAGS=-no-undefined -module -avoid-version
 pkglib_LTLIBRARIES=chanserv.la operserv.la nickserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
-dist_pkglib_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb
+dist_pkglib_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb
 else
 AM_LDFLAGS=-static
 noinst_LTLIBRARIES=chanserv.la operserv.la nickserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
-dist_pkglib_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb
+dist_pkglib_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb
 endif
 chanserv_la_SOURCES=chanserv.c
 operserv_la_SOURCES=operserv.c

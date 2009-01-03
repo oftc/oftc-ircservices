@@ -1,0 +1,5 @@
+0 English
+BP_HELP_SHORT
+	%s: shows this help
+BP_HELP_LONG
+	Shows this help message

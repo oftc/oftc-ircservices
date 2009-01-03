@@ -34,6 +34,7 @@ static VALUE is_services_client(VALUE);
 static VALUE join(VALUE, VALUE);
 static VALUE part(VALUE, VALUE, VALUE);
 static VALUE m_exit(VALUE, VALUE, VALUE);
+static VALUE cloak(VALUE, VALUE);
 
 void
 Init_Client(void)
@@ -70,6 +71,7 @@ Init_Client(void)
   rb_define_method(cClient, "join", join, 1);
   rb_define_method(cClient, "part", part, 2);
   rb_define_method(cClient, "exit", m_exit, 2);
+  rb_define_method(cClient, "cloak", cloak, 1);
 }
 
 static VALUE
@@ -357,6 +359,19 @@ m_exit(VALUE self, VALUE rbsource, VALUE rbreason)
   reason = StringValueCStr(rbreason);
 
   exit_client(client, source, reason);
+  return Qtrue;
+}
+
+static VALUE
+cloak(VALUE self, VALUE hostname)
+{
+  struct Client *client = value_to_client(self);
+  char *host;
+
+  Check_Type(hostname, T_STRING);
+  host = StringValueCStr(hostname);
+  cloak_user(client, host);
+
   return Qtrue;
 }
 
