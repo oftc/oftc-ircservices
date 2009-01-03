@@ -10,11 +10,16 @@ class Bopm < ServiceModule
       ['HELP', 0, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, ADMIN_FLAG, lm('BP_HELP_SHORT'), lm('BP_HELP_LONG')],
     ])
 
-    add_hook([[NEWUSR_HOOK, 'newuser']])
+    add_hook([
+      [NEWUSR_HOOK, 'newuser'],
+      [EOB_HOOK, 'eob'],
+      ])
 
     File.open("#{CONFIG_PATH}/bopm.yaml", 'r') do |f|
       @config = YAML::load(f)
     end
+
+    @ready = false
   end
 
   def loaded()
@@ -24,7 +29,13 @@ class Bopm < ServiceModule
     do_help(client, parv[1], parv)
   end
 
+  def eob()
+    @ready = true
+  end
+
   def newuser(client)
+    return true unless @ready
+
     blacklists = dnsbl_check(client)
 
     return true
@@ -59,6 +70,7 @@ class Bopm < ServiceModule
     end
 
     client.cloak(cloak) unless cloak.nil?
+    log(LOG_DEBUG, "CLOAK #{client.name} to #{cloak} score: #{score}") unless cloak.nil?
 
     return score
   end
