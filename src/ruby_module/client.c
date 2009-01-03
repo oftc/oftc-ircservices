@@ -35,6 +35,7 @@ static VALUE join(VALUE, VALUE);
 static VALUE part(VALUE, VALUE, VALUE);
 static VALUE m_exit(VALUE, VALUE, VALUE);
 static VALUE cloak(VALUE, VALUE);
+static VALUE find(VALUE, VALUE);
 
 void
 Init_Client(void)
@@ -72,6 +73,8 @@ Init_Client(void)
   rb_define_method(cClient, "part", part, 2);
   rb_define_method(cClient, "exit", m_exit, 2);
   rb_define_method(cClient, "cloak", cloak, 1);
+
+  rb_define_singleton_method(cClient, "find", find, 1);
 }
 
 static VALUE
@@ -373,6 +376,16 @@ cloak(VALUE self, VALUE hostname)
   cloak_user(client, host);
 
   return Qtrue;
+}
+
+static VALUE
+find(VALUE klass, VALUE name)
+{
+  struct Client *client = find_client(StringValueCStr(name));
+  if(client == NULL)
+    return Qnil;
+  else
+    return client_to_value(client);
 }
 
 struct Client *

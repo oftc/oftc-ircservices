@@ -118,7 +118,7 @@ class GanneffServ < ServiceModule
   def SAVE(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} called SAVE")
     save_data
-    reply_user(client, "SAVE done")
+    reply(client, "SAVE done")
 
     true
   end # def SAVE
@@ -130,7 +130,7 @@ class GanneffServ < ServiceModule
     debug(LOG_DEBUG, "#{client.name} called CLEANUP")
     clean
     debug(LOG_DEBUG, "CLEANUP done")
-    reply_user(client, "CLEANUP done")
+    reply(client, "CLEANUP done")
 
     true
   end # def COLLECT
@@ -146,7 +146,7 @@ class GanneffServ < ServiceModule
     param   = parv[2].downcase
 
     if @channels.has_key?(channel)
-      reply_user(client, "Channel #{parv[1]} is already known")
+      reply(client, "Channel #{parv[1]} is already known")
       return true
     end # if @channels.has_key?
 
@@ -160,7 +160,7 @@ class GanneffServ < ServiceModule
       enforce=true
     else # None of the known values -> don't add channel
       debug(LOG_DEBUG, "Param 2 was invalid.")
-      reply_user(client, "<type> value #{param} is unknown, has to be one of J/CRFJ, see help.")
+      reply(client, "<type> value #{param} is unknown, has to be one of J/CRFJ, see help.")
       return true
     end # if parv[2]
 
@@ -175,7 +175,7 @@ class GanneffServ < ServiceModule
 
       #save_data
 
-      reply_user(client, "Channel #{channel} successfully added")
+      reply(client, "Channel #{channel} successfully added")
 
       # In case its not a "monitoronly" channel lets enforce it and kill
       # everyone who is in it.
@@ -185,7 +185,7 @@ class GanneffServ < ServiceModule
       end # if enforce
     else
       @channels.delete(channel)
-      reply_user(client, "Failed to add #{channel}")
+      reply(client, "Failed to add #{channel}")
     end
 
     true
@@ -207,9 +207,9 @@ class GanneffServ < ServiceModule
 
       #save_data
 
-      reply_user(client, "Channel #{channel} successfully deleted.")
+      reply(client, "Channel #{channel} successfully deleted.")
     else
-      reply_user(client, "Failed to delete channel #{channel}.")
+      reply(client, "Failed to delete channel #{channel}.")
     end
 
     true
@@ -220,8 +220,8 @@ class GanneffServ < ServiceModule
   # List all channels we monitor
   def LIST(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} called LIST")
-    reply_user(client, "Known Channels\n\n")
-    reply_user(client, "%-20s %-4s %-10s %-19s %s" % [ "Channel", "Type", "By", "When", "Action" ])
+    reply(client, "Known Channels\n\n")
+    reply(client, "%-20s %-4s %-10s %-19s %s" % [ "Channel", "Type", "By", "When", "Action" ])
 
     result = DB.execute(@dbq['GET_ALL_CHANNELS'], '')
 
@@ -235,12 +235,12 @@ class GanneffServ < ServiceModule
       by = row[4]
       time = Time.at(row[5].to_i).strftime('%Y-%m-%d %H:%M:%S')
       reason = row[1]
-      reply_user(client, "%-20s %-4s %-10s %-19s %s" % [ chan, check, by, time, "AKILL: #{reason}" ])
+      reply(client, "%-20s %-4s %-10s %-19s %s" % [ chan, check, by, time, "AKILL: #{reason}" ])
     }
     result.free
 
-    reply_user(client, "\nCRFJ - checks Connect, Register nick, Join channel within 15 seconds (i.e. Fast)")
-    reply_user(client, "J - triggers on every Join")
+    reply(client, "\nCRFJ - checks Connect, Register nick, Join channel within 15 seconds (i.e. Fast)")
+    reply(client, "J - triggers on every Join")
 
     true
   end # def LIST
@@ -250,7 +250,7 @@ class GanneffServ < ServiceModule
   # Enforce all channels again, just in case.
   def ENFORCE(client, parv = [])
     debug(LOG_NOTICE, "#{client.name} called ENFORCE, simulating an EOB")
-    reply_user(client, "ENFORCE triggered")
+    reply(client, "ENFORCE triggered")
     eob
 
     true
@@ -267,7 +267,7 @@ class GanneffServ < ServiceModule
       @debug=true
     end # if @debug
 
-    reply_user(client, "Toggled DEBUG mode to #{@debug}")
+    reply(client, "Toggled DEBUG mode to #{@debug}")
 
     true
   end # def DEBUG
@@ -284,7 +284,7 @@ class GanneffServ < ServiceModule
     end # if @crap
 
     debug(LOG_NOTICE, "#{client.name} asked to toggle the crap mode, it is now #{@crap}")
-    reply_user(client, "Toggled CRAP mode to #{@crap}")
+    reply(client, "Toggled CRAP mode to #{@crap}")
 
     true
   end # def CRAP
@@ -295,18 +295,18 @@ class GanneffServ < ServiceModule
   def STATS(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} asked me for some stats pron")
 
-    reply_user(client, "STATS PRON")
-    reply_user(client, "I know about the following channels:\n\n")
-    reply_user(client, "%-20s  %-5s %s" % [ "Channel", "Kills", "AKILL Reason" ])
+    reply(client, "STATS PRON")
+    reply(client, "I know about the following channels:\n\n")
+    reply(client, "%-20s  %-5s %s" % [ "Channel", "Kills", "AKILL Reason" ])
 
     @channels.sort.each do |name, data|
-      reply_user(client, "%-20s  %5d %s" % [ name, data["kills"], data["reason"] ] )
+      reply(client, "%-20s  %5d %s" % [ name, data["kills"], data["reason"] ] )
     end # channels.each_pair
 
-    reply_user(client, "\nI know about #{@nicks.length} clients.")
-    reply_user(client, "\nI killed #{@skills} users since my last startup and #{@tkills} users in my whole lifetime.")
-    reply_user(client, "\nDEBUG mode: #{@debug}")
-    reply_user(client, "CRAP  mode: #{@crap}")
+    reply(client, "\nI know about #{@nicks.length} clients.")
+    reply(client, "\nI killed #{@skills} users since my last startup and #{@tkills} users in my whole lifetime.")
+    reply(client, "\nDEBUG mode: #{@debug}")
+    reply(client, "CRAP  mode: #{@crap}")
 
     true
   end # def STATS

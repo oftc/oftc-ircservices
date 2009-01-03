@@ -26,6 +26,8 @@
 
 VALUE rb_carray2rbarray(int, char **);
 
+struct Service* get_service(VALUE);
+
 struct Client* value_to_client(VALUE);
 VALUE client_to_value(struct Client*);
 

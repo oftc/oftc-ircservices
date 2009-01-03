@@ -8,7 +8,6 @@ VALUE cClient;
 
 /* Core Functions */
 static VALUE ServiceModule_register(VALUE, VALUE);
-static VALUE ServiceModule_reply_user(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_service_name(VALUE, VALUE);
 static VALUE ServiceModule_add_hook(VALUE, VALUE);
 static VALUE ServiceModule_log(VALUE, VALUE, VALUE);
@@ -23,14 +22,15 @@ static VALUE ServiceModule_lm(VALUE, VALUE);
 static VALUE ServiceModule_drop_nick(VALUE, VALUE);
 static VALUE ServiceModule_add_event(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_send_cmode(VALUE, VALUE, VALUE, VALUE);
+static VALUE reply(VALUE, VALUE, VALUE);
 /* Core Functions */
 
 static void m_generic(struct Service *, struct Client *, int, char**);
 
-static struct Service* get_service(VALUE self);
+struct Service* get_service(VALUE self);
 static void set_service(VALUE, struct Service *); 
 
-static struct Service *
+struct Service *
 get_service(VALUE self)
 {
   struct Service *service;
@@ -91,22 +91,6 @@ ServiceModule_register(VALUE self, VALUE commands)
   }
 
   return Qnil;
-}
-
-static VALUE
-ServiceModule_reply_user(VALUE self, VALUE rbclient, VALUE message)
-{
-  struct Client *client;
-  struct Service *service = get_service(self);
-
-  Check_OurType(rbclient, cClient);
-  Check_Type(message, T_STRING);
-
-  client = value_to_client(rbclient);
-
-  reply_user(service, service, client, 0, StringValueCStr(message));
-
-  return self;
 }
 
 static VALUE
@@ -459,6 +443,17 @@ ServiceModule_client(VALUE self)
   return rb_iv_get(self, "@client");
 }
 
+static VALUE
+reply(VALUE self, VALUE target, VALUE message)
+{
+  struct Service *service = get_service(self);
+  struct Client *client = value_to_client(target);
+
+  reply_user(service, service, client, 0, StringValueCStr(message));
+
+  return self;
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -508,7 +503,6 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "CONFIG_PATH", rb_str_new2(SYSCONFDIR));
 
   rb_define_method(cServiceModule, "register", ServiceModule_register, 1);
-  rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, 2);
   rb_define_method(cServiceModule, "service_name", ServiceModule_service_name, 1);
   rb_define_method(cServiceModule, "add_hook", ServiceModule_add_hook, 1);
   rb_define_method(cServiceModule, "log", ServiceModule_log, 2);
@@ -529,6 +523,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "send_cmode", ServiceModule_send_cmode, 3);
 
   rb_define_method(cServiceModule, "client", ServiceModule_client, 0);
+  rb_define_method(cServiceModule, "reply", reply, 2);
 }
 
 static void
