@@ -1,5 +1,6 @@
 class Bopm < ServiceModule
   require 'resolv'
+  require 'yaml'
 
   def initialize()
     service_name('Bopm')
@@ -11,14 +12,9 @@ class Bopm < ServiceModule
 
     add_hook([[NEWUSR_HOOK, 'newuser']])
 
-    @list = [
-      ['tor-irc.dnsbl.oftc.net', 'tor-irc.dnsbl.oftc.net'],
-      ['dnsbl.dronebl.org', 'dronebl.dnsbl.oftc.net'],
-      ['xbl.spamhaus.org', 'xbl.dnsbl.oftc.net'],
-      ['web.dnsbl.sorbs.net', 'websorbs.dnsbl.oftc.net'],
-      ['proxies.dnsbl.sorbs.net', 'sorbs.dnsbl.oftc.net'],
-      ['dnsbl.ahbl.org', 'ahbl.dnsbl.oftc.net'],
-    ]
+    File.open("#{CONFIG_PATH}/bopm.yaml", 'r') do |f|
+      @config = YAML::load(f)
+    end
   end
 
   def loaded()
@@ -47,26 +43,23 @@ class Bopm < ServiceModule
 
     host = host.split('.').reverse.join('.')
 
-    results = []
-    @list.each do |l|
+    score = 0
+    cloak = nil
+    @config.each do |entry|
       begin
-        check = host + '.' + l[0]
-        log(LOG_NOTICE, check)
-        results << [Resolv::getaddress(check), l[1]]
+        check = host + '.' + entry['name']
+        addr = Resolv::getaddress(check)
+        score += entry['score'].to_int if entry['codes'].has_key?(addr)
+        log(LOG_DEBUG, "#{client.host} in #{entry['name']} (#{entry['score']}) [#{entry['codes'][addr]}]")
+        cloak = entry['cloak']
       rescue Exception => e
-        log(LOG_NOTICE, e.to_str)
+        log(LOG_DEBUG, "#{check} -- #{e.to_str}")
         next
       end
     end
 
-    if results.length > 0
-      client.cloak(results[0][0])
-    end
+    client.cloak(cloak) unless cloak.nil?
 
-    results.each do |bl, r|
-      log(LOG_NOTICE, '%s found in %s (%s)' % [client.name, bl, r])
-    end
-
-    return results
+    return score
   end
 end

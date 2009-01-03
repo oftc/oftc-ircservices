@@ -505,6 +505,8 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "ADMIN_FLAG", INT2NUM(ADMIN_FLAG));
   rb_define_const(cServiceModule, "SUDO_FLAG", INT2NUM(SUDO_FLAG));
 
+  rb_define_const(cServiceModule, "CONFIG_PATH", rb_str_new2(SYSCONFDIR));
+
   rb_define_method(cServiceModule, "register", ServiceModule_register, 1);
   rb_define_method(cServiceModule, "reply_user", ServiceModule_reply_user, 2);
   rb_define_method(cServiceModule, "service_name", ServiceModule_service_name, 1);
