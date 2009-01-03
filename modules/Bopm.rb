@@ -84,10 +84,12 @@ class Bopm < ServiceModule
 
     host = get_realhost(client)
     host = to_revip(host)
-    score, blacklists = dnsbl_check(host) unless host.nil?
+    return if host.nil?
+    score, blacklists = dnsbl_check(host)
 
     if blacklists.length > 0
-      cloak = blacklists[0][0]['cloak']
+      entry,addr = blacklists[0]
+      cloak = entry['cloak']
       #client.cloak(blacklists[0][0]['cloak'])
       log(LOG_DEBUG, "CLOAK #{client.name} to #{cloak} score: #{score}")
     end
@@ -106,7 +108,7 @@ class Bopm < ServiceModule
   end
 
   def to_revip(host)
-    if not host.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/)
+    if not host.match(Resolv::AddressRegex)
       begin
         host = Resolv::getaddress(host)
       rescue
