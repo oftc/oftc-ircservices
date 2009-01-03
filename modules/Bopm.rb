@@ -34,7 +34,6 @@ class Bopm < ServiceModule
     if parv.length >= 2
       c = Client.find(parv[1])
       if c.nil?
-        reply(client, "Could not find #{parv[1]}")
         orig = parv[1]
       else
         reply(client, "Checking #{c.name}");
@@ -133,7 +132,7 @@ class Bopm < ServiceModule
         cloak = entry['cloak']
         results << [entry, addr]
       rescue Exception => e
-        log(LOG_DEBUG, "#{check} -- #{e.to_str}")
+        #log(LOG_DEBUG, "#{check} -- #{e.to_str}")
         next
       end
     end
