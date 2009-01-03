@@ -3,11 +3,11 @@ MAINTAINERCLEANFILES=Makefile.in
 INCLUDES=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/languages
 if USE_SHARED_MODULES
 AM_LDFLAGS=-no-undefined -module -avoid-version
-pkglib_LTLIBRARIES=chanserv.la operserv.la nickserv.la floodserv.la irc.la oftc.la pgsql.la
+pkglib_LTLIBRARIES=chanserv.la operserv.la nickserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
 dist_pkglib_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb
 else
 AM_LDFLAGS=-static
-noinst_LTLIBRARIES=chanserv.la operserv.la nickserv.la floodserv.la irc.la oftc.la pgsql.la
+noinst_LTLIBRARIES=chanserv.la operserv.la nickserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
 dist_pkglib_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb
 endif
 chanserv_la_SOURCES=chanserv.c
@@ -19,6 +19,7 @@ oftc_la_SOURCES=oftc.c
 pgsql_la_SOURCES=pgsql.c
 pgsql_la_CFLAGS=@POSTGRESQL_CFLAGS@
 pgsql_la_LIBADD=@POSTGRESQL_LDFLAGS@
+nulldb_la_SOURCES=nulldb.c
 
 install-exec-local:
 	rm -f $(DESTDIR)/$(pkglibdir)/*.la $(DESTDIR)/$(pkblibdir)/*.a
