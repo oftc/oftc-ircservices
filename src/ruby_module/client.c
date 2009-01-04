@@ -36,6 +36,7 @@ static VALUE part(VALUE, VALUE, VALUE);
 static VALUE m_exit(VALUE, VALUE, VALUE);
 static VALUE cloak(VALUE, VALUE);
 static VALUE find(VALUE, VALUE);
+static VALUE to_str(VALUE);
 
 void
 Init_Client(void)
@@ -73,6 +74,7 @@ Init_Client(void)
   rb_define_method(cClient, "part", part, 2);
   rb_define_method(cClient, "exit", m_exit, 2);
   rb_define_method(cClient, "cloak", cloak, 1);
+  rb_define_method(cClient, "to_str", to_str, 0);
 
   rb_define_singleton_method(cClient, "find", find, 1);
 }
@@ -386,6 +388,18 @@ find(VALUE klass, VALUE name)
     return Qnil;
   else
     return client_to_value(client);
+}
+
+static VALUE
+to_str(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+  char buf[IRC_BUFSIZE+1] = {0};
+
+  snprintf(buf, IRC_BUFSIZE, "%s!%s@%s", client->name, client->username,
+    EmptyString(client->realhost) ? client->host : client->realhost);
+
+  return rb_str_new2(buf);
 }
 
 struct Client *

@@ -3,3 +3,21 @@ BP_HELP_SHORT
 	%s: shows this help
 BP_HELP_LONG
 	Shows this help message
+BP_CHECK_SHORT
+	%s: Check if a client/host is in DNSBL
+BP_CHECK_LONG
+	Usage: CHECK [nickname|hostname|IP [dnsblacklist]]
+	
+	Check if a client, hostname, or IP exists in the configured blacklists or in a
+	specified blacklist. The result will show the list of blacklists the hostname
+	are listed in, the return code from the blacklist, and the score of a specific
+	hit, as well as the total score.
+	
+	If no parameters are specified your hostname is checked.
+	
+	Examples:
+	    CHECK
+	    CHECK somenick
+	    CHECK sub.example.com
+	    CHECK 1.2.3.4
+	    CHECK 1.2.3.4 evil.doers.dnsbl.example.com
