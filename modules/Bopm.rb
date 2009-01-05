@@ -81,8 +81,8 @@ class Bopm < ServiceModule
       end
 
       reply(client, "Results for #{orig}")
-      results.each do |entry,addr|
-        reply(client, "Found in #{entry['name']} (#{addr}) [#{entry['codes'][addr]}] score: #{entry['score']}")
+      results.each do |name,addr,escore,reason,cloak|
+        reply(client, "Found in #{name} (#{addr}) [#{reason}] score: #{escore}")
       end
       reply(client, "Total score: #{score}")
     end
@@ -97,8 +97,7 @@ class Bopm < ServiceModule
     score, blacklists = dnsbl_check(host)
 
     if blacklists.length > 0
-      entry,addr = blacklists[0]
-      cloak = entry['cloak']
+      name,addr,escore,reason,cloak = blacklists[0]
       log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
       client.cloak(cloak)
     end
@@ -142,12 +141,44 @@ class Bopm < ServiceModule
       begin
         check = host + '.' + entry['name']
         addr = Resolv::getaddress(check)
-        score += entry['score'].to_int if entry['codes'].has_key?(addr)
-        log(LOG_DEBUG, "#{host} in #{entry['name']} (#{entry['score']}) [#{entry['codes'][addr]}]")
-        cloak = entry['cloak']
-        results << [entry, addr]
+
+        # if this host has any result don't continue
+        if entry.has_key?('stoplookups')
+          stop = entry['stoplookups']
+        else
+          stop = false
+        end
+
+        # fallback score if a specific result doesn't have a score
+        if entry.has_key?('score')
+          default_score = entry['score']
+        else
+          default_score = 0
+        end
+
+        entry_score = default_score
+        entry_reason = ''
+
+        # the codes are optional altogether
+        if entry.has_key?('codes') and entry['codes'].has_key?(addr)
+          entry_score = entry['codes'][addr]['score']
+          # the reason is optional
+          entry_reason = entry['codes'][addr]['reason'] if entry['codes'][addr].has_key?('reason')
+          # stoplookups also optional
+          stop = entry['codes'][addr]['stoplookups'] if entry['codes'][addr].has_key?('stoplookups')
+        end
+
+        score += entry_score
+
+        log(LOG_DEBUG, "#{host} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
+
+        results << [entry['name'], addr, entry_score, entry_reason, entry['cloak']]
+
+        break if stop
+
       rescue Exception => e
         #log(LOG_DEBUG, "#{check} -- #{e.to_str}")
+        # unless I'm an idiot the dnsbl doesn't have this entry
         next
       end
     end
