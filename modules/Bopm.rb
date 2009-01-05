@@ -50,7 +50,7 @@ class Bopm < ServiceModule
     else
       # no parameters just check the caller
       reply(client, "Checking your DNSBL status");
-      orig = c.ip_or_hostname
+      orig = client.ip_or_hostname
     end
 
     # resolve a hostname, and reverse the order of the ip
