@@ -11,6 +11,7 @@ static VALUE host(VALUE);
 static VALUE host_set(VALUE, VALUE);
 static VALUE realhost(VALUE);
 static VALUE realhost_set(VALUE, VALUE);
+static VALUE sockhost(VALUE);
 static VALUE id(VALUE);
 static VALUE id_set(VALUE, VALUE);
 static VALUE info(VALUE);
@@ -37,6 +38,7 @@ static VALUE m_exit(VALUE, VALUE, VALUE);
 static VALUE cloak(VALUE, VALUE);
 static VALUE find(VALUE, VALUE);
 static VALUE to_str(VALUE);
+static VALUE ip_or_hostname(VALUE);
 
 void
 Init_Client(void)
@@ -50,6 +52,7 @@ Init_Client(void)
   rb_define_method(cClient, "host=", host_set, 1);
   rb_define_method(cClient, "realhost", realhost, 0);
   rb_define_method(cClient, "realhost=", realhost_set, 1);
+  rb_define_method(cClient, "sockhost", sockhost, 0);
   rb_define_method(cClient, "id", id, 0);
   rb_define_method(cClient, "id=", id_set, 1);
   rb_define_method(cClient, "info", info, 0);
@@ -75,6 +78,7 @@ Init_Client(void)
   rb_define_method(cClient, "exit", m_exit, 2);
   rb_define_method(cClient, "cloak", cloak, 1);
   rb_define_method(cClient, "to_str", to_str, 0);
+  rb_define_method(cClient, "ip_or_hostname", ip_or_hostname, 0);
 
   rb_define_singleton_method(cClient, "find", find, 1);
 }
@@ -144,6 +148,16 @@ realhost_set(VALUE self, VALUE value)
 
   strlcpy(client->realhost, cvalue, sizeof(client->host));
   return value;
+}
+
+static VALUE
+sockhost(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+  if(EmptyString(client->sockhost))
+    return Qnil;
+  else
+    return rb_str_new2(client->sockhost);
 }
 
 static VALUE
@@ -400,6 +414,22 @@ to_str(VALUE self)
     EmptyString(client->realhost) ? client->host : client->realhost);
 
   return rb_str_new2(buf);
+}
+
+/* return in the order they're available, prefer ip to names, if ip not available
+ * check to see if they're cloaked and return the realhost, otherwise just return
+ * the host. The caller is responsible to do forward lookups if it's not ip */
+static VALUE
+ip_or_hostname(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+
+  if(!EmptyString(client->sockhost))
+    return rb_str_new2(client->sockhost);
+  else if(!EmptyString(client->realhost))
+    return rb_str_new2(client->realhost);
+  else
+    return rb_str_new2(client->host);
 }
 
 struct Client *

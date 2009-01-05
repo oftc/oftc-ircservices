@@ -45,12 +45,12 @@ class Bopm < ServiceModule
       else
         # it is a client on the network
         reply(client, "Checking #{c.name}");
-        orig = get_realhost(c)
+        orig = c.ip_or_hostname
       end
     else
       # no parameters just check the caller
       reply(client, "Checking your DNSBL status");
-      orig = get_realhost(client)
+      orig = c.ip_or_hostname
     end
 
     # resolve a hostname, and reverse the order of the ip
@@ -91,9 +91,10 @@ class Bopm < ServiceModule
   def newuser(client)
     return true unless @ready
 
-    orig = get_realhost(client)
-    return if orig.nil?
-    host = to_revip(orig)
+    host = to_revip(client.ip_or_hostname)
+
+    return true if host.nil?
+
     score, blacklists = dnsbl_check(host)
 
     if blacklists.length > 0
@@ -103,17 +104,6 @@ class Bopm < ServiceModule
     end
 
     return true
-  end
-
-  def get_realhost(client)
-    # if realhost is nil there is no cloak
-    if client.realhost.nil?
-      host = client.host
-    else # we have a cloak
-      host = client.realhost
-    end
-
-    return host
   end
 
   def to_revip(host)
