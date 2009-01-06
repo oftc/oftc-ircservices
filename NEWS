@@ -27,6 +27,12 @@ for some reason.
 o Disallow short nicknames from being registered.
 o Correct the use_logging entry in the example config.
 o Fix the horribly formatted outgoing mails
+o AUTOSAVE option watches for +beqI channel modes and stores them in the DB and
+restores them on channel recreation
+o Don't try to KICK opers (exactly how IRCd works) (no more parting from
+non-existent channels)
+o Rewrite GanneffServ to use the database layer (code needs cleaned up more)
+o New "BOPM" in ruby (this basically only cloaks at the moment)
 
 1.2.2
 -----
