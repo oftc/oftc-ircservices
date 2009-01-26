@@ -1204,14 +1204,14 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(newid > 0)
   {
-    reply_user(service, service, client, NS_UNLINK_OK, client->name);
+    reply_user(service, service, client, NS_UNLINK_OK, nickname_get_nick(nick));
     // In case this was a slave nick, it is now a master of itself
     nickname_free(client->nickname);
     nickname_set_id(nick, newid);
     client->nickname = nickname_find(client->name);
   }
   else
-    reply_user(service, service, client, NS_UNLINK_FAILED, client->name);
+    reply_user(service, service, client, NS_UNLINK_FAILED, nickname_get_nick(nick));
 }
 
 static void
