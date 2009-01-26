@@ -29,6 +29,7 @@ noinst_HEADERS= akick.h						\
 								operserv.h				\
 								packet.h					\
 								parse.h						\
+								python_module.h		\
 								ruby_module.h			\
 								send.h						\
 								servicemask.h			\
