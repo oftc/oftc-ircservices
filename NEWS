@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+1.3.1
+_____
+o Follow channel last used (updated on channel create/join/part/destroy)
+
 1.3.0
 -----
 o Remove yada from the source tree
