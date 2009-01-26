@@ -99,7 +99,7 @@ static query_t queries[QUERY_COUNT] = {
       "flag_private, flag_restricted, flag_topic_lock, flag_verbose, "
       "flag_autolimit, flag_expirebans, flag_floodserv, flag_autoop, "
       "flag_autovoice, flag_leaveops, url, email, topic, mlock, expirebans_lifetime, "
-      "flag_autosave FROM channel WHERE lower(channel)=lower($1)", QUERY },
+      "flag_autosave, last_used FROM channel WHERE lower(channel)=lower($1)", QUERY },
   { INSERT_CHAN, "INSERT INTO channel (channel, description, reg_time, last_used) "
     "VALUES($1, $2, $3, $4)", EXECUTE },
   { INSERT_CHANACCESS, "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
@@ -151,6 +151,7 @@ static query_t queries[QUERY_COUNT] = {
     "last_quit_msg, last_quit_time, reg_time FROM account WHERE id=$1", 
     EXECUTE },
   { GET_NEW_LINK, "SELECT id FROM nickname WHERE account_id=$1 AND NOT id=$2", QUERY },
+  { SET_CHAN_LAST_USED, "UPDATE channel SET last_used=$1 WHERE id=$2", EXECUTE },
   { SET_CHAN_DESC, "UPDATE channel SET description=$1 WHERE id=$2", EXECUTE },
   { SET_CHAN_URL, "UPDATE channel SET url=$1 WHERE id=$2", EXECUTE },
   { SET_CHAN_EMAIL, "UPDATE channel SET email=$1 WHERE id=$2", EXECUTE },

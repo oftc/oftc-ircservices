@@ -33,6 +33,7 @@ typedef struct
 
   unsigned int id;
   time_t regtime;
+  time_t last_used;
   char channel[CHANNELLEN+1];
   char *description;
   char *entrymsg;
@@ -81,6 +82,7 @@ DBChannel *dbchannel_new();
 dlink_node dbchannel_get_node(DBChannel *);
 unsigned int dbchannel_get_id(DBChannel *);
 time_t dbchannel_get_regtime(DBChannel *);
+time_t dbchannel_get_last_used(DBChannel *);
 const char *dbchannel_get_channel(DBChannel *);
 const char *dbchannel_get_description(DBChannel *);
 const char *dbchannel_get_entrymsg(DBChannel *);
@@ -110,6 +112,7 @@ struct MessageQueue *dbchannel_get_gqueue(DBChannel *);
 inline int dbchannel_set_node(DBChannel *, dlink_node);
 inline int dbchannel_set_id(DBChannel *, unsigned int);
 inline int dbchannel_set_regtime(DBChannel *, time_t);
+inline int dbchannel_set_last_used(DBChannel *, time_t);
 inline int dbchannel_set_channel(DBChannel *, const char *);
 inline int dbchannel_set_description(DBChannel *, const char *);
 inline int dbchannel_set_entrymsg(DBChannel *, const char *);

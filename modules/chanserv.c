@@ -46,6 +46,7 @@ static struct Client *chanserv_client = NULL;
 
 static dlink_node *cs_cmode_hook;
 static dlink_node *cs_join_hook;
+static dlink_node *cs_part_hook;
 static dlink_node *cs_channel_destroy_hook;
 static dlink_node *cs_channel_create_hook;
 static dlink_node *cs_on_topic_change_hook;
@@ -59,6 +60,7 @@ static void process_expireban_list(void *);
 
 static void *cs_on_cmode_change(va_list);
 static void *cs_on_client_join(va_list);
+static void *cs_on_client_part(va_list);
 static void *cs_on_channel_destroy(va_list);
 static void *cs_on_channel_create(va_list);
 static void *cs_on_topic_change(va_list);
@@ -398,6 +400,7 @@ INIT_MODULE(chanserv, "$Revision$")
 
   cs_cmode_hook = install_hook(on_cmode_change_cb, cs_on_cmode_change);
   cs_join_hook  = install_hook(on_join_cb, cs_on_client_join);
+  cs_part_hook  = install_hook(on_part_cb, cs_on_client_part);
   cs_channel_destroy_hook = install_hook(on_channel_destroy_cb, 
       cs_on_channel_destroy);
 
@@ -415,6 +418,7 @@ CLEANUP_MODULE
 {
   uninstall_hook(on_cmode_change_cb, cs_on_cmode_change);
   uninstall_hook(on_join_cb, cs_on_client_join);
+  uninstall_hook(on_part_cb, cs_on_client_part);
   uninstall_hook(on_channel_destroy_cb, cs_on_channel_destroy);
   uninstall_hook(on_channel_created_cb, cs_on_channel_create);
   uninstall_hook(on_topic_change_cb, cs_on_topic_change);
@@ -632,6 +636,12 @@ m_info(struct Service *service, struct Client *client,
 
   reply_user(service, service, client, CS_INFO_CHAN_START, dbchannel_get_channel(regchptr));
   reply_time(service, client, CS_INFO_REGTIME_FULL, dbchannel_get_regtime(regchptr));
+
+  if(hash_find_channel(parv[1]) != NULL)
+    reply_user(service, service, client, CS_INFO_LAST_USED_ONLINE);
+  else
+    reply_time(service, client, CS_INFO_LAST_USED, dbchannel_get_last_used(regchptr));
+
   if(IsOper(client) || (access != NULL && access->level >= MEMBER_FLAG))
   {
     reply_user(service, service, client, CS_INFO_CHAN_MEMBER,
@@ -2661,6 +2671,9 @@ cs_on_client_join(va_list args)
     return pass_callback(cs_join_hook, source_p, name);
   }
 
+  /* Probably a real use for this channel now */
+  dbchannel_set_last_used(regchptr, CurrentTime);
+
   if(!dbchannel_get_leaveops(regchptr) && (IsChanop(source_p, chptr) && level < CHANOP_FLAG))
   {
     deop_user(chanserv, chptr, source_p);
@@ -2732,6 +2745,8 @@ cs_on_channel_create(va_list args)
     servicemask_list_excpt_masks(dbchannel_get_id(chptr->regchan), &m_list);
     except_mask_many(chanserv, chptr, &m_list);
     servicemask_list_masks_free(&m_list);
+
+    dbchannel_set_last_used(chptr->regchan, CurrentTime);
   }
 
   return pass_callback(cs_channel_create_hook, chptr);
@@ -2752,6 +2767,7 @@ cs_on_channel_destroy(va_list args)
 
   if (chan->regchan != NULL)
   {
+    dbchannel_set_last_used(chan->regchan, CurrentTime);
     dbchannel_free(chan->regchan);
     chan->regchan = NULL;
   }
@@ -2834,4 +2850,20 @@ cs_on_burst_done(va_list args)
   }
 
   return pass_callback(cs_on_burst_done_hook);
+}
+
+static void *
+cs_on_client_part(va_list args)
+{
+  struct Client *client = va_arg(args, struct Client *);
+  struct Client *source = va_arg(args, struct Client *);
+  struct Channel *channel = va_arg(args, struct Channel *);
+  char *reason = va_arg(args, char *);
+
+  if(channel->regchan != NULL)
+  {
+    dbchannel_set_last_used(channel->regchan, CurrentTime);
+  }
+
+  return pass_callback(cs_part_hook, client, source, channel, reason);
 }

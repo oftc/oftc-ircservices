@@ -65,6 +65,7 @@ row_to_dbchannel(row_t *row)
     DupString(channel->mlock, row->cols[18]);
   channel->expirebans_lifetime = atoi(row->cols[19]);
   channel->autosave = atoi(row->cols[20]);
+  channel->last_used = atoi(row->cols[21]);
 
   return channel;
 }
@@ -286,6 +287,12 @@ dbchannel_get_regtime(DBChannel *this)
   return this->regtime;
 }
 
+inline time_t
+dbchannel_get_last_used(DBChannel *this)
+{
+  return this->last_used;
+}
+
 inline const char *
 dbchannel_get_channel(DBChannel *this)
 {
@@ -438,6 +445,18 @@ dbchannel_set_regtime(DBChannel *this, time_t regtime)
 {
   this->regtime = regtime;
   return TRUE;
+}
+
+inline int
+dbchannel_set_last_used(DBChannel *this, time_t last_used)
+{
+  if(this->id == 0 || db_execute_nonquery(SET_CHAN_LAST_USED, "ii", &this->id, &last_used))
+  {
+    this->last_used = last_used;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
 inline int

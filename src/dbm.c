@@ -63,9 +63,9 @@ init_db()
 
   database = load_module(module);
 
-  snprintf(cstring, sizeof(cstring), "host='%s' user='%s' password='%s' dbname='%s'",
+  snprintf(cstring, sizeof(cstring), "host='%s' user='%s' password='%s' dbname='%s' port=%d",
     Database.hostname, Database.username, Database.password,
-    Database.dbname);
+    Database.dbname, Database.port);
 
   if(!database->connect(cstring))
   {
