@@ -461,8 +461,6 @@ m_register(struct Service *service, struct Client *client,
   {
     ilog(L_NOTICE, "Warning: %s tried to register after %ld seconds online",
         client->name, CurrentTime - client->firsttime);
-    reply_user(service, service, client, NS_REG_FAIL);
-    return;
   }
 
   if((nick = nickname_find(client->name)) != NULL)
