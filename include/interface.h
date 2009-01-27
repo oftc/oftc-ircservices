@@ -173,4 +173,6 @@ extern struct LanguageFile ServicesLanguages[LANG_LAST];
 
 void clump_masks(struct Service *, struct Channel *, const char *, int, int,
   dlink_list *);
+
+void mask_normalize(char *, char *);
 #endif /* INCLUDED_interface_h */

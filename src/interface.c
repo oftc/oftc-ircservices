@@ -1904,3 +1904,25 @@ clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
   if(strlen(masks) > 0)
     send_cmode(service, chptr, modes, masks);
 }
+
+void
+mask_normalize(char *nuhmask, char *normalmask)
+{
+  struct split_nuh_item nuh;
+  char name[NICKLEN];
+  char user[USERLEN+1];
+  char host[HOSTLEN+1];
+
+  nuh.nuhmask = nuhmask;
+  nuh.nickptr = name;
+  nuh.userptr = user;
+  nuh.hostptr = host;
+
+  nuh.nicksize = sizeof(name);
+  nuh.usersize = sizeof(user);
+  nuh.hostsize = sizeof(host);
+
+  split_nuh(&nuh);
+
+  snprintf(normalmask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
+}

@@ -1358,6 +1358,7 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
   DBChannel *regchptr;
   char *reason;
   int ret;
+  char mask[HOSTLEN+USERLEN+1];
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
@@ -1388,18 +1389,25 @@ m_akick_add(struct Service *service, struct Client *client, int parc,
         CurrentTime, 0, reason);
 
     nickname_free(nick);
+
+    if(ret)
+      reply_user(service, service, client, CS_AKICK_ADDED, parv[2]);
+    else
+      reply_user(service, service, client, CS_AKICK_ADDFAIL, parv[2]);
   }
   else
   {
-    /* mask based akick */
-    ret = servicemask_add_akick(parv[2], nickname_get_id(client->nickname),
-        dbchannel_get_id(regchptr), CurrentTime, 0, reason);
-  }
+    mask_normalize(parv[2], mask);
 
-  if(ret)
-    reply_user(service, service, client, CS_AKICK_ADDED, parv[2]);
-  else
-    reply_user(service, service, client, CS_AKICK_ADDFAIL, parv[2]);
+    /* mask based akick */
+    ret = servicemask_add_akick(mask, nickname_get_id(client->nickname),
+        dbchannel_get_id(regchptr), CurrentTime, 0, reason);
+
+    if(ret)
+      reply_user(service, service, client, CS_AKICK_ADDED, mask);
+    else
+      reply_user(service, service, client, CS_AKICK_ADDFAIL, mask);
+  }
 
   if(chptr == NULL)
     dbchannel_free(regchptr);
@@ -2298,11 +2306,7 @@ m_mask_add(struct Client *client, int parc, char *parv[], const char *modename,
   struct Channel *chptr;
   int ret;
   char reason[IRC_BUFSIZE+1] = { '\0' };
-  char name[NICKLEN];
-  char user[USERLEN+1];
-  char host[HOSTLEN+1];
   char mask[HOSTLEN+USERLEN+1];
-  struct split_nuh_item nuh;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
@@ -2312,18 +2316,7 @@ m_mask_add(struct Client *client, int parc, char *parv[], const char *modename,
   else
     strlcat(reason, "No Reason Given", IRC_BUFSIZE);
 
-  nuh.nuhmask = parv[2];
-  nuh.nickptr = name;
-  nuh.userptr = user;
-  nuh.hostptr = host;
-
-  nuh.nicksize = sizeof(name);
-  nuh.usersize = sizeof(user);
-  nuh.hostsize = sizeof(host);
-
-  split_nuh(&nuh);
-
-  snprintf(mask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
+  mask_normalize(parv[2], mask);
 
   ret = add_func(mask, nickname_get_id(client->nickname), dbchannel_get_id(regchptr),
                  CurrentTime, 0, reason);
@@ -2396,11 +2389,7 @@ m_mask_del(struct Client *client, const char *channel, const char *mask, const c
   struct Channel *chptr;
   DBChannel *regchptr;
   int ret;
-  char name[NICKLEN];
-  char user[USERLEN+1];
-  char host[HOSTLEN+1];
   char hostmask[HOSTLEN+USERLEN+1];
-  struct split_nuh_item nuh;
 
   chptr = hash_find_channel(channel);
   regchptr = chptr == NULL ? dbchannel_find(channel) : chptr->regchan;
@@ -2411,18 +2400,7 @@ m_mask_del(struct Client *client, const char *channel, const char *mask, const c
   }
   else
   {
-    nuh.nuhmask = (char *)mask;
-    nuh.nickptr = name;
-    nuh.userptr = user;
-    nuh.hostptr = host;
-
-    nuh.nicksize = sizeof(name);
-    nuh.usersize = sizeof(user);
-    nuh.hostsize = sizeof(host);
-
-    split_nuh(&nuh);
-
-    snprintf(hostmask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
+    mask_normalize((char *)mask, hostmask);
   }
 
   ret = del_func(dbchannel_get_id(regchptr), hostmask);
