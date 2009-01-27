@@ -1056,6 +1056,15 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
 
   join_params(value, parc-1, &parv[2]);
 
+  if(parc == 1) 
+  { 
+    m_set_string(service, client, parv[1], "MLOCK", value, parc, 
+        &dbchannel_get_mlock, &dbchannel_set_mlock); 
+    if(chptr == NULL) 
+      dbchannel_free(regchptr); 
+    return; 
+  } 
+
   if(value != NULL && ircncmp(value, "-", strlen(value)) == 0)
   {
     if(dbchannel_set_topic(regchptr, NULL))
