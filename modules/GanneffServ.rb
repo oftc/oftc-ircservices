@@ -522,7 +522,7 @@ class GanneffServ < ServiceModule
       debug(LOG_DEBUG, "Not issuing AKILL for #{client.name} having cloak #{client.host}, real host #{client.realhost}")
       ret = false # continue with callbacks, we haven't set any kill
     else # if host
-      debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
+      debug(LOG_NOTICE, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
       ret = akill_add("*@#{host}", reason, @akill_duration)
     end # if host
 

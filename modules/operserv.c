@@ -551,6 +551,8 @@ m_akill_add(struct Service *service, struct Client *client,
     return;
   }
 
+  ilog(L_NOTICE, "%s Added an akill on %s. Expires %s [%s]", client->name,
+    akill->mask, smalldate(akill->time_set + duration), reason);
   send_akill(service, client->name, akill);
   reply_user(service, service, client, OS_AKILL_ADDOK, mask_buf);
   free_servicemask(akill);

@@ -85,7 +85,7 @@ static query_t queries[QUERY_COUNT] = {
   { GET_ADMINS, "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
     "account.primary_nick = nickname.id ORDER BY lower(nick)", QUERY },
   /* XXX: ORDER BY missing here */
-  { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill ORDER BY akill.id",
+  { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill ORDER BY akill.time",
     QUERY },
   { GET_CHAN_ACCESSES, "SELECT channel_access.id, channel_access.channel_id, "
       "channel_access.account_id, channel_access.level FROM "
