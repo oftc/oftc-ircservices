@@ -1171,7 +1171,7 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(!check_nick_pass(client, master_nick, parv[2]))
+  if(parv[2] == NULL || !check_nick_pass(client, master_nick, parv[2]))
   {
     nickname_free(master_nick);
     reply_user(service, service, client, NS_LINK_BADPASS, parv[1]);
