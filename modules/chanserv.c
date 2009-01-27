@@ -2314,10 +2314,7 @@ m_mask_add(struct Client *client, int parc, char *parv[], const char *modename,
 
   split_nuh(&nuh);
 
-  if(*name == '*' && name[1] == '\0')
-    snprintf(mask, USERLEN+HOSTLEN, "%s@%s", user, host);
-  else
-    snprintf(mask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
+  snprintf(mask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
 
   ret = add_func(mask, nickname_get_id(client->nickname), dbchannel_get_id(regchptr),
                  CurrentTime, 0, reason);
@@ -2416,10 +2413,7 @@ m_mask_del(struct Client *client, const char *channel, const char *mask, const c
 
     split_nuh(&nuh);
 
-    if(*name == '*' && name[1] == '\0')
-      snprintf(hostmask, USERLEN+HOSTLEN, "%s@%s", user, host);
-    else
-      snprintf(hostmask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
+    snprintf(hostmask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
   }
 
   ret = del_func(dbchannel_get_id(regchptr), hostmask);
