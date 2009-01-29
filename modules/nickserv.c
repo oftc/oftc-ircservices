@@ -1949,8 +1949,15 @@ ns_on_quit(va_list args)
 
   if(nick)
   {
+    const char *cloak = nickname_get_cloak(nick);
+
     nickname_set_last_quit(nick, comment);
-    nickname_set_last_host(nick, user->host);
+
+    if(nickname_get_cloak_on(nick) == TRUE && !EmptyString(cloak))
+      nickname_set_last_host(nick, cloak);
+    else
+      nickname_set_last_host(nick, user->host);
+
     nickname_set_last_realname(nick, user->info);
     nickname_set_last_quit_time(nick, CurrentTime);
     nickname_set_last_seen(nick, CurrentTime);
