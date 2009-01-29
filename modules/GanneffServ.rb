@@ -351,6 +351,8 @@ class GanneffServ < ServiceModule
           @nicks[nick]["jointime"] = Time.new.to_i
           ret = timecheck(client)
         else # if @channels...["monitoronly"]
+          debug(LOG_NOTICE, "#{nick} joined channel #{channel}, killing")
+          drop_nick(nick) unless @nicks[nick]["registered"].nil?
           ret = akill(client, "#{@channels[channel]["reason"]}", "J:#{channel}", channel)
         end # if @channels...["monitoronly"]
         debug(LOG_DEBUG, "join_hook says that ret is #{ret}")
@@ -522,7 +524,7 @@ class GanneffServ < ServiceModule
       debug(LOG_DEBUG, "Not issuing AKILL for #{client.name} having cloak #{client.host}, real host #{client.realhost}")
       ret = false # continue with callbacks, we haven't set any kill
     else # if host
-      debug(LOG_NOTICE, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
+      debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
       ret = akill_add("*@#{host}", reason, @akill_duration)
     end # if host
 
