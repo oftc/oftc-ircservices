@@ -1111,7 +1111,7 @@ get_modestring(unsigned int modes, char *modbuf, int len)
  * the bitstring on and off modes, as well as the relative position of the
  * limit and key parameters if present
  */
-void
+unsigned int
 separate_modes(const char *in_mode, unsigned int *on_modes, unsigned int *off_modes,
   int *key_pos, int *limit_pos)
 {
@@ -1136,7 +1136,6 @@ separate_modes(const char *in_mode, unsigned int *on_modes, unsigned int *off_mo
         direction = FALSE;
         break;
       case ' ':
-        return;
         break;
       case 'k':
         if(direction)
@@ -1154,7 +1153,7 @@ separate_modes(const char *in_mode, unsigned int *on_modes, unsigned int *off_mo
         if(direction == -1)
         {
           ilog(L_CRIT, "Separate Modes: No Direction Specified %s", in_mode);
-          assert(1 == 0);
+          return FALSE;
         }
         if(direction)
           *on_modes  |= get_mode_from_letter(c);
@@ -1163,6 +1162,8 @@ separate_modes(const char *in_mode, unsigned int *on_modes, unsigned int *off_mo
         break;
     }
   }
+
+  return TRUE;
 }
 
 unsigned int
@@ -1205,7 +1206,8 @@ enforce_mode_lock(struct Service *service, struct Channel *channel,
     }
   }
 
-  separate_modes(parv[0], &on_modes, &off_modes, &key_pos, &limit_pos);
+  if(separate_modes(parv[0], &on_modes, &off_modes, &key_pos, &limit_pos) == FALSE)
+    return 1;
 
   /* at first I tried to be clever on mlock set and only send the addtional
    * modes, but set is rarely called, so it's really not a problem to resend
