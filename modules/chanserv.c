@@ -1067,7 +1067,7 @@ m_set_mlock(struct Service *service, struct Client *client, int parc,
 
   if(value != NULL && ircncmp(value, "-", strlen(value)) == 0)
   {
-    if(dbchannel_set_topic(regchptr, NULL))
+    if(dbchannel_set_mlock(regchptr, NULL))
       reply_user(service, service, client, CS_SET_FAILED, "MLOCK",
         "Not Set", dbchannel_get_channel(regchptr));
     else
