@@ -506,6 +506,14 @@ CS_INFO_REGTIME_UNKNOWN
 	Time Registered: Unknown
 CS_INFO_LAST_USED
 	Last Used: %s (%dy %dm %dd %02d:%02d:%02d ago)
+CS_INFO_LAST_USED_NOYEAR
+	Last Used: %s (%dm %dd %02d:%02d:%02d ago)
+CS_INFO_LAST_USED_NOMONTH
+	Last Used: %s (%dd %02d:%02d:%02d ago)
+CS_INFO_LAST_USED_NODAY
+	Last Used: %s (%02d:%02d:%02d ago)
+CS_INFO_LAST_USED_UNKNOWN
+	Last Used: Unknown
 CS_INFO_LAST_USED_ONLINE
 	Channel is currently in use.
 CS_AKICK_NONICK
