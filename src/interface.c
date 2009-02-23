@@ -1799,7 +1799,7 @@ check_masterless_channels(unsigned int accid)
     nickname_chan_list_free(&list);
   }
 
-  return 0;
+  return NULL;
 }
 
 int

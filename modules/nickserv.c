@@ -507,6 +507,7 @@ m_drop(struct Service *service, struct Client *client,
   struct Client *target;
   Nickname *nick = nickname_find(client->name);
   char *target_nick = NULL;
+  char *masterless_channel = NULL;
 
   assert(nick != NULL);
 
@@ -584,6 +585,16 @@ m_drop(struct Service *service, struct Client *client,
   /* Authentication passed(possibly because they're using sudo), go ahead and
    * drop
    */
+
+  masterless_channel = check_masterless_channels(nickname_get_id(client->nickname));
+
+  if(masterless_channel != NULL)
+  {
+    reply_user(service, service, client, NS_DROP_FAIL_MASTERLESS, target_nick, masterless_channel);
+    MyFree(masterless_channel);
+    if(target != client)
+      MyFree(target_nick);
+  }
 
   if(nickname_delete(client->nickname)) 
   {
