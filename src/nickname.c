@@ -894,7 +894,7 @@ nickname_chan_list(unsigned int id, dlink_list *list)
     struct InfoChanList *chan;
     row_t *row = &results->rows[i];
     chan = row_to_infochanlist(row);
-    dlinkAdd(chan, make_dlink_node(), list);
+    dlinkAddTail(chan, make_dlink_node(), list);
   }
 
   db_free_result(results);
