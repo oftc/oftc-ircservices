@@ -1198,6 +1198,12 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
   Nickname *nick = client->nickname;
   unsigned int newid;
 
+  if(nickname_link_count(nick) == 0)
+  {
+    reply_user(service, service, client, NS_UNLINK_FAILED, nickname_get_nick(nick));
+    return;
+  }
+
   newid = nickname_unlink(nick);
 
   if(newid > 0)

@@ -74,6 +74,7 @@ int nickname_is_forbid(const char *);
 
 int nickname_link(Nickname *, Nickname *);
 int nickname_unlink(Nickname *);
+int nickname_link_count(Nickname *);
 
 char *nickname_nick_from_id(int, int);
 int nickname_id_from_nick(const char *, int);

@@ -199,6 +199,7 @@ static query_t queries[QUERY_COUNT] = {
   { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=$1 AND level=4",
     QUERY },
   { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=$1 ORDER BY lower(nick)", QUERY },
+  { GET_NICK_LINKS_COUNT, "SELECT count(nick) FROM nickname WHERE account_id=$1", QUERY },
   { GET_NICK_CHAN_INFO, "SELECT channel.id, channel, level FROM "
     "channel, channel_access WHERE "
       "channel.id=channel_access.channel_id AND channel_access.account_id=$1 "

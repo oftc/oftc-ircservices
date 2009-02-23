@@ -561,6 +561,21 @@ failure:
   return -1;
 }
 
+int
+nickname_link_count(Nickname *nick)
+{
+  int error, ret;
+  char *tmp = db_execute_scalar(GET_NICK_LINKS_COUNT, &error, "i", &nick->id);
+
+  if(error || tmp == NULL)
+    return 0;
+
+  ret = atoi(tmp);
+  MyFree(tmp);
+
+  return ret;
+}
+
 /*
  * nickname_save:
  *
