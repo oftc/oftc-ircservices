@@ -3,17 +3,18 @@ MAINTAINERCLEANFILES=Makefile.in
 INCLUDES=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/languages
 if USE_SHARED_MODULES
 AM_LDFLAGS=-no-undefined -module -avoid-version
-pkglib_LTLIBRARIES=chanserv.la operserv.la nickserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
+pkglib_LTLIBRARIES=chanserv.la operserv.la nickserv.la groupserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
 dist_pkglib_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb
 else
 AM_LDFLAGS=-static
-noinst_LTLIBRARIES=chanserv.la operserv.la nickserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
+noinst_LTLIBRARIES=chanserv.la operserv.la nickserv.la groupserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
 dist_pkglib_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb
 endif
 chanserv_la_SOURCES=chanserv.c
 operserv_la_SOURCES=operserv.c
 nickserv_la_SOURCES=nickserv.c
 floodserv_la_SOURCES=floodserv.c
+groupserv_la_SOURCES=groupserv.c
 irc_la_SOURCES=irc.c
 oftc_la_SOURCES=oftc.c
 pgsql_la_SOURCES=pgsql.c

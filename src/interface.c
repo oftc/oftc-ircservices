@@ -93,8 +93,10 @@ struct Callback *on_db_init_cb;
 
 struct Callback *on_nick_reg_cb;
 struct Callback *on_chan_reg_cb;
+struct Callback *on_group_reg_cb;
 struct Callback *on_nick_drop_cb;
 struct Callback *on_chan_drop_cb;
+struct Callback *on_group_drop_cb;
 
 struct Callback *on_ctcp_cb;
 
@@ -149,10 +151,12 @@ init_interface()
   on_certfp_cb        = register_callback("Client certificate recieved for this user", NULL);
   on_nick_drop_cb     = register_callback("Nick Dropped", NULL);
   on_chan_drop_cb     = register_callback("Chan Dropped", NULL);
+  on_group_drop_cb    = register_callback("Group Dropped", NULL);
   on_db_init_cb       = register_callback("On Database Init", NULL);
   on_ctcp_cb          = register_callback("On CTCP Message", NULL);
   on_nick_reg_cb      = register_callback("Newly Registered Nick", NULL);
   on_chan_reg_cb      = register_callback("Newly Registered Chan", NULL);
+  on_group_reg_cb     = register_callback("Newly Registered Group", NULL);
   do_event_cb         = register_callback("Event Loop Callback", NULL);
 
   load_language(ServicesLanguages, "services.en");
@@ -201,9 +205,11 @@ cleanup_interface()
   unregister_callback(on_certfp_cb);
   unregister_callback(on_nick_drop_cb);
   unregister_callback(on_chan_drop_cb);
+  unregister_callback(on_group_drop_cb);
   unregister_callback(on_ctcp_cb);
   unregister_callback(on_nick_reg_cb);
   unregister_callback(on_chan_reg_cb);
+  unregister_callback(on_group_reg_cb);
   unregister_callback(do_event_cb);
 
   unload_languages(ServicesLanguages);

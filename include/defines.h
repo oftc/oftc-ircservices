@@ -21,6 +21,7 @@
 #define IRCD_MAXPARA     15     /* Maximum allowed parameters a command may have */
 #define REALLEN          50
 #define CHANNELLEN      200
+#define GROUPLEN         32
 #define KICKLEN         160
 #define KEYLEN           24
 #define REASONLEN       120

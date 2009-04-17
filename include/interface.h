@@ -72,8 +72,10 @@ extern struct Callback *on_burst_done_cb;
 extern struct Callback *on_certfp_cb;
 extern struct Callback *on_nick_reg_cb;
 extern struct Callback *on_chan_reg_cb;
+extern struct Callback *on_group_reg_cb;
 extern struct Callback *on_nick_drop_cb;
 extern struct Callback *on_chan_drop_cb;
+extern struct Callback *on_group_drop_cb;
 extern struct Callback *on_db_init_cb;
 extern struct Callback *on_ctcp_cb;
 
