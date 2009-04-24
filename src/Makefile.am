@@ -8,31 +8,32 @@ if USE_PYTHON
 SUBDIRS+=python_module
 endif
 bin_PROGRAMS=services
-services_SOURCES= akick.c					            \
-									akill.c				\
-									chanaccess.c		\
-									channel.c			\
+services_SOURCES= akick.c					    \
+									akill.c				      \
+									chanaccess.c		    \
+									channel.c			      \
 									channel_mode.c	    \
-									conf.c				\
-									client.c			\
-									crypt.c				\
-									connection.c		\
-									dbchannel.c			\
-									dbm.c				\
-									dbmail.c			\
-                                    group.c             \
-									hash.c				\
-									hostmask.c			\
-									interface.c			\
-									jupe.c				\
-									language.c			\
-									m_error.c			\
-									mqueue.c			\
-									nickname.c			\
-									packet.c			\
-									parse.c				\
-									servicemask.c		\
-									services.c			\
+									conf.c				      \
+									client.c			      \
+									crypt.c				      \
+									connection.c		    \
+									dbchannel.c			    \
+									dbm.c				        \
+									dbmail.c			      \
+                  group.c             \
+                  groupaccess.c       \
+									hash.c				      \
+									hostmask.c			    \
+									interface.c			    \
+									jupe.c				      \
+									language.c			    \
+									m_error.c			      \
+									mqueue.c			      \
+									nickname.c			    \
+									packet.c			      \
+									parse.c				      \
+									servicemask.c		    \
+									services.c			    \
 									send.c
 
 services_LDADD=conf/libconf.a $(top_srcdir)/libio/libio.a @LIBLTDL@

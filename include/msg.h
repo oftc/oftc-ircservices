@@ -50,6 +50,13 @@ typedef enum ChannelPermission {
   MASTER_FLAG
 } ChannelPermissionType;
 
+typedef enum GroupPermission {
+  GRPUSER_FLAG = 0,
+  GRPIDENTIFIED_FLAG,
+  GRPMEMBER_FLAG,
+  GRPMASTER_FLAG
+} GroupPermissionType;
+
 /*
  * MessageHandler function
  * Params:
@@ -137,5 +144,7 @@ struct ServiceMessage
 #define   SFLG_NICKARG          0x010   /* First argument should be a registered 
                                            nickname */
 #define   SFLG_NOMAXPARAM       0x020   /* Max parameters is not enforced */
+#define   SFLG_GROUPARG         0x040   /* First argument should be a registered
+                                           group */
 extern void ms_error(struct Client *, struct Client *, int, char *[]);
 #endif /* INCLUDED_msg_h */

@@ -39,7 +39,7 @@ typedef struct
 } Group;
 
 Group* group_find(const char *);
-int group_register(Group *);
+int group_register(Group *, Nickname *);
 int group_delete(Group *);
 
 char *group_name_from_id(int, int);
@@ -52,6 +52,9 @@ void group_link_list_free(dlink_list *);
 
 int group_chan_list(unsigned int, dlink_list *);
 void group_chan_list_free(dlink_list *);
+
+int group_masters_list(unsigned int, dlink_list *);
+void group_masters_list_free(dlink_list *);
 
 int group_list_all(dlink_list *);
 void group_list_all_free(dlink_list *);
@@ -70,7 +73,7 @@ const char *group_get_email(Group *);
 const char *group_get_url(Group *);
 const char *group_get_desc(Group *);
 unsigned char group_get_priv(Group *);
-time_t group_get_reg_time(Group *);
+time_t group_get_regtime(Group *);
 
 /* Group setters */
 inline int group_set_id(Group *, unsigned int);
@@ -79,5 +82,5 @@ inline int group_set_desc(Group *, const char *);
 inline int group_set_url(Group *, const char *);
 inline int group_set_email(Group *, const char *);
 inline int group_set_priv(Group *, unsigned char);
-inline int group_set_reg_time(Group *, time_t);
+inline int group_set_regime(Group *, time_t);
 #endif

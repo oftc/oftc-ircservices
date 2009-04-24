@@ -268,6 +268,33 @@ static query_t queries[QUERY_COUNT] = {
     "id=$2", EXECUTE },
   { GET_SERVICEMASK_MASKS, "SELECT mask FROM channel_akick WHERE channel_id = $1 "
     " AND chmode = $2", QUERY },
+  { INSERT_GROUP, "INSERT INTO \"group\" (name, description, reg_time) "
+    "VALUES ($1, $2, $3)", EXECUTE },
+  { GET_FULL_GROUP, "SELECT id, name, description, email, url, flag_private, "
+    "reg_time FROM \"group\" WHERE name=$1", QUERY },
+  { DELETE_GROUP, "DELETE FROM \"group\" WHERE id=$1", EXECUTE },
+  { GET_GROUP_FROM_GROUPID, "SELECT name FROM \"group\" WHERE id=$1", QUERY },
+  { GET_GROUPID_FROM_GROUP, "SELECT id FROM \"group\" WHERE name=$1", QUERY },
+  { SET_GROUP_URL, "UPDATE \"group\" SET url=$1 WHERE id=$2", EXECUTE },
+  { SET_GROUP_DESC, "UPDATE \"group\" SET description=$1 WHERE id=$2", EXECUTE },
+  { SET_GROUP_EMAIL, "UPDATE \"group\" SET email=$1 WHERE id=$2", EXECUTE },
+  { SET_GROUP_PRIVATE, "UPDATE \"group\" SET flag_private=$1 WHERE id=$2",
+    EXECUTE },
+  { GET_GROUP_ACCESSES, "SELECT group_access.id, group_access.group_id, "
+      "group_access.account_id, group_access.level FROM "
+      "group_access JOIN account ON "
+      "group_access.account_id=account.id JOIN nickname ON "
+      "account.primary_nick=nickname.id WHERE group_id=$1 "
+      "ORDER BY lower(nickname.nick)", QUERY },
+  { GET_GROUP_ACCESS, "SELECT id, group_id, account_id, level "
+    "FROM group_access WHERE group_id=$1 AND account_id=$2", QUERY },
+  { INSERT_GROUPACCESS, "INSERT INTO group_access "
+    "(account_id, group_id, level) VALUES ($1, $2, $3)", EXECUTE } ,
+  { DELETE_GROUPACCESS, "DELETE FROM \"group\"", EXECUTE },
+  { COUNT_GROUP_ACCESS_LIST, "SELECT id FROM \"group\"", QUERY },
+  { GET_GROUP_MASTERS, "SELECT nick FROM account, nickname, group_access "
+      "WHERE group_id=$1 AND level=4 AND group_access.account_id=account.id "
+      "AND account.primary_nick=nickname.id ORDER BY lower(nick)", QUERY },
 };
 
 

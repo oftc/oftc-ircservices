@@ -34,11 +34,13 @@
 #include "language.h"
 #include "dbm.h"
 #include "nickname.h"
+#include "group.h"
 #include "interface.h"
 #include "channel_mode.h"
 #include "channel.h"
 #include "conf/logging.h"
 #include "chanaccess.h"
+#include "groupaccess.h"
 
 /*
  * (based on orabidoo's parser code)nick_id
@@ -388,7 +390,9 @@ handle_services_command(struct ServiceMessage *pmptr,
 {
   struct Channel *chptr;
   DBChannel *regchptr = NULL;
+  Group *group = NULL;
   struct ChanAccess *access;
+  struct GroupAccess *group_access;
   unsigned int level = 0;
 
   if(i < mptr->parameters)
@@ -468,18 +472,20 @@ handle_services_command(struct ServiceMessage *pmptr,
       level = CHUSER_FLAG;
     else
     {
-      access = chanaccess_find(dbchannel_get_id(regchptr), nickname_get_id(from->nickname));
-      if(access == NULL)
-        level = CHUSER_FLAG;
-      else
-      {
-        level = access->level;
-        MyFree(access);
-      }
-
       if(from->access == SUDO_FLAG)
         level = MASTER_FLAG;
-    }
+      else
+      {
+        access = chanaccess_find(dbchannel_get_id(regchptr), nickname_get_id(from->nickname));
+        if(access == NULL)
+          level = CHUSER_FLAG;
+        else
+        {
+          level = access->level;
+          MyFree(access);
+        }
+      }
+   }
 
     if(level < mptr->access)
     {
@@ -502,6 +508,55 @@ handle_services_command(struct ServiceMessage *pmptr,
     }
     else
       dbchannel_free(regchptr);
+  }
+  else if(mptr->flags & SFLG_GROUPARG)
+  {
+    group = group_find(hpara[1]);
+    if(group == NULL && !(mptr->flags & SFLG_UNREGOK))
+    {
+      reply_user(service, NULL, from, SERV_UNREG_GROUP, hpara[1]);
+      return;
+    }
+
+    if(from->access < IDENTIFIED_FLAG && mptr->access == GRPIDENTIFIED_FLAG)
+    {
+      reply_user(service, NULL, from, SERV_NOT_IDENTIFIED, from->name);
+      group_free(group);
+      return;
+    }
+
+    if(from->nickname == NULL)
+      level = GRPUSER_FLAG;
+    else
+    {
+      if(from->access == SUDO_FLAG)
+        level = GRPMASTER_FLAG;
+      else
+      {
+        group_access = groupaccess_find(group_get_id(group), 
+            nickname_get_id(from->nickname));
+        if(group_access == NULL)
+          level = GRPUSER_FLAG;
+        else
+        {
+          level = group_access->level;
+          MyFree(access);
+        }
+      }
+    }
+
+    if(level < mptr->access)
+    {
+      if(level > GRPUSER_FLAG)
+        reply_user(service, NULL, from, SERV_NO_ACCESS_GROUP, mptr->cmd,
+            group_get_name(group));
+      else
+        reply_user(service, NULL, from, SERV_NO_ACCESS_GROUP_ID, mptr->cmd,
+            group_get_name(group));
+      group_free(group);
+      return;
+    }
+    group_free(group);
   }
   else
   {

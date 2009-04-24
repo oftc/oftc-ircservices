@@ -29,7 +29,7 @@
 #include "stdinc.h"
 #include "client.h"
 #include "group.h"
-#include "dbchannel.h"
+#include "group.h"
 #include "dbm.h"
 #include "language.h"
 #include "parse.h"
@@ -43,6 +43,7 @@
 #include "groupserv.h"
 #include "crypt.h"
 #include "dbmail.h"
+#include "groupaccess.h"
 
 static struct Service *groupserv = NULL;
 static struct Client *groupserv_client = NULL;
@@ -65,13 +66,13 @@ static int m_set_string(struct Service *, struct Client *, const char *,
     int(*)(Group *, const char*));
 
 static struct ServiceMessage register_msgtab = {
-  NULL, "REGISTER", 0, 2, 2, 0, USER_FLAG, GS_HELP_REG_SHORT, GS_HELP_REG_LONG, 
-  m_register 
+  NULL, "REGISTER", 0, 2, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, GRPIDENTIFIED_FLAG, 
+  GS_HELP_REG_SHORT, GS_HELP_REG_LONG, m_register 
 };
 
 static struct ServiceMessage help_msgtab = {
-  NULL, "HELP", 0, 0, 2, 0, USER_FLAG, GS_HELP_SHORT, GS_HELP_LONG,
-  m_help
+  NULL, "HELP", 0, 0, 2, SFLG_UNREGOK, GRPUSER_FLAG, GS_HELP_SHORT, 
+  GS_HELP_LONG, m_help
 };
 
 static struct ServiceMessage drop_msgtab = {
@@ -152,7 +153,7 @@ m_register(struct Service *service, struct Client *client,
 
   if((group = group_find(parv[1])) != NULL)
   {
-    reply_user(service, service, client, GS_ALREADY_REG, client->name); 
+    reply_user(service, service, client, GS_ALREADY_REG, parv[1]);
     group_free(group);
     return;
   }
@@ -162,16 +163,16 @@ m_register(struct Service *service, struct Client *client,
   group_set_name(group, parv[1]);
   group_set_desc(group, parv[2]);
 
-  if(group_register(group))
+  if(group_register(group, client->nickname))
   {
-    reply_user(service, service, client, GS_REG_COMPLETE, client->name);
+    reply_user(service, service, client, GS_REG_COMPLETE, parv[1]);
     global_notice(NULL, "%s!%s@%s registered group %s\n", client->name, 
         client->username, client->host, group_get_name(group));
 
     execute_callback(on_group_reg_cb, client);
     return;
   }
-  reply_user(service, service, client, GS_REG_FAIL, client->name);
+  reply_user(service, service, client, GS_REG_FAIL, parv[1]);
 }
 
 static void
@@ -336,145 +337,58 @@ m_set_private(struct Service *service, struct Client *client,
 static void
 m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-#if 0
   Group *group;
-  struct Client *target;
-  struct InfoChanList *chan = NULL;
-  char *name;
-  char *link;
   char buf[IRC_BUFSIZE+1] = {0};
-  int online = 0;
-  int comma;
+  char *nick;
+  struct GroupAccess *access = NULL;
   dlink_node *ptr;
   dlink_list list = { 0 };
 
-  if(parc == 0)
-  {
-    if(client->groupname != NULL)
-      group = client->groupname;
-    else
-    {
-      if(group_is_forbid(client->name))
-      {
-        reply_user(service, service, client, GS_groupFORBID, client->name);
-        return;
-      }
-      if((group = group_find(client->name)) == NULL)
-      {
-        reply_user(service, service, client, GS_REG_FIRST, client->name);
-        return;
-      }
-   }
-    name = client->name;
-  }
-  else
-  {
-    if(group_is_forbid(parv[1]))
-    {
-      reply_user(service, service, client, GS_groupFORBID, parv[1]);
-      return;
-    }
+  group = group_find(parv[1]);
 
-    if((group = group_find(parv[1])) == NULL)
-    {
-      reply_user(service, service, client, GS_REG_FIRST,
-          parv[1]);
-      return;
-    }
-    name = parv[1];
+  if(client->nickname)
+    access = groupaccess_find(group_get_id(group), 
+        nickname_get_id(client->nickname));
+
+  reply_user(service, service, client, GS_INFO_START, group_get_name(group));
+  reply_time(service, client, GS_INFO_REGTIME_FULL, group_get_regtime(group));
+
+  if(IsOper(client) || (access != NULL && access->level >= MEMBER_FLAG))
+  {
+    const char *ptr = group_get_desc(group);
+    ptr = group_get_url(group);
+    ptr = group_get_email(group);
+    reply_user(service, service, client, GS_INFO,
+        group_get_desc(group),
+        group_get_url(group) == NULL ? "^BNot Set^B" : group_get_url(group),
+        group_get_email(group) == NULL ? "^BNot Set^B" : group_get_email(group));
   }
 
-  reply_user(service, service, client, GS_INFO_START, name, 
-      group_get_last_realname(group) != NULL ? group_get_last_realname(group) : "Unknown");
-
-  group_link_list(group_get_id(group), &list);
-  comma = 0;
-  DLINK_FOREACH(ptr, list.head)
+  if(group_masters_list(group_get_id(group), &list))
   {
-    link = (char *)ptr->data;
+    int comma = 0;
 
-    if(irccmp(link, name) == 0)
+    DLINK_FOREACH(ptr, list.head)
     {
-      if((target = find_client(name)) != NULL && IsIdentified(target))
-      {
-        reply_user(service, service, client, GS_INFO_ONLINE_NOgroup, name);
-        online = 1;
-      }
-      continue;
+      nick = (char *)ptr->data;
+      if(comma)
+        strlcat(buf, ", ", sizeof(buf));
+      strlcat(buf, nick, sizeof(buf));
+      if(!comma)
+        comma = 1;
     }
-
-    if((target = find_client(link)) != NULL && IsIdentified(target))
-    {
-      reply_user(service, service, client, GS_INFO_ONLINE, name, link);
-      online = 1;
-    }
-
-    if(comma)
-      strlcat(buf, ", ", sizeof(buf));
-    strlcat(buf, link, sizeof(buf));
-    if(!comma)
-      comma = 1;
+    group_masters_list_free(&list);
   }
 
-  group_link_list_free(&list);
+  reply_user(service, service, client, GS_INFO_MASTERS, buf);
 
-  if(!online)
-    reply_time(service, client, GS_INFO_SEENTIME_FULL, group_get_last_seen(group));
+  reply_user(service, service, client, GS_INFO_OPTION, "PRIVATE",
+      group_get_priv(group) ? "ON" : "OFF");
 
-  reply_time(service, client, GS_INFO_REGTIME_FULL, group_get_reg_time(group));
-  reply_time(service, client, GS_INFO_QUITTIME_FULL, group_get_last_quit_time(group));
+  if(access != NULL)
+    MyFree(access);
 
-  reply_user(service, service, client, GS_INFO,
-      (group_get_last_quit(group) == NULL) ? "Unknown" : group_get_last_quit(group),
-      (group_get_last_host(group) == NULL) ? "Unknown" : group_get_last_host(group),
-      (group_get_url(group) == NULL) ? "Not set" : group_get_url(group),
-      (group_get_cloak(group)[0] == '\0') ? "Not set" : group_get_cloak(group));
-
-  if((IsIdentified(client) && (group_get_id(client->groupname) == group_get_id(group))) || 
-      client->access >= OPER_FLAG)
-  {
-    reply_user(service, service, client, GS_INFO_EMAIL, group_get_email(group));
-    reply_user(service, service, client, GS_INFO_LANGUAGE,
-        service->languages[group_get_language(group)].name, group_get_language(group)); 
-
-    reply_user(service, service, client, GS_INFO_OPTION, "ENFORCE", group_get_enforce(group) ? "ON" :
-        "OFF");
-    reply_user(service, service, client, GS_INFO_OPTION, "SECURE", group_get_secure(group) ? "ON" :
-        "OFF");
-    reply_user(service, service, client, GS_INFO_OPTION, "PRIVATE", group_get_priv(group) ? "ON" :
-        "OFF");
-    reply_user(service, service, client, GS_INFO_OPTION, "CLOAK", group_get_cloak_on(group) ? "ON" :
-        "OFF");
-
-    if(*buf != '\0')
-      reply_user(service, service, client, GS_INFO_LINKS, buf);
-
-    if(group_get_nameid(group) != group_get_pri_groupid(group))
-    {
-      char *prigroup = group_group_from_id(group_get_id(group), TRUE);
-
-      reply_user(service, service, client, GS_INFO_MASTER, prigroup);
-      MyFree(prigroup);
-    }
-
-    if(group_chan_list(group_get_id(group), &list))
-    {
-      reply_user(service, service, client, GS_INFO_CHAGS);
-      DLINK_FOREACH(ptr, list.head)
-      {
-        chan = (struct InfoChanList *)ptr->data;
-        reply_user(service, service, client, GS_INFO_CHAN, chan->channel,
-            chan->level);
-      }
-      group_chan_list_free(&list);
-    }
-  }
-  else if(!group_get_priv(group))
-    reply_user(service, service, client, GS_INFO_EMAIL, group_get_email(group));
- 
-  if(group != client->groupname)
-    group_free(group);
-#endif
+  group_free(group);
 }
 
 static void 

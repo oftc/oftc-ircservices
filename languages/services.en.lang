@@ -25,11 +25,19 @@ SERV_ACCESS_DENIED
 	Access to that command is restricted to IRC Operators or services admins.
 SERV_UNREG_CHAN
 	Channel %s is not registered with channel services.
+SERV_UNREG_GROUP
+	Group %s is not registered with group services.
 SERV_NO_ACCESS_CHAN
-	You do not have access to the %s command on %s.
+	You do not have access to the %s command on channel %s.
 SERV_NO_ACCESS_CHAN_ID
-	You do not have access to the %s command on %s. Identifying to your
-	nickname may give you this access. See nickname services' HELP IDENTIFY
+	You do not have access to the %s command on channel %s. Identifying 
+	to your nickname may give you this access. See nickname services' HELP 
+	IDENTIFY command for more information.
+SERV_NO_ACCESS_GROUP
+	You do not have access to the %s command for the group %s.
+SERV_NO_ACCESS_GROUP_ID
+	You do not have access to the %s command on group %s. Identifying to
+	your nickname may give you this access. See nickname services' HELP IDENTIFY
 	command for more information.
 SERV_NO_ACCESS
 	You do not have access to the %s command.

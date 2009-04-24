@@ -24,6 +24,7 @@
 
 #include "stdinc.h"
 #include "dbm.h"
+#include "nickname.h"
 #include "group.h"
 #include "parse.h"
 #include "language.h"
@@ -46,26 +47,26 @@
 static Group*
 row_to_group(row_t *row)
 {
-  Group *grp = MyMalloc(sizeof(Group));
-  memset(grp, 0, sizeof(Group));
+  Group *group = MyMalloc(sizeof(Group));
+  memset(group, 0, sizeof(Group));
 
-  grp->id = atoi(row->cols[0]);
-  strlcpy(grp->name, row->cols[1], sizeof(grp->name));
+  group->id = atoi(row->cols[0]);
+  strlcpy(group->name, row->cols[1], sizeof(group->name));
   if(row->cols[2] != NULL)
-    DupString(grp->desc, row->cols[2]);
-  DupString(grp->email, row->cols[3]);
-  DupString(grp->url, row->cols[4]);
-  grp->priv = atoi(row->cols[5]);
-  grp->reg_time = atoi(row->cols[6]);
+    DupString(group->desc, row->cols[2]);
+  DupString(group->email, row->cols[3]);
+  DupString(group->url, row->cols[4]);
+  group->priv = atoi(row->cols[5]);
+  group->reg_time = atoi(row->cols[6]);
 
-  return grp;
+  return group;
 }
 
 /*
  * group_find:
  *
  * Searches the database for a group.  Returns a group structure for
- * the grp if one is found.  Allocates the storage for it, which must be
+ * the group if one is found.  Allocates the storage for it, which must be
  * freed with group_freename.
  *
  * Returns the group structure on success, NULL on error or if the group
@@ -73,31 +74,31 @@ row_to_group(row_t *row)
  *
  */
 Group*
-group_find(const char *group)
+group_find(const char *grp)
 {
   result_set_t *results;
-  Group *grp;
+  Group *group;
   int error;
 
-  results = db_execute(GET_FULL_GROUP, &error, "s", group);
+  results = db_execute(GET_FULL_GROUP, &error, "s", grp);
   if(error)
   {
     ilog(L_CRIT, "Database error %d trying to find group %s", error,
-        group);
+        grp);
     return NULL;
   }
 
   if(results->row_count == 0)
   {
-    ilog(L_DEBUG, "Group %s not found.", group);
+    ilog(L_DEBUG, "Group %s not found.", grp);
     db_free_result(results);
     return NULL;
   }
 
-  grp = row_to_group(&results->rows[0]);
+  group = row_to_group(&results->rows[0]);
   db_free_result(results);
 
-  return grp;
+  return group;
 }
 
 /*
@@ -111,14 +112,26 @@ group_find(const char *group)
  *
  */
 int
-group_register(Group *grp)
+group_register(Group *group, Nickname *master)
 {
   int ret;
+  unsigned int id, flag;
 
   db_begin_transaction();
 
-  ret = db_execute_nonquery(INSERT_GROUP, "ssi", grp->name, grp->desc,
+  ret = db_execute_nonquery(INSERT_GROUP, "ssi", group->name, group->desc,
           &CurrentTime);
+
+  if(ret == -1)
+    goto failure;
+
+  group->id = db_insertid("group", "id");
+  if(group->id == -1)
+    goto failure;
+
+  id = nickname_get_id(master);
+  flag = MASTER_FLAG;
+  ret = db_execute_nonquery(INSERT_GROUPACCESS, "iii", &id, &group->id, &flag);
 
   if(ret == -1)
     goto failure;
@@ -126,7 +139,7 @@ group_register(Group *grp)
   if(!db_commit_transaction())
     goto failure;
 
-  grp = group_find(grp->name);
+  group->reg_time = CurrentTime;
 
   return TRUE;
  
@@ -148,19 +161,19 @@ failure:
  * be deleted as well.  If a master is deleted, it will attempt to find a new
  * master from the remaining links.
  *
- * Raises on_grp_drop callback.
+ * Raises on_group_drop callback.
  *
  */
 int
-group_delete(Group *grp)
+group_delete(Group *group)
 {
   int ret;
 
-  ret = db_execute_nonquery(DELETE_GROUP, "i", &grp->id);
+  ret = db_execute_nonquery(DELETE_GROUP, "i", &group->id);
   if(ret == -1)
       return FALSE;
 
-  execute_callback(on_group_drop_cb, grp->id);
+  execute_callback(on_group_drop_cb, group->id);
   return TRUE;
 }
 
@@ -178,25 +191,25 @@ group_delete(Group *grp)
 int
 group_is_forbid(const char *group)
 {
-  char *grp;
+  char *group;
   int error;
 
-  grp = db_execute_scalar(GET_FORBID, &error, "s", group);
+  group = db_execute_scalar(GET_FORBID, &error, "s", group);
   if(error)
   {
     ilog(L_CRIT, "Database error %d trying to test forbidden group %s",
         error, group);
-    MyFree(grp);
+    MyFree(group);
     return FALSE;
   }
 
-  if(grp == NULL)
+  if(group == NULL)
   {
-    MyFree(grp);
+    MyFree(group);
     return FALSE;
   }
 
-  MyFree(grp);
+  MyFree(group);
   return TRUE;
 }
 
@@ -212,20 +225,20 @@ group_is_forbid(const char *group)
  *
  */
 int
-group_forbid(const char *grp)
+group_forbid(const char *group)
 {
   Group *group;
   int ret;
 
   db_begin_transaction();
 
-  if((group = group_find(grp)) != NULL)
+  if((group = group_find(group)) != NULL)
   {
     group_delete(group);
     group_free(group);
   }
 
-  ret = db_execute_nonquery(INSERT_FORBID, "s", grp);
+  ret = db_execute_nonquery(INSERT_FORBID, "s", group);
 
   if(ret == -1)
   {
@@ -247,11 +260,11 @@ group_forbid(const char *grp)
  *
  */
 int
-group_delete_forbid(const char *grp)
+group_delete_forbid(const char *group)
 {
   int ret;
 
-  ret = db_execute_nonquery(DELETE_FORBID, "s", grp);
+  ret = db_execute_nonquery(DELETE_FORBID, "s", group);
   if(ret == -1)
     return FALSE;
 
@@ -273,14 +286,14 @@ group_delete_forbid(const char *grp)
 char *
 group_namefrom_id(int id)
 {
-  char *grp;
+  char *group;
   int error;
 
-  grp = db_execute_scalar(GET_GROUP_FROM_GROUPID, &error, "i", &id);
-  if(error || grp == NULL)
+  group = db_execute_scalar(GET_GROUP_FROM_GROUPID, &error, "i", &id);
+  if(error || group == NULL)
     return NULL;
 
-  return grp;
+  return group;
 }
 
 /*
@@ -292,23 +305,23 @@ group_namefrom_id(int id)
  *
  */
 int
-group_id_from_name(const char *grp)
+group_id_from_name(const char *group)
 {
   int id, error;
   char *ret;
 
-  ret = db_execute_scalar(GET_GROUPID_FROM_GROUP, &error, "s", grp);
+  ret = db_execute_scalar(GET_GROUPID_FROM_GROUP, &error, "s", group);
 
   if(error)
   {
     ilog(L_CRIT, "Database error %d trying to find id for group %s", error,
-        grp);
+        group);
     return -1;
   }
 
   if(ret == NULL)
   {
-    ilog(L_DEBUG, "Group %s not found(id lookup)", grp);
+    ilog(L_DEBUG, "Group %s not found(id lookup)", group);
     return 0;
   }
 
@@ -316,6 +329,18 @@ group_id_from_name(const char *grp)
   MyFree(ret);
 
   return id;
+}
+
+inline int
+group_masters_list(unsigned int id, dlink_list *list)
+{
+  return db_string_list_by_id(GET_GROUP_MASTERS, list, id);
+}
+
+inline void
+group_masters_list_free(dlink_list *list)
+{
+  db_string_list_free(list);
 }
 
 #if 0
@@ -330,15 +355,15 @@ group_id_from_name(const char *grp)
  *
  */
 int
-group_save(Group *grp)
+group_save(Group *group)
 {
   int ret;
 
-  ret = db_execute_nonquery(SAVE_GROUP, "sssbbbbbbbisssii", grp->desc, grp->url,
-      grp->email, grp->cloak, &grp->enforce, &grp->secure,
-      &grp->verified, &grp->cloak_on, &grp->admin, &grp->email_verified,
-      &grp->priv, &grp->language, grp->last_host, grp->last_realname,
-      grp->last_quit, &grp->last_quit_time, &grp->id);
+  ret = db_execute_nonquery(SAVE_GROUP, "sssbbbbbbbisssii", group->desc, group->url,
+      group->email, group->cloak, &group->enforce, &group->secure,
+      &group->verified, &group->cloak_on, &group->admin, &group->email_verified,
+      &group->priv, &group->language, group->last_host, group->last_realname,
+      group->last_quit, &group->last_quit_time, &group->id);
   if(ret == -1)
     return FALSE;
 
@@ -393,12 +418,12 @@ row_to_access_entry(row_t *row)
  *
  */
 int
-group_accesslist_list(Group *grp, dlink_list *list)
+group_accesslist_list(Group *group, dlink_list *list)
 {
   result_set_t *results;
   int error, i;
 
-  results = db_execute(GET_GROUPACCESS, &error, "i", &grp->id);
+  results = db_execute(GET_GROUPACCESS, &error, "i", &group->id);
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "group_accesslist_list: database error %d", error);
@@ -421,9 +446,9 @@ group_accesslist_list(Group *grp, dlink_list *list)
 }
 
 int
-group_accesslist_delete(Group *grp, const char *value)
+group_accesslist_delete(Group *group, const char *value)
 {
-  return db_execute_nonquery(DELETE_GROUPACCESS, "is", &grp->id, value);
+  return db_execute_nonquery(DELETE_GROUPACCESS, "is", &group->id, value);
 }
 
 void
@@ -446,13 +471,13 @@ group_accesslist_free(dlink_list *list)
 }
 
 int
-group_accesslist_check(Group *grp, const char *value)
+group_accesslist_check(Group *group, const char *value)
 {
   dlink_list list = { 0 };
   dlink_node *ptr;
   int found = FALSE;
 
-  group_accesslist_list(grp, &list);
+  group_accesslist_list(group, &list);
 
   DLINK_FOREACH(ptr, list.head)
   {
@@ -471,12 +496,12 @@ group_accesslist_check(Group *grp, const char *value)
 }
 
 int
-group_cert_list(Group *grp, dlink_list *list)
+group_cert_list(Group *group, dlink_list *list)
 {
   result_set_t *results;
   int error, i;
 
-  results = db_execute(GET_GROUPCERTS, &error, "i", &grp->id);
+  results = db_execute(GET_GROUPCERTS, &error, "i", &group->id);
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "group_cert_list: database error %d", error);
@@ -511,9 +536,9 @@ group_cert_add(struct AccessEntry *access)
 }
 
 int
-group_cert_delete(Group *grp, const char *value)
+group_cert_delete(Group *group, const char *value)
 {
-  return db_execute_nonquery(DELETE_GROUPCERT, "is", &grp->id, value);
+  return db_execute_nonquery(DELETE_GROUPCERT, "is", &group->id, value);
 }
 
 void
@@ -536,14 +561,14 @@ group_certlist_free(dlink_list *list)
 }
 
 int
-group_cert_check(Group *grp, const char *value, 
+group_cert_check(Group *group, const char *value, 
     struct AccessEntry **retentry)
 {
   dlink_list list = { 0 };
   dlink_node *ptr;
   int found = FALSE;
 
-  group_cert_list(grp, &list);
+  group_cert_list(group, &list);
 
   DLINK_FOREACH(ptr, list.head)
   {
@@ -698,21 +723,21 @@ group_list_admins_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
+#endif
 
 inline Group *
 group_new()
 {
   return MyMalloc(sizeof(Group));
 }
-#endif
 inline void
-group_free(Group *grp)
+group_free(Group *group)
 {
-  ilog(L_DEBUG, "Freeing group %p for %s", grp, group_get_name(grp));
-  MyFree(grp->email);
-  MyFree(grp->url);
-  MyFree(grp->desc);
-  MyFree(grp);
+  ilog(L_DEBUG, "Freeing group %p for %s", group, group_get_name(group));
+  MyFree(group->email);
+  MyFree(group->url);
+  MyFree(group->desc);
+  MyFree(group);
 }
 
 #if 0
@@ -784,13 +809,13 @@ group_get_id(Group *this)
 inline unsigned int
 group_get_nameid(Group *this)
 {
-  return this->grpid;
+  return this->groupid;
 }
 
 inline unsigned int
-group_get_pri_grpid(Group *this)
+group_get_pri_groupid(Group *this)
 {
-  return this->pri_grpid;
+  return this->pri_groupid;
 }
 #endif
 
@@ -819,6 +844,12 @@ group_get_cloak(Group *this)
   return this->cloak;
 }
 #endif
+
+inline const char *
+group_get_desc(Group *this)
+{
+  return this->desc;
+}
 
 inline const char *
 group_get_email(Group *this)
@@ -907,7 +938,7 @@ group_get_priv(Group *this)
 }
 
 inline time_t
-group_get_reg_time(Group *this)
+group_get_regtime(Group *this)
 {
   return this->reg_time;
 }
@@ -963,7 +994,8 @@ group_set_url(Group *this, const char *value)
 inline int
 group_set_desc(Group *this, const char *value)
 {
-  if(db_execute_nonquery(SET_GROUP_DESC, "si", value, &this->id))
+  if(this->id == 0 ||
+      db_execute_nonquery(SET_GROUP_DESC, "si", value, &this->id))
   {
     MyFree(this->desc);
     if(value != NULL)
@@ -989,7 +1021,7 @@ group_set_priv(Group *this, unsigned char value)
 }
 
 inline int
-group_set_reg_time(Group *this, time_t value)
+group_set_regtime(Group *this, time_t value)
 {
   this->reg_time = value;
   return TRUE;

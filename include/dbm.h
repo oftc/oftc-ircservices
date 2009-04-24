@@ -11,6 +11,14 @@ struct ChanAccess
   unsigned int level;
 };
 
+struct GroupAccess
+{
+  unsigned int id;
+  unsigned int account;
+  unsigned int group;
+  unsigned int level;
+};
+
 struct JupeEntry
 {
   unsigned int id;
@@ -176,13 +184,16 @@ enum db_queries
   DELETE_GROUP,
   GET_GROUP_FROM_GROUPID,
   GET_GROUPID_FROM_GROUP,
-  GET_GROUP_URL,
-  GET_GROUP_DESC,
-  GET_GROUP_EMAIL,
   SET_GROUP_URL,
   SET_GROUP_DESC,
   SET_GROUP_EMAIL,
   SET_GROUP_PRIVATE,
+  GET_GROUP_ACCESSES,
+  GET_GROUP_ACCESS,
+  INSERT_GROUPACCESS,
+  DELETE_GROUPACCESS,
+  COUNT_GROUP_ACCESS_LIST,
+  GET_GROUP_MASTERS,
   QUERY_COUNT
 };
 
