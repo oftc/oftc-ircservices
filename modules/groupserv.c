@@ -76,8 +76,8 @@ static struct ServiceMessage help_msgtab = {
 };
 
 static struct ServiceMessage drop_msgtab = {
-  NULL, "DROP", 0, 0, 1, 0, IDENTIFIED_FLAG, GS_HELP_DROP_SHORT, GS_HELP_DROP_LONG,
-  m_drop
+  NULL, "DROP", 0, 1, 2, SFLG_GROUPARG, MASTER_FLAG, GS_HELP_DROP_SHORT, 
+  GS_HELP_DROP_LONG, m_drop
 };
 
 static struct ServiceMessage set_sub[] = {
@@ -179,128 +179,29 @@ static void
 m_drop(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-#if 0
-  struct Client *target;
-  Group *group = group_find(client->name);
-  char *target_name = NULL;
-  char *masterless_channel = NULL;
+  Group *group;
 
-  assert(group != NULL);
+  assert(parv[1]);
 
-  /* This might be being executed via sudo, find the real user of the group */
-  if(group_get_id(client->groupname) != group_get_id(group))
+  group = group_find(parv[1]);
+
+  if(group_delete(group))
   {
-    target_name = group_group_from_id(group_get_nameid(client->groupname), FALSE);
-    target = find_client(target_name);
+    reply_user(service, service, client, GS_DROPPED, parv[1]);
+    ilog(L_NOTICE, "%s!%s@%s dropped group %s",
+      client->name, client->username, client->host, parv[1]);
+
+    group_free(group);
+    group = NULL;
   }
   else
   {
-    target = client;
-    target_name = client->name;
+    ilog(L_DEBUG, "GRoup DROP failed for %s on %s", client->name, parv[1]);
+    reply_user(service, service, client, GS_DROP_FAILED, parv[1]);
   }
 
-  group_free(group);
-
-  if(target == client)
-  {
-    /* A normal user dropping their own group */
-    if(parc == 0)
-    {
-      /* No auth code, so give them one and do nothing else*/
-      char buf[IRC_BUFSIZE+1] = {0};
-      char *hmac;
-
-      snprintf(buf, IRC_BUFSIZE, "DROP %ld %d %s", CurrentTime, 
-          group_get_nameid(target->groupname), target->name);
-      hmac = generate_hmac(buf);
-
-      reply_user(service, service, client, GS_DROP_AUTH, service->name, 
-          CurrentTime, hmac);
-
-      MyFree(hmac);
-      return;
-    }
-    else
-    {
-      /* Auth code given, check it and do the drop */
-      char buf[IRC_BUFSIZE+1] = {0};
-      char *hmac;
-      char *auth;
-      int timestamp;
-
-      if((auth = strchr(parv[1], ':')) == NULL)
-      {
-        reply_user(service, service, client, GS_DROP_AUTH_FAIL, client->name);
-        return;
-      }
-
-      *auth = '\0';
-      auth++;
-
-      snprintf(buf, IRC_BUFSIZE, "DROP %s %d %s", parv[1], 
-          group_get_nameid(target->groupname), target->name);
-      hmac = generate_hmac(buf);
-
-      if(strncmp(hmac, auth, strlen(hmac)) != 0)
-      {
-        MyFree(hmac);
-        reply_user(service, service, client, GS_DROP_AUTH_FAIL, client->name);
-        return;
-      }
-
-      MyFree(hmac);
-      timestamp = atoi(parv[1]);
-      if((CurrentTime - timestamp) > 3600)
-      {
-        reply_user(service, service, client, GS_DROP_AUTH_FAIL, client->name);
-        return;
-      }
-    }
-  }
-
-  /* Authentication passed(possibly because they're using sudo), go ahead and
-   * drop
-   */
-
-  masterless_channel = check_masterless_channels(group_get_id(client->groupname));
-
-  if(masterless_channel != NULL)
-  {
-    reply_user(service, service, client, GS_DROP_FAIL_MASTERLESS, target_name, masterless_channel);
-    MyFree(masterless_channel);
-    if(target != client)
-      MyFree(target_name);
-  }
-
-  if(group_delete(client->groupname)) 
-  {
-    if(target != NULL)
-    {
-      ClearIdentified(target);
-      if(target->groupname != NULL)
-        group_free(target->groupname);
-      target->groupname = NULL;
-      target->access = USER_FLAG;
-      send_umode(groupserv, target, "-R");
-      reply_user(service, service, client, GS_group_DROPPED, target->name);
-      ilog(L_NOTICE, "%s!%s@%s dropped group %s", client->name, 
-        client->username, client->host, target->name);
-    }
-    else
-    {
-      reply_user(service, service, client, GS_group_DROPPED, target_name);
-      ilog(L_NOTICE, "%s!%s@%s dropped group %s", client->name, 
-        client->username, client->host, target_name);
-    }
-  }
-  else
-  {
-    reply_user(service, service, client, GS_group_DROPFAIL, target_name);
-  }
-
-  if(target != client)
-    MyFree(target_name);
-#endif
+  if(group != NULL)
+    group_free(group);
 }
 
 static void

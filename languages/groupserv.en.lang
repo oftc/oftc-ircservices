@@ -107,10 +107,10 @@ GS_SET_FAILED
 	contact network support.
 GS_SET_VALUE
 	%s is SET to: %s.
-GS_GROUP_DROPPED
+GS_DROPPED
 	Group %s has been dropped. It is now free to be registered by other
 	users.
-GS_NICK_DROPFAIL
+GS_DROP_FAILED
 	DROP failed on group %s. This may have been an internal error, please
 	try again shortly. If this is not the first time you have seen this message
 	please contact network support.

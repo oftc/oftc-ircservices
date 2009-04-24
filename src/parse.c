@@ -540,7 +540,7 @@ handle_services_command(struct ServiceMessage *pmptr,
         else
         {
           level = group_access->level;
-          MyFree(access);
+          MyFree(group_access);
         }
       }
     }
