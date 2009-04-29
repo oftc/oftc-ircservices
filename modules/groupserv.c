@@ -55,6 +55,10 @@ static void m_info(struct Service *,struct Client *, int, char *[]);
 static void m_sudo(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
 
+static void m_access_add(struct Service *, struct Client *, int, char *[]);
+static void m_access_del(struct Service *, struct Client *, int, char *[]);
+static void m_access_list(struct Service *, struct Client *, int, char *[]);
+
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_private(struct Service *, struct Client *, int, char *[]);
@@ -95,9 +99,25 @@ static struct ServiceMessage set_msgtab = {
   GS_HELP_SET_LONG, NULL 
 };
 
+
+static struct ServiceMessage access_sub[6] = {
+  { NULL, "ADD", 0, 3, 3, SFLG_KEEPARG|SFLG_GROUPARG, MASTER_FLAG,
+    GS_HELP_ACCESS_ADD_SHORT, GS_HELP_ACCESS_ADD_LONG, m_access_add },
+  { NULL, "DEL", 0, 2, 2, SFLG_KEEPARG|SFLG_GROUPARG, MEMBER_FLAG,
+    GS_HELP_ACCESS_DEL_SHORT, GS_HELP_ACCESS_DEL_LONG, m_access_del },
+  { NULL, "LIST", 0, 1, 1, SFLG_KEEPARG|SFLG_GROUPARG, GRPUSER_FLAG,
+    GS_HELP_ACCESS_LIST_SHORT, GS_HELP_ACCESS_LIST_LONG, m_access_list },
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
+};
+
+static struct ServiceMessage access_msgtab = {
+  access_sub, "ACCESS", 0, 2, 2, SFLG_KEEPARG|SFLG_GROUPARG, MASTER_FLAG,
+    GS_HELP_ACCESS_SHORT, GS_HELP_ACCESS_LONG, NULL
+};
+
 static struct ServiceMessage info_msgtab = {
-  NULL, "INFO", 0, 0, 1, 0, USER_FLAG, GS_HELP_INFO_SHORT, GS_HELP_INFO_LONG,
-  m_info
+  NULL, "INFO", 0, 1, 1, SFLG_GROUPARG, GRPUSER_FLAG, GS_HELP_INFO_SHORT, 
+  GS_HELP_INFO_LONG, m_info
 };
 
 static struct ServiceMessage sudo_msgtab = {
@@ -126,6 +146,7 @@ INIT_MODULE(groupserv, "$Revision: 1556 $")
   mod_add_servcmd(&groupserv->msg_tree, &sudo_msgtab);
   mod_add_servcmd(&groupserv->msg_tree, &list_msgtab);
   mod_add_servcmd(&groupserv->msg_tree, &info_msgtab);
+  mod_add_servcmd(&groupserv->msg_tree, &access_msgtab);
   
   return groupserv;
 }
@@ -247,9 +268,11 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
   group = group_find(parv[1]);
 
-  if(client->nickname)
+  if(client->nickname != NULL)
+  {
     access = groupaccess_find(group_get_id(group), 
         nickname_get_id(client->nickname));
+  }
 
   reply_user(service, service, client, GS_INFO_START, group_get_name(group));
   reply_time(service, client, GS_INFO_REGTIME_FULL, group_get_regtime(group));
@@ -462,3 +485,204 @@ m_set_string(struct Service * service, struct Client *client,
 #endif
   return TRUE;
 }
+
+static void
+m_access_add(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  Group *group;
+  struct GroupAccess *access, *oldaccess;
+  unsigned int account, level;
+  char *level_added = "MEMBER";
+
+  group = group_find(parv[1]);
+
+  if((account = nickname_id_from_nick(parv[2], TRUE)) <= 0)
+  {
+    reply_user(service, service, client, GS_REGISTER_NICK, parv[2]);
+    group_free(group);
+    return;
+  }
+
+  if(irccmp(parv[3], "MASTER") == 0)
+  {
+    level = MASTER_FLAG;
+    level_added = "MASTER";
+  }
+  else if(irccmp(parv[3], "MEMBER") == 0)
+    level = MEMBER_FLAG;
+  else
+  {
+    reply_user(service, service, client, GS_ACCESS_BADLEVEL, parv[3]);
+    group_free(group);
+    return;
+  }
+
+  access = MyMalloc(sizeof(struct GroupAccess));
+  access->group = group_get_id(group);
+  access->account = account;
+  access->level   = level;
+
+  if((oldaccess = groupaccess_find(access->group, access->account)) != NULL)
+  {
+    int mcount = -1;
+
+    if(oldaccess->account == access->account && oldaccess->level == access->level)
+    {
+      reply_user(service, service, client, GS_ACCESS_ALREADY_ON, parv[2],
+          group_get_name(group));
+      group_free(group);
+      MyFree(oldaccess);
+      MyFree(access);
+      return;
+    }
+    group_masters_count(group_get_id(group), &mcount);
+    if(oldaccess->level == MASTER_FLAG && mcount <= 1)
+    {
+      reply_user(service, service, client, GS_ACCESS_NOMASTERS, parv[2],
+          group_get_name(group));
+      group_free(group);
+      MyFree(oldaccess);
+      MyFree(access);
+      return;
+    }
+    groupaccess_remove(oldaccess);
+    MyFree(oldaccess);
+  }
+
+  if(groupaccess_add(access))
+  {
+    reply_user(service, service, client, GS_ACCESS_ADDOK, parv[2], parv[1],
+        level_added);
+    ilog(L_DEBUG, "%s (%s@%s) added AE %s(%d) to %s", client->name,
+        client->username, client->host, parv[2], access->level, parv[1]);
+  }
+  else
+    reply_user(service, service, client, GS_ACCESS_ADDFAIL, parv[2], parv[1],
+        parv[3]);
+
+  group_free(group);
+
+  MyFree(access);
+}
+
+static void
+m_access_del(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  Group *group;
+  struct GroupAccess *access, *myaccess;
+  unsigned int nickid;
+  int mcount = -1;
+
+  group = group_find(parv[1]);
+
+  if((nickid = nickname_id_from_nick(parv[2], TRUE)) <= 0)
+  {
+    reply_user(service, service, client, GS_ACCESS_NOTLISTED, parv[2], parv[1]);
+    group_free(group);
+    return;
+  }
+
+  access = groupaccess_find(group_get_id(group), nickid);
+  if(access == NULL)
+  {
+    reply_user(service, service, client, GS_ACCESS_NOTLISTED, parv[2], parv[1]);
+    group_free(group);
+    return;
+  }
+
+  if(nickid != nickname_get_id(client->nickname) && client->access != SUDO_FLAG)
+  {
+    if(client->access != SUDO_FLAG)
+    {
+      myaccess = groupaccess_find(group_get_id(group), nickname_get_id(client->nickname));
+      if(myaccess->level != MASTER_FLAG)
+      {
+        reply_user(service, NULL, client, SERV_NO_ACCESS_CHAN, "DEL",
+            group_get_name(group));
+        group_free(group);
+        MyFree(access);
+        return;
+      }
+    }
+  }
+
+  group_masters_count(group_get_id(group), &mcount);
+  if(access->level == MASTER_FLAG && mcount <= 1)
+  {
+    reply_user(service, service, client, GS_ACCESS_NOMASTERS, parv[2],
+        group_get_name(group));
+    group_free(group);
+    MyFree(access);
+    return;
+  }
+
+  if(groupaccess_remove(access))
+  {
+    reply_user(service, service, client, GS_ACCESS_DELOK, parv[2], parv[1]);
+    ilog(L_DEBUG, "%s (%s@%s) removed AE %s from %s",
+      client->name, client->username, client->host, parv[2], parv[1]);
+  }
+  else
+    reply_user(service, service, client, GS_ACCESS_DELFAIL, parv[2], parv[1]);
+
+  MyFree(access);
+
+  group_free(group);
+}
+
+static void
+m_access_list(struct Service *service, struct Client *client,
+    int parc, char *parv[])
+{
+  struct GroupAccess *access = NULL;
+  Group *group;
+  char *nick;
+  int i = 1;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
+
+  group = group_find(parv[1]);
+
+  if(groupaccess_list(group_get_id(group), &list) == 0)
+  {
+    reply_user(service, service, client, GS_ACCESS_LISTEND, 
+        group_get_name(group));
+    MyFree(access);
+    group_free(group);
+    return;
+  }
+
+  DLINK_FOREACH(ptr, list.head)
+  {
+    char *level;
+    access = (struct GroupAccess *)ptr->data;
+
+    switch(access->level)
+    {
+      /* XXX Some sort of lookup table maybe, but we only have these 3 atm */
+      case MEMBER_FLAG:
+        level = "MEMBER";
+        break;
+      case MASTER_FLAG:
+        level = "MASTER";
+        break;
+      default:
+        level = "UNKNOWN";
+        break;
+    }
+
+    nick = nickname_nick_from_id(access->account, TRUE);
+    reply_user(service, service, client, GS_ACCESS_LIST, i++, nick, level);
+
+    MyFree(nick);
+  }
+
+  reply_user(service, service, client, GS_ACCESS_LISTEND, group_get_name(group));
+
+  groupaccess_list_free(&list);
+
+  group_free(group);
+}
+

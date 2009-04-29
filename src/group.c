@@ -343,6 +343,21 @@ group_masters_list_free(dlink_list *list)
   db_string_list_free(list);
 }
 
+inline int
+group_masters_count(unsigned int id, int *count)
+{
+  int error;
+
+  *count = atoi(db_execute_scalar(GET_GROUP_MASTER_COUNT, &error, "i", &id));
+  if(error)
+  {
+    *count = -1;
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 #if 0
 /*
  * group_save:

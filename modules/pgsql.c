@@ -290,11 +290,17 @@ static query_t queries[QUERY_COUNT] = {
     "FROM group_access WHERE group_id=$1 AND account_id=$2", QUERY },
   { INSERT_GROUPACCESS, "INSERT INTO group_access "
     "(account_id, group_id, level) VALUES ($1, $2, $3)", EXECUTE } ,
-  { DELETE_GROUPACCESS, "DELETE FROM \"group\"", EXECUTE },
-  { COUNT_GROUP_ACCESS_LIST, "SELECT id FROM \"group\"", QUERY },
+  { DELETE_GROUPACCESS, "DELETE FROM group_access "
+    "WHERE group_id=$1 AND account_id=$2", EXECUTE },
+ { COUNT_GROUP_ACCESS_LIST, "SELECT COUNT(*) FROM group_access "
+    "JOIN account ON group_access.account_id=account.id "
+    "JOIN nickname ON account.primary_nick=nickname.id WHERE group_id=$1",
+    QUERY },
   { GET_GROUP_MASTERS, "SELECT nick FROM account, nickname, group_access "
       "WHERE group_id=$1 AND level=4 AND group_access.account_id=account.id "
       "AND account.primary_nick=nickname.id ORDER BY lower(nick)", QUERY },
+  { GET_GROUP_MASTER_COUNT, "SELECT COUNT(id) FROM group_access "
+    "WHERE group_id=$1 AND level=4", QUERY },
 };
 
 

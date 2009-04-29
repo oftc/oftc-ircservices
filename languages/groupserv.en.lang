@@ -10,16 +10,14 @@ GS_HELP_REG_LONG
 	
 	Registers a group in our database for your use.  Groups are used to join 
 	together one or more nicknames.  For example, a group can be placed on a
-	channel access list, instead of lots of nicknames. 
+	group access list, instead of lots of nicknames. 
 GS_HELP_DROP_SHORT
 	%s: Releases your group for use.
 GS_HELP_DROP_LONG
 	Usage: DROP
 	
-	Releases your nickname for use and deletes it from the database.
-	This cannot be undone. You will be asked to confirm this action by following
-	the instructions given. If you already have a confirmation auth code, supply
-	it as a parameter. Releasing your nickname in this way will allow others to
+	Releases your group for use and deletes it from the database.
+	This cannot be undone. Releasing your group in this way will allow others to
 	make use of it, or register it for their use, so make sure you really want
 	this before confirming.
 GS_HELP_SET_SHORT
@@ -68,18 +66,50 @@ GS_HELP_INFO_LONG
 GS_HELP_SUDO_SHORT
 	%s: Execute a command on a group overriding access checks.
 GS_HELP_SUDO_LONG
-	Usage: SUDO nickname command
+	Usage: SUDO group command
 	
 	This will execute the specified command overriding any access checks on the
 	group.  This command is restricted to services admins.
 GS_HELP_LIST_SHORT
-	%s: Shows a list of nicknames matching a specified pattern.
+	%s: Shows a list of groups matching a specified pattern.
 GS_HELP_LIST_LONG
 	Usage: LIST pattern
 	
 	Shows a list of groups which are registered and match the pattern
 	specified.  Results will be limited to 50 matches, so try to be specific 
 	with your pattern.
+GS_HELP_ACCESS_SHORT
+	%s: Maintains the group access list.
+GS_HELP_ACCESS_LONG
+	The group access list specifies which nicknames are allowed access to the
+	group and at what level their access is. The commands available are
+	as follows:
+GS_HELP_ACCESS_ADD_SHORT
+	%s: Add a nickname to the group access list.
+GS_HELP_ACCESS_ADD_LONG
+	Usage: ACCESS ^Bgroup^B ADD ^Bnickname^B MEMBER|MASTER
+	
+	Add the specified nickname to the access list at the specified level.
+	
+	MASTER - The highest level of access possible on a group. Setting this
+	level of access will allow full management of the group. Be careful who
+	you give this to.
+	MEMBER - Recognises the user as a member of the group. 
+GS_HELP_ACCESS_DEL_SHORT
+	%s: Remove a nickname from the group access list.
+GS_HELP_ACCESS_DEL_LONG
+	Usage: ACCESS ^Bgroup^B DEL ^Bnickname^B
+	
+	Removes a nickname from the group access list.
+GS_HELP_ACCESS_LIST_SHORT
+	%s: Show the group access list.
+GS_HELP_ACCESS_LIST_LONG
+	Usage: ACCESS ^Bgroup^B LIST
+	
+	Show the current group access list.
+GS_REGISTER_NICK
+	Nick %s is not registered. The nickname you specify must be currently 
+	registered with nickname services.
 GS_ALREADY_REG
 	Group %s is already registered.  It may have been registered by someone 
 	else first. Please choose another group name and try again, or if you 
@@ -87,7 +117,7 @@ GS_ALREADY_REG
 GS_REG_COMPLETE
 	Group %s has been registered successfully and is now yours to use.
 	See HELP SET for information on settings that you can set on your new
-	group.  This group may now have members added to it and be added to channel
+	group.  This group may now have members added to it and be added to group
 	access lists.
 GS_REG_FAIL
 	Group %s failed to register. This is usually caused by an internal
@@ -115,14 +145,14 @@ GS_DROP_FAILED
 	try again shortly. If this is not the first time you have seen this message
 	please contact network support.
 GS_DROP_FAIL_MASTERLESS
-	Unable to DROP group %s. Channel %s would be left with no
-	masters. Drop this channel first, or assign someone else as master.
+	Unable to DROP group %s. group %s would be left with no
+	masters. Drop this group first, or assign someone else as master.
 GS_INFO_START
 	Information for group %s
 GS_INFO
-				Description: %s
-								URL: %s
-						 E-Mail: %s
+	      Description: %s
+	              URL: %s
+	           E-Mail: %s
 GS_INFO_MASTERS
 	Group Masters: %s
 GS_INFO_OPTION
@@ -147,3 +177,28 @@ GS_LIST_END
 	End of LIST. %d matches found.
 GS_NAMESTART_AT
 	Group name must start with the '@' character.
+GS_ACCESS_BADLEVEL
+	Unknown access level %s. The access level you specify must be one of the
+	available access levels. See HELP ACCESS for more information.
+GS_ACCESS_ADDOK
+	%s added to %s access list as %s.
+GS_ACCESS_ADDFAIL
+	Failed to add %s to %s access list as %s. It is possible that
+	they are already on the access list. If this is not the case and this is not
+	the first time you have seen this message, please contact network support.
+GS_ACCESS_LIST
+	%d: %s %s
+GS_ACCESS_LISTEND
+	End of ACCESS LIST for group %s.
+GS_ACCESS_DELOK
+	Removed %s from the access list of %s.
+GS_ACCESS_DELFAIL
+	Failed to remove %s from the access list of %s.
+GS_ACCESS_NOMASTERS
+	You cannot remove %s from the access list of %s because it is the
+	last MASTER entry. Add another MASTER to the access list and try again.
+GS_ACCESS_ALREADY_ON
+	You cannot add %s to the access list of %s because they are already
+	on the list at that level.
+GS_ACCESS_NOTLISTED
+	%s is not on the access list of %s.

@@ -55,6 +55,7 @@ void group_chan_list_free(dlink_list *);
 
 int group_masters_list(unsigned int, dlink_list *);
 void group_masters_list_free(dlink_list *);
+int group_masters_count(unsigned int, int *);
 
 int group_list_all(dlink_list *);
 void group_list_all_free(dlink_list *);
