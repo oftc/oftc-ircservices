@@ -1893,7 +1893,7 @@ clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
     {
       send_cmode(service, chptr, modes, masks);
       modes[0] = '\0';
-      modes[0] = '\0';
+      masks[0] = '\0';
     }
 
     if(strlen(modes) == 0)
