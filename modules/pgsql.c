@@ -88,8 +88,8 @@ static query_t queries[QUERY_COUNT] = {
   { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill ORDER BY akill.time",
     QUERY },
   { GET_CHAN_ACCESSES, "SELECT channel_access.id, channel_access.channel_id, "
-      "channel_access.account_id, channel_access.level FROM "
-      "channel_access JOIN account ON "
+      "channel_access.account_id, channel_access.group_id, channel_access.level "
+      "FROM channel_access JOIN account ON "
       "channel_access.account_id=account.id JOIN nickname ON "
       "account.primary_nick=nickname.id WHERE channel_id=$1 "
       "ORDER BY lower(nickname.nick)", QUERY },
@@ -107,8 +107,10 @@ static query_t queries[QUERY_COUNT] = {
   { SET_CHAN_LEVEL, "UPDATE channel_access SET level=$1 WHERE account_id=$2", EXECUTE },
   { DELETE_CHAN_ACCESS, "DELETE FROM channel_access WHERE channel_id=$1 AND account_id=$2", 
     EXECUTE },
-  { GET_CHAN_ACCESS, "SELECT id, channel_id, account_id, level FROM channel_access WHERE "
-    "channel_id=$1 AND account_id=$2", QUERY },
+  { GET_CHAN_ACCESS, "SELECT id, channel_id, account_id, group_id, level "
+    "FROM channel_access WHERE channel_id=$1 "
+      "AND (account_id=$2 OR group_id IN (SELECT group_id FROM group_access "
+      "WHERE account_id=$2)) ORDER BY level DESC LIMIT 1", QUERY },
   { DELETE_CHAN, "DELETE FROM channel WHERE id=$1", EXECUTE },
   { GET_AKILL, "SELECT id, setter, mask, reason, time, duration FROM akill WHERE mask=$1",
     QUERY },
@@ -301,6 +303,14 @@ static query_t queries[QUERY_COUNT] = {
       "AND account.primary_nick=nickname.id ORDER BY lower(nick)", QUERY },
   { GET_GROUP_MASTER_COUNT, "SELECT COUNT(id) FROM group_access "
     "WHERE group_id=$1 AND level=4", QUERY },
+  { INSERT_CHANACCESS_GROUP, "INSERT INTO channel_access "
+    "(group_id, channel_id, level) VALUES ($1, $2, $3)", EXECUTE } ,
+  { GET_CHAN_ACCESS_GROUP, "SELECT id, channel_id, group_id, level "
+    "FROM channel_access WHERE channel_id=$1 AND group_id=$2", QUERY },
+  { GET_CHAN_ACCESSES_GROUP, "SELECT ca.id, ca.channel_id, ca.account_id, "
+      "ca.group_id, ca.level FROM channel_access AS ca "
+      "JOIN \"group\" ON ca.group_id=\"group\".id WHERE ca.channel_id=$1 " 
+      "ORDER BY lower(\"group\".name)", QUERY },
 };
 
 

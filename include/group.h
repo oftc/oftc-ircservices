@@ -42,7 +42,7 @@ Group* group_find(const char *);
 int group_register(Group *, Nickname *);
 int group_delete(Group *);
 
-char *group_name_from_id(int, int);
+char *group_name_from_id(int);
 int group_id_from_name(const char *);
 
 int group_save(Group *);

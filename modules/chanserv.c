@@ -40,6 +40,7 @@
 #include "akick.h"
 #include "chanaccess.h"
 #include "servicemask.h"
+#include "group.h"
 
 static struct Service *chanserv = NULL;
 static struct Client *chanserv_client = NULL;
@@ -732,18 +733,32 @@ m_access_add(struct Service *service, struct Client *client,
   struct Channel *chptr;
   DBChannel *regchptr;
   struct ChanAccess *access, *oldaccess;
-  unsigned int account, level;
+  unsigned int account, group, level;
   char *level_added = "MEMBER";
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  if((account = nickname_id_from_nick(parv[2], TRUE)) <= 0)
+  account = group = 0;
+
+  if(*parv[2] == '@')
   {
-    reply_user(service, service, client, CS_REGISTER_NICK, parv[2]);
-    if(chptr == NULL)
-      dbchannel_free(regchptr);
-    return;
+    if((group = group_id_from_name(parv[2])) <= 0)
+    {
+      reply_user(service, service, client, CS_REGISTER_GROUP, parv[2]);
+      if(chptr == NULL)
+        dbchannel_free(regchptr);
+    }
+  }
+  else
+  {
+    if((account = nickname_id_from_nick(parv[2], TRUE)) <= 0)
+    {
+      reply_user(service, service, client, CS_REGISTER_NICK, parv[2]);
+      if(chptr == NULL)
+        dbchannel_free(regchptr);
+      return;
+    }
   }
 
   if(irccmp(parv[3], "MASTER") == 0)
@@ -769,13 +784,17 @@ m_access_add(struct Service *service, struct Client *client,
   access = MyMalloc(sizeof(struct ChanAccess));
   access->channel = dbchannel_get_id(regchptr);
   access->account = account;
+  access->group = group;
   access->level   = level;
 
-  if((oldaccess = chanaccess_find(access->channel, access->account)) != NULL)
+  if((oldaccess = chanaccess_find_exact(access->channel, access->account, 
+          access->group)) != NULL)
   {
     int mcount = -1;
 
-    if(oldaccess->account == access->account && oldaccess->level == access->level)
+    if((oldaccess->group == access->group || 
+          oldaccess->account == access->account) && 
+        oldaccess->level == access->level)
     {
       reply_user(service, service, client, CS_ACCESS_ALREADY_ON, parv[2],
           dbchannel_get_channel(regchptr));
@@ -819,7 +838,6 @@ m_access_add(struct Service *service, struct Client *client,
 
   MyFree(access);
 }
-
 
 static void
 m_access_del(struct Service *service, struct Client *client,
@@ -942,7 +960,11 @@ m_access_list(struct Service *service, struct Client *client,
         break;
     }
 
-    nick = nickname_nick_from_id(access->account, TRUE);
+    if(access->account > 0)
+      nick = nickname_nick_from_id(access->account, TRUE);
+    else
+      nick = group_name_from_id(access->group);
+
     reply_user(service, service, client, CS_ACCESS_LIST, i++, nick, level);
 
     MyFree(nick);

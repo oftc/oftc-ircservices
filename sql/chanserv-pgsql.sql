@@ -29,7 +29,8 @@ DROP TABLE channel_access;
 CREATE TABLE channel_access(
   id                   SERIAL PRIMARY KEY,
   channel_id           INTEGER NOT NULL REFERENCES channel(id) ON DELETE CASCADE,
-  account_id           INTEGER NOT NULL REFERENCES account(id),
+  account_id           INTEGER REFERENCES account(id),
+  group_id             INTEGER REFERENCES "group"(id),
   level                INTEGER NOT NULL,
   UNIQUE (channel_id, account_id)
 );

@@ -42,8 +42,11 @@ row_to_chanaccess(row_t *row)
   access = MyMalloc(sizeof(struct ChanAccess));
   access->id = atoi(row->cols[0]);
   access->channel = atoi(row->cols[1]);
-  access->account = atoi(row->cols[2]);
-  access->level = atoi(row->cols[3]);
+  if(row->cols[2] != NULL)
+    access->account = atoi(row->cols[2]);
+  if(row->cols[3] != NULL)
+    access->group = atoi(row->cols[3]);
+  access->level = atoi(row->cols[4]);
   return access;
 }
 
@@ -71,6 +74,7 @@ chanaccess_list(unsigned int channel, dlink_list *list)
   result_set_t *results;
   int error;
   int i;
+  int res = 0;
 
   results = db_execute(GET_CHAN_ACCESSES, &error, "i", &channel);
   if(results == NULL && error != 0)
@@ -79,10 +83,35 @@ chanaccess_list(unsigned int channel, dlink_list *list)
     return FALSE;
   }
   else if(results == NULL)
-    return FALSE;
+    res = 0;
 
   if(results->row_count == 0)
-    return FALSE;
+    res = 0;
+
+  if(results != NULL)
+  {
+    for(i = 0; i < results->row_count; i++)
+    {
+      row_t *row = &results->rows[i];
+      struct ChanAccess *access = row_to_chanaccess(row);
+
+      dlinkAdd(access, make_dlink_node(), list);
+    }
+
+    db_free_result(results);
+  }
+
+  results = db_execute(GET_CHAN_ACCESSES_GROUP, &error, "i", &channel);
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "chanaccess_list: database error %d", error);
+    return res;
+  }
+  else if(results == NULL)
+    return res;
+
+  if(results->row_count == 0)
+    return res;
 
   for(i = 0; i < results->row_count; i++)
   {
@@ -102,7 +131,12 @@ chanaccess_add(struct ChanAccess *access)
 {
   int ret;
 
-  ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", &access->account, &access->channel, &access->level);
+  if(access->account > 0)
+    ret = db_execute_nonquery(INSERT_CHANACCESS, "iii", &access->account, 
+        &access->channel, &access->level);
+  else
+    ret = db_execute_nonquery(INSERT_CHANACCESS_GROUP, "iii", &access->group,
+        &access->channel, &access->level);
 
   if(ret == -1)
     return FALSE;
@@ -131,6 +165,37 @@ chanaccess_find(unsigned int channel, unsigned int account)
   struct ChanAccess *access;
 
   results = db_execute(GET_CHAN_ACCESS, &error, "ii", &channel, &account);
+
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "chanaccess_find: database error %d", error);
+    return FALSE;
+  }
+  else if(results == NULL)
+    return FALSE;
+
+  if(results->row_count == 0)
+    return FALSE;
+
+  access = row_to_chanaccess(&results->rows[0]);
+
+  db_free_result(results);
+
+  return access;
+}
+
+struct ChanAccess *
+chanaccess_find_exact(unsigned int channel, unsigned int account, unsigned int group)
+{
+  int error;
+  result_set_t *results;
+  struct ChanAccess *access;
+
+  if(account > 0)
+    results = db_execute(GET_CHAN_ACCESS, &error, "ii", &channel, &account);
+  else
+    results = db_execute(GET_CHAN_ACCESS_GROUP, &error, "ii", &group, &account);
+
   if(results == NULL && error != 0)
   {
     ilog(L_CRIT, "chanaccess_find: database error %d", error);

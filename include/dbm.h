@@ -7,6 +7,7 @@ struct ChanAccess
 {
   unsigned int id;
   unsigned int account;
+  unsigned int group;
   unsigned int channel;
   unsigned int level;
 };
@@ -195,6 +196,9 @@ enum db_queries
   COUNT_GROUP_ACCESS_LIST,
   GET_GROUP_MASTERS,
   GET_GROUP_MASTER_COUNT,
+  INSERT_CHANACCESS_GROUP,
+  GET_CHAN_ACCESS_GROUP,
+  GET_CHAN_ACCESSES_GROUP,
   QUERY_COUNT
 };
 

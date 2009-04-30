@@ -447,6 +447,9 @@ CS_HELP_QUIET_LIST_LONG
 CS_REGISTER_NICK
 	Nick %s is not registered. The nickname you specify must be currently
 	registered with nickname services.
+CS_REGISTER_GROUP
+	Group %s is not registered. The group you specify must be currently
+	registered with group services.
 CS_ALREADY_REG
 	Channel %s is already registered.
 CS_REG_SUCCESS

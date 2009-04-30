@@ -284,7 +284,7 @@ group_delete_forbid(const char *group)
  *
  */
 char *
-group_namefrom_id(int id)
+group_name_from_id(int id)
 {
   char *group;
   int error;
