@@ -318,6 +318,9 @@ introduce_server(const char *name, const char *gecos)
 struct Channel*
 join_channel(struct Client *service, struct Channel *channel)
 {
+  if(ServicesState.debugmode)
+    return channel;
+
   if(channel != NULL)
   {
     add_user_to_channel(channel, service, 0, 0);
@@ -345,12 +348,18 @@ squit_server(const char *server, const char *reason)
 void
 part_channel(struct Client *service, const char *chname, const char *reason)
 {
+  if(ServicesState.debugmode)
+    return;
+
   execute_callback(send_part_cb, me.uplink, service, chname, reason);
 }
 
 void
 ctcp_user(struct Service *service, struct Client *client, const char *text)
 {
+  if(ServicesState.debugmode)
+    return;
+
   char buffer[IRC_BUFSIZE];
   snprintf(buffer, IRC_BUFSIZE, "\001%s\001", text);
   execute_callback(send_privmsg_cb, me.uplink, service->name, client->name, buffer);
@@ -585,6 +594,9 @@ send_chops_notice(struct Service *service, struct Channel *chptr,
   va_list ap;
   char *buf;
 
+  if(ServicesState.debugmode)
+    return;
+
   if(chptr == NULL || chptr->regchan == NULL || !dbchannel_get_verbose(chptr->regchan))
     return;
 
@@ -599,6 +611,9 @@ send_chops_notice(struct Service *service, struct Channel *chptr,
 void
 send_umode(struct Service *service, struct Client *client, const char *mode)
 {
+  if(ServicesState.debugmode)
+    return;
+
   if(!HasID(client))
     execute_callback(send_umode_cb, me.uplink, client->name, mode);
   else
@@ -639,6 +654,9 @@ send_akill(struct Service *service, char *setter, struct ServiceMask *akill)
 void
 send_resv(struct Service *service, char *resv, char *reason, time_t duration)
 {
+  if(ServicesState.debugmode)
+    return;
+
   ilog(L_DEBUG, "%s set RESV on %s for %ld because %s", service->name, resv, duration, reason);
   execute_callback(send_resv_cb, me.uplink, service, resv, reason, duration);
 }
@@ -646,12 +664,18 @@ send_resv(struct Service *service, char *resv, char *reason, time_t duration)
 void
 send_unresv(struct Service *service, char *resv)
 {
+  if(ServicesState.debugmode)
+    return;
+
   execute_callback(send_unresv_cb, me.uplink, service, resv);
 }
 
 void
 remove_akill(struct Service *service, struct ServiceMask *akill)
 {
+  if(ServicesState.debugmode)
+    return;
+
   execute_callback(send_unakill_cb, me.uplink, service, akill->mask);
 }
 
