@@ -33,6 +33,8 @@
 #include "nickname.h"
 #include "servicemask.h"
 
+static dlink_list akill_list_cache = { 0 };
+
 static struct ServiceMask *
 row_to_akill(row_t *row)
 {
@@ -189,12 +191,12 @@ akill_get_expired(dlink_list *list)
 int
 akill_check_client(struct Service *service, struct Client *client)
 {
-  dlink_list list = { 0 };
   dlink_node *ptr;
 
-  akill_list(&list);
+  if(dlink_list_length(&akill_list_cache) == 0)
+    akill_list(&akill_list_cache);
 
-  DLINK_FOREACH(ptr, list.head)
+  DLINK_FOREACH(ptr, akill_list_cache.head)
   {
     struct ServiceMask *sban = (struct ServiceMask *)ptr->data;
 
@@ -205,13 +207,10 @@ akill_check_client(struct Service *service, struct Client *client)
       send_akill(service, setter, sban);
       MyFree(setter);
 
-      akill_list_free(&list);
-
       return TRUE;
     }
   }
 
-  akill_list_free(&list);
   return FALSE;
 }
 
@@ -219,9 +218,11 @@ int
 akill_add(struct ServiceMask *akill)
 {
   int ret;
-  
+
+  akill_list_free(&akill_list_cache);
+
   akill->type = AKILL_MASK;
-  
+
   if(akill->setter != 0)
     ret = db_execute_nonquery(INSERT_AKILL, "ssiii", akill->mask,
         akill->reason, &akill->setter, &akill->time_set, &akill->duration);
@@ -261,5 +262,7 @@ akill_find(const char *mask)
 int
 akill_remove_mask(const char *mask)
 {
+  akill_list_free(&akill_list_cache);
+
   return db_execute_nonquery(DELETE_AKILL, "s", mask);
 }
