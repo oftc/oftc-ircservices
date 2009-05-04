@@ -34,6 +34,7 @@ enum {
   HASH_TYPE_CLIENT,
   HASH_TYPE_CHANNEL,
   HASH_TYPE_SERVICE,
+  HASH_TYPE_NUH,
   HASH_TYPE_RESERVED
 };
 
@@ -66,5 +67,5 @@ void hash_add_mqueue(struct MessageQueue **, struct MessageQueue *);
 void hash_del_mqueue(struct MessageQueue **, struct MessageQueue *);
 struct MessageQueue **new_mqueue_hash();
 
-unsigned int strhash(const char *);
+unsigned int strhash(const char *, int);
 #endif  /* INCLUDED_hash_h */
