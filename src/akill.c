@@ -62,7 +62,7 @@ static int
 akill_check_mask(struct Client *client, const char *mask)
 {
   struct irc_ssaddr addr;
-  struct split_nuh_item *nuh, newnuh;
+  struct split_nuh_item *nuh, *newnuh;
   char *name;
   char *user;
   char *host;
@@ -71,19 +71,22 @@ akill_check_mask(struct Client *client, const char *mask)
   nuh = hash_find_nuh(mask);
   if(nuh == NULL)
   {
-    DupString(newnuh.nuhmask, mask);
-    newnuh.nickptr  = MyMalloc(NICKLEN);
-    newnuh.userptr  = MyMalloc(USERLEN+1);
-    newnuh.hostptr  = MyMalloc(HOSTLEN+1);
+    newnuh = MyMalloc(sizeof(struct split_nuh_item));
+    DupString(newnuh->nuhmask, mask);
+    newnuh->nickptr  = MyMalloc(NICKLEN);
+    newnuh->userptr  = MyMalloc(USERLEN+1);
+    newnuh->hostptr  = MyMalloc(HOSTLEN+1);
 
-    newnuh.nicksize = sizeof(name);
-    newnuh.usersize = sizeof(user);
-    newnuh.hostsize = sizeof(host);
+    newnuh->nicksize = sizeof(name);
+    newnuh->usersize = sizeof(user);
+    newnuh->hostsize = sizeof(host);
 
-    split_nuh(&newnuh);
+    split_nuh(newnuh);
 
-    hash_add_nuh(&newnuh);
-    nuh = &newnuh;
+    MyFree(newnuh->nuhmask);
+    DupString(newnuh->nuhmask, mask);
+    hash_add_nuh(newnuh);
+    nuh = newnuh;
   }
   
   name = nuh->nickptr;
