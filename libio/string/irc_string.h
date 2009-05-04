@@ -126,6 +126,8 @@ struct split_nuh_item
   size_t nicksize;
   size_t usersize;
   size_t hostsize;
+
+  struct split_nuh_item *hnext;
 };
 
 LIBIO_EXTERN void split_nuh(struct split_nuh_item *);
