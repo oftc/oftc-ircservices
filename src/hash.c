@@ -99,19 +99,20 @@ strhash(const char *name, int len)
 {
     // 'm' and 'r' are mixing constants generated offline.
     // They're not really 'magic', they just happen to work well.
+    int reallen = strlen(name);
    
     const unsigned int m = 0x5bd1e995;
     const int r = 24;
    
     // Initialize the hash to a 'random' value
    
-    unsigned int h = ircd_random_key ^ len;
+    unsigned int h = ircd_random_key ^ reallen;
    
     // Mix 4 bytes at a time into the hash
    
     const unsigned char * data = (const unsigned char *)name;
    
-    while(len >= 4)
+    while(reallen >= 4)
     {
       unsigned int k = *(unsigned int *)data;
    
@@ -123,12 +124,12 @@ strhash(const char *name, int len)
       h ^= k;
    
       data += 4;
-      len -= 4;
+      reallen -= 4;
     }
     
     // Handle the last few bytes of the input array
    
-    switch(len)
+    switch(reallen)
     {
     case 3: h ^= data[2] << 16;
     case 2: h ^= data[1] << 8;
