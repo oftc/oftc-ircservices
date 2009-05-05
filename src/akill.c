@@ -32,7 +32,6 @@
 #include "hostmask.h"
 #include "nickname.h"
 #include "servicemask.h"
-#include "hash.h"
 
 static dlink_list akill_list_cache = { 0 };
 
@@ -62,36 +61,22 @@ static int
 akill_check_mask(struct Client *client, const char *mask)
 {
   struct irc_ssaddr addr;
-  struct split_nuh_item *nuh, *newnuh;
-  char *name;
-  char *user;
-  char *host;
+  struct split_nuh_item nuh;
+  char name[NICKLEN];
+  char user[USERLEN+1];
+  char host[HOSTLEN+1];
   int type, bits, found = 0;
 
-  nuh = hash_find_nuh(mask);
-  if(nuh == NULL)
-  {
-    newnuh = MyMalloc(sizeof(struct split_nuh_item));
-    DupString(newnuh->nuhmask, mask);
-    newnuh->nickptr  = MyMalloc(NICKLEN);
-    newnuh->userptr  = MyMalloc(USERLEN+1);
-    newnuh->hostptr  = MyMalloc(HOSTLEN+1);
+  DupString(nuh.nuhmask, mask);
+  nuh.nickptr = name;
+  nuh.userptr = user;
+  nuh.hostptr = host;
 
-    newnuh->nicksize = sizeof(name);
-    newnuh->usersize = sizeof(user);
-    newnuh->hostsize = sizeof(host);
+  nuh.nicksize = sizeof(name);
+  nuh.usersize = sizeof(user);
+  nuh.hostsize = sizeof(host);
 
-    split_nuh(newnuh);
-
-    MyFree(newnuh->nuhmask);
-    DupString(newnuh->nuhmask, mask);
-    hash_add_nuh(newnuh);
-    nuh = newnuh;
-  }
-  
-  name = nuh->nickptr;
-  user = nuh->userptr;
-  host = nuh->hostptr;
+  split_nuh(&nuh);
 
   type = parse_netmask(host, &addr, &bits);
 
@@ -117,6 +102,7 @@ akill_check_mask(struct Client *client, const char *mask)
 #endif
     }
   }
+  MyFree(nuh.nuhmask);
   return found;
 }
 

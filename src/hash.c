@@ -53,7 +53,6 @@ static struct Client *idTable[HASHSIZE];
 static struct Client *clientTable[HASHSIZE];
 static struct Channel *channelTable[HASHSIZE];
 static struct Service *serviceTable[HASHSIZE];
-static struct split_nuh_item *nuhTable[HASHSIZE];
 
 /* init_hash()
  *
@@ -83,7 +82,6 @@ init_hash(void)
     clientTable[i]      = NULL;
     channelTable[i]     = NULL;
     serviceTable[i]     = NULL;
-    nuhTable[i]         = NULL;
   }
 }
 
@@ -222,15 +220,6 @@ hash_add_id(struct Client *client)
 
   client->idhnext = idTable[hashv];
   idTable[hashv] = client;
-}
-
-void
-hash_add_nuh(struct split_nuh_item *item)
-{
-  unsigned int hashv = strhash(item->nuhmask, NICKLEN+USERLEN+HOSTLEN+2);
-
-  item->hnext = nuhTable[hashv];
-  nuhTable[hashv] = item;
 }
 
 /* hash_del_id()
@@ -573,42 +562,6 @@ hash_find_channel(const char *name)
   }
 
   return chptr;
-}
-
-/* hash_find_nuh()
- *
- * inputs       - pointer to mask
- * output       - NONE
- * side effects - New semantics: finds a nuh struct with mask 'mask', 
- *                if can't find one returns NULL, if can find it moves
- *                it to the top of the list and returns it.
- */
-struct split_nuh_item *
-hash_find_nuh(const char *mask)
-{
-  unsigned int hashv = strhash(mask, NICKLEN+USERLEN+HOSTLEN+2);
-  struct split_nuh_item *item = NULL;
-
-  if ((item = nuhTable[hashv]) != NULL)
-  {
-    if (irccmp(mask, item->nuhmask))
-    {
-      struct split_nuh_item *prev;
-
-      while (prev = item, (item = item->hnext) != NULL)
-      {
-        if (!irccmp(mask, item->nuhmask))
-        {
-          prev->hnext = item->hnext;
-          item->hnext = nuhTable[hashv];
-          nuhTable[hashv] = item;
-          break;
-        }
-      }
-    }
-  }
-
-  return item;
 }
 
 /* hash_get_bucket(int type, unsigned int hashv)

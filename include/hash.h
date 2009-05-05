@@ -34,7 +34,6 @@ enum {
   HASH_TYPE_CLIENT,
   HASH_TYPE_CHANNEL,
   HASH_TYPE_SERVICE,
-  HASH_TYPE_NUH,
   HASH_TYPE_RESERVED
 };
 
@@ -51,14 +50,12 @@ void hash_add_id(struct Client *);
 void hash_del_id(struct Client *);
 void hash_add_service(struct Service *);
 void hash_del_service(struct Service *);
-void hash_add_nuh(struct split_nuh_item *);
 
 struct Client *hash_find_id(const char *);
 struct Client *find_client(const char *);
 struct Client *find_server(const char *);
 struct Service *find_service(const char *);
 struct Channel *hash_find_channel(const char *);
-struct split_nuh_item *hash_find_nuh(const char *);
 void *hash_get_bucket(int, unsigned int);
 
 struct MessageQueue *hash_find_mqueue_host(struct MessageQueue **,
