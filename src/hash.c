@@ -88,34 +88,35 @@ init_hash(void)
 }
 
 /*
- * New hash function based on the Fowler/Noll/Vo (FNV) algorithm from
- * http://www.isthe.com/chongo/tech/comp/fnv/
- *
- * Here, we use the FNV-1 method, which gives slightly better results
- * than FNV-1a.   -Michael
+ * Even newer hash algorithm.  Murmur hash or something.
  */
 unsigned int
 strhash(const char *name, int len)
 {
     // 'm' and 'r' are mixing constants generated offline.
     // They're not really 'magic', they just happen to work well.
-    int reallen = strlen(name);
    
     const unsigned int m = 0x5bd1e995;
     const int r = 24;
    
     // Initialize the hash to a 'random' value
    
-    unsigned int h = ircd_random_key ^ reallen;
+    unsigned int h = ircd_random_key ^ len;
    
     // Mix 4 bytes at a time into the hash
    
     const unsigned char * data = (const unsigned char *)name;
+    if(name[1] == '\0')
+      len = 1;
+    else if(name[2] == '\0')
+      len = 2;
+    else if(name[3] == '\0')
+      len = 3;
    
-    while(reallen >= 4)
+    while(len >= 4)
     {
       unsigned int k = *(unsigned int *)data;
-   
+
       k *= m; 
       k ^= k >> r; 
       k *= m; 
@@ -124,12 +125,19 @@ strhash(const char *name, int len)
       h ^= k;
    
       data += 4;
-      reallen -= 4;
+      len -= 4;
+
+      if(data[1] == 0)
+        len = 1;
+      else if(data[2] == 0)
+        len = 2;
+      else if(data[3] == 0)
+        len = 3;
     }
     
     // Handle the last few bytes of the input array
    
-    switch(reallen)
+    switch(len)
     {
     case 3: h ^= data[2] << 16;
     case 2: h ^= data[1] << 8;
