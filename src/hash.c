@@ -98,7 +98,7 @@ strhash(const char *name, int len)
    
     const unsigned int m = 0x5bd1e995;
     const int r = 24;
-   
+
     // Initialize the hash to a 'random' value
    
     unsigned int h = ircd_random_key ^ len;
@@ -106,13 +106,15 @@ strhash(const char *name, int len)
     // Mix 4 bytes at a time into the hash
    
     const unsigned char * data = (const unsigned char *)name;
-    if(name[1] == '\0')
+    if(name[0] == '\0')
+      len = 0;
+    else if(name[1] == '\0')
       len = 1;
     else if(name[2] == '\0')
       len = 2;
     else if(name[3] == '\0')
       len = 3;
-   
+
     while(len >= 4)
     {
       unsigned int k = *(unsigned int *)data;
@@ -127,7 +129,9 @@ strhash(const char *name, int len)
       data += 4;
       len -= 4;
 
-      if(data[1] == 0)
+      if(data[0] == 0)
+        len = 0;
+      else if(data[1] == 0)
         len = 1;
       else if(data[2] == 0)
         len = 2;
