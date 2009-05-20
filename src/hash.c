@@ -86,75 +86,28 @@ init_hash(void)
 }
 
 /*
- * Even newer hash algorithm.  Murmur hash or something.
+ * New hash function based on the Fowler/Noll/Vo (FNV) algorithm from
+ * http://www.isthe.com/chongo/tech/comp/fnv/
+ *
+ * Here, we use the FNV-1 method, which gives slightly better results
+ * than FNV-1a.   -Michael
  */
 unsigned int
-strhash(const char *name, int len)
+strhash(const char *name)
 {
-    // 'm' and 'r' are mixing constants generated offline.
-    // They're not really 'magic', they just happen to work well.
-   
-    const unsigned int m = 0x5bd1e995;
-    const int r = 24;
+  const unsigned char *p = (const unsigned char *)name;
+  unsigned int hval = FNV1_32_INIT;
 
-    // Initialize the hash to a 'random' value
-   
-    unsigned int h = ircd_random_key ^ len;
-   
-    // Mix 4 bytes at a time into the hash
-   
-    const unsigned char * data = (const unsigned char *)name;
-    if(name[0] == '\0')
-      len = 0;
-    else if(name[1] == '\0')
-      len = 1;
-    else if(name[2] == '\0')
-      len = 2;
-    else if(name[3] == '\0')
-      len = 3;
+  if (*p == '\0')
+    return 0;
+  for (; *p != '\0'; ++p)
+  {
+    hval += (hval << 1) + (hval <<  4) + (hval << 7) +
+            (hval << 8) + (hval << 24);
+    hval ^= (ToLower(*p) ^ ircd_random_key);
+  }
 
-    while(len >= 4)
-    {
-      unsigned int k = *(unsigned int *)data;
-
-      k *= m; 
-      k ^= k >> r; 
-      k *= m; 
-      
-      h *= m; 
-      h ^= k;
-   
-      data += 4;
-      len -= 4;
-
-      if(data[0] == 0)
-        len = 0;
-      else if(data[1] == 0)
-        len = 1;
-      else if(data[2] == 0)
-        len = 2;
-      else if(data[3] == 0)
-        len = 3;
-    }
-    
-    // Handle the last few bytes of the input array
-   
-    switch(len)
-    {
-    case 3: h ^= data[2] << 16;
-    case 2: h ^= data[1] << 8;
-    case 1: h ^= data[0];
-            h *= m;
-    };
-   
-    // Do a few final mixes of the hash to ensure the last few
-    // bytes are well-incorporated.
-   
-    h ^= h >> 13;
-    h *= m;
-    h ^= h >> 15;
-   
-    return h % HASHSIZE;
+  return (hval >> FNV1_32_BITS) ^ (hval & ((1 << FNV1_32_BITS) -1));
 }
 
 /************************** Externally visible functions ********************/
@@ -179,7 +132,7 @@ strhash(const char *name, int len)
 void
 hash_add_client(struct Client *client)
 {
-  unsigned int hashv = strhash(client->name, NICKLEN);
+  unsigned int hashv = strhash(client->name);
 
   client->hnext = clientTable[hashv];
   clientTable[hashv] = client;
@@ -188,7 +141,7 @@ hash_add_client(struct Client *client)
 void
 hash_add_service(struct Service *service)
 {
-  unsigned int hashv = strhash(service->name, NICKLEN);
+  unsigned int hashv = strhash(service->name);
 
   service->hnext = serviceTable[hashv];
   serviceTable[hashv] = service;
@@ -207,7 +160,7 @@ hash_add_service(struct Service *service)
 void
 hash_add_channel(struct Channel *chptr)
 {
-  unsigned int hashv = strhash(chptr->chname, CHANNELLEN);
+  unsigned int hashv = strhash(chptr->chname);
 
   chptr->hnextch = channelTable[hashv];
   channelTable[hashv] = chptr;
@@ -216,7 +169,7 @@ hash_add_channel(struct Channel *chptr)
 void
 hash_add_id(struct Client *client)
 {
-  unsigned int hashv = strhash(client->id, IDLEN);
+  unsigned int hashv = strhash(client->id);
 
   client->idhnext = idTable[hashv];
   idTable[hashv] = client;
@@ -231,7 +184,7 @@ hash_add_id(struct Client *client)
 void
 hash_del_id(struct Client *client)
 {
-  unsigned int hashv = strhash(client->id, IDLEN);
+  unsigned int hashv = strhash(client->id);
   struct Client *tmp = idTable[hashv];
 
   if (tmp != NULL)
@@ -264,7 +217,7 @@ hash_del_id(struct Client *client)
 void
 hash_del_client(struct Client *client)
 {
-  unsigned int hashv = strhash(client->name, NICKLEN);
+  unsigned int hashv = strhash(client->name);
   struct Client *tmp = clientTable[hashv];
 
   if (tmp != NULL)
@@ -296,7 +249,7 @@ hash_del_client(struct Client *client)
 void
 hash_del_service(struct Service *service)
 {
-  unsigned int hashv = strhash(service->name, NICKLEN);
+  unsigned int hashv = strhash(service->name);
   struct Service *tmp = serviceTable[hashv];
 
   if (tmp != NULL)
@@ -330,7 +283,7 @@ hash_del_service(struct Service *service)
 void
 hash_del_channel(struct Channel *chptr)
 {
-  unsigned int hashv = strhash(chptr->chname, CHANNELLEN);
+  unsigned int hashv = strhash(chptr->chname);
   struct Channel *tmp = channelTable[hashv];
 
   if (tmp != NULL)
@@ -365,7 +318,7 @@ hash_del_channel(struct Channel *chptr)
 struct Client *
 find_client(const char *name)
 {
-  unsigned int hashv = strhash(name, NICKLEN);
+  unsigned int hashv = strhash(name);
   struct Client *client;
 
   if ((client = clientTable[hashv]) != NULL)
@@ -401,7 +354,7 @@ find_client(const char *name)
 struct Service *
 find_service(const char *name)
 {
-  unsigned int hashv = strhash(name, NICKLEN);
+  unsigned int hashv = strhash(name);
   struct Service *service;
 
   if ((service = serviceTable[hashv]) != NULL)
@@ -429,7 +382,7 @@ find_service(const char *name)
 struct Client *
 hash_find_id(const char *name)
 {
-  unsigned int hashv = strhash(name, IDLEN);
+  unsigned int hashv = strhash(name);
   struct Client *client;
 
   if ((client = idTable[hashv]) != NULL)
@@ -498,7 +451,7 @@ hash_find_masked_server(const char *name)
 struct Client *
 find_server(const char *name)
 {
-  unsigned int hashv = strhash(name, NICKLEN);
+  unsigned int hashv = strhash(name);
   struct Client *client = NULL;
 
   if (IsDigit(*name) && strlen(name) == IRC_MAXSID)
@@ -539,7 +492,7 @@ find_server(const char *name)
 struct Channel *
 hash_find_channel(const char *name)
 {
-  unsigned int hashv = strhash(name, CHANNELLEN);
+  unsigned int hashv = strhash(name);
   struct Channel *chptr = NULL;
 
   if ((chptr = channelTable[hashv]) != NULL)
@@ -563,7 +516,6 @@ hash_find_channel(const char *name)
 
   return chptr;
 }
-
 /* hash_get_bucket(int type, unsigned int hashv)
  *
  * inputs       - hash value (must be between 0 and HASHSIZE - 1)
@@ -605,7 +557,7 @@ hash_get_bucket(int type, unsigned int hashv)
 struct Service *
 hash_find_service(const char *host)
 {
-  unsigned int hashv = strhash(host, NICKLEN);
+  unsigned int hashv = strhash(host);
   struct Service *service;
 
   if ((service = serviceTable[hashv]))
@@ -633,7 +585,7 @@ hash_find_service(const char *host)
 struct MessageQueue *
 hash_find_mqueue_host(struct MessageQueue **hash, const char *host)
 {
-  unsigned int hashv = strhash(host, IRC_BUFSIZE);
+  unsigned int hashv = strhash(host);
   struct MessageQueue *queue;
   if((queue = hash[hashv]))
   {
@@ -660,7 +612,7 @@ hash_find_mqueue_host(struct MessageQueue **hash, const char *host)
 void
 hash_del_mqueue(struct MessageQueue **hash, struct MessageQueue *queue)
 {
-  unsigned int hashv = strhash(queue->name, IRC_BUFSIZE);
+  unsigned int hashv = strhash(queue->name);
   struct MessageQueue *tmp = hash[hashv];
 
   if (tmp != NULL)
@@ -687,7 +639,7 @@ hash_del_mqueue(struct MessageQueue **hash, struct MessageQueue *queue)
 void
 hash_add_mqueue(struct MessageQueue **hash, struct MessageQueue *queue)
 {
-  unsigned int hashv = strhash(queue->name, IRC_BUFSIZE);
+  unsigned int hashv = strhash(queue->name);
 
   queue->hnext = hash[hashv];
   hash[hashv] = queue;
