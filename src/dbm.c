@@ -63,6 +63,12 @@ init_db()
 
   database = load_module(module);
 
+  if(database == NULL)
+  {
+    ilog(L_CRIT, "Failed to load a database module, continuing would be unwise.");
+    services_die("Failed to load a database module, continuing would be unwise.", FALSE);
+  }
+
   snprintf(cstring, sizeof(cstring), "host='%s' user='%s' password='%s' dbname='%s' port=%d",
     Database.hostname, Database.username, Database.password,
     Database.dbname, Database.port);
