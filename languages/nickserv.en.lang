@@ -450,10 +450,14 @@ NS_LANGUAGE_UNAVAIL
 	That language is invalid or not available.
 NS_SET_SUCCESS
 	SET %s to %s.
+NS_SET_PASS_SUCCESS
+	Password successfully changed.
 NS_SET_FAILED
 	Failed to SET %s to %s. This may be an internal problem, please try
 	again later. If this is not the first time you have seen this message please
 	contact network support.
+NS_SET_PASS_FAILED
+	Password change failed.
 NS_SET_VALUE
 	%s is SET to: %s.
 NS_NEED_IDENTIFY
