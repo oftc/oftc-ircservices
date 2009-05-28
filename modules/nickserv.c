@@ -1606,9 +1606,9 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
   pass = crypt_pass(password, 1);
   /* XXX: what about the salt?  shouldn't we make a new one and store that too? -- weasel */
   if(nickname_set_pass(nick, pass))
-    reply_user(service, service, client, NS_SET_SUCCESS, "PASSWORD", "hidden");
+    reply_user(service, service, client, NS_SET_PASS_SUCCESS);
   else
-    reply_user(service, service, client, NS_SET_FAILED, "PASSWORD", "hidden");
+    reply_user(service, service, client, NS_SET_PASS_FAILED);
 
   MyFree(pass);
   nickname_free(nick);
