@@ -520,17 +520,20 @@ nickname_unlink(Nickname *nick)
         &nick->id, &nick->nickid);
     if(ret == -1)
       goto failure;
+
+    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nick->nickid, &newid);
+    if(ret == -1)
+      goto failure;
   }
-
-  tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii",
-      &nick->id, &nick->pri_nickid);
-  if(error)
-    goto failure;
-  new_nickid = atoi(tmp);
-  MyFree(tmp);
-
-  if(nick->nickid == nick->pri_nickid)
+  else
   {
+    tmp = db_execute_scalar(GET_NEW_LINK, &error, "ii",
+        &nick->id, &nick->pri_nickid);
+    if(error)
+      goto failure;
+    new_nickid = atoi(tmp);
+    MyFree(tmp);
+    
     ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nick->pri_nickid,
         &nick->id);
     if(ret == -1)
@@ -542,12 +545,6 @@ nickname_unlink(Nickname *nick)
 
     ret = db_execute_nonquery(SET_NICK_LINK_EXCLUDE, "iii", &newid,
         &nick->id, &new_nickid);
-    if(ret == -1)
-      goto failure;
-  }
-  else
-  {
-    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nick->nickid, &newid);
     if(ret == -1)
       goto failure;
   }
@@ -573,7 +570,7 @@ nickname_link_count(Nickname *nick)
   ret = atoi(tmp);
   MyFree(tmp);
 
-  return ret;
+  return ret - 1;
 }
 
 /*
