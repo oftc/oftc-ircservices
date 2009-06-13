@@ -375,7 +375,10 @@ pg_connect(const char *connection_string)
 {
   int i;
 
-  pgsql->connection = PQconnectdb(connection_string);
+  if(pgsql->connection == NULL)
+    pgsql->connection = PQconnectdb(connection_string);
+  else
+    PQreset(pgsql->connection);
 
   if(pgsql->connection == NULL)
     return 0;
