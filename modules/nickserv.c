@@ -2096,7 +2096,8 @@ m_set_flag(struct Service *service, struct Client *client,
     reply_user(service, service, client, NS_SET_SUCCESS, flagname,
       on ? "ON" : "OFF");
   else
-    reply_user(service, service, client, NS_SET_FAILED, flagname, on);
+    reply_user(service, service, client, NS_SET_FAILED, flagname, 
+        on ? "ON" : "OFF");
 
   return TRUE;
 }
