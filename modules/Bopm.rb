@@ -161,7 +161,8 @@ class Bopm < ServiceModule
 
         # the codes are optional altogether
         if entry.has_key?('codes') and entry['codes'].has_key?(addr)
-          entry_score = entry['codes'][addr]['score']
+          # the score for a given result is optional
+          entry_score = entry['codes'][addr]['score'] if entry['codes'][addr].has_key?('score')
           # the reason is optional
           entry_reason = entry['codes'][addr]['reason'] if entry['codes'][addr].has_key?('reason')
           # stoplookups also optional
