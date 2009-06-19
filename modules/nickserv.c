@@ -2011,7 +2011,14 @@ ns_on_certfp(va_list args)
   newnick = nickname_nick_from_id(cert->nickname_id, FALSE);
 
   if(newnick != NULL)
+  {
+    if(user->nickname != NULL)
+      nickname_free(user->nickname);
+
+    user->nickname = nick;
+    SetSentCert(user);
     handle_nick_change(nickserv, user, newnick, NS_IDENTIFY_CERT);
+  }
   else
   {
     if(user->nickname != NULL) 
