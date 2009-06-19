@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+1.3.6
+-----
+o Fix a crash caused by trying to identify a user on certfp
+
 1.3.5
 -----
 o Fix a critical bug causing a crash when trying to unlink a nick that had no
