@@ -81,7 +81,7 @@ class Bopm < ServiceModule
       end
 
       reply(client, "Results for #{orig}")
-      results.each do |name,addr,escore,reason,cloak|
+      results.each do |name,addr,escore,reason,cloak,withid|
         reply(client, "Found in #{name} (#{addr}) [#{reason}] score: #{escore}")
       end
       reply(client, "Total score: #{score}")
@@ -98,9 +98,13 @@ class Bopm < ServiceModule
     score, blacklists = dnsbl_check(host)
 
     if blacklists.length > 0
-      name,addr,escore,reason,cloak = blacklists[0]
+      name,addr,escore,reason,cloak,withid = blacklists[0]
       log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
-      client.cloak(cloak)
+      if withid
+        client.cloak("#{client.id}.#{cloak}")
+      else
+        client.cloak(cloak)
+      end
     end
 
     return true
@@ -146,6 +150,12 @@ class Bopm < ServiceModule
           default_score = 0
         end
 
+        if entry.has_key?('withid')
+          withid = entry['withid']
+        else
+          withid = false
+        end
+
         entry_score = default_score
         entry_reason = ''
 
@@ -162,7 +172,7 @@ class Bopm < ServiceModule
 
         log(LOG_DEBUG, "#{host} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
 
-        results << [entry['name'], addr, entry_score, entry_reason, entry['cloak']]
+        results << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
 
         break if stop
 

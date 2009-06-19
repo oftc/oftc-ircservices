@@ -9,6 +9,11 @@
 # if a client is found in this block it will receive this cloak (required)
   cloak: sample.mynetwork.net
 #
+# withid: (bool) [optional]
+# if a client is found in this block it will receive the cloak with their tsid
+# appended at the beginning (i.e. 1ZZAAAAAA.sample.mynetwork.net)
+  withid: Yes
+#
 # score: (integer) [optional]
 # a positive or negative value, applied to a result if a specific result if no
 # score is defined for the result, or the result is not found in the list of
