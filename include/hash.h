@@ -64,5 +64,5 @@ void hash_add_mqueue(struct MessageQueue **, struct MessageQueue *);
 void hash_del_mqueue(struct MessageQueue **, struct MessageQueue *);
 struct MessageQueue **new_mqueue_hash();
 
-unsigned int strhash(const char *, int);
+unsigned int strhash(const char *);
 #endif  /* INCLUDED_hash_h */

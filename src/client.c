@@ -43,6 +43,8 @@
 
 dlink_list global_client_list;
 dlink_list global_server_list;
+dlink_list delay_akill_list;
+
 static int clean_nick_name(char *, int);
 static int clean_user_name(char *);
 static int clean_host_name(char *);
@@ -313,6 +315,9 @@ exit_one_client(struct Client *source_p)
   /* Be sure to free clients and don't let the heap grow endlessly */
   if(source_p != me.uplink)
     BlockHeapFree(client_heap, source_p);
+
+  if((lp = dlinkFindDelete(&delay_akill_list, source_p)) != NULL)
+    free_dlink_node(lp);
 }
 
 /*

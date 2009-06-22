@@ -72,6 +72,7 @@ static void m_jupe_list(struct Service *, struct Client *, int, char *[]);
 static void m_jupe_del(struct Service *, struct Client *, int, char *[]);
 
 static void expire_akills(void *);
+static void check_akills(void *);
 
 static struct ServiceMessage help_msgtab = {
   NULL, "HELP", 0, 0, 2, 0, OPER_FLAG, OS_HELP_SHORT, OS_HELP_LONG, m_help
@@ -172,6 +173,7 @@ INIT_MODULE(operserv, "$Revision$")
   mod_add_servcmd(&operserv->msg_tree, &jupe_msgtab);
 
   eventAdd("Expire akills", expire_akills, NULL, 60);
+  eventAdd("Check akills", check_akills, NULL, OPERSERV_AKILL_CHECK_TIME);
 
   return operserv;
 }
@@ -185,6 +187,7 @@ CLEANUP_MODULE
   serv_clear_messages(operserv);
 
   eventDelete(expire_akills, NULL);
+  eventDelete(check_akills, NULL);
 
   unload_languages(operserv->languages);
   ilog(L_DEBUG, "Unloaded operserv");
@@ -644,7 +647,7 @@ os_on_newuser(va_list args)
   if(IsMe(newuser->from))
     return pass_callback(os_newuser_hook, newuser);
 
-  akill_check_client(operserv, newuser);
+  dlinkAdd(newuser, make_dlink_node(), &delay_akill_list);
 
   return pass_callback(os_newuser_hook, newuser);
 }
@@ -787,4 +790,23 @@ expire_akills(void *param)
   }
 
   akill_list_free(&list);
+}
+
+static void
+check_akills(void *param)
+{
+  dlink_node *ptr, *nptr;
+  unsigned int checked = OPERSERV_AKILL_CHECK_CNT;
+
+  DLINK_FOREACH_SAFE(ptr, nptr, delay_akill_list.head)
+  {
+    struct Client *target = (struct Client *)ptr->data;
+    akill_check_client(operserv, target);
+    dlinkDelete(ptr, &delay_akill_list);
+    free_dlink_node(ptr);
+    --checked;
+
+    if(checked == 0)
+      break;
+  }
 }

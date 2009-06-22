@@ -31,6 +31,8 @@ extern dlink_list global_client_list;
 extern dlink_list global_server_list;
 EXTERN unsigned int user_modes[];
 
+extern dlink_list delay_akill_list;
+
 #define FLAGS_PINGSENT      0x00000001UL /* Unreplied ping sent*/
 #define FLAGS_DEADSOCKET    0x00000002UL /* Local socket is dead--Exiting soon*/
 #define FLAGS_KILLED        0x00000004UL /* Prevents "QUIT" from being sent to this */
