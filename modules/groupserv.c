@@ -284,8 +284,8 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     ptr = group_get_email(group);
     reply_user(service, service, client, GS_INFO,
         group_get_desc(group),
-        group_get_url(group) == NULL ? "^BNot Set^B" : group_get_url(group),
-        group_get_email(group) == NULL ? "^BNot Set^B" : group_get_email(group));
+        group_get_url(group) == NULL ? "Not Set" : group_get_url(group),
+        group_get_email(group) == NULL ? "Not Set" : group_get_email(group));
   }
 
   if(group_masters_list(group_get_id(group), &list))

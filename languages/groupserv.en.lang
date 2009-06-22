@@ -87,7 +87,7 @@ GS_HELP_ACCESS_LONG
 GS_HELP_ACCESS_ADD_SHORT
 	%s: Add a nickname to the group access list.
 GS_HELP_ACCESS_ADD_LONG
-	Usage: ACCESS ^Bgroup^B ADD ^Bnickname^B MEMBER|MASTER
+	Usage: ACCESS group ADD nickname MEMBER|MASTER
 	
 	Add the specified nickname to the access list at the specified level.
 	
@@ -98,13 +98,13 @@ GS_HELP_ACCESS_ADD_LONG
 GS_HELP_ACCESS_DEL_SHORT
 	%s: Remove a nickname from the group access list.
 GS_HELP_ACCESS_DEL_LONG
-	Usage: ACCESS ^Bgroup^B DEL ^Bnickname^B
+	Usage: ACCESS group DEL nickname
 	
 	Removes a nickname from the group access list.
 GS_HELP_ACCESS_LIST_SHORT
 	%s: Show the group access list.
 GS_HELP_ACCESS_LIST_LONG
-	Usage: ACCESS ^Bgroup^B LIST
+	Usage: ACCESS group LIST
 	
 	Show the current group access list.
 GS_REGISTER_NICK

@@ -12,7 +12,7 @@ CREATE TABLE "group" (
 DROP TABLE group_access;
 CREATE TABLE group_access(
   id                   SERIAL PRIMARY KEY,
-  group_id             INTEGER NOT NULL REFERENCES channel(id) ON DELETE CASCADE,
+  group_id             INTEGER NOT NULL REFERENCES "group"(id) ON DELETE CASCADE,
   account_id           INTEGER NOT NULL REFERENCES account(id),
   level                INTEGER NOT NULL,
   UNIQUE (group_id, account_id)
