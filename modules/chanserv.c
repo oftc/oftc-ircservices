@@ -468,38 +468,49 @@ process_expireban_list(void *param)
   DLINK_FOREACH(ptr, channel_expireban_list.head)
   {
     struct Channel *chptr = ptr->data;
+    dlink_list mask_list = { 0 };
 
     DLINK_FOREACH_SAFE(bptr, bnptr, chptr->banlist.head)
     {
       struct Ban *banptr = bptr->data;
       char ban[IRC_BUFSIZE+1];
+      char *btmp;
       time_t delta = CurrentTime - banptr->when;
-      
+
       if(delta > dbchannel_get_expirebans_lifetime(chptr->regchan))
       {
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
+        DupString(btmp, ban);
         ilog(L_DEBUG, "ChanServ ExpireBan: BAN %s %d %s", chptr->chname,
           (int)delta, ban);
-        unban_mask(chanserv, chptr, ban);
+        dlinkAdd(btmp, make_dlink_node(), &mask_list);
       }
     }
+
+    unban_mask_many(chanserv, chptr, &mask_list);
+    db_string_list_free(&mask_list);
 
     DLINK_FOREACH_SAFE(bptr, bnptr, chptr->quietlist.head)
     {
       struct Ban *banptr = bptr->data;
       char ban[IRC_BUFSIZE+1];
+      char *btmp;
       time_t delta = CurrentTime - banptr->when;
 
       if(delta > dbchannel_get_expirebans_lifetime(chptr->regchan))
       {
         snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name, banptr->username,
             banptr->host);
+        DupString(btmp, ban);
         ilog(L_DEBUG, "ChanServ ExpireBan: QUIET %s %d %s", chptr->chname,
           (int)delta, ban);
-        unquiet_mask(chanserv, chptr, ban);
+        dlinkAdd(btmp, make_dlink_node(), &mask_list);
       }
     }
+
+    unquiet_mask_many(chanserv, chptr, &mask_list);
+    db_string_list_free(&mask_list);
   }
 }
 

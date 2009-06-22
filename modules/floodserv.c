@@ -195,8 +195,7 @@ floodserv_cleanup_channels(void *param)
 static void
 floodserv_unenforce_routine(void *param)
 {
-  dlink_node *ptr;
-  dlink_node *bptr, *bnptr;
+  dlink_node *ptr, *bptr, *bnptr;
 
   DLINK_FOREACH(ptr, fsclient->channel.head)
   {
@@ -210,6 +209,7 @@ floodserv_unenforce_routine(void *param)
       {
         struct Ban *banptr = bptr->data;
         char ban[IRC_BUFSIZE+1];
+        char *btmp;
         time_t delta = CurrentTime - banptr->when;
         time_t maxtime = 1*60*60;
 
@@ -217,9 +217,10 @@ floodserv_unenforce_routine(void *param)
         {
           snprintf(ban, IRC_BUFSIZE, "%s!%s@%s", banptr->name,
             banptr->username, banptr->host);
+          DupString(btmp, ban);
           ilog(L_DEBUG, "FloodServ: UNENFORCE %s %d %s", chptr->chname,
             (int)delta, ban);
-          dlinkAdd(ban, make_dlink_node(), &quiet_masks);
+          dlinkAdd(btmp, make_dlink_node(), &quiet_masks);
         }
       }
     }
