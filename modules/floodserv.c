@@ -202,6 +202,7 @@ floodserv_unenforce_routine(void *param)
   {
     struct Membership *ms = ptr->data;
     struct Channel *chptr = ms->chptr;
+    dlink_list quiet_masks = { 0 };
 
     if(chptr->regchan != NULL && !dbchannel_get_expirebans(chptr->regchan))
     {
@@ -218,10 +219,13 @@ floodserv_unenforce_routine(void *param)
             banptr->username, banptr->host);
           ilog(L_DEBUG, "FloodServ: UNENFORCE %s %d %s", chptr->chname,
             (int)delta, ban);
-          unquiet_mask(floodserv, chptr, ban);
+          dlinkAdd(ban, make_dlink_node(), &quiet_masks);
         }
       }
     }
+
+    unquiet_mask_many(floodserv, chptr, &quiet_masks);
+    db_string_list_free(&quiet_masks);
   }
 }
 
