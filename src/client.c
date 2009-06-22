@@ -308,6 +308,9 @@ exit_one_client(struct Client *source_p)
 
   ilog(L_DEBUG, "exited: %s", source_p->name);
 
+  if((lp = dlinkFindDelete(&delay_akill_list, source_p)) != NULL)
+    free_dlink_node(lp);
+
   /* XXX TODO FIXME
    * We probably want to free the uplink if for whatever reason we get
    * disconnected, though should be infrequent enough we can live for
@@ -315,9 +318,6 @@ exit_one_client(struct Client *source_p)
   /* Be sure to free clients and don't let the heap grow endlessly */
   if(source_p != me.uplink)
     BlockHeapFree(client_heap, source_p);
-
-  if((lp = dlinkFindDelete(&delay_akill_list, source_p)) != NULL)
-    free_dlink_node(lp);
 }
 
 /*
