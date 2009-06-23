@@ -299,7 +299,7 @@ static query_t queries[QUERY_COUNT] = {
     "JOIN nickname ON account.primary_nick=nickname.id WHERE group_id=$1",
     QUERY },
   { GET_GROUP_MASTERS, "SELECT nick FROM account, nickname, group_access "
-      "WHERE group_id=$1 AND level=4 AND group_access.account_id=account.id "
+      "WHERE group_id=$1 AND level=3 AND group_access.account_id=account.id "
       "AND account.primary_nick=nickname.id ORDER BY lower(nick)", QUERY },
   { GET_GROUP_MASTER_COUNT, "SELECT COUNT(id) FROM group_access "
     "WHERE group_id=$1 AND level=4", QUERY },
