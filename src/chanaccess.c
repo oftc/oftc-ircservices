@@ -42,10 +42,17 @@ row_to_chanaccess(row_t *row)
   access = MyMalloc(sizeof(struct ChanAccess));
   access->id = atoi(row->cols[0]);
   access->channel = atoi(row->cols[1]);
+
   if(row->cols[2] != NULL)
     access->account = atoi(row->cols[2]);
+  else
+    access->account = 0;
+
   if(row->cols[3] != NULL)
     access->group = atoi(row->cols[3]);
+  else
+    access->group = 0;
+
   access->level = atoi(row->cols[4]);
   return access;
 }
@@ -192,9 +199,9 @@ chanaccess_find_exact(unsigned int channel, unsigned int account, unsigned int g
   struct ChanAccess *access;
 
   if(account > 0)
-    results = db_execute(GET_CHAN_ACCESS, &error, "ii", &channel, &account);
+    results = db_execute(GET_CHAN_ACCESS_EXACT, &error, "ii", &channel, &account);
   else
-    results = db_execute(GET_CHAN_ACCESS_GROUP, &error, "ii", &group, &account);
+    results = db_execute(GET_CHAN_ACCESS_GROUP, &error, "ii", &channel, &group);
 
   if(results == NULL && error != 0)
   {

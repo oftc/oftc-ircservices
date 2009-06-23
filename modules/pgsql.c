@@ -111,6 +111,9 @@ static query_t queries[QUERY_COUNT] = {
     "FROM channel_access WHERE channel_id=$1 "
       "AND (account_id=$2 OR group_id IN (SELECT group_id FROM group_access "
       "WHERE account_id=$2)) ORDER BY level DESC LIMIT 1", QUERY },
+  { GET_CHAN_ACCESS_EXACT, "SELECT id, channel_id, account_id, group_id, level "
+    "FROM channel_access WHERE channel_id=$1 "
+      "AND account_id=$2 LIMIT 1", QUERY },
   { DELETE_CHAN, "DELETE FROM channel WHERE id=$1", EXECUTE },
   { GET_AKILL, "SELECT id, setter, mask, reason, time, duration FROM akill WHERE mask=$1",
     QUERY },

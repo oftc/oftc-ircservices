@@ -857,21 +857,40 @@ m_access_del(struct Service *service, struct Client *client,
   struct Channel *chptr;
   DBChannel *regchptr;
   struct ChanAccess *access, *myaccess;
-  unsigned int nickid;
+  unsigned int id;
+  unsigned int isgroup = 0;
   int mcount = -1;
 
   chptr = hash_find_channel(parv[1]);
   regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
 
-  if((nickid = nickname_id_from_nick(parv[2], TRUE)) <= 0)
+  if(parv[2][0] == '@')
   {
-    reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
-    if(chptr == NULL)
-      dbchannel_free(regchptr);
-    return;
+    isgroup = 1;
+    if((id = group_id_from_name(parv[2])) <= 0)
+    {
+      reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
+      if(chptr == NULL)
+        dbchannel_free(regchptr);
+      return;
+    }
+  }
+  else
+  {
+    if((id = nickname_id_from_nick(parv[2], TRUE)) <= 0)
+    {
+      reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
+      if(chptr == NULL)
+        dbchannel_free(regchptr);
+      return;
+    }
   }
 
-  access = chanaccess_find(dbchannel_get_id(regchptr), nickid);
+  if(!isgroup)
+    access = chanaccess_find_exact(dbchannel_get_id(regchptr), id, 0);
+  else
+    access = chanaccess_find_exact(dbchannel_get_id(regchptr), 0, id);
+
   if(access == NULL)
   {
     reply_user(service, service, client, CS_ACCESS_NOTLISTED, parv[2], parv[1]);
@@ -880,7 +899,7 @@ m_access_del(struct Service *service, struct Client *client,
     return;
   }
 
-  if(nickid != nickname_get_id(client->nickname) && client->access != SUDO_FLAG)
+  if(!isgroup && id != nickname_get_id(client->nickname) && client->access != SUDO_FLAG)
   {
     if(client->access != SUDO_FLAG)
     {
