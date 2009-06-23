@@ -65,3 +65,11 @@ CREATE TABLE account_fingerprint (
 );
 CREATE INDEX account_fingerprint_account_id_idx ON account_fingerprint (account_id);
 CREATE UNIQUE INDEX account_fingerprint_fingerprint_idx ON account_fingerprint (fingerprint);
+
+DROP TABLE account_autojoin;
+CREATE TABLE account_autojoin (
+  id                  SERIAL PRIMARY KEY,
+  channel_id          INTEGER REFERENCES channel(id) ON DELETE CASCADE NOT NULL
+);
+
+CREATE INDEX account_autojoin_idx ON account_autojoin(id);
