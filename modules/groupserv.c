@@ -63,8 +63,8 @@ static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_private(struct Service *, struct Client *, int, char *[]);
 
-static int m_set_flag(struct Service *, struct Client *, char *, char *,
-    unsigned char (*)(Group *), int (*)(Group *, unsigned char));
+static int m_set_flag(struct Service *, struct Client *, const char *, char *,
+    char *, unsigned char (*)(Group *), int (*)(Group *, unsigned char));
 static int m_set_string(struct Service *, struct Client *, const char *,
     const char *, const char *, int, const char *(*)(Group *),
     int(*)(Group *, const char*));
@@ -255,7 +255,7 @@ static void
 m_set_private(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  m_set_flag(service, client, parv[1], "PRIVATE",
+  m_set_flag(service, client, parv[1], parv[2], "PRIVATE",
     &group_get_priv, &group_set_priv);
 }
 
@@ -420,20 +420,19 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 
 static int
 m_set_flag(struct Service *service, struct Client *client,
-           char *toggle, char *flagname,
+           const char *group_name, char *toggle, char *flagname,
            unsigned char (*get_func)(Group *),
            int (*set_func)(Group *, unsigned char))
 {
-#if 0
-  Group *group = client->groupname;
+  Group *group = group_find(group_name);
   int on = FALSE;
 
   if(toggle == NULL)
   {
     on = get_func(group);
-  unregister_callback(on_chan_reg_cb);
     reply_user(service, service, client, GS_SET_VALUE, flagname,
       on ? "ON" : "OFF");
+    group_free(group);
     return TRUE;
   }
 
@@ -445,6 +444,7 @@ m_set_flag(struct Service *service, struct Client *client,
   {
     reply_user(service, service, client, GS_SET_VALUE, flagname,
       on ? "ON" : "OFF");
+    group_free(group);
     return TRUE;
   }
 
@@ -454,7 +454,7 @@ m_set_flag(struct Service *service, struct Client *client,
   else
     reply_user(service, service, client, GS_SET_FAILED, flagname, on);
 
-#endif
+  group_free(group);
   return TRUE;
 }
 
