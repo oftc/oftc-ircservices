@@ -80,7 +80,7 @@ static struct ServiceMessage help_msgtab = {
 };
 
 static struct ServiceMessage drop_msgtab = {
-  NULL, "DROP", 0, 1, 2, SFLG_GROUPARG, MASTER_FLAG, GS_HELP_DROP_SHORT, 
+  NULL, "DROP", 0, 1, 2, SFLG_GROUPARG, GRPMASTER_FLAG, GS_HELP_DROP_SHORT, 
   GS_HELP_DROP_LONG, m_drop
 };
 
@@ -101,9 +101,9 @@ static struct ServiceMessage set_msgtab = {
 
 
 static struct ServiceMessage access_sub[6] = {
-  { NULL, "ADD", 0, 3, 3, SFLG_KEEPARG|SFLG_GROUPARG, MASTER_FLAG,
+  { NULL, "ADD", 0, 3, 3, SFLG_KEEPARG|SFLG_GROUPARG, GRPMASTER_FLAG,
     GS_HELP_ACCESS_ADD_SHORT, GS_HELP_ACCESS_ADD_LONG, m_access_add },
-  { NULL, "DEL", 0, 2, 2, SFLG_KEEPARG|SFLG_GROUPARG, MEMBER_FLAG,
+  { NULL, "DEL", 0, 2, 2, SFLG_KEEPARG|SFLG_GROUPARG, GRPMEMBER_FLAG,
     GS_HELP_ACCESS_DEL_SHORT, GS_HELP_ACCESS_DEL_LONG, m_access_del },
   { NULL, "LIST", 0, 1, 1, SFLG_KEEPARG|SFLG_GROUPARG, GRPUSER_FLAG,
     GS_HELP_ACCESS_LIST_SHORT, GS_HELP_ACCESS_LIST_LONG, m_access_list },
@@ -111,7 +111,7 @@ static struct ServiceMessage access_sub[6] = {
 };
 
 static struct ServiceMessage access_msgtab = {
-  access_sub, "ACCESS", 0, 2, 2, SFLG_KEEPARG|SFLG_GROUPARG, MASTER_FLAG,
+  access_sub, "ACCESS", 0, 2, 2, SFLG_KEEPARG|SFLG_GROUPARG, GRPMASTER_FLAG,
     GS_HELP_ACCESS_SHORT, GS_HELP_ACCESS_LONG, NULL
 };
 
@@ -277,7 +277,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   reply_user(service, service, client, GS_INFO_START, group_get_name(group));
   reply_time(service, client, GS_INFO_REGTIME_FULL, group_get_regtime(group));
 
-  if(IsOper(client) || (access != NULL && access->level >= MEMBER_FLAG))
+  if(IsOper(client) || (access != NULL && access->level >= GRPMEMBER_FLAG))
   {
     const char *ptr = group_get_desc(group);
     ptr = group_get_url(group);
@@ -505,11 +505,11 @@ m_access_add(struct Service *service, struct Client *client,
 
   if(irccmp(parv[3], "MASTER") == 0)
   {
-    level = MASTER_FLAG;
+    level = GRPMASTER_FLAG;
     level_added = "MASTER";
   }
   else if(irccmp(parv[3], "MEMBER") == 0)
-    level = MEMBER_FLAG;
+    level = GRPMEMBER_FLAG;
   else
   {
     reply_user(service, service, client, GS_ACCESS_BADLEVEL, parv[3]);
@@ -536,7 +536,7 @@ m_access_add(struct Service *service, struct Client *client,
       return;
     }
     group_masters_count(group_get_id(group), &mcount);
-    if(oldaccess->level == MASTER_FLAG && mcount <= 1)
+    if(oldaccess->level == GRPMASTER_FLAG && mcount <= 1)
     {
       reply_user(service, service, client, GS_ACCESS_NOMASTERS, parv[2],
           group_get_name(group));
@@ -596,7 +596,7 @@ m_access_del(struct Service *service, struct Client *client,
     if(client->access != SUDO_FLAG)
     {
       myaccess = groupaccess_find(group_get_id(group), nickname_get_id(client->nickname));
-      if(myaccess->level != MASTER_FLAG)
+      if(myaccess->level != GRPMASTER_FLAG)
       {
         reply_user(service, NULL, client, SERV_NO_ACCESS_CHAN, "DEL",
             group_get_name(group));
@@ -608,7 +608,7 @@ m_access_del(struct Service *service, struct Client *client,
   }
 
   group_masters_count(group_get_id(group), &mcount);
-  if(access->level == MASTER_FLAG && mcount <= 1)
+  if(access->level == GRPMASTER_FLAG && mcount <= 1)
   {
     reply_user(service, service, client, GS_ACCESS_NOMASTERS, parv[2],
         group_get_name(group));
@@ -661,10 +661,10 @@ m_access_list(struct Service *service, struct Client *client,
     switch(access->level)
     {
       /* XXX Some sort of lookup table maybe, but we only have these 3 atm */
-      case MEMBER_FLAG:
+      case GRPMEMBER_FLAG:
         level = "MEMBER";
         break;
-      case MASTER_FLAG:
+      case GRPMASTER_FLAG:
         level = "MASTER";
         break;
       default:
