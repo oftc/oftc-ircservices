@@ -156,7 +156,7 @@ chanaccess_remove(struct ChanAccess *access)
 {
   int ret;
 
-  ret = db_execute_nonquery(DELETE_CHAN_ACCESS, "ii", &access->channel, &access->account);
+  ret = db_execute_nonquery(DELETE_CHAN_ACCESS, "i", &access->id);
 
   if(ret == -1)
     return FALSE;

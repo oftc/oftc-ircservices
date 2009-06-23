@@ -105,8 +105,7 @@ static query_t queries[QUERY_COUNT] = {
   { INSERT_CHANACCESS, "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
     "($1, $2, $3)", EXECUTE } ,
   { SET_CHAN_LEVEL, "UPDATE channel_access SET level=$1 WHERE account_id=$2", EXECUTE },
-  { DELETE_CHAN_ACCESS, "DELETE FROM channel_access WHERE channel_id=$1 AND account_id=$2", 
-    EXECUTE },
+  { DELETE_CHAN_ACCESS, "DELETE FROM channel_access WHERE id=$1", EXECUTE },
   { GET_CHAN_ACCESS, "SELECT id, channel_id, account_id, group_id, level "
     "FROM channel_access WHERE channel_id=$1 "
       "AND (account_id=$2 OR group_id IN (SELECT group_id FROM group_access "
