@@ -111,7 +111,7 @@ chanaccess_list(unsigned int channel, dlink_list *list)
     return res;
 
   if(results->row_count == 0)
-    return res;
+    return dlink_list_length(list);
 
   for(i = 0; i < results->row_count; i++)
   {

@@ -92,7 +92,7 @@ static query_t queries[QUERY_COUNT] = {
       "FROM channel_access JOIN account ON "
       "channel_access.account_id=account.id JOIN nickname ON "
       "account.primary_nick=nickname.id WHERE channel_id=$1 "
-      "ORDER BY lower(nickname.nick)", QUERY },
+      "ORDER BY level, lower(nickname.nick) DESC", QUERY },
   { GET_CHANID_FROM_CHAN, "SELECT id from channel WHERE "
       "lower(channel)=lower($1)", QUERY },
   { GET_FULL_CHAN, "SELECT id, channel, description, entrymsg, reg_time, "
@@ -310,7 +310,7 @@ static query_t queries[QUERY_COUNT] = {
   { GET_CHAN_ACCESSES_GROUP, "SELECT ca.id, ca.channel_id, ca.account_id, "
       "ca.group_id, ca.level FROM channel_access AS ca "
       "JOIN \"group\" ON ca.group_id=\"group\".id WHERE ca.channel_id=$1 " 
-      "ORDER BY lower(\"group\".name)", QUERY },
+      "ORDER BY level, lower(\"group\".name) DESC", QUERY },
   { GET_GROUPS_OPER, "SELECT name FROM \"group\" ORDER BY lower(name)", QUERY },
   { GET_GROUPS, "SELECT name FROM \"group\" WHERE flag_private='f' ORDER BY lower(name)",
     QUERY },
