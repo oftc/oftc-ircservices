@@ -759,6 +759,7 @@ m_access_add(struct Service *service, struct Client *client,
       reply_user(service, service, client, CS_REGISTER_GROUP, parv[2]);
       if(chptr == NULL)
         dbchannel_free(regchptr);
+      return;
     }
   }
   else

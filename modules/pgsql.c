@@ -308,7 +308,7 @@ static query_t queries[QUERY_COUNT] = {
     "WHERE group_id=$1 AND level=4", QUERY },
   { INSERT_CHANACCESS_GROUP, "INSERT INTO channel_access "
     "(group_id, channel_id, level) VALUES ($1, $2, $3)", EXECUTE } ,
-  { GET_CHAN_ACCESS_GROUP, "SELECT id, channel_id, group_id, level "
+  { GET_CHAN_ACCESS_GROUP, "SELECT id, channel_id, account_id, group_id, level "
     "FROM channel_access WHERE channel_id=$1 AND group_id=$2", QUERY },
   { GET_CHAN_ACCESSES_GROUP, "SELECT ca.id, ca.channel_id, ca.account_id, "
       "ca.group_id, ca.level FROM channel_access AS ca "
