@@ -126,7 +126,7 @@ static struct ServiceMessage sudo_msgtab = {
 };
 
 static struct ServiceMessage list_msgtab = {
-  NULL, "LIST", 0, 1, 2, 0, USER_FLAG, GS_HELP_LIST_SHORT,
+  NULL, "LIST", 0, 1, 1, 0, USER_FLAG, GS_HELP_LIST_SHORT,
   GS_HELP_LIST_LONG, m_list
 };
 
@@ -368,7 +368,6 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-#if 0
   char *group;
   int count = 0;
   int qcount = 0;
@@ -377,18 +376,13 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(parc == 2 && client->access >= OPER_FLAG)
   {
-    if(irccmp(parv[2], "FORBID") == 0)
-      qcount = group_list_forbid(&list);
-    else
-    {
-      reply_user(service, service, client, GS_LIST_INVALID_OPTION, parv[2]);
-      return;
-    }
+    reply_user(service, service, client, GS_LIST_INVALID_OPTION, parv[2]);
+    return;
   }
 
-  if(qcount == 0 && client->access >= OPER_FLAG)
+  if(client->access >= OPER_FLAG)
     qcount = group_list_all(&list);
-  else if(qcount == 0)
+  else
     qcount = group_list_regular(&list);
 
   if(qcount == 0)
@@ -415,7 +409,6 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
   db_string_list_free(&list);
 
   reply_user(service, service, client, GS_LIST_END, count);
-#endif
 }
 
 static int

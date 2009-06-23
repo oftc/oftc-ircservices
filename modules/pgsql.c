@@ -311,6 +311,9 @@ static query_t queries[QUERY_COUNT] = {
       "ca.group_id, ca.level FROM channel_access AS ca "
       "JOIN \"group\" ON ca.group_id=\"group\".id WHERE ca.channel_id=$1 " 
       "ORDER BY lower(\"group\".name)", QUERY },
+  { GET_GROUPS_OPER, "SELECT name FROM \"group\" ORDER BY lower(name)", QUERY },
+  { GET_GROUPS, "SELECT name FROM \"group\" WHERE flag_private='f' ORDER BY lower(name)",
+    QUERY },
 };
 
 

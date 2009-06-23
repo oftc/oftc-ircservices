@@ -358,6 +358,18 @@ group_masters_count(unsigned int id, int *count)
   return TRUE;
 }
 
+inline int
+group_list_all(dlink_list *list)
+{
+  return db_string_list(GET_GROUPS_OPER, list);
+}
+
+inline int
+group_list_regular(dlink_list *list)
+{
+  return db_string_list(GET_GROUPS, list);
+}
+
 #if 0
 /*
  * group_save:
@@ -691,11 +703,6 @@ group_chan_list_free(dlink_list *list)
   }
 }
 
-inline int
-group_list_all(dlink_list *list)
-{
-  return db_string_list(GET_GROUPS_OPER, list);
-}
 
 inline void
 group_list_all_free(dlink_list *list)
@@ -703,11 +710,6 @@ group_list_all_free(dlink_list *list)
   db_string_list_free(list);
 }
 
-inline int
-group_list_regular(dlink_list *list)
-{
-  return db_string_list(GET_GROUPS, list);
-}
 
 inline void
 group_list_regular_free(dlink_list *list)
