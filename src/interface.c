@@ -1043,7 +1043,7 @@ do_help(struct Service *service, struct Client *client,
       return;
     }
 
-    if(!(msg->flags & SFLG_CHANARG))
+    if(!(msg->flags & SFLG_CHANARG) && !(msg->flags & SFLG_GROUPARG))
     {
       if((msg->access >= OPER_FLAG) && (client->access < msg->access))
       {
