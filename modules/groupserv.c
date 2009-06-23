@@ -165,6 +165,7 @@ m_register(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   Group *group;
+  char desc[IRC_BUFSIZE+1];
 
   if(*parv[1] != '@')
   {
@@ -182,7 +183,9 @@ m_register(struct Service *service, struct Client *client,
   group = group_new();
 
   group_set_name(group, parv[1]);
-  group_set_desc(group, parv[2]);
+
+  join_params(desc, parc-1, &parv[2]);
+  group_set_desc(group, desc);
 
   if(group_register(group, client->nickname))
   {
