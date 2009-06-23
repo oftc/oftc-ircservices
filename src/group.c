@@ -130,7 +130,7 @@ group_register(Group *group, Nickname *master)
     goto failure;
 
   id = nickname_get_id(master);
-  flag = MASTER_FLAG;
+  flag = GRPMASTER_FLAG;
   ret = db_execute_nonquery(INSERT_GROUPACCESS, "iii", &id, &group->id, &flag);
 
   if(ret == -1)
