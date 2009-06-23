@@ -318,51 +318,31 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   group_free(group);
 }
 
-static void 
+static void
 m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-#if 0
-  Group *oldgroup, *group;
-  char **newparv;
   char buf[IRC_BUFSIZE] = { '\0' };
-  int oldaccess;
-
-  oldgroup = client->groupname;
-  oldaccess = client->access;
-
-  group = group_find(parv[1]);
-  if(group == NULL)
-  {
-    reply_user(service, service, client, GS_REG_FIRST, parv[1]);
-    return;
-  }
-
-  client->groupname = group;
-  if(group_get_admin(group))
-    client->access = ADMIN_FLAG;
-  else
-    client->access = IDENTIFIED_FLAG;
+  char **newparv;
 
   newparv = MyMalloc(4 * sizeof(char*));
 
   newparv[0] = parv[0];
   newparv[1] = service->name;
 
-  join_params(buf, parc-1, &parv[2]);
+  join_params(buf, parc, &parv[1]);
 
   DupString(newparv[2], buf);
 
-  ilog(L_INFO, "%s executed %s SUDO on %s: %s", client->name, service->name, 
-      group_get_name(group), newparv[2]);
+  client->access = SUDO_FLAG;
+
+  ilog(L_INFO, "%s executed %s SUDO: %s", client->name, service->name,
+      newparv[2]);
 
   process_privmsg(1, me.uplink, client, 3, newparv);
   MyFree(newparv[2]);
   MyFree(newparv);
 
-  group_free(client->groupname);
-  client->groupname = oldgroup;
-  client->access = oldaccess;
-#endif
+  client->access = ADMIN_FLAG;
 }
 
 static void
