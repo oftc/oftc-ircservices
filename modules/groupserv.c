@@ -66,7 +66,7 @@ static void m_set_private(struct Service *, struct Client *, int, char *[]);
 static int m_set_flag(struct Service *, struct Client *, char *, char *,
     unsigned char (*)(Group *), int (*)(Group *, unsigned char));
 static int m_set_string(struct Service *, struct Client *, const char *,
-    const char *, int, const char *(*)(Group *),
+    const char *, const char *, int, const char *(*)(Group *),
     int(*)(Group *, const char*));
 
 static struct ServiceMessage register_msgtab = {
@@ -85,18 +85,18 @@ static struct ServiceMessage drop_msgtab = {
 };
 
 static struct ServiceMessage set_sub[] = {
-  { NULL, "URL", 0, 0, 1, 0, IDENTIFIED_FLAG, GS_HELP_SET_URL_SHORT, 
-    GS_HELP_SET_URL_LONG, m_set_url },
-  { NULL, "EMAIL", 0, 0, 1, 0, IDENTIFIED_FLAG, GS_HELP_SET_EMAIL_SHORT, 
-    GS_HELP_SET_EMAIL_LONG, m_set_email },
-  { NULL, "PRIVATE", 0, 0, 1, 0, IDENTIFIED_FLAG, GS_HELP_SET_PRIVATE_SHORT, 
-    GS_HELP_SET_PRIVATE_LONG, m_set_private },
+  { NULL, "URL", 0, 1, 2, SFLG_KEEPARG|SFLG_GROUPARG, GRPMASTER_FLAG,
+    GS_HELP_SET_URL_SHORT, GS_HELP_SET_URL_LONG, m_set_url },
+  { NULL, "EMAIL", 0, 1, 2, SFLG_KEEPARG|SFLG_GROUPARG, GRPMASTER_FLAG,
+    GS_HELP_SET_EMAIL_SHORT, GS_HELP_SET_EMAIL_LONG, m_set_email },
+  { NULL, "PRIVATE", 0, 1, 2, SFLG_KEEPARG|SFLG_GROUPARG, GRPMASTER_FLAG,
+    GS_HELP_SET_PRIVATE_SHORT, GS_HELP_SET_PRIVATE_LONG, m_set_private },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
 };
 
 static struct ServiceMessage set_msgtab = {
-  set_sub, "SET", 0, 1, 1, 0, IDENTIFIED_FLAG, GS_HELP_SET_SHORT, 
-  GS_HELP_SET_LONG, NULL 
+  set_sub, "SET", 0, 2, 2, SFLG_KEEPARG|SFLG_GROUPARG, GRPMASTER_FLAG,
+  GS_HELP_SET_SHORT, GS_HELP_SET_LONG, NULL
 };
 
 
@@ -236,7 +236,7 @@ static void
 m_set_url(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  m_set_string(service, client, "URL", parv[1], parc,
+  m_set_string(service, client, "URL", parv[1], parv[2], parc,
     &group_get_url, &group_set_url);
 }
 
@@ -244,7 +244,7 @@ static void
 m_set_email(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
-  m_set_string(service, client, "EMAIL", parv[1], parc,
+  m_set_string(service, client, "EMAIL", parv[1], parv[2], parc,
     &group_get_email, &group_set_email);
 }
 
@@ -457,19 +457,19 @@ m_set_flag(struct Service *service, struct Client *client,
 
 static int
 m_set_string(struct Service * service, struct Client *client,
-             const char *field, const char *value, int parc,
-             const char *(*get_func)(Group *),
+             const char *field, const char *group_name, const char *value,
+             int parc, const char *(*get_func)(Group *),
              int(*set_func)(Group *, const char*))
 {
-#if 0
-  Group *group = client->groupname;
+  Group *group = group_find(group_name);
   int ret = FALSE;
 
-  if(parc == 0)
+  if(parc == 1)
   {
     const char *resp = get_func(group);
     reply_user(service, service, client, GS_SET_VALUE, field,
       resp == NULL ? "Not Set" : resp);
+    group_free(group);
     return TRUE;
   }
 
@@ -481,9 +481,8 @@ m_set_string(struct Service * service, struct Client *client,
   reply_user(service, service, client, ret ? GS_SET_SUCCESS : GS_SET_FAILED, field,
       value == NULL ? "Not Set" : value);
 
+  group_free(group);
   return ret;
-#endif
-  return TRUE;
 }
 
 static void
