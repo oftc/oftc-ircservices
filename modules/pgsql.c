@@ -287,7 +287,7 @@ static query_t queries[QUERY_COUNT] = {
       "group_access JOIN account ON "
       "group_access.account_id=account.id JOIN nickname ON "
       "account.primary_nick=nickname.id WHERE group_id=$1 "
-      "ORDER BY lower(nickname.nick)", QUERY },
+      "ORDER BY level, lower(nickname.nick) DESC", QUERY },
   { GET_GROUP_ACCESS, "SELECT id, group_id, account_id, level "
     "FROM group_access WHERE group_id=$1 AND account_id=$2", QUERY },
   { INSERT_GROUPACCESS, "INSERT INTO group_access "
