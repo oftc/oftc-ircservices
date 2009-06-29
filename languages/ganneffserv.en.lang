@@ -64,3 +64,12 @@ GS_HLP_STS_SHORT
 	%s: Statistics
 GS_HLP_STS_LONG
 	Don't trust this, you haven't forged the numbers yourself!
+GS_HLP_SRV_SHORT
+	%s: Add a "bad" server on which all connects will be akilled
+GS_HLP_SRV_LONG
+	Add a "bad" server on which all connects will be akilled
+	
+	BE VERY CAREFUL WHEN USING THIS AND MAKE SURE THE SERVER IS NOT
+	IN ROTATION.
+	
+	EVERY user that connects on this server WILL BE KLINED!

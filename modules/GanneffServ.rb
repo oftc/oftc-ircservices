@@ -51,6 +51,10 @@ class GanneffServ < ServiceModule
     # @nicks[nick]["registered"]      - Timestamp the nick was registered, if we saw this happen
     @nicks = Hash.new
 
+    # Do we have a "bad" server?
+    # (this is a server on which we kline (nearly) all connects
+    @badserver = ""
+
     # What commands do we support?
     register([
       #["COMMAND", PAR_MIN, PAR_MAX, FLAGS,                         ACCESS,     HLP_SHORT,              HLP_LONG]
@@ -64,6 +68,7 @@ class GanneffServ < ServiceModule
        ["SAVE",     0,       0,       0,                            ADMIN_FLAG, lm('GS_HLP_SAV_SHORT'), lm('GS_HLP_SAV_LONG')],
        ["STATS",    0,       0,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_STS_SHORT'), lm('GS_HLP_STS_LONG')],
        ["ENFORCE",  0,       0,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_ENF_SHORT'), lm('GS_HLP_ENF_LONG')],
+       ["BADSERV",  1,       1,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_SRV_SHORT'), lm('GS_HLP_SRV_LONG')],
       ]) # register
 
     # Which hooks do we want?
@@ -139,6 +144,7 @@ class GanneffServ < ServiceModule
 
   # Add a channel to GanneffServ monitoring
   def ADD(client, parv = [])
+    parv[1].downcase!
     debug(LOG_DEBUG, "#{client.name} called ADD and the parms are #{parv.join(",")}")
     enforce = false
 
@@ -195,6 +201,7 @@ class GanneffServ < ServiceModule
 
   # Delete a channel from the monitoring
   def DEL(client, parv = [])
+    parv[1].downcase!
     debug(LOG_DEBUG, "#{client.name} called DEL and the parms are #{parv.join(",")}")
     channel = parv[1].downcase
     return unless @channels.has_key?(channel)
@@ -311,6 +318,26 @@ class GanneffServ < ServiceModule
     true
   end # def STATS
 
+# ------------------------------------------------------------------------
+
+  # Mark a server as "bad"
+  def BADSERV(client, parv = [])
+    parv[1].downcase!
+    debug(LOG_DEBUG, "#{client.name} called BADSERV and the parms are #{parv.join(",")}")
+    server = parv[1].downcase
+
+    if server =~ /.*\.oftc.net$/
+      debug(LOG_DEBUG, "#{server} seems to be an oftc server, proceeding")
+      @badserver = server
+    elsif server =~ /OFF/i
+      @badserver = ""
+    else
+      false
+    end # if server
+
+    true
+  end # def BADSERV
+
 ########################################################################
 ########################################################################
 # Hook functions                                                       #
@@ -339,6 +366,7 @@ class GanneffServ < ServiceModule
 
   # Someone joined some channel
   def join_hook(client, channel)
+    channel.downcase!
     debug(LOG_DEBUG, "#{client.name} joined #{channel}")
     nick=client.name.downcase
     channel.downcase!
@@ -444,6 +472,20 @@ class GanneffServ < ServiceModule
   def newuser(client)
     nick = client.name.downcase
     debug(LOG_DEBUG, "#{nick} connected at timestamp #{client.firsttime}")
+
+    # add more ips if wanted
+    whitelist = [ '89.16.166.62' ];
+
+    if client.ip_or_hostname =~ /\.oftc\.net$/ or whitelist.include?(client.ip_or_hostname)
+      return true
+    end
+
+    if @badserver.length > 0 and @badserver == client.from.name
+      return akill(client, "Spammer", "Badserv:#{@badserver}", "")
+    end # if @badserv.length
+
+    debug(LOG_DEBUG, "#{nick} not on badserv #{@badserver} but on #{client.from.name}, not killing")
+
     @nicks[nick] = Hash.new
     @nicks[nick]["client"] = client
     true
@@ -555,6 +597,7 @@ class GanneffServ < ServiceModule
     else
       cname=channel.name
     end # if channel.name.nil?
+    cname.downcase!
 
     cname.downcase!
 
