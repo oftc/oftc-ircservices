@@ -42,8 +42,10 @@ row_to_dbchannel(row_t *row)
 
   channel->id = atoi(row->cols[0]);
   strlcpy(channel->channel, row->cols[1], sizeof(channel->channel));
-  DupString(channel->description, row->cols[2]);
-  DupString(channel->entrymsg, row->cols[3]);
+  if(row->cols[1] != NULL)
+    DupString(channel->description, row->cols[2]);
+  if(row->cols[2] != NULL)
+    DupString(channel->entrymsg, row->cols[3]);
   channel->regtime = atoi(row->cols[4]);
   channel->priv = atoi(row->cols[5]);
   channel->restricted = atoi(row->cols[6]);
@@ -472,7 +474,10 @@ dbchannel_set_description(DBChannel *this, const char *description)
   if(this->id == 0 || db_execute_nonquery(SET_CHAN_DESC, "si", description, &this->id))
   {
     MyFree(this->description);
-    DupString(this->description, description);
+    if(description != NULL)
+      DupString(this->description, description);
+    else
+      this->description = NULL;
     return TRUE;
   }
   else
@@ -485,7 +490,10 @@ dbchannel_set_entrymsg(DBChannel *this, const char *entrymsg)
   if(db_execute_nonquery(SET_CHAN_ENTRYMSG, "si", entrymsg, &this->id))
   {
     MyFree(this->entrymsg);
-    DupString(this->entrymsg, entrymsg);
+    if(entrymsg != NULL)
+      DupString(this->entrymsg, entrymsg);
+    else
+      this->entrymsg = NULL;
     return TRUE;
   }
   else
@@ -498,7 +506,10 @@ dbchannel_set_url(DBChannel *this, const char *url)
   if(db_execute_nonquery(SET_CHAN_URL, "si", url, &this->id))
   {
     MyFree(this->url);
-    DupString(this->url, url);
+    if(url != NULL)
+      DupString(this->url, url);
+    else
+      this->url = NULL;
     return TRUE;
   }
   else
@@ -511,7 +522,10 @@ dbchannel_set_email(DBChannel *this, const char *email)
   if(db_execute_nonquery(SET_CHAN_EMAIL, "si", email, &this->id))
   {
     MyFree(this->email);
-    DupString(this->email, email);
+    if(email != NULL)
+      DupString(this->email, email);
+    else
+      this->email = NULL;
     return TRUE;
   }
   else
@@ -540,7 +554,10 @@ dbchannel_set_mlock(DBChannel *this, const char *mlock)
   if(db_execute_nonquery(SET_CHAN_MLOCK, "si", mlock, &this->id))
   {
     MyFree(this->mlock);
-    DupString(this->mlock, mlock);
+    if(mlock != NULL)
+      DupString(this->mlock, mlock);
+    else
+      this->mlock = NULL;
     return TRUE;
   }
   else
