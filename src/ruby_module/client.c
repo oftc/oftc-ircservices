@@ -272,7 +272,7 @@ static VALUE
 from(VALUE self)
 {
   struct Client *client = value_to_client(self);
-  return client_to_value(client->from);
+  return client_to_value(client->servptr);
 }
 
 static VALUE
