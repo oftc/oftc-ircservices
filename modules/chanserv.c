@@ -2630,8 +2630,8 @@ cs_on_cmode_change(va_list args)
     }
 
     if(ret)
-      send_chops_notice(chanserv, chptr, "AUTOSAVED: %c%c %s FROM %s",
-        dir == MODE_ADD ? '+' : '-', mode, param, source->name);
+      send_chops_notice(chanserv, chptr, "[%s ChanOps] %s AUTOSAVED: %c%c %s",
+        chptr->chname, source->name, dir == MODE_ADD ? '+' : '-', mode, param);
   }
 
   /* last function to call in this func */
