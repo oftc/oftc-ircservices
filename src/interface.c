@@ -472,7 +472,6 @@ reply_mail(struct Service *service, struct Client *client,
   struct LanguageFile *languages;
   va_list ap;
   FILE *ptr;
-  int count = 0;
   char currline[72 + 1] = {'\0'}; /* 72 characters + '\0' */
   int srcidx, dstidx, lastspace, laststart;
   char currchar;
@@ -546,10 +545,10 @@ reply_mail(struct Service *service, struct Client *client,
     {
       int diff = lastspace - laststart;
 
-      if(diff > 72)
-        strlcpy(currline, currline, sizeof(currline));
-      else
-        strlcpy(currline, currline, diff + 1);
+      if(diff == 0)
+        diff = 72;
+
+      strlcpy(currline, currline, diff + 1);
 
       laststart = srcidx = laststart + diff;
 
@@ -558,9 +557,8 @@ reply_mail(struct Service *service, struct Client *client,
       fputc('\n', ptr);
       memset(currline, '\0', sizeof(currline));
 
-      dstidx = count = 0;
+      dstidx = 0;
     }
-    count++;
     srcidx++;
     currchar = buf[srcidx];
   }
