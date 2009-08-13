@@ -375,9 +375,11 @@ class GanneffServ < ServiceModule
       if @channels.has_key?(channel)
         debug(LOG_DEBUG, "#{nick} is not some services instance joining #{channel}")
         if @channels[channel]["monitoronly"] == true
-          @nicks[nick]["joined"] = channel
-          @nicks[nick]["jointime"] = Time.new.to_i
-          ret = timecheck(client)
+          if @nicks.has_key?(nick)
+            @nicks[nick]["joined"] = channel
+            @nicks[nick]["jointime"] = Time.new.to_i
+            ret = timecheck(client)
+          end
         else # if @channels...["monitoronly"]
           debug(LOG_NOTICE, "#{nick} joined channel #{channel}, killing")
           drop_nick(nick) unless @nicks[nick]["registered"].nil?
@@ -396,7 +398,7 @@ class GanneffServ < ServiceModule
   # Triggered by join in a channel who is set to monitoronly (def join_hook) or
   # by a fast (within 60seconds) nick registration
   def timecheck(client)
-    nick = client.name.downcase!
+    nick = client.name.downcase
     debug(LOG_DEBUG, "Checking connect/register/join time for #{client.name}")
     ret = true
 
@@ -480,11 +482,13 @@ class GanneffServ < ServiceModule
       return true
     end
 
-    if @badserver.length > 0 and @badserver == client.from.name
-      return akill(client, "Spammer", "Badserv:#{@badserver}", "")
+    if @badserver.length > 0
+      if @badserver == client.from.name
+        return akill(client, "Spammer", "Badserv:#{@badserver}", "")
+      else
+        debug(LOG_DEBUG, "#{nick} not on badserv #{@badserver} but on #{client.from.name}, not killing")
+      end
     end # if @badserv.length
-
-    debug(LOG_DEBUG, "#{nick} not on badserv #{@badserver} but on #{client.from.name}, not killing")
 
     @nicks[nick] = Hash.new
     @nicks[nick]["client"] = client
