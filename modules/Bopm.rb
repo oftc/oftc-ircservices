@@ -75,7 +75,7 @@ class Bopm < ServiceModule
       end
     else
       # pass the hostname to check against our configured blacklists
-      score, results = dnsbl_check(host, true)
+      score, results = dnsbl_check(host)
 
       if results.length == 0
         reply(client, "No results for #{orig}")
@@ -95,9 +95,12 @@ class Bopm < ServiceModule
 
     host = to_revip(client.ip_or_hostname)
 
-    return true if host.nil?
+    if host.nil?
+      log(LOG_DEBUG, "Failed to get reverse host for: #{client.to_str}")
+      return true
+    end
 
-    score, blacklists = dnsbl_check(host, false)
+    score, blacklists = dnsbl_check(host)
 
     if blacklists.length > 0
       name,addr,escore,reason,cloak,withid = blacklists[0]
@@ -129,21 +132,17 @@ class Bopm < ServiceModule
     return host
   end
 
-  def dnsbl_check(host, incheck)
+  def dnsbl_check(host)
     score = 0
     cloak = nil
     results = []
     @config.each do |entry|
+      log(LOG_DEBUG, "Checking #{host} against #{entry['name']}")
       begin
         check = host + '.' + entry['name']
         addrs = Resolv::getaddresses(check)
 
-        # if this host has any result don't continue
-        if entry.has_key?('stoplookups')
-          stop = entry['stoplookups']
-        else
-          stop = false
-        end
+        stop = false
 
         # fallback score if a specific result doesn't have a score
         if entry.has_key?('score')
@@ -169,6 +168,12 @@ class Bopm < ServiceModule
             # the reason is optional
             entry_reason = entry['codes'][addr]['reason'] if entry['codes'][addr].has_key?('reason')
             # stoplookups also optional
+            # if this host has any result don't continue
+            if entry.has_key?('stoplookups')
+              stop = entry['stoplookups']
+            else
+              stop = false
+            end
             stop = entry['codes'][addr]['stoplookups'] if entry['codes'][addr].has_key?('stoplookups')
           end
 
@@ -179,11 +184,11 @@ class Bopm < ServiceModule
           results << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
         end
 
-        if not incheck and stop
+        if stop
           break
         end
       rescue Exception => e
-        #log(LOG_DEBUG, "#{check} -- #{e.to_str}")
+        log(LOG_DEBUG, "#{check} -- #{e.to_str}")
         # unless I'm an idiot the dnsbl doesn't have this entry
         next
       end
