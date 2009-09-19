@@ -19,6 +19,11 @@ class Bopm < ServiceModule
       @config = YAML::load(f)
     end
 
+    # both of these need to be in the config
+    @kill_level = 2
+    # How long does an akill last?
+    @akill_duration = 14*24*3600
+
     @ready = false
   end
 
@@ -104,11 +109,16 @@ class Bopm < ServiceModule
 
     if blacklists.length > 0
       name,addr,escore,reason,cloak,withid = blacklists[0]
-      log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
-      if withid
-        client.cloak("#{client.id}.#{cloak}")
+      if score >= @kill_level
+        log(LOG_NOTICE, "KILLING #{client.to_str} with score: #{score}")
+        akill_add("*@#{client.ip_or_hostname}", "Possible infected host. Mail support@oftc.net with questions. BOPM", @akill_duration)
       else
-        client.cloak(cloak)
+        log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
+        if withid
+          client.cloak("#{client.id}.#{cloak}")
+        else
+          client.cloak(cloak)
+        end
       end
     end
 
