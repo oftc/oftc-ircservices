@@ -68,7 +68,7 @@ class GanneffServ < ServiceModule
        ["SAVE",     0,       0,       0,                            ADMIN_FLAG, lm('GS_HLP_SAV_SHORT'), lm('GS_HLP_SAV_LONG')],
        ["STATS",    0,       0,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_STS_SHORT'), lm('GS_HLP_STS_LONG')],
        ["ENFORCE",  0,       0,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_ENF_SHORT'), lm('GS_HLP_ENF_LONG')],
-       ["BADSERV",  1,       1,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_SRV_SHORT'), lm('GS_HLP_SRV_LONG')],
+       ["BADSERV",  0,       1,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_SRV_SHORT'), lm('GS_HLP_SRV_LONG')],
       ]) # register
 
     # Which hooks do we want?
@@ -322,16 +322,33 @@ class GanneffServ < ServiceModule
 
   # Mark a server as "bad"
   def BADSERV(client, parv = [])
-    parv[1].downcase!
-    debug(LOG_DEBUG, "#{client.name} called BADSERV and the parms are #{parv.join(",")}")
-    server = parv[1].downcase
+    if parv.length > 0
+      parv[1].downcase!
+      debug(LOG_DEBUG, "#{client.name} called BADSERV and the parms are #{parv.join(",")}")
+      server = parv[1].downcase
 
-    if server =~ /.*\.oftc.net$/
-      debug(LOG_DEBUG, "#{server} seems to be an oftc server, proceeding")
-      @badserver = server
-    elsif server =~ /OFF/i
-      @badserver = ""
+      if server =~ /.*\.oftc.net$/
+        debug(LOG_DEBUG, "#{server} seems to be an oftc server, proceeding")
+        @badserver = server
+        reply(client, "#{server} is now marked as a bad server, all new connections will be killed")
+        debug(LOG_NOTICE, "#{client.to_str} has enabled BADSERV for #{server} all new connections will be killed")
+      elsif server =~ /OFF/i
+        if @badserver != ""
+          reply(client, "#{@badserver} is no longer listed as a bad server.")
+          debug(LOG_NOTICE, "#{client.to_str} has disabled BADSERV for #{@badserver}")
+          @badserver = ""
+        else
+          reply(client, "There was no defined bad server, it was already off")
+        end
+      else
+        false
+      end
     else
+      if @badserver != ""
+        reply(client, "Killing all new connections from #{@badserver}")
+      else
+        reply(client, "No server is currently listed as a bad server")
+      end
       false
     end # if server
 
