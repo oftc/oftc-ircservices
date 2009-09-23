@@ -19,11 +19,6 @@ class Bopm < ServiceModule
       @config = YAML::load(f)
     end
 
-    # both of these need to be in the config
-    @kill_level = 2
-    # How long does an akill last?
-    @akill_duration = 14*24*3600
-
     @ready = false
   end
 
@@ -80,7 +75,7 @@ class Bopm < ServiceModule
       end
     else
       # pass the hostname to check against our configured blacklists
-      score, results = dnsbl_check(host)
+      score, results, short_names = dnsbl_check(host)
 
       if results.length == 0
         reply(client, "No results for #{orig}")
@@ -105,13 +100,17 @@ class Bopm < ServiceModule
       return true
     end
 
-    score, blacklists = dnsbl_check(host)
+    score, blacklists, short_names = dnsbl_check(host)
 
     if blacklists.length > 0
       name,addr,escore,reason,cloak,withid = blacklists[0]
-      if score >= @kill_level
-        log(LOG_NOTICE, "KILLING #{client.to_str} with score: #{score}")
-        akill_add("*@#{client.ip_or_hostname}", "Possible infected host. Mail support@oftc.net with questions. BOPM", @akill_duration)
+      if score >= @config['kill_score']
+        log(LOG_NOTICE, "KILLING #{client.to_str} with score: #{score} [#{short_names}]")
+        if @config['store_kill_directly']
+          akill_add("*@#{client.ip_or_hostname}", @config['kill_reason'], @config['kill_duration'])
+        else
+          log(LOG_NOTICE, "Indirect kills are not yet supported")
+        end
       else
         log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
         if withid
@@ -146,7 +145,8 @@ class Bopm < ServiceModule
     score = 0
     cloak = nil
     results = []
-    @config.each do |entry|
+    short_names = ''
+    @config['dnsbls'].each do |entry|
       log(LOG_DEBUG, "Checking #{host} against #{entry['name']}")
       begin
         check = host + '.' + entry['name']
@@ -170,6 +170,8 @@ class Bopm < ServiceModule
         entry_score = default_score
         entry_reason = ''
 
+        entry_count = 0
+
         addrs.each do |addr|
           # the codes are optional altogether
           if entry.has_key?('codes') and entry['codes'].has_key?(addr)
@@ -185,6 +187,7 @@ class Bopm < ServiceModule
               stop = false
             end
             stop = entry['codes'][addr]['stoplookups'] if entry['codes'][addr].has_key?('stoplookups')
+            entry_count += 1
           end
 
           score += entry_score
@@ -192,6 +195,10 @@ class Bopm < ServiceModule
           log(LOG_DEBUG, "#{host} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
 
           results << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
+        end
+
+        if entry_count > 0
+          short_names += "#{entry['shortname']}: #{entry_count} "
         end
 
         if stop
@@ -204,6 +211,6 @@ class Bopm < ServiceModule
       end
     end
 
-    return score, results
+    return score, results, short_names
   end
 end

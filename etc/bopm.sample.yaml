@@ -1,42 +1,72 @@
 ---
-# The outer portion is a list of hashes
 #
-# name: (string) [required]
-# The actual dns name of the bl you're checking
-- name: sample.dnsbl.example.com
+# kill_score: (int) [required]
+# If a connection is greater than or equal to this number they will be killed
+kill_score: 2
 #
-# cloak: (string) [required]
-# if a client is found in this block it will receive this cloak (required)
-  cloak: sample.mynetwork.net
+# kill_reason: (string) [required]
+# The message set for kill for connections that reach the killscore
+kill_reason: This host may be infected.
 #
-# withid: (bool) [optional]
-# if a client is found in this block it will receive the cloak with their tsid
-# appended at the beginning (i.e. 1ZZAAAAAA.sample.mynetwork.net)
-  withid: Yes
+# kill_duration: (int) [required]
+# The number of seconds a kill will last for
+kill_duration: 1209600
 #
-# score: (integer) [optional]
-# a positive or negative value, applied to a result if a specific result if no
-# score is defined for the result, or the result is not found in the list of
-# codes
-  score: 1
+# store_kill_directly: (bool) [required]
+# Set this to Yes if Bopm is part of the core services, false if it's separate
+store_kill_directly: False
 #
-# stoplookups: (bool) [optional]
-# if a record is found in this blacklist stop processing checks
-  stoplookups: No
+# kill_command: (string) [optional]
+# If you're not storing kills directly this is the raw irc command that will
+# be sent.
+# Arguments that may be expanded
+#   $HOSTNAME$ $REASON$ $DURATION$ $SCORE$ $CLOAK$
+kill_command: "PRIVMSG OperServ :AKILL ADD +$DURATION$ *@$HOSTNAME$ $REASON$ ($SCORE$)"
 #
-# codes: (hash) [optional]
-# a series of keys that map to dnsbl results, if not provided any result is valid
-  codes:
-    127.0.0.2:
-#
-#     reason: (string) [optional]
-#     a descriptive tag for the reason this result is returned
-      reason: Some bad drone
-#
-#     score: (int) [optional]
-#     a positive or negative value that ranks this result
-      score: 10
-#
-#     stoplookups: (bool) [optional]
-#     if a record has this result stop processing blacklists
-      stoplookups: Yes
+# List of DNSBLs to check against 
+dnsbls:
+  # The outer portion is a list of hashes
+  #
+  # name: (string) [required]
+  # The actual dns name of the bl you're checking
+  - name: sample.dnsbl.example.com
+  #
+  # shortname: (string) [required]
+  # The name that will be displayed in the snotes regarding scores
+    shortname: smpl
+  #
+  # cloak: (string) [required]
+  # if a client is found in this block it will receive this cloak (required)
+    cloak: sample.mynetwork.net
+  #
+  # withid: (bool) [optional]
+  # if a client is found in this block it will receive the cloak with their tsid
+  # appended at the beginning (i.e. 1ZZAAAAAA.sample.mynetwork.net)
+    withid: Yes
+  #
+  # score: (integer) [optional]
+  # a positive or negative value, applied to a result if a specific result if no
+  # score is defined for the result, or the result is not found in the list of
+  # codes
+    score: 1
+  #
+  # stoplookups: (bool) [optional]
+  # if a record is found in this blacklist stop processing checks
+    stoplookups: No
+  #
+  # codes: (hash) [optional]
+  # a series of keys that map to dnsbl results, if not provided any result is valid
+    codes:
+      127.0.0.2:
+      #
+      # reason: (string) [optional]
+      # a descriptive tag for the reason this result is returned
+        reason: Some bad drone
+      #
+      # score: (int) [optional]
+      # a positive or negative value that ranks this result
+        score: 10
+      #
+      # stoplookups: (bool) [optional]
+      # if a record has this result stop processing blacklists
+        stoplookups: Yes
