@@ -2,6 +2,7 @@
 #include "libruby_module.h"
 #include "servicemask.h"
 #include "akill.h"
+#include "send.h"
 
 VALUE cServiceModule = Qnil;
 VALUE cClient;
@@ -438,6 +439,14 @@ ServiceModule_send_cmode(VALUE self, VALUE channel, VALUE mode, VALUE param)
 }
 
 static VALUE
+ServiceModule_send_raw(VALUE self, VALUE msg)
+{
+  Check_Type(msg, T_STRING);
+  sendto_server(me.uplink, StringValueCStr(msg));
+  return self;
+}
+
+static VALUE
 ServiceModule_client(VALUE self)
 {
   return rb_iv_get(self, "@client");
@@ -521,6 +530,8 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "drop_nick", ServiceModule_drop_nick, 1);
   rb_define_method(cServiceModule, "add_event", ServiceModule_add_event, 2);
   rb_define_method(cServiceModule, "send_cmode", ServiceModule_send_cmode, 3);
+
+  rb_define_method(cServiceModule, "send_raw", ServiceModule_send_raw, 1);
 
   rb_define_method(cServiceModule, "client", ServiceModule_client, 0);
   rb_define_method(cServiceModule, "reply", reply, 2);
