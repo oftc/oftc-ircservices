@@ -1221,7 +1221,11 @@ nickname_set_pass(Nickname *this, const char *value)
   /* on registration we need to set before the DB knows it */
   if(this->id == 0 || db_execute_nonquery(SET_NICK_PASSWORD, "si", value, &this->id))
   {
-    strlcpy(this->pass, value, sizeof(this->pass));
+    if(value != NULL)
+      strlcpy(this->pass, value, sizeof(this->pass));
+    else
+      this->pass[0] = '\0';
+
     return TRUE;
   }
   else
@@ -1234,7 +1238,11 @@ nickname_set_salt(Nickname *this, const char *value)
   if(this->id == 0 || db_execute_nonquery(SET_NICK_SALT, "si", value,
         &this->id))
   {
-    strlcpy(this->salt, value, sizeof(this->salt));
+    if(value != NULL)
+      strlcpy(this->salt, value, sizeof(this->salt));
+    else
+      this->salt[0] = '\0';
+
     return TRUE;
   }
   else
@@ -1246,7 +1254,11 @@ nickname_set_cloak(Nickname *this, const char *value)
 {
   if(db_execute_nonquery(SET_NICK_CLOAK, "si", value, &this->id))
   {
-    strlcpy(this->cloak, value, sizeof(this->cloak));
+    if(value != NULL)
+      strlcpy(this->cloak, value, sizeof(this->cloak));
+    else
+      this->cloak[0] = '\0';
+
     return TRUE;
   }
   else
