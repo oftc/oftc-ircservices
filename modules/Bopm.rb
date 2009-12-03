@@ -109,7 +109,13 @@ class Bopm < ServiceModule
         if @config['store_kill_directly']
           akill_add("*@#{client.ip_or_hostname}", @config['kill_reason'], @config['kill_duration'])
         else
-          log(LOG_NOTICE, "Indirect kills are not yet supported")
+          msg = @config['kill_command']
+          msg.sub!('$HOSTNAME$', client.ip_or_hostname)
+          msg.sub!('$REASON$', @config['kill_reason'])
+          msg.sub!('$DURATION$', @config['kill_duration'])
+          msg.sub!('$SCORE$', score)
+          msg.sub!('$CLOAK$', cloak)
+          send_raw(msg)
         end
       else
         log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
