@@ -110,11 +110,11 @@ class Bopm < ServiceModule
           akill_add("*@#{client.ip_or_hostname}", @config['kill_reason'], @config['kill_duration'])
         else
           msg = @config['kill_command']
-          msg.sub!('$HOSTNAME$', client.ip_or_hostname)
-          msg.sub!('$REASON$', @config['kill_reason'])
-          msg.sub!('$DURATION$', @config['kill_duration'])
-          msg.sub!('$SCORE$', score)
-          msg.sub!('$CLOAK$', cloak)
+          msg.sub!('$HOSTNAME$', "#{client.ip_or_hostname}")
+          msg.sub!('$REASON$', "#{@config['kill_reason']}")
+          msg.sub!('$DURATION$', "#{@config['kill_duration']}")
+          msg.sub!('$SCORE$', "#{score}")
+          msg.sub!('$CLOAK$', "#{cloak}")
           send_raw(msg)
         end
       else
