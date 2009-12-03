@@ -71,7 +71,7 @@ unsigned int user_modes[256] =
   0,                  /* M */
   0,                  /* N */
   0,                  /* O */
-  0,                  /* P */
+  UMODE_SERVICE,      /* P */
   0,                  /* Q */
   UMODE_IDENTIFIED,   /* R */
   UMODE_GOD,          /* S */
@@ -652,6 +652,17 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
           }
 
           break;
+        case 'P':
+          if (what == MODE_ADD)
+          {
+            source_p->access = ADMIN_FLAG;
+          }
+          else
+          {
+            source_p->access = USER_FLAG;
+          }
+          execute_callback(on_umode_change_cb, source_p, what, UMODE_SERVICE);
+          break;
 
         /* we may not get these,
          * but they shouldnt be in default
@@ -779,6 +790,10 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
         flag = user_modes[(unsigned char)*m];
 
         source_p->umodes |= flag;
+
+        if (flag == UMODE_SERVICE)
+          source_p->access = ADMIN_FLAG;
+
         execute_callback(on_umode_change_cb, source_p, MODE_ADD, flag);
         ilog(L_DEBUG, "Setting umode %c on %s", *m, source_p->name);
         m++;
