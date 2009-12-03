@@ -734,7 +734,7 @@ m_jupe_del(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   struct Client *target = find_client(parv[1]);
-  if(target != NULL && IsServer(target))
+  if(target != NULL && IsServer(target) && MyConnect(target))
   {
     squit_server(parv[1], "UnJupitered");
     reply_user(service, service, client, OS_JUPE_DELETED, parv[1]);
