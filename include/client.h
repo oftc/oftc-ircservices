@@ -71,6 +71,7 @@ extern dlink_list delay_akill_list;
 #define UMODE_ADMIN        0x80000 /* Admin on server */
 #define UMODE_IDENTIFIED  0x100000 /* Registered with nickserv */
 #define UMODE_GOD          0x10000000 /* Operator is God */
+#define UMODE_SERVICE      0x20000000
 #define UMODE_ALL    UMODE_SERVNOTICE
 
 #define HasID(x)		((x)->id[0] != '\0')
