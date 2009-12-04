@@ -89,6 +89,8 @@ parseargs(int *argc, char ***argv, struct lgetopt *opts)
 		    }
 		  
 		  *((int *)opts[i].argloc) = atoi((*argv)[1]);
+      (*argc)--;
+      (*argv)++;
 		  break;
 		case STRING:
 		  if (*argc < 2)
@@ -100,6 +102,8 @@ parseargs(int *argc, char ***argv, struct lgetopt *opts)
 		  
 		  *((char**)opts[i].argloc) = malloc(strlen((*argv)[1]) + 1);
 		  strcpy(*((char**)opts[i].argloc), (*argv)[1]);
+      (*argc)--;
+      (*argv)++;
 		  break;
 
 		case USAGE:
