@@ -44,11 +44,11 @@ class GanneffServ < ServiceModule
     # A hash to store all the nicks we saw connecting
     # Gets cleaned from timer function cleanup_event
     # @nicks is built up like:
-    # @nicks[nick]                    - Hash for the whole data
-    # @nicks[nick]["client"]          - Contains the clientstruct
-    # @nicks[nick]["joined"]          - Last channel joined that matched a CRFJ channel (see def LIST)
-    # @nicks[name]["jointime"]        - Timestamp of that join
-    # @nicks[nick]["registered"]      - Timestamp the nick was registered, if we saw this happen
+    # @nicks[id]                    - Hash for the whole data
+    # @nicks[id]["client"]          - Contains the clientstruct
+    # @nicks[id]["joined"]          - Last channel joined that matched a CRFJ channel (see def LIST)
+    # @nicks[id]["jointime"]        - Timestamp of that join
+    # @nicks[id]["registered"]      - Timestamp the nick was registered, if we saw this happen
     @nicks = Hash.new
 
     # Do we have a "bad" server?
@@ -79,7 +79,6 @@ class GanneffServ < ServiceModule
        [EOB_HOOK,          'eob'],
        [CTCP_HOOK,         'ctcp_reply'],
        [QUIT_HOOK,         'quit'],
-       [NICK_HOOK,         'nick_changed'],
       ]) # add_hook
 
     # We want to do stuff every now and then, run a timer event
@@ -392,14 +391,14 @@ class GanneffServ < ServiceModule
       if @channels.has_key?(channel)
         debug(LOG_DEBUG, "#{nick} is not some services instance joining #{channel}")
         if @channels[channel]["monitoronly"] == true
-          if @nicks.has_key?(nick)
-            @nicks[nick]["joined"] = channel
-            @nicks[nick]["jointime"] = Time.new.to_i
+          if @nicks.has_key?(client.id)
+            @nicks[client.id]["joined"] = channel
+            @nicks[client.id]["jointime"] = Time.new.to_i
             ret = timecheck(client)
           end
         else # if @channels...["monitoronly"]
           debug(LOG_NOTICE, "#{nick} joined channel #{channel}, killing")
-          drop_nick(nick) unless @nicks[nick]["registered"].nil?
+          drop_nick(nick) unless @nicks[client.id]["registered"].nil?
           ret = akill(client, "#{@channels[channel]["reason"]}", "J:#{channel}", channel)
         end # if @channels...["monitoronly"]
         debug(LOG_DEBUG, "join_hook says that ret is #{ret}")
@@ -422,19 +421,19 @@ class GanneffServ < ServiceModule
     # Do nothing if this client hasnt joined any of our join-monitored channels yet.
     # Needed as this function is called by both, nick_registered and join_hook, and we
     # only want to trigger here when both are done in a too small timeframe
-    if @nicks[nick]["joined"].nil? or @nicks[nick]["registered"].nil?
+    if @nicks[client.id]["joined"].nil? or @nicks[client.id]["registered"].nil?
       debug(LOG_DEBUG, "#{client.name} doesn't pass the timecheck")
       return true
     end # if @nicks... or @nicks...
 
     # Check if join and register both happened within @delay seconds from connect
-    rdiff = @nicks[nick]["registered"] - client.firsttime
-    jdiff = @nicks[nick]["jointime"] - client.firsttime
+    rdiff = @nicks[client.id]["registered"] - client.firsttime
+    jdiff = @nicks[client.id]["jointime"] - client.firsttime
     debug(LOG_DEBUG, "#{client.name} rdiff is #{rdiff}, jdiff is #{jdiff}")
 
     if rdiff < @delay and jdiff < @delay
-      debug(LOG_NOTICE, "#{nick} hit #{@delay} seconds delay for register/join, channel #{@nicks[nick]["joined"]}, killing and dropping nick")
-      ret = akill(client, "#{@channels[@nicks[nick]["joined"]]["reason"]}", "CRFJ:#{@nicks[nick]["joined"]}", @nicks[nick]["joined"])
+      debug(LOG_NOTICE, "#{nick} hit #{@delay} seconds delay for register/join, channel #{@nicks[client.id]["joined"]}, killing and dropping nick")
+      ret = akill(client, "#{@channels[@nicks[client.id]["joined"]]["reason"]}", "CRFJ:#{@nicks[client.id]["joined"]}", @nicks[client.id]["joined"])
       # Now drop the nick
       ret = drop_nick(nick)
       debug(LOG_DEBUG, "drop_nick returned #{ret}")
@@ -456,8 +455,8 @@ class GanneffServ < ServiceModule
       # If the nick got registered in the first 60 seconds after connect we save this and warn about it
       debug(LOG_NOTICE, "#{client.name} registered the nick after being online for only #{diff} seconds")
 
-      @nicks[nick] = Hash.new unless @nicks[nick]  # in case we dont know them already (like services restarted)
-      @nicks[nick]["registered"] = now
+      @nicks[client.id] = Hash.new unless @nicks[client.id]  # in case we dont know them already (like services restarted)
+      @nicks[client.id]["registered"] = now
 
       # Now ctcp them so we record versions of such nicks.
       ctcp_user(client, "VERSION") unless client.is_services_client?
@@ -474,8 +473,8 @@ class GanneffServ < ServiceModule
     return unless command == 'VERSION'
     msg = ""
     nick = client.name.downcase
-    if @nicks.has_key?(nick)
-      diff = @nicks[nick]["registered"] - @nicks[nick]["client"].firsttime
+    if @nicks.has_key?(client.id)
+      diff = @nicks[client.id]["registered"] - @nicks[client.id]["client"].firsttime
 
       if diff < 60
         msg = " (online for #{diff} seconds) "
@@ -507,8 +506,8 @@ class GanneffServ < ServiceModule
       end
     end # if @badserv.length
 
-    @nicks[nick] = Hash.new
-    @nicks[nick]["client"] = client
+    @nicks[client.id] = Hash.new
+    @nicks[client.id]["client"] = client
     true
   end # def newuser
 
@@ -534,26 +533,9 @@ class GanneffServ < ServiceModule
   # A client quits, lets delete his entry in @nicks
   def quit(client, reason)
     debug(LOG_DEBUG, "#{client.name} quits")
-    @nicks.delete(client.name.downcase)
+    @nicks.delete(client.id)
     true
   end # def quit
-
-# ------------------------------------------------------------------------
-
-  # Nick changed, track it. You can run, but you can't hide!
-  def nick_changed(client, oldnick)
-    debug(LOG_DEBUG, "#{oldnick} is now #{client.name}")
-    nick = client.name.downcase
-    oldnick.downcase!
-    if not @nicks[oldnick].nil?
-      @nicks[nick] = Hash.new
-      @nicks[nick]["client"] = client
-      @nicks[nick]["registered"] = @nicks[oldnick]["registered"] unless @nicks[oldnick]["registered"].nil?
-      @nicks.delete(oldnick)
-    end # if not
-    true
-  end
-
 
 ########################################################################
 ########################################################################
@@ -690,12 +672,14 @@ class GanneffServ < ServiceModule
 
   # Cleanup - remove old nicks from @nicks
   def clean()
-    @nicks.each_pair do |nick, data|
-      diff = Time.new.to_i - data["client"].firsttime
+    @nicks.each_pair do |id, data|
+      client = data["client"]
+      diff = Time.new.to_i - client.firsttime
+      nick = client.name
       debug(LOG_DEBUG, "Looking at #{nick} which I know for #{diff} seconds.")
       if diff > 120
         debug(LOG_DEBUG, "Deleting knowledge of #{nick}, known for #{diff} seconds now.")
-        @nicks.delete(nick)
+        @nicks.delete(id)
       end # if diff
     end # @nicks.each_pair
     debug(LOG_DEBUG, "Done with all nicks")
