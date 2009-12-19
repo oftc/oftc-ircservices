@@ -21,3 +21,9 @@ BP_CHECK_LONG
 	    CHECK sub.example.com
 	    CHECK 1.2.3.4
 	    CHECK 1.2.3.4 evil.doers.dnsbl.example.com
+BP_PENDING_SHORT
+	%s: Return the number of clients left to be checked
+BP_PENDING_LONG
+	Usage: PENDING
+	
+	Returns the number of clients left to be checkd

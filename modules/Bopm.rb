@@ -9,6 +9,7 @@ class Bopm < ServiceModule
     register([
       ['HELP', 0, 2, SFLG_NOMAXPARAM, USER_FLAG, lm('BP_HELP_SHORT'), lm('BP_HELP_LONG')],
       ['CHECK', 0, 2, 0, USER_FLAG, lm('BP_CHECK_SHORT'), lm('BP_CHECK_LONG')],
+      ['PENDING', 0, 2, 0, USER_FLAG, lm('BP_PENDING_SHORT'), lm('BP_PENDING_LONG')],
     ])
 
     add_hook([
@@ -34,6 +35,12 @@ class Bopm < ServiceModule
 
   def HELP(client, parv = [])
     do_help(client, parv[1], parv)
+  end
+
+  def PENDING(client, parv = [])
+    if client.is_oper? or client.is_admin?
+      reply(client, "There are #{@pending_list.keys.length} clients to check")
+    end
   end
 
   def CHECK(client, parv = [])
