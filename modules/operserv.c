@@ -461,6 +461,8 @@ m_akill_add(struct Service *service, struct Client *client,
   int duration = -1;
   int input_dur;
 
+  ilog(L_DEBUG, "add akill from %s", client->name);
+
   if(*parv[1] == '+')
   {
     char *ptr = parv[1];
@@ -538,7 +540,9 @@ m_akill_add(struct Service *service, struct Client *client,
 
   akill = MyMalloc(sizeof(struct ServiceMask));
 
-  akill->setter = nickname_get_id(client->nickname);
+  /* client->nickname will be null if Bopm is remote */
+  if(client->nickname != NULL)
+    akill->setter = nickname_get_id(client->nickname);
   akill->time_set = CurrentTime;
   akill->duration = duration;
   DupString(akill->mask, mask_buf);

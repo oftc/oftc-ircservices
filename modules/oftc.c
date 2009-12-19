@@ -239,6 +239,8 @@ client_from_server(struct Client *client_p, struct Client *source_p, int parc,
   for (m = &parv[4][1]; *m; ++m)
   {
     flag = user_modes[(unsigned char)*m];
+    if (flag == UMODE_SERVICE)
+      source_p->access = ADMIN_FLAG;
     source_p->umodes |= flag;
   }
 
