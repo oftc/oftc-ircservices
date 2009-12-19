@@ -13,17 +13,23 @@ class Bopm < ServiceModule
 
     add_hook([
       [NEWUSR_HOOK, 'newuser'],
+      [QUIT_HOOK, 'client_quit'],
       ])
 
     File.open("#{CONFIG_PATH}/bopm.yaml", 'r') do |f|
       @config = YAML::load(f)
     end
 
-    @ready = false
+    @dns_cache = Hash.new
+    @dns_cache_ttl = 3600
+
+    @pending_list = Hash.new
+
+    # Every 3 seconds process who's left
+    add_event('process_list', 3)
   end
 
   def loaded()
-    @ready = true
   end
 
   def HELP(client, parv = [])
@@ -90,41 +96,61 @@ class Bopm < ServiceModule
     end
   end
 
-  def newuser(client)
-    return true unless @ready
-
-    host = to_revip(client.ip_or_hostname)
-
-    if host.nil?
-      log(LOG_DEBUG, "Failed to get reverse host for: #{client.to_str}")
-      return true
+  def client_quit(client, reason)
+    if @pending_list.has_key?(client.id)
+      log(LOG_DEBUG, "Removing Client: #{client.to_str}")
+      @pending_list.delete(client.id)
     end
+    return true
+  end
 
-    score, blacklists, short_names = dnsbl_check(host)
+  def newuser(client)
+    log(LOG_DEBUG, "Add client to pending_list: #{client.to_str}")
+    @pending_list[client.id] = client
+    return true
+  end
 
-    if blacklists.length > 0
-      name,addr,escore,reason,cloak,withid = blacklists[0]
-      if score >= @config['kill_score']
-        log(LOG_NOTICE, "KILLING #{client.to_str} with score: #{score} [#{short_names}]")
-        if @config['store_kill_directly']
-          akill_add("*@#{client.ip_or_hostname}", @config['kill_reason'], @config['kill_duration'])
+  def process_list()
+    keys = @pending_list.keys[0, 20]
+    log(LOG_DEBUG, "Processing List for #{keys.length} clients")
+
+    keys.each do |id|
+      client = @pending_list[id]
+      host = to_revip(client.ip_or_hostname)
+
+      if host.nil?
+        log(LOG_DEBUG, "Failed to get reverse host for: #{client.to_str}")
+        return true
+      end
+
+      score, blacklists, short_names = dnsbl_check(host)
+
+      if blacklists.length > 0
+        name,addr,escore,reason,cloak,withid = blacklists[0]
+        if score >= @config['kill_score']
+          log(LOG_NOTICE, "KILLING #{client.to_str} with score: #{score} [#{short_names}]")
+          if @config['store_kill_directly']
+            akill_add("*@#{client.ip_or_hostname}", @config['kill_reason'], @config['kill_duration'])
+          else
+            msg = @config['kill_command']
+            msg.sub!('$HOSTNAME$', "#{client.ip_or_hostname}")
+            msg.sub!('$REASON$', "#{@config['kill_reason']}")
+            msg.sub!('$DURATION$', "#{@config['kill_duration']}")
+            msg.sub!('$SCORE$', "#{score}")
+            msg.sub!('$CLOAK$', "#{cloak}")
+            send_raw(msg)
+          end
         else
-          msg = @config['kill_command']
-          msg.sub!('$HOSTNAME$', "#{client.ip_or_hostname}")
-          msg.sub!('$REASON$', "#{@config['kill_reason']}")
-          msg.sub!('$DURATION$', "#{@config['kill_duration']}")
-          msg.sub!('$SCORE$', "#{score}")
-          msg.sub!('$CLOAK$', "#{cloak}")
-          send_raw(msg)
-        end
-      else
-        log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
-        if withid
-          client.cloak("#{client.id}.#{cloak}")
-        else
-          client.cloak(cloak)
+          log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
+          if withid
+            client.cloak("#{client.id}.#{cloak}")
+          else
+            client.cloak(cloak)
+          end
         end
       end
+
+      @pending_list.delete(id)
     end
 
     return true
@@ -152,6 +178,18 @@ class Bopm < ServiceModule
     cloak = nil
     results = []
     short_names = ''
+
+    if @dns_cache.has_key?(host)
+      ttl, foo = @dns_cache[host]
+      log(LOG_DEBUG, "Cache hit for #{host} #{ttl} #{ttl - Time.now.to_i}")
+      score, results, short_names = foo
+      if ttl - Time.now.to_i > 0
+        return score, results, short_names
+      else
+        @dns_cache.delete(host)
+      end 
+    end
+
     @config['dnsbls'].each do |entry|
       log(LOG_DEBUG, "Checking #{host} against #{entry['name']}")
       begin
@@ -215,6 +253,11 @@ class Bopm < ServiceModule
         # unless I'm an idiot the dnsbl doesn't have this entry
         next
       end
+    end
+
+    if results.length > 0
+      log(LOG_DEBUG, "Adding #{host} to cache")
+      @dns_cache[host] = [Time.now.to_i+@dns_cache_ttl, [score, results, short_names]]
     end
 
     return score, results, short_names
