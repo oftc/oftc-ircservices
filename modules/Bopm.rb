@@ -27,7 +27,9 @@ class Bopm < ServiceModule
     @pending_list = Hash.new
 
     # Every 3 seconds process who's left
-    add_event('process_list', 3)
+    @event_time = 1
+    @queries_per_event = 10
+    @event = nil
   end
 
   def loaded()
@@ -114,11 +116,17 @@ class Bopm < ServiceModule
   def newuser(client)
     log(LOG_DEBUG, "Add client to pending_list: #{client.to_str}")
     @pending_list[client.id] = client
+
+    if not @event
+      log(LOG_DEBUG, "Adding processing queue event")
+      @event = add_event('process_list', @event_time)
+    end
+
     return true
   end
 
   def process_list()
-    keys = @pending_list.keys[0, 20]
+    keys = @pending_list.keys[0, @queries_per_event]
     log(LOG_DEBUG, "Processing List for #{keys.length} clients")
 
     keys.each do |id|
@@ -158,6 +166,12 @@ class Bopm < ServiceModule
       end
 
       @pending_list.delete(id)
+    end
+
+    if @pending_list.keys.length == 0
+      log(LOG_DEBUG, "Deleting processing queue event")
+      delete_event(@event)
+      @event = nil
     end
 
     return true

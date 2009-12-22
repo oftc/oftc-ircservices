@@ -610,7 +610,7 @@ enum EVENT_POSITION
   EVT_COUNT,
 };
 
-void
+VALUE
 rb_add_event(VALUE self, VALUE method, VALUE time)
 {
   VALUE sn = rb_iv_get(self, "@ServiceName");
@@ -629,6 +629,23 @@ rb_add_event(VALUE self, VALUE method, VALUE time)
 
   ilog(L_DEBUG, "{%s} Adding Event: %s Every %lu", StringValueCStr(sn), StringValueCStr(method), NUM2LONG(time));
   rb_ary_push(events, event);
+
+  return event;
+}
+
+VALUE
+rb_delete_event(VALUE self, VALUE event)
+{
+  VALUE sn = rb_iv_get(self, "@ServiceName");
+  VALUE events = rb_hash_aref(ruby_server_events, sn);
+
+  if(events == Qnil)
+  {
+    ilog(L_DEBUG, "{%s} Can't delete event because there's no container", StringValueCStr(sn));
+    return Qnil;
+  }
+
+  return rb_ary_delete(events, event);
 }
 
 static void
