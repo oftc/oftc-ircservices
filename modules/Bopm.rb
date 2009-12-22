@@ -115,11 +115,14 @@ class Bopm < ServiceModule
 
   def newuser(client)
     log(LOG_DEBUG, "Add client to pending_list: #{client.to_str}")
-    @pending_list[client.id] = client
 
-    if not @event
-      log(LOG_DEBUG, "Adding processing queue event")
-      @event = add_event('process_list', @event_time)
+    if not client.is_services_client?
+      @pending_list[client.id] = client
+
+      if not @event
+        log(LOG_DEBUG, "Adding processing queue event")
+        @event = add_event('process_list', @event_time)
+      end
     end
 
     return true
@@ -135,7 +138,8 @@ class Bopm < ServiceModule
 
       if host.nil?
         log(LOG_DEBUG, "Failed to get reverse host for: #{client.to_str}")
-        return true
+        @pending_list.delete(id)
+        next
       end
 
       score, blacklists, short_names = dnsbl_check(host)
