@@ -417,8 +417,13 @@ ServiceModule_drop_nick(VALUE self, VALUE nickname)
 static VALUE
 ServiceModule_add_event(VALUE self, VALUE method, VALUE time)
 {
-  rb_add_event(self, method, time);
-  return self;
+  return rb_add_event(self, method, time);
+}
+
+static VALUE
+ServiceModule_delete_event(VALUE self, VALUE event)
+{
+  return rb_delete_event(self, event);
 }
 
 static VALUE
@@ -529,6 +534,7 @@ Init_ServiceModule(void)
 
   rb_define_method(cServiceModule, "drop_nick", ServiceModule_drop_nick, 1);
   rb_define_method(cServiceModule, "add_event", ServiceModule_add_event, 2);
+  rb_define_method(cServiceModule, "delete_event", ServiceModule_delete_event, 1);
   rb_define_method(cServiceModule, "send_cmode", ServiceModule_send_cmode, 3);
 
   rb_define_method(cServiceModule, "send_raw", ServiceModule_send_raw, 1);

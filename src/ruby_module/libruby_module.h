@@ -83,7 +83,8 @@ VALUE rb_singleton_call(VALUE);
 
 void rb_do_hook_cb(VALUE, VALUE);
 void rb_add_hook(VALUE, VALUE, int);
-void rb_add_event(VALUE, VALUE, VALUE);
+VALUE rb_add_event(VALUE, VALUE, VALUE);
+VALUE rb_delete_event(VALUE, VALUE);
 
 int ruby_handle_error(int);
 VALUE do_ruby(VALUE, ID, int, ...);
