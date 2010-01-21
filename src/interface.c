@@ -981,6 +981,7 @@ identify_user(struct Client *client)
 
   nickname_set_last_realname(nick, client->info);
   nickname_set_last_host(nick, client->host);
+  nickname_set_last_seen(nick, CurrentTime);
 
   client->num_badpass = 0;
 
