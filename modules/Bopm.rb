@@ -151,7 +151,7 @@ class Bopm < ServiceModule
           if @config['store_kill_directly']
             akill_add("*@#{client.ip_or_hostname}", @config['kill_reason'], @config['kill_duration'])
           else
-            msg = @config['kill_command']
+            msg = @config['kill_command'].dup
             msg.sub!('$HOSTNAME$', "#{client.ip_or_hostname}")
             msg.sub!('$REASON$', "#{@config['kill_reason']}")
             msg.sub!('$DURATION$', "#{@config['kill_duration']}")
