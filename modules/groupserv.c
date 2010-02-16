@@ -291,6 +291,9 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
         group_get_email(group) == NULL ? "Not Set" : group_get_email(group));
   }
 
+  reply_user(service, service, client, GS_INFO_OPTION, "PRIVATE",
+      group_get_priv(group) ? "ON" : "OFF");
+
   if(group_masters_list(group_get_id(group), &list))
   {
     int comma = 0;
@@ -309,8 +312,22 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
   reply_user(service, service, client, GS_INFO_MASTERS, buf);
 
-  reply_user(service, service, client, GS_INFO_OPTION, "PRIVATE",
-      group_get_priv(group) ? "ON" : "OFF");
+  if(IsOper(client) || (access != NULL && access->level >= GRPMEMBER_FLAG))
+  {
+    if(group_chan_list(group_get_id(group), &list))
+    {
+      struct InfoChanList *chan;
+      reply_user(service, service, client, GS_INFO_CHANS);
+
+      DLINK_FOREACH(ptr, list.head)
+      {
+        chan = (struct InfoChanList *)ptr->data;
+        reply_user(service, service, client, GS_INFO_CHAN, chan->channel,
+          chan->level);
+      }
+      group_chan_list_free(&list);
+    }
+  }
 
   if(access != NULL)
     MyFree(access);

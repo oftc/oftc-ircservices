@@ -629,6 +629,7 @@ group_link_list_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
+#endif
 
 static struct InfoChanList *
 row_to_infochanlist(row_t *row)
@@ -690,7 +691,7 @@ group_chan_list_free(dlink_list *list)
   dlink_node *ptr, *next;
   struct InfoChanList *chan;
 
-  ilog(L_DEBUG, "Freeing string list %p of length %lu", list,
+  ilog(L_DEBUG, "Freeing group chan list %p of length %lu", list,
     dlink_list_length(list));
 
   DLINK_FOREACH_SAFE(ptr, next, list->head)
@@ -703,7 +704,7 @@ group_chan_list_free(dlink_list *list)
   }
 }
 
-
+#if 0
 inline void
 group_list_all_free(dlink_list *list)
 {

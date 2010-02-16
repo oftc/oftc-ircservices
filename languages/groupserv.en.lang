@@ -167,6 +167,10 @@ GS_INFO_REGTIME_NODAY
 	  Time registered: %s (%02d:%02d:%02d ago)
 GS_INFO_REGTIME_UNKNOWN
 	  Time registered: Unknown
+GS_INFO_CHANS
+	This group is on the following channel access lists:
+GS_INFO_CHAN
+	    %s: %s
 GS_LIST_INVALID_OPTION
 	Invalid LIST option %s.
 GS_LIST_NO_MATCHES

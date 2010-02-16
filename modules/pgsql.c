@@ -316,6 +316,10 @@ static query_t queries[QUERY_COUNT] = {
   { GET_GROUPS_OPER, "SELECT name FROM \"group\" ORDER BY lower(name) DESC", QUERY },
   { GET_GROUPS, "SELECT name FROM \"group\" WHERE flag_private='f' ORDER BY lower(name) DESC",
     QUERY },
+  { GET_GROUP_CHAN_INFO, "SELECT channel.id, channel, level FROM "
+    "channel, channel_access WHERE "
+    "channel.id=channel_access.channel_id AND channel_access.group_id=$1 "
+    "ORDER BY lower(channel.channel)", QUERY },
 };
 
 
