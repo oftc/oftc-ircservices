@@ -43,22 +43,24 @@ static void *oftc_sendmsg_gnotice(va_list);
 static void *oftc_sendmsg_svsmode(va_list);
 static void *oftc_sendmsg_svscloak(va_list);
 static void *oftc_sendmsg_svsnick(va_list);
-//static void *oftc_sendmsg_svsjoin(va_list);
+static void *oftc_sendmsg_svsjoin(va_list);
 static void *oftc_identify(va_list);
 static void *oftc_chops_notice(va_list);
 static void *oftc_sendmsg_newuser(va_list);
 static void *oftc_sendmsg_notice(va_list);
+static void *oftc_sendmsg_auth(va_list);
 
 static dlink_node *oftc_gnotice_hook;
 static dlink_node *oftc_umode_hook;
 static dlink_node *oftc_svscloak_hook;
 static dlink_node *oftc_svsnick_hook;
-//static dlink_node *oftc_svsjoin_hook;
+static dlink_node *oftc_svsjoin_hook;
 static dlink_node *oftc_identify_hook;
 static dlink_node *oftc_connected_hook;
 static dlink_node *oftc_chops_notice_hook;
 static dlink_node *oftc_newuser_hook;
 static dlink_node *oftc_notice_hook;
+static dlink_node *oftc_auth_hook;
 
 static void m_pass(struct Client *, struct Client *, int, char *[]);
 static void m_server(struct Client *, struct Client *, int, char *[]);
@@ -71,6 +73,7 @@ static void m_svsmode(struct Client *, struct Client *, int, char *[]);
 static void m_eob(struct Client *, struct Client *, int, char *[]);
 static void m_realhost(struct Client *, struct Client *, int, char *[]);
 static void m_certfp(struct Client *, struct Client *, int, char *[]);
+static void m_auth(struct Client *, struct Client *, int, char *[]);
 
 static struct Message gnotice_msgtab = {
   "GNOTICE", 0, 0, 3, 0, 0, 0,
@@ -113,21 +116,28 @@ static struct Message bmask_msgtab = {
 };
 
 static struct Message svsmode_msgtab = {
-  "SVSMODE", 0, 0, 2, 0, 0, 0, { m_svsmode, m_svsmode }
+  "SVSMODE", 0, 0, 2, 0, 0, 0, 
+  { m_svsmode, m_svsmode }
 };
 
 static struct Message eob_msgtab = {
-  "EOB", 0, 0, 0, 0, 0, 0, { m_eob, m_eob } 
+  "EOB", 0, 0, 0, 0, 0, 0, 
+  { m_eob, m_eob } 
 };
 
 static struct Message realhost_msgtab = {
-  "REALHOST", 0, 0, 3, 0, 0, 0,
+  "REALHOST", 0, 0, 3, 0, 0, 0, 
   { m_realhost, m_realhost }
 };
 
 static struct Message certfp_msgtab = {
   "CERTFP", 0, 0, 3, 0, 0, 0,
   { m_certfp, m_certfp }
+};
+
+static struct Message auth_msgtab = {
+  "AUTH", 0, 0, 3, 0, 0, 0,
+  { m_auth, m_auth }
 };
 
 struct ModeList ModeList[] = {
@@ -146,16 +156,17 @@ struct ModeList ModeList[] = {
 
 INIT_MODULE(oftc, "$Revision$")
 {
-  oftc_connected_hook  = install_hook(connected_cb, oftc_server_connected);
-  oftc_gnotice_hook   = install_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
-  oftc_umode_hook     = install_hook(send_umode_cb, oftc_sendmsg_svsmode);
-  oftc_svscloak_hook  = install_hook(send_cloak_cb, oftc_sendmsg_svscloak);
-//  oftc_svsjoin_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsjoin);
-  oftc_svsnick_hook   = install_hook(send_nick_cb, oftc_sendmsg_svsnick);
-  oftc_identify_hook  = install_hook(on_identify_cb, oftc_identify);
-  oftc_chops_notice_hook = install_hook(send_chops_notice_cb, oftc_chops_notice);
-  oftc_newuser_hook = install_hook(send_newuser_cb, oftc_sendmsg_newuser);
-  oftc_notice_hook = install_hook(send_notice_cb, oftc_sendmsg_notice);
+  oftc_connected_hook   = install_hook(connected_cb, oftc_server_connected);
+  oftc_gnotice_hook     = install_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
+  oftc_umode_hook       = install_hook(send_umode_cb, oftc_sendmsg_svsmode);
+  oftc_svscloak_hook    = install_hook(send_cloak_cb, oftc_sendmsg_svscloak);
+  oftc_svsjoin_hook     = install_hook(send_autojoin_cb, oftc_sendmsg_svsjoin);
+  oftc_svsnick_hook     = install_hook(send_nick_cb, oftc_sendmsg_svsnick);
+  oftc_identify_hook    = install_hook(on_identify_cb, oftc_identify);
+  oftc_chops_notice_hook= install_hook(send_chops_notice_cb, oftc_chops_notice);
+  oftc_newuser_hook     = install_hook(send_newuser_cb, oftc_sendmsg_newuser);
+  oftc_notice_hook      = install_hook(send_notice_cb, oftc_sendmsg_notice);
+  oftc_auth_hook        = install_hook(send_auth_cb, oftc_sendmsg_auth);
   mod_add_cmd(&gnotice_msgtab);
   mod_add_cmd(&pass_msgtab);
   mod_add_cmd(&server_msgtab);
@@ -168,6 +179,8 @@ INIT_MODULE(oftc, "$Revision$")
   mod_add_cmd(&eob_msgtab);
   mod_add_cmd(&realhost_msgtab);
   mod_add_cmd(&certfp_msgtab);
+  mod_add_cmd(&auth_msgtab);
+
   return ModeList;
 }
 
@@ -185,6 +198,7 @@ CLEANUP_MODULE
   mod_del_cmd(&eob_msgtab);
   mod_del_cmd(&realhost_msgtab);
   mod_del_cmd(&certfp_msgtab);
+  mod_del_cmd(&auth_msgtab);
 
   uninstall_hook(send_gnotice_cb, oftc_sendmsg_gnotice);
   uninstall_hook(send_umode_cb, oftc_sendmsg_svsmode);
@@ -193,6 +207,8 @@ CLEANUP_MODULE
   uninstall_hook(connected_cb, oftc_server_connected);
   uninstall_hook(send_newuser_cb, oftc_sendmsg_newuser);
   uninstall_hook(send_notice_cb, oftc_sendmsg_notice);
+  uninstall_hook(send_auth_cb, oftc_sendmsg_auth);
+  uninstall_hook(send_autojoin_cb, oftc_sendmsg_svsjoin);
 }
 
 /*
@@ -289,6 +305,15 @@ m_certfp(struct Client *client, struct Client *source, int parc, char *parv[])
 
   strlcpy(target->certfp, parv[2], sizeof(target->certfp));
   execute_callback(on_certfp_cb, target);
+}
+
+static void
+m_auth(struct Client *client, struct Client *source, int parc, char *parv[])
+{
+  ilog(L_DEBUG, "AUTH request for %s[%s] certfp %s from %s", parv[1], 
+      parv[2], parv[3], parv[0]);
+
+  execute_callback(on_auth_request_cb, parv[1], parv[2], parv[3]);
 }
 
 static void
@@ -662,6 +687,21 @@ oftc_sendmsg_svsnick(va_list args)
 }
 
 static void *
+oftc_sendmsg_svsjoin(va_list args)
+{
+  struct Client *uplink = va_arg(args, struct Client *);
+  struct Client *user = va_arg(args, struct Client *);
+  char *channel = va_arg(args, char *);
+
+  if(!HasID(user))
+    sendto_server(uplink, ":%s SVSJOIN %s :%s", me.name, user->name, channel);
+  else
+    sendto_server(uplink, ":%s SVSJOIN %s :%s", me.name, user->id, channel);
+
+  return pass_callback(oftc_svsjoin_hook, uplink, user, channel);
+}
+
+static void *
 oftc_chops_notice(va_list args)
 {
   struct Client *uplink = va_arg(args, struct Client *);
@@ -746,6 +786,20 @@ oftc_sendmsg_notice(va_list args)
     HasID(source_p) ? source_p->id : source_p->name,
     HasID(target_p) ? target_p->id : target_p->name,
     text);
+
+  return NULL;
+}
+
+static void*
+oftc_sendmsg_auth(va_list args)
+{
+  struct Client *client = va_arg(args, struct Client *);
+  char          *user   = va_arg(args, char *);
+  char          *nick   = va_arg(args, char *);
+  int           ret     = va_arg(args, int);
+  char          *reason = va_arg(args, char *);
+
+  sendto_server(client, ":%s AUTH %s %s %d :%s", me.id, user, nick, ret, reason);
 
   return NULL;
 }

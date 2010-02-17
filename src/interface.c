@@ -70,6 +70,8 @@ struct Callback *send_part_cb;
 struct Callback *send_nosuchsrv_cb;
 struct Callback *send_chops_notice_cb;
 struct Callback *send_squit_cb;
+struct Callback *send_autojoin_cb;
+struct Callback *send_auth_cb;
 
 static BlockHeap *services_heap  = NULL;
 
@@ -90,6 +92,7 @@ struct Callback *on_notice_cb;
 struct Callback *on_burst_done_cb;
 struct Callback *on_certfp_cb;
 struct Callback *on_db_init_cb;
+struct Callback *on_auth_request_cb;
 
 struct Callback *on_nick_reg_cb;
 struct Callback *on_chan_reg_cb;
@@ -132,6 +135,8 @@ init_interface()
   send_nosuchsrv_cb   = register_callback("Send No such server", NULL);
   send_chops_notice_cb = register_callback("Send NOTICE to channel ops", NULL);
   send_squit_cb       = register_callback("Send SQUIT Message", NULL);
+  send_autojoin_cb    = register_callback("Auto join a user to a channel", NULL);
+  send_auth_cb        = register_callback("Send an AUTH response", NULL);
   on_nick_change_cb   = register_callback("Propagate NICK", NULL);
   on_join_cb          = register_callback("Propagate JOIN", NULL);
   on_part_cb          = register_callback("Propagate PART", NULL);
@@ -157,6 +162,7 @@ init_interface()
   on_nick_reg_cb      = register_callback("Newly Registered Nick", NULL);
   on_chan_reg_cb      = register_callback("Newly Registered Chan", NULL);
   on_group_reg_cb     = register_callback("Newly Registered Group", NULL);
+  on_auth_request_cb  = register_callback("Authetication requested", NULL);
   do_event_cb         = register_callback("Event Loop Callback", NULL);
 
   load_language(ServicesLanguages, "services.en");
@@ -181,6 +187,9 @@ cleanup_interface()
   unregister_callback(send_topic_cb);
   unregister_callback(send_kill_cb);
   unregister_callback(send_resv_cb);
+  unregister_callback(send_topic_cb);
+  unregister_callback(send_kill_cb);
+  unregister_callback(send_resv_cb);
   unregister_callback(send_unresv_cb);
   unregister_callback(send_newserver_cb);
   unregister_callback(send_join_cb);
@@ -188,6 +197,8 @@ cleanup_interface()
   unregister_callback(send_nosuchsrv_cb);
   unregister_callback(send_chops_notice_cb);
   unregister_callback(send_squit_cb);
+  unregister_callback(send_autojoin_cb);
+  unregister_callback(send_auth_cb);
   unregister_callback(on_nick_change_cb);
   unregister_callback(on_join_cb);
   unregister_callback(on_part_cb);
@@ -210,6 +221,7 @@ cleanup_interface()
   unregister_callback(on_nick_reg_cb);
   unregister_callback(on_chan_reg_cb);
   unregister_callback(on_group_reg_cb);
+  unregister_callback(on_auth_request_cb);
   unregister_callback(do_event_cb);
 
   unload_languages(ServicesLanguages);
@@ -369,6 +381,14 @@ void
 sendto_channel(struct Service *service, struct Channel *channel, const char *text)
 {
   execute_callback(send_privmsg_cb, me.uplink, service->name, channel->chname, text);
+}
+
+void
+send_auth_reply(struct Service *service, char *user, char *nick, int response, char *reason)
+{
+  execute_callback(send_auth_cb, me.uplink, user, nick, response, reason);
+  
+  ilog(L_DEBUG, "Sending auth reply %s %s %d %s", user, nick, response, reason);
 }
 
 /* Ensure the result buffer is TIME_BUFFER+1 in size */

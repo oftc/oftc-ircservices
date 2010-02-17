@@ -53,6 +53,8 @@ extern struct Callback *send_part_cb;
 extern struct Callback *send_nosuchsrv_cb;
 extern struct Callback *send_chops_notice_cb;
 extern struct Callback *send_squit_cb;
+extern struct Callback *send_autojoin_cb;
+extern struct Callback *send_auth_cb;
 
 extern struct Callback *on_umode_change_cb;
 extern struct Callback *on_cmode_change_cb;
@@ -78,6 +80,7 @@ extern struct Callback *on_chan_drop_cb;
 extern struct Callback *on_group_drop_cb;
 extern struct Callback *on_db_init_cb;
 extern struct Callback *on_ctcp_cb;
+extern struct Callback *on_auth_request_cb;
 
 extern struct Callback *do_event_cb;
 
@@ -113,6 +116,7 @@ void send_topic(struct Service *, struct Channel *, struct Client *,
     const char *);
 void send_kill(struct Service *, struct Client *, const char *);
 void set_limit(struct Service *, struct Channel *, int);
+void send_auth_reply(struct Service *, char *, char *, int, char *);
 
 unsigned int enforce_mode_lock(struct Service *, struct Channel *, const char *, char *,
     int *);

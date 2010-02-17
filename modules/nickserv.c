@@ -52,6 +52,7 @@ static dlink_node *ns_nick_hook;
 static dlink_node *ns_newuser_hook;
 static dlink_node *ns_quit_hook;
 static dlink_node *ns_certfp_hook;
+static dlink_node *ns_on_auth_req_hook;
 
 static dlink_list nick_enforce_list = { NULL, NULL, 0 };
 static dlink_list nick_release_list = { NULL, NULL, 0 };
@@ -66,6 +67,7 @@ static void *ns_on_newuser(va_list);
 static void *ns_on_nick_change(va_list);
 static void *ns_on_quit(va_list);
 static void *ns_on_certfp(va_list);
+static void *ns_on_auth_requested(va_list);
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
@@ -303,6 +305,7 @@ INIT_MODULE(nickserv, "$Revision$")
   ns_newuser_hook     = install_hook(on_newuser_cb, ns_on_newuser);
   ns_quit_hook        = install_hook(on_quit_cb, ns_on_quit);
   ns_certfp_hook      = install_hook(on_certfp_cb, ns_on_certfp);
+  ns_on_auth_req_hook = install_hook(on_auth_request_cb, ns_on_auth_requested);
   
   guest_number = 0;
 
@@ -318,6 +321,7 @@ CLEANUP_MODULE
   uninstall_hook(on_newuser_cb, ns_on_newuser);
   uninstall_hook(on_quit_cb, ns_on_quit);
   uninstall_hook(on_certfp_cb, ns_on_certfp);
+  uninstall_hook(on_auth_request_cb, ns_on_auth_requested);
   eventDelete(process_enforce_list, NULL);
   eventDelete(process_release_list, NULL);
   serv_clear_messages(nickserv);
@@ -2033,6 +2037,50 @@ ns_on_certfp(va_list args)
 
   MyFree(cert);
   return pass_callback(ns_certfp_hook, user);
+}
+
+static void *
+ns_on_auth_requested(va_list args)
+{
+  char *user    = va_arg(args, char *);
+  char *n       = va_arg(args, char *);
+  char *certfp  = va_arg(args, char *);
+  Nickname *nick, *nick2;
+
+  nick = nickname_find(user);
+  if(nick == NULL)
+  {
+    send_auth_reply(nickserv, user, n, 0, "User not found");
+  }
+  else
+  {
+    nick2 = nickname_find(n);
+    if(nick2 == NULL)
+    {
+      nickname_free(nick);
+      send_auth_reply(nickserv, user, n, 0, "Nickname not found");
+      return pass_callback(ns_on_auth_req_hook, user, n, certfp);
+    }
+    if(nickname_get_id(nick) != nickname_get_id(nick2))
+    {
+      nickname_free(nick);
+      nickname_free(nick2);
+      send_auth_reply(nickserv, user, n, 0, "Nickname not on account");
+      return pass_callback(ns_on_auth_req_hook, user, n, certfp);
+    }
+    else
+    {
+      if(!nickname_cert_check(nick, certfp, NULL))
+        send_auth_reply(nickserv, user, n, 0, "CertFP Mismatch");
+      else
+        send_auth_reply(nickserv, user, n, 1, "Success");
+    
+      nickname_free(nick);
+    }
+
+  }
+  
+  return pass_callback(ns_on_auth_req_hook, user);
 }
 
 static void
