@@ -20,6 +20,7 @@ services_SOURCES= akick.c					    \
 									dbchannel.c			    \
 									dbm.c				        \
 									dbmail.c			      \
+									event.c							\
                   group.c             \
                   groupaccess.c       \
 									hash.c				      \
@@ -37,7 +38,7 @@ services_SOURCES= akick.c					    \
 									send.c
 
 services_LDADD=conf/libconf.a $(top_srcdir)/libio/libio.a @LIBLTDL@
-services_LDFLAGS=
+services_LDFLAGS=-levent
 if USE_RUBY
 services_LDFLAGS+=@RUBY_LDFLAGS@
 services_LDADD+=ruby_module/libruby_module.a

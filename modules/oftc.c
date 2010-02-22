@@ -307,13 +307,14 @@ m_certfp(struct Client *client, struct Client *source, int parc, char *parv[])
   execute_callback(on_certfp_cb, target);
 }
 
+/* irc.example.com AUTH 1|0 account nick cert|pass */
 static void
 m_auth(struct Client *client, struct Client *source, int parc, char *parv[])
 {
-  ilog(L_DEBUG, "AUTH request for %s[%s] certfp %s from %s", parv[1], 
-      parv[2], parv[3], parv[0]);
+  ilog(L_DEBUG, "AUTH request for %s[%s] %s %s from %s", parv[2], 
+      parv[3], *parv[1] == '1' ? "CERT" : "PASS", parv[4], parv[0]);
 
-  execute_callback(on_auth_request_cb, parv[1], parv[2], parv[3]);
+  execute_callback(on_auth_request_cb, parv[1], parv[2], parv[3], parv[4]);
 }
 
 static void

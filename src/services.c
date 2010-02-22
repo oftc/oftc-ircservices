@@ -38,6 +38,7 @@
 #include "packet.h"
 #include "mqueue.h"
 #include "send.h"
+#include "events.h"
 
 #include <signal.h>
 #include <sys/wait.h>
@@ -208,6 +209,7 @@ int main(int argc, char *argv[])
   setup_signals();
   memset(&me, 0, sizeof(me));
 
+  init_events();
   libio_init(!ServicesState.foreground);
   iorecv_cb = register_callback("iorecv", iorecv_default);
   connected_cb = register_callback("server connected", server_connected);

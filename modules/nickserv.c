@@ -1775,7 +1775,7 @@ ns_on_nick_change(va_list args)
     }
     else if(client != NULL)
     {
-      if((target = find_client(nickname_get_nick(client->nickname))) != NULL)
+      if((target = find_client(nickname_get_nick(user->release_name))) != NULL)
       {
         if(target != client)
           kill_user(nickserv, target, "This nickname is registered and protected");
@@ -2042,6 +2042,7 @@ ns_on_certfp(va_list args)
 static void *
 ns_on_auth_requested(va_list args)
 {
+  char *use_cert = va_arg(args, char *);
   char *user    = va_arg(args, char *);
   char *n       = va_arg(args, char *);
   char *certfp  = va_arg(args, char *);
@@ -2070,21 +2071,23 @@ ns_on_auth_requested(va_list args)
     }
     else
     {
-      if(!nickname_cert_check(nick, certfp, NULL))
+      if(*use_cert == '1')
+      {
+        if(!nickname_cert_check(nick, certfp, NULL))
+          send_auth_reply(nickserv, user, n, 0, "Authentication Failed");
+        else
+          send_auth_reply(nickserv, user, n, 1, "Success");
+      }
+      else
       {
         if(!check_nick_pass(NULL, nick, certfp))
           send_auth_reply(nickserv, user, n, 0, "Authentication Failed");
         else
           send_auth_reply(nickserv, user, n, 1, "Success");
       }
-      else
-        send_auth_reply(nickserv, user, n, 1, "Success");
-    
       nickname_free(nick);
     }
-
   }
-  
   return pass_callback(ns_on_auth_req_hook, user);
 }
 
