@@ -1771,7 +1771,7 @@ ns_on_nick_change(va_list args)
     }
     else if(client != NULL)
     {
-      if((target = find_client(nickname_get_nick(user->release_name))) != NULL)
+      if((target = find_client(user->release_name)) != NULL)
       {
         if(target != client)
           kill_user(nickserv, target, "This nickname is registered and protected");
