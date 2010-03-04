@@ -39,6 +39,7 @@
 #include "mqueue.h"
 #include "send.h"
 #include "events.h"
+#include "event.h"
 
 #include <signal.h>
 #include <sys/wait.h>
@@ -274,6 +275,8 @@ int main(int argc, char *argv[])
       eventRun();
 
     execute_callback(do_event_cb);
+
+    event_loop(EVLOOP_ONCE);
 
     comm_select();
     send_queued_all();

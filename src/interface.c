@@ -44,6 +44,8 @@
 #include "chanaccess.h"
 #include "servicemask.h"
 
+#include <event.h>
+#include <evdns.h>
 #include <openssl/hmac.h>
 
 dlink_list services_list = { 0 };
@@ -1976,4 +1978,53 @@ mask_normalize(char *nuhmask, char *normalmask)
   split_nuh(&nuh);
 
   snprintf(normalmask, USERLEN+HOSTLEN, "%s!%s@%s", name, user, host);
+}
+
+int
+dns_resolve_host(const char *host, evdns_callback_type callback, void *arg, int ipv6)
+{
+  ilog(L_DEBUG, "Request to resolve host %s to IP%s", host, ipv6 ? "V6" : "");
+
+  if(ipv6)
+  {
+    return evdns_resolve_ipv6(host, 0, callback, arg);
+  }
+  else
+  {
+    return evdns_resolve_ipv4(host, 0, callback, arg);
+  }
+}
+
+int
+dns_resolve_ip(const char *ip, evdns_callback_type callback, void *arg)
+{
+  struct addrinfo hints, *res;
+
+  ilog(L_DEBUG, "Request to resolve IP %s to host", ip);
+
+  memset(&hints, 0, sizeof(hints));
+
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
+
+  if(irc_getaddrinfo(ip, NULL, &hints, &res))
+  {
+    return -1;
+  }
+
+  if(res->ai_family == AF_INET)
+  {
+    evdns_resolve_reverse(&((struct sockaddr_in *)res->ai_addr)->sin_addr, 0,
+        callback, arg);
+  }
+  else if(res->ai_family == AF_INET6)
+  {
+    evdns_resolve_reverse_ipv6(&((struct sockaddr_in6 *)res->ai_addr)->sin6_addr,
+        0, callback, arg);
+  }
+  else
+    ilog(L_WARN, "Unknown AF returned when trying to resolve IP");
+
+  irc_freeaddrinfo(res);
 }

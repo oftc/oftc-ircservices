@@ -7,6 +7,7 @@
 #include "nickname.h"
 #include "parse.h"
 #include "language.h"
+#include <evdns.h>
 
 struct Service;
 struct Client;
@@ -181,4 +182,8 @@ void clump_masks(struct Service *, struct Channel *, const char *, int, int,
   dlink_list *);
 
 void mask_normalize(char *, char *);
+
+int dns_resolve_host(const char *, evdns_callback_type, void *, int);
+int dns_resolve_ip(const char *, evdns_callback_type, void *);
+
 #endif /* INCLUDED_interface_h */
