@@ -152,6 +152,53 @@ NS_HELP_CERT_DEL_LONG
 	Examples:
 	    CERT DEL 994EB294C15F4EE647FB5A426C11444E697B1814
 	
+NS_HELP_AJOIN_SHORT
+	%s: Maintains the nickname auto join list.
+NS_HELP_AJOIN_LONG
+	Usage: AJOIN ADD #channel
+	       AJOIN DEL #channel
+	       AJOIN LIST
+	
+	Maintains the nickname auto join list. Channels in this list will be
+	automatically joined by your client every time you identify with services.
+	Channels must be registered with channel services to be able to be added to
+	the list.
+	
+	Examples:
+	    AJOIN ADD #test
+	    AJOIN DEL #test
+	    AJOIN LIST
+	
+	The following are valid options to this command:
+NS_HELP_AJOIN_ADD_SHORT
+	%s
+NS_HELP_AJOIN_ADD_LONG
+	Usage: AJOIN ADD #channel
+	
+	Add a channel to the auto join list. The channel must be registered with
+	channel services but does not necessarily need to currently exist on the
+	network.
+	
+	Examples:
+	    AJOIN ADD #test
+NS_HELP_AJOIN_LIST_SHORT
+	%s
+NS_HELP_AJOIN_LIST_LONG
+	Usage: AJOIN LIST
+	
+	List entries in your auto join list.
+	
+	Example:
+	    AJOIN LIST
+NS_HELP_AJOIN_DEL_SHORT
+	%s
+NS_HELP_AJOIN_DEL_LONG
+	Usage: AJOIN DEL #channel
+	
+	Delete an entry from your auto join list.
+	
+	Examples:
+	    AJOIN DEL #test
 NS_HELP_SET_SHORT
 	%s: Set nickname properties.
 NS_HELP_SET_LONG
@@ -503,6 +550,31 @@ NS_ACCESS_DEL_ERROR
 	An error occured attempting to delete the ACCESS list entry.  Please try
 	again.  If this is not the first time you have seen this message please
 	contact network support.
+NS_AJOIN_INVALID_CHAN
+	Channel name %s is invalid. Channel names must begin with '#'.
+NS_AJOIN_CHAN_NOT_REG
+	Channel %s is not registered with channel services. Unable to add
+	auto join entries for channels that are not registered.
+NS_AJOIN_ADD
+	AJOIN entry %s has been added.
+NS_AJOIN_ADDFAIL
+	AJOIN entry %s failed to be added. This may have been an internal error,
+	please try again shortly. If this is not the first time you have seen this
+	message please contact network support.
+NS_AJOIN_START
+	AJOIN list:
+NS_AJOIN_ENTRY
+	%d	%s
+NS_AJOIN_LIST_NONE
+	Your AJOIN list is empty and contains no entry.
+NS_AJOIN_DEL
+	AJOIN entry %s deleted.
+NS_AJOIN_DEL_NONE
+	%s was not found on the AJOIN list.
+NS_AJOIN_DEL_ERROR
+	An error occured attempting to delete the AJOIN entry.  Please try again.
+	If this is not the first time you have seen this message please contact
+	network support.
 NS_CERT_ADD
 	CERT list entry %s added to nickname %s.
 NS_CERT_ADDFAIL

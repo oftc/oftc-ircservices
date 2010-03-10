@@ -104,6 +104,10 @@ static void m_cert_add(struct Service *, struct Client *, int, char *[]);
 static void m_cert_list(struct Service *, struct Client *, int, char *[]);
 static void m_cert_del(struct Service *, struct Client *, int, char *[]);
 
+static void m_ajoin_add(struct Service *, struct Client *, int, char *[]);
+static void m_ajoin_list(struct Service *, struct Client *, int, char *[]);
+static void m_ajoin_del(struct Service *, struct Client *, int, char *[]);
+
 static int m_set_flag(struct Service *, struct Client *, char *, char *,
     unsigned char (*)(Nickname *), int (*)(Nickname *, unsigned char));
 static int m_set_string(struct Service *, struct Client *, const char *,
@@ -185,6 +189,21 @@ static struct ServiceMessage cert_sub[] = {
 static struct ServiceMessage cert_msgtab = {
   cert_sub, "CERT", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_CERT_SHORT, 
   NS_HELP_CERT_LONG, NULL
+};
+
+static struct ServiceMessage ajoin_sub[] = {
+  { NULL, "ADD", 0, 0, 2, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_ADD_SHORT, 
+    NS_HELP_AJOIN_ADD_LONG, m_ajoin_add },
+  { NULL, "LIST", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_LIST_SHORT, 
+    NS_HELP_AJOIN_LIST_LONG, m_ajoin_list },
+  { NULL, "DEL", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_DEL_SHORT, 
+    NS_HELP_AJOIN_DEL_LONG, m_ajoin_del },
+  { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
+};
+
+static struct ServiceMessage ajoin_msgtab = {
+  cert_sub, "AJOIN", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_SHORT, 
+  NS_HELP_AJOIN_LONG, NULL
 };
 
 static struct ServiceMessage access_sub[] = {
@@ -283,6 +302,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &set_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &access_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &cert_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &ajoin_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &ghost_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &link_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);
@@ -1124,6 +1144,87 @@ m_cert_del(struct Service *service, struct Client *client, int parc,
     reply_user(service, service, client, NS_CERT_DEL_NONE, parv[1]);
   else if(ret > 0)
     reply_user(service, service, client, NS_CERT_DEL, parv[1]);
+}
+
+static void
+m_ajoin_add(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  Nickname *nick = client->nickname;
+  DBChannel *chan;
+
+  if(*parv[1] != '#')
+  {
+    reply_user(service, service, client, NS_AJOIN_INVALID_CHAN, parv[1]);
+    return;
+  }
+
+  chan = dbchannel_find(parv[1]);
+  if(chan == NULL)
+  {
+    reply_user(service, service, client, NS_AJOIN_CHAN_NOT_REG, parv[1]);
+    return;
+  }
+
+  if(nickname_ajoin_add(nickname_get_id(nick), dbchannel_get_id(chan)))
+    reply_user(service, service, client, NS_AJOIN_ADD, parv[1]);
+  else
+    reply_user(service, service, client, NS_AJOIN_ADDFAIL, parv[1]);
+
+  db_channel_free(chan);
+}
+
+static void
+m_ajoin_list(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  Nickname *nick;
+  dlink_list list = { 0 };
+  dlink_node *ptr;
+  int i = 1;
+
+  nick = client->nickname;
+
+  nickname_ajoin_list(nick->id, &list);
+
+  if(dlink_list_length(&list) == 0)
+    reply_user(service, service, client, NS_AJOIN_LIST_NONE);
+  else
+    reply_user(service, service, client, NS_AJOIN_START);
+
+  DLINK_FOREACH(ptr, list.head)
+  {
+    char *ajoin;
+    ajoin = ptr->data;
+    reply_user(service, service, client, NS_AJOIN_ENTRY, i++, ajoin);
+  }
+
+  nickname_ajoinlist_free(&list);
+}
+
+static void
+m_ajoin_del(struct Service *service, struct Client *client, int parc, 
+    char *parv[])
+{
+  Nickname *nick = client->nickname;
+  DBChannel *chan;
+  int ret;
+
+  chan = dbchannel_find(parv[1]);
+  if(chan == NULL)
+  {
+    reply_user(service, service, client, NS_AJOIN_CHAN_NOT_REG, parv[1]);
+    return;
+  }
+
+  ret = nickname_ajoin_delete(nick->id, chan->id);
+
+  if(ret > 0)
+    reply_user(service, service, client, NS_AJOIN_DEL, parv[1]);
+  else if(ret == 0)
+    reply_user(service, service, client, NS_AJOIN_DEL_NONE, parv[1]);
+  else
+    reply_user(service, service, client, NS_AJOIN_DEL_ERROR);
 }
 
 static void

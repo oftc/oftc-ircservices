@@ -69,6 +69,7 @@ CREATE UNIQUE INDEX account_fingerprint_fingerprint_idx ON account_fingerprint (
 DROP TABLE account_autojoin;
 CREATE TABLE account_autojoin (
   id                  SERIAL PRIMARY KEY,
+  account_id          INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
   channel_id          INTEGER REFERENCES channel(id) ON DELETE CASCADE NOT NULL
 );
 

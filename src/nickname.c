@@ -738,6 +738,69 @@ nickname_accesslist_check(Nickname *nick, const char *value)
 }
 
 int
+nickname_ajoin_add(int account_id, int channel_id)
+{
+  int ret = db_execute_nonquery(INSERT_AJOIN, "ii", account_id, channel_id);
+
+  if(ret == -1)
+    return FALSE;
+
+  return TRUE;
+}
+
+int
+nickname_ajoin_delete(int account_id, int channel_id)
+{
+  return db_execute_nonquery(DELETE_AJOIN, "ii", account_id, channel_id);
+}
+
+int
+nickname_ajoin_list(int account_id, dlink_list *list)
+{
+  result_set_t *results;
+  int error, i;
+
+  results = db_execute(GET_AJOINS, &error, "i", account_id);
+  if(results == NULL && error != 0)
+  {
+    ilog(L_CRIT, "nickname_ajoin_list: database error %d", error);
+    return -1;
+  }
+  else if(results == NULL)
+    return -1;
+
+  for(i = 0; i < results->row_count; i++)
+  {
+    row_t *row = &results->rows[i];
+    char *entry = row->cols[0];
+
+    dlinkAdd(entry, make_dlink_node(), list);
+  }
+
+  db_free_result(results);
+
+  return dlink_list_length(list);
+}
+
+void
+nickname_ajoinlist_free(dlink_list *list)
+{
+  dlink_node *ptr, *next;
+  char *entry;
+
+  ilog(L_DEBUG, "Freeing nickname ajoin list %p of length %lu", list,
+      dlink_list_length(list));
+
+  DLINK_FOREACH_SAFE(ptr, next, list->head)
+  {
+    entry = (char*)ptr->data;
+    MyFree(entry);
+    dlinkDelete(ptr, list);
+    free_dlink_node(ptr);
+  }
+}
+
+int
 nickname_cert_list(Nickname *nick, dlink_list *list)
 {
   result_set_t *results;
