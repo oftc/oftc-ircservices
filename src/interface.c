@@ -1999,6 +1999,7 @@ int
 dns_resolve_ip(const char *ip, evdns_callback_type callback, void *arg)
 {
   struct addrinfo hints, *res;
+  int ret;
 
   ilog(L_DEBUG, "Request to resolve IP %s to host", ip);
 
@@ -2015,18 +2016,21 @@ dns_resolve_ip(const char *ip, evdns_callback_type callback, void *arg)
 
   if(res->ai_family == AF_INET)
   {
-    evdns_resolve_reverse(&((struct sockaddr_in *)res->ai_addr)->sin_addr, 0,
+    ret = evdns_resolve_reverse(&((struct sockaddr_in *)res->ai_addr)->sin_addr, 0,
         callback, arg);
   }
   else if(res->ai_family == AF_INET6)
   {
-    evdns_resolve_reverse_ipv6(&((struct sockaddr_in6 *)res->ai_addr)->sin6_addr,
+    ret = evdns_resolve_reverse_ipv6(&((struct sockaddr_in6 *)res->ai_addr)->sin6_addr,
         0, callback, arg);
   }
   else
+  {
+    ret = -1;
     ilog(L_WARN, "Unknown AF returned when trying to resolve IP");
+  }
 
   irc_freeaddrinfo(res);
 
-  return TRUE;
+  return ret;
 }
