@@ -114,7 +114,7 @@ void nickname_list_admins_free(dlink_list *);
 
 int nickname_ajoin_add(int, int);
 int nickname_ajoin_list(int, dlink_list *);
-int nickname_ajoin_del(int, int);
+int nickname_ajoin_delete(int, int);
 void nickname_ajoinlist_free(dlink_list *);
 
 Nickname *nickname_new();

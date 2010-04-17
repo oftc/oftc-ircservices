@@ -2027,4 +2027,6 @@ dns_resolve_ip(const char *ip, evdns_callback_type callback, void *arg)
     ilog(L_WARN, "Unknown AF returned when trying to resolve IP");
 
   irc_freeaddrinfo(res);
+
+  return TRUE;
 }

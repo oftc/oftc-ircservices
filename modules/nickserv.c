@@ -202,7 +202,7 @@ static struct ServiceMessage ajoin_sub[] = {
 };
 
 static struct ServiceMessage ajoin_msgtab = {
-  cert_sub, "AJOIN", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_SHORT, 
+  ajoin_sub, "AJOIN", 0, 1, 1, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_SHORT, 
   NS_HELP_AJOIN_LONG, NULL
 };
 
@@ -1171,7 +1171,7 @@ m_ajoin_add(struct Service *service, struct Client *client, int parc,
   else
     reply_user(service, service, client, NS_AJOIN_ADDFAIL, parv[1]);
 
-  db_channel_free(chan);
+  dbchannel_free(chan);
 }
 
 static void

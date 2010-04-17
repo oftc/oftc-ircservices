@@ -68,6 +68,13 @@ AC_DEFUN([AX_CHECK_LIB_OPENSSL],[
   AC_CHECK_LIB([ssl],[SHA_Init],,[AC_MSG_ERROR([openssl library not found])])
   AC_CHECK_LIB([crypto],[EVP_MD_CTX_init],,[AC_MSG_ERROR([openssl library not found])])
 ])dnl }}}
+dnl {{{
+AC_DEFUN([AX_CHECK_LIB_EVENT],[
+  AC_CHECK_HEADER([event.h],,[AC_MSG_ERROR([libevent header files not found])])
+  AC_CHECK_LIB([event],[evdns_resolve_ipv4],,[AC_MSG_ERROR([libevent library not found])])
+  AC_CHECK_LIB([event],[evdns_resolve_ipv6],,[AC_MSG_ERROR([libevent library not found])])
+])
+dnl }}}
 dnl {{{ ax_check_lib_pgsql
 dnl  License
 dnl  Copyright © 2008 Mateusz Loskot <mateusz@loskot.net>
