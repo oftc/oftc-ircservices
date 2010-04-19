@@ -564,7 +564,7 @@ NS_AJOIN_ADDFAIL
 NS_AJOIN_START
 	AJOIN list:
 NS_AJOIN_ENTRY
-	%d	%s
+	%d   %s
 NS_AJOIN_LIST_NONE
 	Your AJOIN list is empty and contains no entry.
 NS_AJOIN_DEL

@@ -111,6 +111,7 @@ void send_umode(struct Service *, struct Client *, const char *);
 void send_akill(struct Service *, char *, struct ServiceMask *);
 void send_resv(struct Service *, char *, char *, time_t);
 void send_unresv(struct Service *, char *);
+void send_autojoin(struct Service *, struct Client *, const char *);
 void remove_akill(struct Service *, struct ServiceMask *);
 void send_cmode(struct Service *, struct Channel *, const char *, const char *);
 void send_topic(struct Service *, struct Channel *, struct Client *, 

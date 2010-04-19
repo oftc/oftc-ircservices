@@ -2201,7 +2201,7 @@ ns_on_identify(va_list args)
 {
   struct Client *uplink = va_arg(args, struct Client *);
   struct Client *client = va_arg(args, struct Client *);
-  dlink_list ajoin_list;
+  dlink_list ajoin_list = { 0 };
   dlink_node *ptr;
 
   if(client->nickname == NULL)
@@ -2218,6 +2218,8 @@ ns_on_identify(va_list args)
   }
 
   nickname_ajoinlist_free(&ajoin_list);
+
+  return pass_callback(ns_on_identify_hook, uplink, client);
 }
 
 static void

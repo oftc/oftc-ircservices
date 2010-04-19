@@ -278,6 +278,7 @@ int main(int argc, char *argv[])
 
     if(events_loop() == -1)
     {
+      ilog(L_CRIT, "libevent returned error %d", errno);
       services_die("Libevent returned some sort of error", NO);
       break;
     }
