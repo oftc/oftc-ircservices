@@ -397,8 +397,15 @@ cloak(VALUE self, VALUE hostname)
 static VALUE
 find(VALUE klass, VALUE name)
 {
-  struct Client *client = find_client(StringValueCStr(name));
-  if(client == NULL)
+  struct Client *client;
+  const char *cname = StringValueCStr(name);
+
+  if(IsDigit(*cname))
+    client = hash_find_id(cname);
+  else
+    client = find_client(cname);
+
+  if(client == NULL || !IsClient(client))
     return Qnil;
   else
     return client_to_value(client);

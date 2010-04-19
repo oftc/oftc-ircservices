@@ -1,4 +1,6 @@
 #include <ruby.h>
+#include <evdns.h>
+#include <arpa/inet.h>
 #include "libruby_module.h"
 #include "servicemask.h"
 #include "akill.h"
@@ -23,6 +25,8 @@ static VALUE ServiceModule_lm(VALUE, VALUE);
 static VALUE ServiceModule_drop_nick(VALUE, VALUE);
 static VALUE ServiceModule_add_event(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_send_cmode(VALUE, VALUE, VALUE, VALUE);
+static VALUE ServiceModule_dns_lookup(VALUE, VALUE, VALUE, VALUE);
+static VALUE ServiceModule_dns_lookup_reverse(VALUE, VALUE, VALUE, VALUE);
 static VALUE reply(VALUE, VALUE, VALUE);
 /* Core Functions */
 
@@ -468,6 +472,86 @@ reply(VALUE self, VALUE target, VALUE message)
   return self;
 }
 
+static void
+lookup_callback(int result, char type, int count, int ttl, void *addresses,
+  void *arg)
+{
+  VALUE *values = (VALUE *)arg;
+  VALUE cb = rb_ary_shift(*values);
+  VALUE args = rb_ary_shift(*values);
+  VALUE results = rb_ary_new();
+  VALUE *parv;
+  int status;
+  struct ruby_args rargs;
+
+  ilog(L_DEBUG, "lookup_callback hit, result: %d, type: %d, count: %d", result, (int)type, count);
+
+  MyFree(values);
+
+  if(result == DNS_ERR_NONE && count > 0)
+  {
+    int i;
+
+    for(i = 0; i < count; i++)
+    {
+      VALUE r;
+
+      if(type == DNS_PTR)
+      {
+        r = rb_str_new2(((char **)addresses)[i]);
+      }
+      else if(type == DNS_IPv4_A)
+      {
+        struct in_addr *addrs = addresses;
+        r = rb_str_new2(inet_ntoa(addrs[i]));
+      }
+      else if(type == DNS_IPv6_AAAA)
+      {
+        struct in6_addr *addrs = addresses;
+        char buf[INET6_ADDRSTRLEN+1];
+        const char *a = inet_ntop(AF_INET6, &addrs[i], buf, sizeof(buf));
+        r = rb_str_new2(a);
+      }
+
+      rb_ary_push(results, r);
+    }
+  }
+
+  parv = ALLOCA_N(VALUE, 2);
+  parv[0] = results;
+  parv[1] = args;
+
+  ilog(L_DEBUG, "lookup Preparing to dispatch ruby cb");
+
+  rargs.recv = cb;
+  rargs.id = rb_intern("call");
+  rargs.parc = 2;
+  rargs.parv = parv;
+
+  rb_protect(rb_singleton_call, (VALUE)&rargs, &status);
+  ruby_handle_error(status);
+}
+
+static VALUE
+ServiceModule_dns_lookup(VALUE self, VALUE host, VALUE cb, VALUE arg)
+{
+  VALUE *params = ALLOC(VALUE);
+  *params = rb_ary_new();
+  rb_ary_push(*params, cb);
+  rb_ary_push(*params, arg);
+  return INT2NUM(dns_resolve_host(StringValueCStr(host), &lookup_callback, params, 0));
+}
+
+static VALUE
+ServiceModule_dns_lookup_reverse(VALUE self, VALUE host, VALUE cb, VALUE arg)
+{
+  VALUE *params = ALLOC(VALUE);
+  *params = rb_ary_new();
+  rb_ary_push(*params, cb);
+  rb_ary_push(*params, arg);
+  return INT2NUM(dns_resolve_ip(StringValueCStr(host), &lookup_callback, params));
+}
+
 void
 Init_ServiceModule(void)
 {
@@ -541,6 +625,9 @@ Init_ServiceModule(void)
 
   rb_define_method(cServiceModule, "client", ServiceModule_client, 0);
   rb_define_method(cServiceModule, "reply", reply, 2);
+
+  rb_define_method(cServiceModule, "dns_lookup", ServiceModule_dns_lookup, 3);
+  rb_define_method(cServiceModule, "dns_lookup_reverse", ServiceModule_dns_lookup_reverse, 3);
 }
 
 static void
@@ -554,7 +641,7 @@ m_generic(struct Service *service, struct Client *client,
 
   strupper(command);
   class_command = rb_intern(command);
- 
+
   rbparams = rb_ary_new();
 
   real_client = client_to_value(client);

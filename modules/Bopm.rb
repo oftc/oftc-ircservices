@@ -9,7 +9,6 @@ class Bopm < ServiceModule
     register([
       ['HELP', 0, 2, SFLG_NOMAXPARAM, USER_FLAG, lm('BP_HELP_SHORT'), lm('BP_HELP_LONG')],
       ['CHECK', 0, 2, 0, USER_FLAG, lm('BP_CHECK_SHORT'), lm('BP_CHECK_LONG')],
-      ['PENDING', 0, 2, 0, USER_FLAG, lm('BP_PENDING_SHORT'), lm('BP_PENDING_LONG')],
     ])
 
     add_hook([
@@ -20,29 +19,14 @@ class Bopm < ServiceModule
     File.open("#{CONFIG_PATH}/bopm.yaml", 'r') do |f|
       @config = YAML::load(f)
     end
-
-    @dns_cache = Hash.new
-    @dns_cache_ttl = 3600
-
-    @pending_list = Hash.new
-
-    # Every 3 seconds process who's left
-    @event_time = 1
-    @queries_per_event = 10
-    @event = nil
   end
 
   def loaded()
+    log(LOG_DEBUG, "Loaded ...")
   end
 
   def HELP(client, parv = [])
     do_help(client, parv[1], parv)
-  end
-
-  def PENDING(client, parv = [])
-    if client.is_oper? or client.is_admin?
-      reply(client, "There are #{@pending_list.keys.length} clients to check")
-    end
   end
 
   def CHECK(client, parv = [])
@@ -106,76 +90,131 @@ class Bopm < ServiceModule
   end
 
   def client_quit(client, reason)
-    if @pending_list.has_key?(client.id)
-      log(LOG_DEBUG, "Removing Client: #{client.to_str}")
-      @pending_list.delete(client.id)
-    end
     return true
   end
 
-  def newuser(client)
-    log(LOG_DEBUG, "Add client to pending_list: #{client.to_str}")
+  def lookup_cb(addrs, args)
+    entry = args['current']
+    score = 0
+    stop = false
 
-    if not client.is_services_client?
-      @pending_list[client.id] = client
-
-      if not @event
-        log(LOG_DEBUG, "Adding processing queue event")
-        @event = add_event('process_list', @event_time)
-      end
+    log(LOG_DEBUG, "lookup_cb fired #{args['host']} #{entry['name']}")
+    # fallback score if a specific result doesn't have a score
+    if entry.has_key?('score')
+      default_score = entry['score']
+    else
+      default_score = 0
     end
 
-    return true
-  end
+    if entry.has_key?('withid')
+      withid = entry['withid']
+    else
+      withid = false
+    end
 
-  def process_list()
-    keys = @pending_list.keys[0, @queries_per_event]
-    log(LOG_DEBUG, "Processing List for #{keys.length} clients")
+    entry_score = default_score
+    entry_reason = ''
+    entry_count = 0
 
-    keys.each do |id|
-      client = @pending_list[id]
-      host = to_revip(client.ip_or_hostname)
-
-      if host.nil?
-        log(LOG_DEBUG, "Failed to get reverse host for: #{client.to_str}")
-        @pending_list.delete(id)
-        next
-      end
-
-      score, blacklists, short_names = dnsbl_check(host)
-
-      if blacklists.length > 0
-        name,addr,escore,reason,cloak,withid = blacklists[0]
-        if score >= @config['kill_score']
-          log(LOG_NOTICE, "KILLING #{client.to_str} with score: #{score} [#{short_names}]")
-          if @config['store_kill_directly']
-            akill_add("*@#{client.ip_or_hostname}", @config['kill_reason'], @config['kill_duration'])
-          else
-            msg = @config['kill_command'].dup
-            msg.sub!('$HOSTNAME$', "#{client.ip_or_hostname}")
-            msg.sub!('$REASON$', "#{@config['kill_reason']}")
-            msg.sub!('$DURATION$', "#{@config['kill_duration']}")
-            msg.sub!('$SCORE$', "#{score}")
-            msg.sub!('$CLOAK$', "#{cloak}")
-            send_raw(msg)
-          end
+    addrs.each do |addr|
+      # the codes are optional altogether
+      if entry.has_key?('codes') and entry['codes'].has_key?(addr)
+        # the score for a given result is optional
+        entry_score = entry['codes'][addr]['score'] if entry['codes'][addr].has_key?('score')
+        # the reason is optional
+        entry_reason = entry['codes'][addr]['reason'] if entry['codes'][addr].has_key?('reason')
+        # stoplookups also optional
+        # if this host has any result don't continue
+        if entry.has_key?('stoplookups')
+          stop = entry['stoplookups']
         else
+          stop = false
+        end
+        stop = entry['codes'][addr]['stoplookups'] if entry['codes'][addr].has_key?('stoplookups')
+        entry_count += 1
+      end
+      score += entry_score
+
+      log(LOG_DEBUG, "#{args['host']} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
+
+      args['results'] << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
+    end
+
+    if entry_count > 0
+      args['shortnames'] << "#{entry['shortname']}: #{entry_count}"
+    end
+
+    args['score'] += score
+
+    if args['blacklists'].length == 0 or (stop and args['allow_stop'])
+      log(LOG_DEBUG, "Firing final cb")
+      args['final'].call(args['host'], args['score'], args['results'], args['shortnames'], args['final_data'])
+    else
+      log(LOG_DEBUG, "Chaining CB")
+      args['current'] = args['blacklists'].shift
+      dns_lookup(args['revhost'] + '.' + args['current']['name'], method(:lookup_cb), args)
+    end
+  end
+
+  def newuser_final(host, score, blacklists, short_names, cid)
+    client = Client.find(cid)
+    if blacklists.length > 0
+      name, addr, escore, reason, cloak, withid = blacklists[0]
+      snames = short_names.join(", ")
+      if score >= @config['kill_score']
+        if client
+          lmsg = "KILLING #{client.to_str} with score: #{score} [#{snames}]"
+        else
+          lmsg = "KILLING #{host} with score: #{score} [#{snames}]"
+        end
+
+        log(LOG_NOTICE, lmsg)
+
+        if @config['store_kill_directly']
+          if client
+            mask = client.ip_or_hostname
+          else
+            mask = host
+          end
+          akill_add("*@#{mask}", @config['kill_reason'], @config['kill_duration'])
+        else
+          if client
+            mask = client.ip_or_hostname
+          else
+            mask = host
+          end
+          msg = @config['kill_command'].dup
+          msg.sub!('$HOSTNAME$', "#{mask}")
+          msg.sub!('$REASON$', "#{@config['kill_reason']}")
+          msg.sub!('$DURATION$', "#{@config['kill_duration']}")
+          msg.sub!('$SCORE$', "#{score}")
+          msg.sub!('$CLOAK$', "#{cloak}")
+          send_raw(msg)
+        end
+      else 
+        if client
           log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
           if withid
             client.cloak("#{client.id}.#{cloak}")
           else
             client.cloak(cloak)
           end
+        else
+          log(LOG_DEBUG, "client disappeared before bopm could act")
         end
       end
-
-      @pending_list.delete(id)
     end
+  end
 
-    if @pending_list.keys.length == 0
-      log(LOG_DEBUG, "Deleting processing queue event")
-      delete_event(@event)
-      @event = nil
+  def newuser(client)
+    log(LOG_DEBUG, "Add client to pending_list: #{client.to_str}")
+    if not client.is_services_client?
+      host = client.ip_or_hostname
+      if host.nil?
+        log(LOG_DEBUG, "Failed to get reverse host for: #{client.to_str}")
+      else
+        dnsbl_check(host, true, method(:newuser_final), client.id)
+      end
     end
 
     return true
@@ -198,93 +237,21 @@ class Bopm < ServiceModule
     return host
   end
 
-  def dnsbl_check(host)
-    score = 0
-    cloak = nil
-    results = []
-    short_names = ''
+  def dnsbl_check(host, allow_stop, final, final_data)
+    blacklists = @config['dnsbls'].dup
+    args = Hash.new
+    args['host'] = host
+    args['revhost'] = to_revip(host)
+    args['current'] = blacklists.shift
+    args['blacklists'] = blacklists
+    args['score'] = 0
+    args['allow_stop'] = allow_stop
+    args['final'] = final
+    args['final_data'] = final_data
+    args['shortnames'] = []
+    args['results'] = []
 
-    if @dns_cache.has_key?(host)
-      ttl, foo = @dns_cache[host]
-      log(LOG_DEBUG, "Cache hit for #{host} #{ttl} #{ttl - Time.now.to_i}")
-      score, results, short_names = foo
-      if ttl - Time.now.to_i > 0
-        return score, results, short_names
-      else
-        @dns_cache.delete(host)
-      end 
-    end
-
-    @config['dnsbls'].each do |entry|
-      log(LOG_DEBUG, "Checking #{host} against #{entry['name']}")
-      begin
-        check = host + '.' + entry['name']
-        addrs = Resolv::getaddresses(check)
-
-        stop = false
-
-        # fallback score if a specific result doesn't have a score
-        if entry.has_key?('score')
-          default_score = entry['score']
-        else
-          default_score = 0
-        end
-
-        if entry.has_key?('withid')
-          withid = entry['withid']
-        else
-          withid = false
-        end
-
-        entry_score = default_score
-        entry_reason = ''
-
-        entry_count = 0
-
-        addrs.each do |addr|
-          # the codes are optional altogether
-          if entry.has_key?('codes') and entry['codes'].has_key?(addr)
-            # the score for a given result is optional
-            entry_score = entry['codes'][addr]['score'] if entry['codes'][addr].has_key?('score')
-            # the reason is optional
-            entry_reason = entry['codes'][addr]['reason'] if entry['codes'][addr].has_key?('reason')
-            # stoplookups also optional
-            # if this host has any result don't continue
-            if entry.has_key?('stoplookups')
-              stop = entry['stoplookups']
-            else
-              stop = false
-            end
-            stop = entry['codes'][addr]['stoplookups'] if entry['codes'][addr].has_key?('stoplookups')
-            entry_count += 1
-          end
-
-          score += entry_score
-
-          log(LOG_DEBUG, "#{host} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
-
-          results << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
-        end
-
-        if entry_count > 0
-          short_names += "#{entry['shortname']}: #{entry_count} "
-        end
-
-        if stop
-          break
-        end
-      rescue Exception => e
-        log(LOG_DEBUG, "#{check} -- #{e.to_str}")
-        # unless I'm an idiot the dnsbl doesn't have this entry
-        next
-      end
-    end
-
-    if results.length > 0
-      log(LOG_DEBUG, "Adding #{host} to cache")
-      @dns_cache[host] = [Time.now.to_i+@dns_cache_ttl, [score, results, short_names]]
-    end
-
-    return score, results, short_names
+    log(LOG_DEBUG, "Dispatching #{args['revhost']}.#{args['current']['name']} dns_lookup")
+    dns_lookup(args['revhost'] + '.' + args['current']['name'], method(:lookup_cb), args)
   end
 end
