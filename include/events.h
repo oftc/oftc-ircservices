@@ -27,7 +27,7 @@
 #define _EVENT_H_INC
 
 int init_events();
-void events_loop();
+int events_loop();
 struct event *events_add(int, short, void(*)(int, short, void *), void *);
 struct event *events_setup(int, short, void(*)(int, short, void *), void *);
 

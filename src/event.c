@@ -71,10 +71,10 @@ init_events()
   return TRUE;
 }
 
-void
+int
 events_loop()
 {
-  event_dispatch();
+  return event_base_loop(ev_base, EVLOOP_NONBLOCK);
 }
 
 struct event *

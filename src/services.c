@@ -276,7 +276,11 @@ int main(int argc, char *argv[])
 
     execute_callback(do_event_cb);
 
-    event_loop(EVLOOP_ONCE);
+    if(events_loop() == -1)
+    {
+      services_die("Libevent returned some sort of error", NO);
+      break;
+    }
 
     comm_select();
     send_queued_all();
