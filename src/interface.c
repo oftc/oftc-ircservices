@@ -393,6 +393,14 @@ send_auth_reply(struct Service *service, char *user, char *nick, int response, c
   ilog(L_DEBUG, "Sending auth reply %s %s %d %s", user, nick, response, reason);
 }
 
+void
+send_autojoin(struct Service *service, struct Client *client, const char *channel)
+{
+  execute_callback(send_autojoin_cb, me.uplink, client, channel);
+
+  ilog(L_DEBUG, "Sending autojoin %s %s", client->name, channel);
+}
+
 /* Ensure the result buffer is TIME_BUFFER+1 in size */
 size_t
 strtime(struct Client *client, time_t tm, char *result)

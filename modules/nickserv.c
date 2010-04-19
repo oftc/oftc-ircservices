@@ -53,6 +53,7 @@ static dlink_node *ns_newuser_hook;
 static dlink_node *ns_quit_hook;
 static dlink_node *ns_certfp_hook;
 static dlink_node *ns_on_auth_req_hook;
+static dlink_node *ns_on_identify_hook;
 
 static dlink_list nick_enforce_list = { NULL, NULL, 0 };
 static dlink_list nick_release_list = { NULL, NULL, 0 };
@@ -68,6 +69,8 @@ static void *ns_on_nick_change(va_list);
 static void *ns_on_quit(va_list);
 static void *ns_on_certfp(va_list);
 static void *ns_on_auth_requested(va_list);
+static void *ns_on_identify(va_list);
+
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
 static void m_identify(struct Service *, struct Client *, int, char *[]);
@@ -326,6 +329,7 @@ INIT_MODULE(nickserv, "$Revision$")
   ns_quit_hook        = install_hook(on_quit_cb, ns_on_quit);
   ns_certfp_hook      = install_hook(on_certfp_cb, ns_on_certfp);
   ns_on_auth_req_hook = install_hook(on_auth_request_cb, ns_on_auth_requested);
+  ns_on_identify_hook = install_hook(on_identify_cb, ns_on_identify);
   
   guest_number = 0;
 
@@ -2190,6 +2194,30 @@ ns_on_auth_requested(va_list args)
     }
   }
   return pass_callback(ns_on_auth_req_hook, user);
+}
+
+static void *
+ns_on_identify(va_list args)
+{
+  struct Client *uplink = va_arg(args, struct Client *);
+  struct Client *client = va_arg(args, struct Client *);
+  dlink_list ajoin_list;
+  dlink_node *ptr;
+
+  if(client->nickname == NULL)
+    return pass_callback(ns_on_identify_hook, uplink, client);
+
+  if(nickname_ajoin_list(nickname_get_id(client->nickname), &ajoin_list) == -1)
+    return pass_callback(ns_on_identify_hook, uplink, client);
+
+  DLINK_FOREACH(ptr, ajoin_list.head)
+  {
+    char *channel = (char *)ptr->data;
+
+    send_autojoin(nickserv, client, channel);
+  }
+
+  nickname_ajoinlist_free(&ajoin_list);
 }
 
 static void
