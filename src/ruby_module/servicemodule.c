@@ -476,13 +476,16 @@ static void
 lookup_callback(int result, char type, int count, int ttl, void *addresses,
   void *arg)
 {
-  VALUE values = (VALUE)arg;
-  VALUE cb = rb_ary_shift(values);
-  VALUE args = rb_ary_shift(values);
+  VALUE *values = (VALUE *)arg;
+  VALUE cb = rb_ary_entry(*values, 0);
+  VALUE args = rb_ary_entry(*values, 1);
   VALUE results = rb_ary_new();
   VALUE *parv;
   int status;
   struct ruby_args rargs;
+
+  rb_gc_unregister_address(values);
+  MyFree(values);
 
   ilog(L_DEBUG, "lookup_callback hit, result: %d, type: %d, count: %d", result, (int)type, count);
 
@@ -533,18 +536,22 @@ lookup_callback(int result, char type, int count, int ttl, void *addresses,
 static VALUE
 ServiceModule_dns_lookup(VALUE self, VALUE host, VALUE cb, VALUE arg)
 {
-  VALUE params = rb_ary_new();
+  VALUE *params = ALLOC(VALUE);
+  *params = rb_ary_new();
   rb_ary_push(params, cb);
   rb_ary_push(params, arg);
+  rb_gc_register_address(params);
   return INT2NUM(dns_resolve_host(StringValueCStr(host), &lookup_callback, (void *)params, 0));
 }
 
 static VALUE
 ServiceModule_dns_lookup_reverse(VALUE self, VALUE host, VALUE cb, VALUE arg)
 {
-  VALUE params = rb_ary_new();
+  VALUE *params = ALLOC(VALUE);
+  *params = rb_ary_new();
   rb_ary_push(params, cb);
   rb_ary_push(params, arg);
+  rb_gc_register_address(params);
   return INT2NUM(dns_resolve_ip(StringValueCStr(host), &lookup_callback, (void *)params));
 }
 
