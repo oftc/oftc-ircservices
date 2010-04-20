@@ -19,6 +19,9 @@ class Bopm < ServiceModule
     File.open("#{CONFIG_PATH}/bopm.yaml", 'r') do |f|
       @config = YAML::load(f)
     end
+
+    @outstanding_requests = Hash.new
+    @requestid = 'AAAAAA'
   end
 
   def loaded()
@@ -94,10 +97,18 @@ class Bopm < ServiceModule
 
   def lookup_cb(addrs, args)
     entry = args['current']
+    reqid = args['reqid']
     score = 0
     stop = false
 
-    log(LOG_DEBUG, "lookup_cb fired #{args['host']} #{entry['name']}")
+    if not @outstanding_requests.has_key?(reqid)
+      return
+    end
+
+    req = @outstanding_requests[reqid]
+    req['count'] -= 1
+
+    log(LOG_DEBUG, "lookup_cb fired #{req['host']} #{entry['name']} #{req['count']} lists left")
     # fallback score if a specific result doesn't have a score
     if entry.has_key?('score')
       default_score = entry['score']
@@ -134,24 +145,26 @@ class Bopm < ServiceModule
       end
       score += entry_score
 
-      log(LOG_DEBUG, "#{args['host']} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
+      log(LOG_DEBUG, "#{req['host']} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
 
-      args['results'] << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
+      req['results'] << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
     end
 
     if entry_count > 0
-      args['shortnames'] << "#{entry['shortname']}: #{entry_count}"
+      req['shortnames'] << "#{entry['shortname']}: #{entry_count}"
     end
 
-    args['score'] += score
+    req['score'] += score
 
-    if args['blacklists'].length == 0 or (stop and args['allow_stop'])
+    really_stop = false
+    if stop and req['allow_stop']
+      really_stop = true
+    end
+
+    if req['count'] == 0 or really_stop
       log(LOG_DEBUG, "Firing final cb")
-      args['final'].call(args['host'], args['score'], args['results'], args['shortnames'], args['final_data'])
-    else
-      log(LOG_DEBUG, "Chaining CB")
-      args['current'] = args['blacklists'].shift
-      dns_lookup(args['revhost'] + '.' + args['current']['name'], method(:lookup_cb), args)
+      @outstanding_requests.delete(reqid)
+      req['final'].call(req['host'], req['score'], req['results'], req['shortnames'], req['final_data'])
     end
   end
 
@@ -254,19 +267,30 @@ class Bopm < ServiceModule
 
   def dnsbl_check(host, allow_stop, final, final_data)
     blacklists = @config['dnsbls'].dup
-    args = Hash.new
-    args['host'] = host
-    args['revhost'] = to_revip(host)
-    args['current'] = blacklists.shift
-    args['blacklists'] = blacklists
-    args['score'] = 0
-    args['allow_stop'] = allow_stop
-    args['final'] = final
-    args['final_data'] = final_data
-    args['shortnames'] = []
-    args['results'] = []
 
-    log(LOG_DEBUG, "Dispatching #{args['revhost']}.#{args['current']['name']} dns_lookup")
-    dns_lookup(args['revhost'] + '.' + args['current']['name'], method(:lookup_cb), args)
+    req = Hash.new
+    req['count'] = blacklists.length
+    req['host'] = host
+    req['revhost'] = to_revip(host)
+    req['score'] = 0
+    req['allow_stop'] = allow_stop
+    req['final'] = final
+    req['final_data'] = final_data
+    req['shortnames'] = []
+    req['results'] = []
+
+    reqid = @requestid.succ
+    @outstanding_requests[reqid] = req
+    @requestid.succ!
+
+    log(LOG_DEBUG, "Creating request #{@requestid} for #{host}")
+
+    blacklists.each do |list|
+      args = Hash.new
+      args['reqid'] = reqid
+      args['current'] = list
+      log(LOG_DEBUG, "Dispatching #{req['revhost']}.#{list['name']} dns_lookup")
+      dns_lookup(req['revhost'] + '.' + list['name'], method(:lookup_cb), args)
+    end
   end
 end
