@@ -9,14 +9,40 @@ Release Notes
 o Process akills in a semi async way on startup to reduce burst time
 o Change bopm lookups to use async dns
 
-1.3.7
+1.3.12
 ------
+o Attempt to fix a bug causing services to crash when two clients connect at
+once
+
+1.3.11
+------
+o Allow ruby to delete events and deal with ts ids properly
+
+1.3.10
+------
+o Set the new umode_service properly in uid introductions
+o Allow remote services clients to deal with akills
+o bopm related performance enhancements
+
+1.3.9
+-----
+o Fix a bug causing arguments not to be parsed correctly when they had
+options
+
+
+1.3.8
+-----
 o Fix an infinite loop caused by trying to send mail to people with really
 long hostnames
 o Fix a bug in reconnecting to the database
-o Add badserv to GanneffServ, a utility for nuking all connections on a given server
+o Add badserv to GanneffServ, a utility for nuking all connections on a given 
+server
 o Fix a bug causing description/entrymsg not to be cleared properly
-o BOPM related fixed
+o BOPM related fixes
+
+1.3.7
+-----
+o Where did 1.3.7 go? o_O
 
 1.3.6
 ------
