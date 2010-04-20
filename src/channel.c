@@ -144,7 +144,6 @@ remove_user_from_channel(struct Membership *member)
   {
     assert(dlink_list_length(&chptr->members) == 0);  
     ilog(L_DEBUG, "Destroying empty channel %s", chptr->chname);
-    execute_callback(on_channel_destroy_cb, chptr);
     destroy_channel(chptr);
   }
 }
@@ -191,6 +190,7 @@ void
 destroy_channel(struct Channel *chptr)
 {
   /* free ban/exception/invex lists */
+  execute_callback(on_channel_destroy_cb, chptr);
   free_channel_list(&chptr->banlist);
   free_channel_list(&chptr->exceptlist);
   free_channel_list(&chptr->invexlist);
