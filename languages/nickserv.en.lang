@@ -566,7 +566,7 @@ NS_AJOIN_START
 NS_AJOIN_ENTRY
 	%d   %s
 NS_AJOIN_LIST_NONE
-	Your AJOIN list is empty and contains no entry.
+	Your AJOIN list is empty and contains no entries.
 NS_AJOIN_DEL
 	AJOIN entry %s deleted.
 NS_AJOIN_DEL_NONE

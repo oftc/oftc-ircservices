@@ -346,6 +346,7 @@ CLEANUP_MODULE
   uninstall_hook(on_quit_cb, ns_on_quit);
   uninstall_hook(on_certfp_cb, ns_on_certfp);
   uninstall_hook(on_auth_request_cb, ns_on_auth_requested);
+  uninstall_hook(on_identify_cb, ns_on_identify);
   eventDelete(process_enforce_list, NULL);
   eventDelete(process_release_list, NULL);
   serv_clear_messages(nickserv);
@@ -1229,6 +1230,8 @@ m_ajoin_del(struct Service *service, struct Client *client, int parc,
     reply_user(service, service, client, NS_AJOIN_DEL_NONE, parv[1]);
   else
     reply_user(service, service, client, NS_AJOIN_DEL_ERROR);
+
+  dbchannel_free(chan);
 }
 
 static void

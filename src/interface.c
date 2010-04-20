@@ -190,7 +190,6 @@ cleanup_interface()
   unregister_callback(send_kill_cb);
   unregister_callback(send_resv_cb);
   unregister_callback(send_topic_cb);
-  unregister_callback(send_kill_cb);
   unregister_callback(send_resv_cb);
   unregister_callback(send_unresv_cb);
   unregister_callback(send_newserver_cb);
@@ -1700,7 +1699,7 @@ check_nick_pass(struct Client *client, Nickname *nick, const char *password)
 
   len = strlen(password) + SALTLEN + 1;
 
-  if(client && *client->certfp != '\0')
+  if(client != NULL && *client->certfp != '\0')
   {
     if(nickname_cert_check(nick, client->certfp, NULL))
       return 1;

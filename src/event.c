@@ -29,7 +29,7 @@
 #include <evdns.h>
 #include <signal.h>
 
-struct event_base *ev_base;
+struct event_base *ev_base = NULL;
 
 /*static void
 sigint_callback(int signal, short event, void *arg)
@@ -58,6 +58,8 @@ init_events()
     return FALSE;
   }
 
+  ilog(L_DEBUG, "libevent init %p", ev_base);
+
   memset(&tv, 0, sizeof(tv));
 
   tv.tv_usec = 100;
@@ -74,6 +76,7 @@ init_events()
 int
 events_loop()
 {
+  ilog(L_DEBUG, "ev_base %p", ev_base);
   return event_base_loop(ev_base, EVLOOP_NONBLOCK);
 }
 
