@@ -63,34 +63,33 @@ class Bopm < ServiceModule
 
     if parv.length > 2
       # We were given a specific dnsbl to check against
-      begin
-        check = host + '.' + parv[2]
-        addrs  = Resolv::getaddresses(check)
-        addrs.each do |addr|
-          reply(client, "#{orig} is #{addr} according to #{parv[2]}")
-        end
-      rescue
-        reply(client, "#{orig} was not found in #{parv[2]}")
-      end
+      check = host + '.' + parv[2]
+      args = Hash.new
+      args['cid'] = client.id
+      args['host'] = orig
+      args['list'] = parv[2]
+      dns_lookup(check, method(:check_user_at_cb), args)
     else
       # pass the hostname to check against our configured blacklists
-      score, results, short_names = dnsbl_check(host)
-
-      if results.length == 0
-        reply(client, "No results for #{orig}")
-        return
-      end
-
-      reply(client, "Results for #{orig}")
-      results.each do |name,addr,escore,reason,cloak,withid|
-        reply(client, "Found in #{name} (#{addr}) [#{reason}] score: #{escore}")
-      end
-      reply(client, "Total score: #{score}")
+      dnsbl_check(orig, false, method(:check_user_final), client.id)
     end
   end
 
   def client_quit(client, reason)
     return true
+  end
+
+  def check_user_at_cb(addrs, args)
+    client = Client.find(args['cid'])
+    if client
+      if addrs.length == 0
+        reply(client, "#{args['host']} was not found in #{args['list']}")
+      else
+        addrs.each do |addr|
+          reply(client, "#{args['host']} is #{addr} according to #{args['list']}")
+        end
+      end
+    end
   end
 
   def lookup_cb(addrs, args)
@@ -203,6 +202,22 @@ class Bopm < ServiceModule
           log(LOG_DEBUG, "client disappeared before bopm could act")
         end
       end
+    end
+  end
+
+  def check_user_final(host, score, blacklists, short_names, cid)
+    client = Client.find(cid)
+    if client
+      if blacklists.length == 0
+        reply(client, "No results for #{host}")
+        return
+      end
+    
+      reply(client, "Results for #{host}")
+      blacklists.each do |name,addr,escore,reason,cloak,withid|
+        reply(client, "Found in #{name} (#{addr}) [#{reason}] score: #{escore}")
+      end
+      reply(client, "Total score: #{score}")
     end
   end
 

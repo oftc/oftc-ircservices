@@ -76,7 +76,7 @@ init_events()
 int
 events_loop()
 {
-  ilog(L_DEBUG, "ev_base %p", ev_base);
+  //ilog(L_DEBUG, "ev_base %p", ev_base);
   return event_base_loop(ev_base, EVLOOP_NONBLOCK);
 }
 
