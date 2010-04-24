@@ -246,11 +246,20 @@ class Bopm < ServiceModule
         end
       else 
         if client
-          log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
-          if withid
-            client.cloak("#{client.id}.#{cloak}")
+          do_cloak = false
+          if !exempt_host(client.host) and client.host != cloak
+            do_cloak = true
+          end
+
+          if @config['recloak_users'] or do_cloak
+            log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
+            if withid
+              client.cloak("#{client.id}.#{cloak}")
+            else
+              client.cloak(cloak)
+            end
           else
-            client.cloak(cloak)
+            log(LOG_DEBUG, "Not cloaking #{client.to_str} to #{cloak}")
           end
         else
           log(LOG_DEBUG, "client disappeared before bopm could act")
@@ -350,5 +359,19 @@ class Bopm < ServiceModule
       log(LOG_DEBUG, "Dispatching #{req['revhost']}.#{list['name']} dns_lookup")
       dns_lookup(req['revhost'] + '.' + list['name'], method(:lookup_cb), args)
     end
+  end
+
+  def exempt_host(host)
+    if @config.has_key?('exempt_hosts') and @config['exempt_hosts'].length > 0
+      @config['exempt_hosts'].each do |h|
+        r = Regexp.new(h+'$')
+        if r.match(host)
+          log(LOG_DEBUG, "#{host} is exempted by rule #{h}")
+          return true
+        end
+      end
+    end
+    log(LOG_DEBUG, "#{host} is not exempt")
+    return false
   end
 end

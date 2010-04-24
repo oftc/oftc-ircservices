@@ -25,6 +25,14 @@ kill_command: "PRIVMSG OperServ :AKILL ADD +$DURATION$ *@$HOSTNAME$ $REASON$ ($S
 # dnsbl_max_requests: (int) [optional]
 # Number of maximum users to check at any given time
 dnsbl_max_requests: 100
+# recloak_users: (bool) [required]
+# Users with existing cloaks, or the same cloak will have their cloaks reset
+recloak_users: False
+# exempt_hosts: (list) [optional]
+# Users whose hostname ends with one of the following will not be recloaked
+# unless recloak_users is True
+exempt_hosts:
+  - example.com
 #
 # List of DNSBLs to check against 
 dnsbls:
