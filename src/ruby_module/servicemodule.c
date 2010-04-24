@@ -538,8 +538,8 @@ ServiceModule_dns_lookup(VALUE self, VALUE host, VALUE cb, VALUE arg)
 {
   VALUE *params = ALLOC(VALUE);
   *params = rb_ary_new();
-  rb_ary_push(params, cb);
-  rb_ary_push(params, arg);
+  rb_ary_push(*params, cb);
+  rb_ary_push(*params, arg);
   rb_gc_register_address(params);
   return INT2NUM(dns_resolve_host(StringValueCStr(host), &lookup_callback, (void *)params, 0));
 }
@@ -549,8 +549,8 @@ ServiceModule_dns_lookup_reverse(VALUE self, VALUE host, VALUE cb, VALUE arg)
 {
   VALUE *params = ALLOC(VALUE);
   *params = rb_ary_new();
-  rb_ary_push(params, cb);
-  rb_ary_push(params, arg);
+  rb_ary_push(*params, cb);
+  rb_ary_push(*params, arg);
   rb_gc_register_address(params);
   return INT2NUM(dns_resolve_ip(StringValueCStr(host), &lookup_callback, (void *)params));
 }

@@ -17,6 +17,8 @@ class Bopm < ServiceModule
       [QUIT_HOOK, 'client_quit'],
       ])
 
+    add_event('check_pending', 10)
+
     File.open("#{CONFIG_PATH}/bopm.yaml", 'r') do |f|
       @config = YAML::load(f)
     end
@@ -24,6 +26,14 @@ class Bopm < ServiceModule
     @config['dnsbls'].each_with_index do |l,i|
       l['priority'] = i
     end
+
+    if @config.has_key?('dnsbl_max_requests')
+      @dnsbl_max_requests = @config['dnsbl_max_requests']
+    else
+      @dnsbl_max_requests = 100
+    end
+
+    @pending_users = Hash.new
 
     @outstanding_requests = Hash.new
     @requestid = 'AAAAAA'
@@ -39,7 +49,8 @@ class Bopm < ServiceModule
 
   def PENDING(client, parv = [])
     if client.is_oper? or client.is_admin?
-      reply(client, "There are #{@outstanding_requests.keys.length} clients to check")
+      reply(client, "#{@outstanding_requests.keys.length} requests dispatched")
+      reply(client, "#{@pending_users.keys.length} users to check")
     end
   end
 
@@ -90,6 +101,7 @@ class Bopm < ServiceModule
   end
 
   def client_quit(client, reason)
+    @pending_users.delete(client.id) if @pending_users.has_key?(client.id)
     return true
   end
 
@@ -112,6 +124,8 @@ class Bopm < ServiceModule
         return r
       end
     end
+
+    return []
   end
 
   def lookup_cb(addrs, args)
@@ -124,14 +138,14 @@ class Bopm < ServiceModule
     if not @outstanding_requests.has_key?(reqid)
       return
     end
+    
+    req = @outstanding_requests[reqid]
+    req['count'] -= 1
 
     if not req['results'][entry['priority']]
       req['results'][entry['priority']] = []
       results = req['results'][entry['priority']]
     end
-
-    req = @outstanding_requests[reqid]
-    req['count'] -= 1
 
     log(LOG_DEBUG, "lookup_cb fired #{req['host']} #{entry['name']} #{req['count']} lists left")
     # fallback score if a specific result doesn't have a score
@@ -191,6 +205,7 @@ class Bopm < ServiceModule
       @outstanding_requests.delete(reqid)
       r = get_priority(req['results'])
       req['final'].call(req['host'], req['score'], r, req['shortnames'], req['final_data'])
+      check_pending()
     end
   end
 
@@ -261,17 +276,34 @@ class Bopm < ServiceModule
   end
 
   def newuser(client)
-    log(LOG_DEBUG, "Add client to pending_list: #{client.to_str}")
     if not client.is_services_client?
-      host = client.ip_or_hostname
-      if host.nil?
-        log(LOG_DEBUG, "Failed to get reverse host for: #{client.to_str}")
+      if @outstanding_requests.keys.length > @dnsbl_max_requests
+        @pending_users[client.id] = client
+        log(LOG_DEBUG, "Add client to pending_list: #{client.to_str}")
       else
-        dnsbl_check(host, true, method(:newuser_final), client.id)
+        dispatch_client(client)
       end
     end
 
     return true
+  end
+
+  def dispatch_client(client)
+    host = client.ip_or_hostname
+    if host.nil?
+      log(LOG_DEBUG, "Failed to get reverse host for: #{client.to_str}")
+    else
+      dnsbl_check(host, true, method(:newuser_final), client.id)
+    end
+  end
+
+  def check_pending()
+    if @outstanding_requests.keys.length < @dnsbl_max_requests and @pending_users.keys.length > 0
+      id = @pending_users.keys.shift
+      client = @pending_users[id]
+      @pending_users.delete(id)
+      dispatch_client(client)
+    end
   end
 
   def to_revip(host)

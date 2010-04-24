@@ -22,6 +22,9 @@ store_kill_directly: False
 # Arguments that may be expanded
 #   $HOSTNAME$ $REASON$ $DURATION$ $SCORE$ $CLOAK$
 kill_command: "PRIVMSG OperServ :AKILL ADD +$DURATION$ *@$HOSTNAME$ $REASON$ ($SCORE$)"
+# dnsbl_max_requests: (int) [optional]
+# Number of maximum users to check at any given time
+dnsbl_max_requests: 100
 #
 # List of DNSBLs to check against 
 dnsbls:
