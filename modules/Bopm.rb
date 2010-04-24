@@ -21,6 +21,10 @@ class Bopm < ServiceModule
       @config = YAML::load(f)
     end
 
+    @config['dnsbls'].each_with_index do |l,i|
+      l['priority'] = i
+    end
+
     @outstanding_requests = Hash.new
     @requestid = 'AAAAAA'
   end
@@ -102,14 +106,28 @@ class Bopm < ServiceModule
     end
   end
 
+  def get_priority(results)
+    results.each do |r|
+      if r and r.length > 0
+        return r
+      end
+    end
+  end
+
   def lookup_cb(addrs, args)
     entry = args['current']
     reqid = args['reqid']
     score = 0
     stop = false
+    results = nil
 
     if not @outstanding_requests.has_key?(reqid)
       return
+    end
+
+    if not req['results'][entry['priority']]
+      req['results'][entry['priority']] = []
+      results = req['results'][entry['priority']]
     end
 
     req = @outstanding_requests[reqid]
@@ -154,7 +172,7 @@ class Bopm < ServiceModule
 
       log(LOG_DEBUG, "#{req['host']} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
 
-      req['results'] << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
+      results << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
     end
 
     if entry_count > 0
@@ -171,7 +189,8 @@ class Bopm < ServiceModule
     if req['count'] == 0 or really_stop
       log(LOG_DEBUG, "Firing final cb")
       @outstanding_requests.delete(reqid)
-      req['final'].call(req['host'], req['score'], req['results'], req['shortnames'], req['final_data'])
+      r = get_priority(req['results'])
+      req['final'].call(req['host'], req['score'], r, req['shortnames'], req['final_data'])
     end
   end
 
@@ -284,7 +303,7 @@ class Bopm < ServiceModule
     req['final'] = final
     req['final_data'] = final_data
     req['shortnames'] = []
-    req['results'] = []
+    req['results'] = Array.new(blacklists.length)
 
     reqid = @requestid.succ
     @outstanding_requests[reqid] = req
