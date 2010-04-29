@@ -18,6 +18,7 @@ class Bopm < ServiceModule
       ])
 
     add_event('check_pending', 10)
+    add_event('expire_dns_request', 10)
 
     File.open("#{CONFIG_PATH}/bopm.yaml", 'r') do |f|
       @config = YAML::load(f)
@@ -31,6 +32,12 @@ class Bopm < ServiceModule
       @dnsbl_max_requests = @config['dnsbl_max_requests']
     else
       @dnsbl_max_requests = 100
+    end
+
+    if @config.has_key?('dnsbl_request_timeout')
+      @dnsbl_request_timeout = @config['dnsbl_request_timeout']
+    else
+      @dnsbl_request_timeout = 300
     end
 
     @pending_users = Hash.new
@@ -201,11 +208,18 @@ class Bopm < ServiceModule
     end
 
     if req['count'] == 0 or really_stop
-      log(LOG_DEBUG, "Firing final cb")
+      finish_request(reqid)
+      check_pending()
+    end
+  end
+
+  def finish_request(reqid)
+    log(LOG_DEBUG, "Firing final cb request: #{reqid}")
+    if @outstanding_requests.has_key?(reqid)
+      req = @outstanding_requests[reqid]
       @outstanding_requests.delete(reqid)
       r = get_priority(req['results'])
       req['final'].call(req['host'], req['score'], r, req['shortnames'], req['final_data'])
-      check_pending()
     end
   end
 
@@ -315,6 +329,17 @@ class Bopm < ServiceModule
     end
   end
 
+  def expire_dns_request()
+    @outstanding_requests.keys.each do |reqid|
+      req = @outstanding_requests[reqid]
+      delta = req['ttl'] - Time.now.to_i
+      if delta < 0
+        log(LOG_DEBUG, "Request #{reqid} timed out")
+        finish_request(reqid) if delta < 0
+      end
+    end
+  end 
+
   def to_revip(host)
     # if the host is not an ip we need to resolve it
     if not host.match(Resolv::AddressRegex)
@@ -345,6 +370,7 @@ class Bopm < ServiceModule
     req['final_data'] = final_data
     req['shortnames'] = []
     req['results'] = Array.new(blacklists.length)
+    req['ttl'] = Time.now.to_i + @dnsbl_request_timeout
 
     reqid = @requestid.succ
     @outstanding_requests[reqid] = req
