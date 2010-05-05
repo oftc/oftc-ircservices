@@ -1033,18 +1033,20 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
   else if(parc == 1)
   {
     certfp = client->certfp;
-    if((dest_nick = nickname_find(parv[1])) == NULL)
+    dest_nick = nickname_find(parv[1]);
+    if(dest_nick != NULL)
     {
       if(*certfp == '\0')
       {
         reply_user(service, service, client, NS_CERT_YOUHAVENONE);
         return;
       }
-      nickstr = nick->nick;
+      nickstr = parv[1];
     }
     else
     {
-      nickstr = parv[1];
+      certfp = parv[1];
+      nickstr = nick->nick;
     }
   }
   else
