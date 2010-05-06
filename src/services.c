@@ -210,8 +210,8 @@ int main(int argc, char *argv[])
   setup_signals();
   memset(&me, 0, sizeof(me));
 
-  init_events();
   libio_init(!ServicesState.foreground);
+  init_events();
   iorecv_cb = register_callback("iorecv", iorecv_default);
   connected_cb = register_callback("server connected", server_connected);
   iosend_cb = register_callback("iosend", iosend_default);
