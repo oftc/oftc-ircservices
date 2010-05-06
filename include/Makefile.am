@@ -18,6 +18,7 @@ noinst_HEADERS= akick.h						  \
 								floodserv.h				  \
                 group.h             \
                 groupaccess.h       \
+                groupserv.h         \
 								hash.h					    \
 								hostmask.h				  \
 								interface.h				  \
