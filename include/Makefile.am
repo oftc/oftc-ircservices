@@ -15,6 +15,7 @@ noinst_HEADERS= akick.h						  \
 								dbm.h					      \
 								dbmail.h				    \
 								defines.h				    \
+                events.h            \
 								floodserv.h				  \
                 group.h             \
                 groupaccess.h       \
