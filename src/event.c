@@ -44,6 +44,12 @@ timer_callback(int fd, short event, void *arg)
 {
 }
 
+static void
+libevent_log_cb(int severity, const char *msg)
+{
+  ilog(L_DEBUG, "{libevent} %d: %s", severity, msg);
+}
+
 int
 init_events()
 {
@@ -52,6 +58,9 @@ init_events()
 //  struct event *sigint = MyMalloc(sizeof(struct event));
 
   ev_base = event_init();
+
+  event_set_log_callback(&libevent_log_cb);
+
   if(evdns_init() == -1)
   {
     ilog(L_ERROR, "libevent dns init failed");
