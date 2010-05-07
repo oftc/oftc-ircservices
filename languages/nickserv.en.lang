@@ -765,15 +765,17 @@ NS_SENDPASS_BODY
 	Hi %s,
 	
 	Someone (hopefully you) matching the IRC userhost %s!%s@%s requested that the
-	password on the addressed nickname (%s) be reset. If this was not you, please
-	do not be concerned, no action has been taken on your nickname. If this is
-	you, you need to go back to IRC and issue the following command:
-	'/msg %s SENDPASS %s %ld:%s <yournewpassword>' (without the quotes) to
-	complete the process.
+	NickServ password on the addressed nickname (%s) be reset.
 	
-	If this means nothing to you, or you think you have received this message in
-	error, please forward this message to support@oftc.net. Do not reply to this
-	mail as it is sent from an unattended address.
+	If this is you, go back to IRC and issue the following command to
+	complete the process:
+	
+	/msg %s SENDPASS %s %ld:%s <yournewpassword>
+	
+	If this was not you, please do not be concerned, no action has been
+	taken on your nickname.  If think you have received this message in
+	error, please forward this message to support@oftc.net.  Do not reply
+	to this mail as it is sent from an unattended address.
 	
 	Kind regards,
 	
