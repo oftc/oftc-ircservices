@@ -36,13 +36,13 @@ GS_HELP_SET_URL_LONG
 	quotes) to remove your URL.
 	
 	Examples:
-	     SET URL @groupname http://example.com
-	     SET URL @groupname -
+	    SET URL @groupname http://example.com
+	    SET URL @groupname -
 GS_HELP_SET_EMAIL_SHORT
 	%s
 GS_HELP_SET_EMAIL_LONG
 	Usage: SET @groupname EMAIL [email]
-		
+	
 	SET e-mail field on the group.  This setting is for display purposes
 	only and is suppressed in the INFO output if PRIVATE is turned on.
 	

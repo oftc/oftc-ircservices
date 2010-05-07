@@ -237,13 +237,13 @@ NS_HELP_SET_URL_LONG
 	quotes) to remove your URL.
 	
 	Examples:
-	     SET URL http://example.com
-	     SET URL -
+	    SET URL http://example.com
+	    SET URL -
 NS_HELP_SET_EMAIL_SHORT
 	%s
 NS_HELP_SET_EMAIL_LONG
 	Usage: SET EMAIL [email]
-		
+	
 	SET e-mail field to be used for password recovery. E-mail addresses are
 	shown in the INFO command if PRIVATE is turned off.
 	
@@ -323,7 +323,7 @@ NS_HELP_SET_MASTER_LONG
 	
 	See Also:
 	    HELP LINK
-			HELP ENSLAVE
+	    HELP ENSLAVE
 NS_HELP_SET_PRIVATE_SHORT
 	%s
 NS_HELP_SET_PRIVATE_LONG
@@ -347,7 +347,7 @@ NS_HELP_LINK_LONG
 	password.
 	
 	See also: HELP UNLINK
-						HELP ENSLAVE
+	          HELP ENSLAVE
 	          HELP SET MASTER
 NS_HELP_ENSLAVE_SHORT
 	%s: Enslave a nickname to this master nickname.
@@ -363,8 +363,8 @@ NS_HELP_ENSLAVE_LONG
 	specify a password.
 	
 	See also: HELP LINK
-						HELP UNLINK
-						HELP SET MASTER
+	          HELP UNLINK
+	          HELP SET MASTER
 NS_HELP_UNLINK_SHORT
 	%s: Unlink this nickname from a master nickname.
 NS_HELP_UNLINK_LONG
