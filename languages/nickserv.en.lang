@@ -699,7 +699,7 @@ NS_INFO_LINKS
 NS_INFO_CHANS
 	This nick is on the following channel access lists:
 NS_INFO_CHAN
-	    %s: %s
+	  %20s: %s
 NS_NICK_IN_USE
 	This nickname is registered and protected.  If it is your nickname, you may
 	authenticate yourself to services with the IDENTIFY command.  You are

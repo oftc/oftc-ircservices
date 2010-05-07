@@ -8,50 +8,50 @@ GS_HELP_REG_SHORT
 GS_HELP_REG_LONG
 	Usage: REGISTER @groupname description
 	
-	Registers a group in our database for your use.  Groups are used to join 
+	Registers a group in our database for your use.  Groups are used to join
 	together one or more nicknames.  For example, a group can be placed on a
-	group access list, instead of lots of nicknames. 
+	group access list, instead of lots of nicknames.
 GS_HELP_DROP_SHORT
 	%s: Releases your group for use.
 GS_HELP_DROP_LONG
-	Usage: DROP
+	Usage: DROP @groupname
 	
 	Releases your group for use and deletes it from the database.
-	This cannot be undone. Releasing your group in this way will allow others to
-	make use of it, or register it for their use, so make sure you really want
-	this before confirming.
+	This cannot be undone.  Releasing your group in this way will allow others to
+	register it for their use, so make sure you really want this before
+	continuing.
 GS_HELP_SET_SHORT
 	%s: Set group properties.
 GS_HELP_SET_LONG
-	Usage: SET property value
+	Usage: SET @groupname property value
 	
 	Set group properties.  The various properties are shown below.  Use
 	HELP SET property to get help on the individual properties.
 GS_HELP_SET_URL_SHORT
 	%s
 GS_HELP_SET_URL_LONG
-	Usage: SET URL [url|-]
+	Usage: SET @groupname URL [url|-]
 	
-	SET URL field to be shown in the INFO command. Specify '-' (without the
+	SET URL field to be shown in the INFO command.  Specify '-' (without the
 	quotes) to remove your URL.
 	
 	Examples:
-	     SET URL http://example.com
-	     SET URL -
+	     SET URL @groupname http://example.com
+	     SET URL @groupname -
 GS_HELP_SET_EMAIL_SHORT
 	%s
 GS_HELP_SET_EMAIL_LONG
-	Usage: SET EMAIL [email]
+	Usage: SET @groupname EMAIL [email]
 		
-	SET e-mail field on the group.  For display purposes only.  Is shown in the 
-	INFO command if PRIVATE is turned off.
+	SET e-mail field on the group.  This setting is for display purposes
+	only and is suppressed in the INFO output if PRIVATE is turned on.
 	
 	Example:
-	    SET EMAIL foo@example.com
+	    SET EMAIL @groupname foo@example.com
 GS_HELP_SET_PRIVATE_SHORT
 	%s
 GS_HELP_SET_PRIVATE_LONG
-	Usage SET PRIVATE [ON|OFF]
+	Usage SET @groupname PRIVATE [ON|OFF]
 	
 	Enables the private flag on your group which prevents your e-mail address
 	being shown in an INFO request, and also prevents your group showing in a
@@ -59,14 +59,14 @@ GS_HELP_SET_PRIVATE_LONG
 GS_HELP_INFO_SHORT
 	%s: Get information on a group.
 GS_HELP_INFO_LONG
-	Usage: INFO group
+	Usage: INFO @groupname
 	
-	Displays all the information that services knows about a group.  E-mail 
+	Displays all the information that services knows about a group.  E-mail
 	addresses are not shown for PRIVATE groups.
 GS_HELP_SUDO_SHORT
 	%s: Execute a command on a group overriding access checks.
 GS_HELP_SUDO_LONG
-	Usage: SUDO group command
+	Usage: SUDO @groupname command
 	
 	This will execute the specified command overriding any access checks on the
 	group.  This command is restricted to services admins.
@@ -76,43 +76,46 @@ GS_HELP_LIST_LONG
 	Usage: LIST pattern
 	
 	Shows a list of groups which are registered and match the pattern
-	specified.  Results will be limited to 50 matches, so try to be specific 
+	specified.  Results will be limited to 50 matches, so try to be specific
 	with your pattern.
+	
+	Example:
+	    LIST *oftc*
 GS_HELP_ACCESS_SHORT
 	%s: Maintains the group access list.
 GS_HELP_ACCESS_LONG
 	The group access list specifies which nicknames are allowed access to the
-	group and at what level their access is. The commands available are
+	group and at what level their access is.  The commands available are
 	as follows:
 GS_HELP_ACCESS_ADD_SHORT
 	%s: Add a nickname to the group access list.
 GS_HELP_ACCESS_ADD_LONG
-	Usage: ACCESS group ADD nickname MEMBER|MASTER
+	Usage: ACCESS @groupname ADD nickname MEMBER|MASTER
 	
 	Add the specified nickname to the access list at the specified level.
 	
-	MASTER - The highest level of access possible on a group. Setting this
-	level of access will allow full management of the group. Be careful who
-	you give this to.
-	MEMBER - Recognises the user as a member of the group. 
+	MASTER - The highest level of access possible on a group.  Setting this
+	    level of access will allow full management of the group.  Be careful
+	    who you give this to.
+	MEMBER - Recognises the user as a member of the group.
 GS_HELP_ACCESS_DEL_SHORT
 	%s: Remove a nickname from the group access list.
 GS_HELP_ACCESS_DEL_LONG
-	Usage: ACCESS group DEL nickname
+	Usage: ACCESS @groupname DEL nickname
 	
 	Removes a nickname from the group access list.
 GS_HELP_ACCESS_LIST_SHORT
 	%s: Show the group access list.
 GS_HELP_ACCESS_LIST_LONG
-	Usage: ACCESS group LIST
+	Usage: ACCESS @groupname LIST
 	
 	Show the current group access list.
 GS_REGISTER_NICK
-	Nick %s is not registered. The nickname you specify must be currently 
+	Nick %s is not registered.  The nickname you specify must be currently
 	registered with nickname services.
 GS_ALREADY_REG
-	Group %s is already registered.  It may have been registered by someone 
-	else first. Please choose another group name and try again, or if you 
+	Group %s is already registered.  It may have been registered by someone
+	else first.  Please choose another group name and try again, or if you
 	believe this group name to be unused, contact network support.
 GS_REG_COMPLETE
 	Group %s has been registered successfully and is now yours to use.
@@ -120,57 +123,56 @@ GS_REG_COMPLETE
 	group.  This group may now have members added to it and be added to group
 	access lists.
 GS_REG_FAIL
-	Group %s failed to register. This is usually caused by an internal
-	problem within services or a database problem. Please try again in a short
-	while. If this is not the first time you have received this message, please
+	Group %s failed to register.  This is usually caused by an internal
+	problem within services or a database problem.  Please try again in a short
+	while.  If this is not the first time you have received this message, please
 	contact network support.
 GS_REG_FIRST
-	Group %s is not registered. The group you specify must be a
-	registered group name. See HELP REGISTER for more information. If you believe
+	Group %s is not registered.  The group you specify must be a
+	registered group name.  See HELP REGISTER for more information.  If you believe
 	this to be incorrect, there could be a database problem; contact network
 	support if this problem persists.
 GS_SET_SUCCESS
 	SET %s to %s.
 GS_SET_FAILED
-	Failed to SET %s to %s. This may be an internal problem, please try
-	again later. If this is not the first time you have seen this message please
+	Failed to SET %s to %s.  This may be an internal problem, please try
+	again later.  If this is not the first time you have seen this message please
 	contact network support.
 GS_SET_VALUE
 	%s is SET to: %s.
 GS_DROPPED
-	Group %s has been dropped. It is now free to be registered by other
-	users.
+	Group %s has been dropped.  It is now free to be registered by other users.
 GS_DROP_FAILED
-	DROP failed on group %s. This may have been an internal error, please
-	try again shortly. If this is not the first time you have seen this message
+	DROP failed on group %s.  This may have been an internal error, please
+	try again shortly.  If this is not the first time you have seen this message
 	please contact network support.
 GS_DROP_FAIL_MASTERLESS
-	Unable to DROP group %s. group %s would be left with no
-	masters. Drop this group first, or assign someone else as master.
+	Unable to DROP group %s.  Group %s would be left with no
+	masters.  Drop this group first, or assign someone else as master.
 GS_INFO_START
 	Information for group %s
 GS_INFO
-	      Description: %s
-	              URL: %s
-	           E-Mail: %s
+	    Description: %s
+	            URL: %s
+	         E-Mail: %s
 GS_INFO_MASTERS
 	Group Masters: %s
 GS_INFO_OPTION
 	%15s: %s
 GS_INFO_REGTIME_FULL
-	  Time registered: %s (%dy %dm %dd %02d:%02d:%02d ago)
+	Time registered: %s (%dy %dm %dd %02d:%02d:%02d ago)
 GS_INFO_REGTIME_NOYEAR
-	  Time registered: %s (%dm %dd %02d:%02d:%02d ago)
+	Time registered: %s (%dm %dd %02d:%02d:%02d ago)
 GS_INFO_REGTIME_NOMONTH
-	  Time registered: %s (%dd %02d:%02d:%02d ago)
+	Time registered: %s (%dd %02d:%02d:%02d ago)
 GS_INFO_REGTIME_NODAY
-	  Time registered: %s (%02d:%02d:%02d ago)
+	Time registered: %s (%02d:%02d:%02d ago)
 GS_INFO_REGTIME_UNKNOWN
-	  Time registered: Unknown
+	Time registered: Unknown
 GS_INFO_CHANS
 	This group is on the following channel access lists:
 GS_INFO_CHAN
-	    %s: %s
+	  %20s: %s
 GS_LIST_INVALID_OPTION
 	Invalid LIST option %s.
 GS_LIST_NO_MATCHES
@@ -182,13 +184,13 @@ GS_LIST_END
 GS_NAMESTART_AT
 	Group name must start with the '@' character.
 GS_ACCESS_BADLEVEL
-	Unknown access level %s. The access level you specify must be one of the
-	available access levels. See HELP ACCESS for more information.
+	Unknown access level %s.  The access level you specify must be one of the
+	available access levels.  See HELP ACCESS for more information.
 GS_ACCESS_ADDOK
 	%s added to %s access list as %s.
 GS_ACCESS_ADDFAIL
-	Failed to add %s to %s access list as %s. It is possible that
-	they are already on the access list. If this is not the case and this is not
+	Failed to add %s to %s access list as %s.  It is possible that
+	they are already on the access list.  If this is not the case and this is not
 	the first time you have seen this message, please contact network support.
 GS_ACCESS_LIST
 	%d: %s %s
@@ -200,7 +202,7 @@ GS_ACCESS_DELFAIL
 	Failed to remove %s from the access list of %s.
 GS_ACCESS_NOMASTERS
 	You cannot remove %s from the access list of %s because it is the
-	last MASTER entry. Add another MASTER to the access list and try again.
+	last MASTER entry.  Add another MASTER to the access list and try again.
 GS_ACCESS_ALREADY_ON
 	You cannot add %s to the access list of %s because they are already
 	on the list at that level.
