@@ -62,6 +62,7 @@ static void m_access_list(struct Service *, struct Client *, int, char *[]);
 static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_private(struct Service *, struct Client *, int, char *[]);
+static void m_set_desc(struct Service *, struct Client *, int, char *[]);
 
 static int m_set_flag(struct Service *, struct Client *, const char *, char *,
     char *, unsigned char (*)(Group *), int (*)(Group *, unsigned char));
@@ -91,6 +92,8 @@ static struct ServiceMessage set_sub[] = {
     GS_HELP_SET_EMAIL_SHORT, GS_HELP_SET_EMAIL_LONG, m_set_email },
   { NULL, "PRIVATE", 0, 1, 2, SFLG_KEEPARG|SFLG_GROUPARG, GRPMASTER_FLAG,
     GS_HELP_SET_PRIVATE_SHORT, GS_HELP_SET_PRIVATE_LONG, m_set_private },
+  { NULL, "DESC", 0, 1, 2, SFLG_KEEPARG|SFLG_GROUPARG, GRPMASTER_FLAG,
+    GS_HELP_SET_DESC_SHORT, GS_HELP_SET_DESC_LONG, m_set_desc },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
 };
 
@@ -249,6 +252,14 @@ m_set_email(struct Service *service, struct Client *client,
 {
   m_set_string(service, client, "EMAIL", parv[1], parv[2], parc,
     &group_get_email, &group_set_email);
+}
+
+static void
+m_set_desc(struct Service *service, struct Client *client,
+        int parc, char *parv[])
+{
+  m_set_string(service, client, "DESC", parv[1], parv[2], parc,
+    &group_get_desc, &group_set_desc);
 }
 
 static void

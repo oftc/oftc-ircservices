@@ -48,6 +48,14 @@ GS_HELP_SET_EMAIL_LONG
 	
 	Example:
 	    SET EMAIL @groupname foo@example.com
+GS_HELP_SET_DESC_SHORT
+	%s: Set the group description (free form text).
+GS_HELP_SET_DESC_LONG
+	Usage: SET channel DESC [text]
+	
+	Sets descriptive text associated with the group. This is usually
+	used to define the purpose of the group and is displayed with
+	the group listing in the INFO command.
 GS_HELP_SET_PRIVATE_SHORT
 	%s
 GS_HELP_SET_PRIVATE_LONG

@@ -2,7 +2,7 @@ DROP TABLE "group" CASCADE;
 CREATE TABLE "group" (
   id                  SERIAL PRIMARY KEY,
   name                VARCHAR(32) NOT NULL,
-  description         VARCHAR(255) NOT NULL,
+  description         VARCHAR(255),
   url                 VARCHAR(255),
   email               VARCHAR(255),
   flag_private        BOOLEAN NOT NULL DEFAULT 'False',
