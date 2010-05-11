@@ -1283,7 +1283,7 @@ inline int
 nickname_set_pass(Nickname *this, const char *value)
 {
   /* on registration we need to set before the DB knows it */
-  if(this->id == 0 || db_execute_nonquery(SET_NICK_PASSWORD, "si", value, &this->id))
+  if(this->id == 0 || db_execute_nonquery(SET_NICK_PASSWORD, "si", value, &this->id) > 0)
   {
     if(value != NULL)
       strlcpy(this->pass, value, sizeof(this->pass));
@@ -1300,7 +1300,7 @@ inline int
 nickname_set_salt(Nickname *this, const char *value)
 {
   if(this->id == 0 || db_execute_nonquery(SET_NICK_SALT, "si", value,
-        &this->id))
+        &this->id) > 0)
   {
     if(value != NULL)
       strlcpy(this->salt, value, sizeof(this->salt));
@@ -1316,7 +1316,7 @@ nickname_set_salt(Nickname *this, const char *value)
 inline int
 nickname_set_cloak(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_CLOAK, "si", value, &this->id))
+  if(db_execute_nonquery(SET_NICK_CLOAK, "si", value, &this->id) > 0)
   {
     if(value != NULL)
       strlcpy(this->cloak, value, sizeof(this->cloak));
@@ -1333,7 +1333,7 @@ inline int
 nickname_set_email(Nickname *this, const char *value)
 {
   /* on registration we need to set before the DB knows it */
-  if(this->id == 0 || db_execute_nonquery(SET_NICK_EMAIL, "si", value, &this->id))
+  if(this->id == 0 || db_execute_nonquery(SET_NICK_EMAIL, "si", value, &this->id) > 0)
   {
     MyFree(this->email);
     if(value != NULL)
@@ -1349,7 +1349,7 @@ nickname_set_email(Nickname *this, const char *value)
 inline int
 nickname_set_url(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_URL, "si", value, &this->id))
+  if(db_execute_nonquery(SET_NICK_URL, "si", value, &this->id) > 0)
   {
     MyFree(this->url);
     if(value != NULL)
@@ -1365,7 +1365,7 @@ nickname_set_url(Nickname *this, const char *value)
 inline int
 nickname_set_last_realname(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_REALNAME, "si", value, &this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_REALNAME, "si", value, &this->id) > 0)
   {
     MyFree(this->last_realname);
     DupString(this->last_realname, value);
@@ -1378,7 +1378,7 @@ nickname_set_last_realname(Nickname *this, const char *value)
 inline int
 nickname_set_last_host(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_HOST, "si", value, &this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_HOST, "si", value, &this->id) > 0)
   {
     MyFree(this->last_host);
     DupString(this->last_host, value);
@@ -1391,7 +1391,7 @@ nickname_set_last_host(Nickname *this, const char *value)
 inline int
 nickname_set_last_quit(Nickname *this, const char *value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_QUIT, "si", value, &this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_QUIT, "si", value, &this->id) > 0)
   {
     MyFree(this->last_quit);
     DupString(this->last_quit, value);
@@ -1411,7 +1411,7 @@ nickname_set_status(Nickname *this, unsigned int value)
 inline int
 nickname_set_language(Nickname *this, unsigned int value)
 {
-  if(db_execute_nonquery(SET_NICK_LANGUAGE, "ii", &value, &this->id))
+  if(db_execute_nonquery(SET_NICK_LANGUAGE, "ii", &value, &this->id) > 0)
   {
     this->language = value;
     return TRUE;
@@ -1423,7 +1423,7 @@ nickname_set_language(Nickname *this, unsigned int value)
 inline int
 nickname_set_enforce(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_ENFORCE, "bi", &value, &this->id))
+  if(db_execute_nonquery(SET_NICK_ENFORCE, "bi", &value, &this->id) > 0)
   {
     this->enforce = value;
     return TRUE;
@@ -1435,7 +1435,7 @@ nickname_set_enforce(Nickname *this, unsigned char value)
 inline int
 nickname_set_secure(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_SECURE, "bi", &value, &this->id))
+  if(db_execute_nonquery(SET_NICK_SECURE, "bi", &value, &this->id) > 0)
   {
     this->secure = value;
     return TRUE;
@@ -1454,7 +1454,7 @@ nickname_set_verified(Nickname *this, unsigned char value)
 inline int
 nickname_set_cloak_on(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_CLOAKON, "bi", &value, &this->id))
+  if(db_execute_nonquery(SET_NICK_CLOAKON, "bi", &value, &this->id) > 0)
   {
     this->cloak_on = value;
     return TRUE;
@@ -1466,7 +1466,7 @@ nickname_set_cloak_on(Nickname *this, unsigned char value)
 inline int
 nickname_set_admin(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_ADMIN, "bi", &value, &this->id))
+  if(db_execute_nonquery(SET_NICK_ADMIN, "bi", &value, &this->id) > 0)
   {
     this->admin = value;
     return TRUE;
@@ -1485,7 +1485,7 @@ nickname_set_email_verified(Nickname *this, unsigned char value)
 inline int
 nickname_set_priv(Nickname *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_NICK_PRIVATE, "bi", &value, &this->id))
+  if(db_execute_nonquery(SET_NICK_PRIVATE, "bi", &value, &this->id) > 0)
   {
     this->priv = value;
     return TRUE;
@@ -1504,7 +1504,7 @@ nickname_set_reg_time(Nickname *this, time_t value)
 inline int
 nickname_set_last_seen(Nickname *this, time_t value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", &value, &this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", &value, &this->id) > 0)
   {
     this->last_seen = value;
     return TRUE;
@@ -1516,7 +1516,7 @@ nickname_set_last_seen(Nickname *this, time_t value)
 inline int
 nickname_set_last_quit_time(Nickname *this, time_t value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_QUITTIME, "ii", &value, &this->id))
+  if(db_execute_nonquery(SET_NICK_LAST_QUITTIME, "ii", &value, &this->id) > 0)
   {
     this->last_quit_time = value;
     return TRUE;

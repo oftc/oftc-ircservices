@@ -980,7 +980,7 @@ inline int
 group_set_email(Group *this, const char *value)
 {
   /* on registration we need to set before the DB knows it */
-  if(this->id == 0 || db_execute_nonquery(SET_GROUP_EMAIL, "si", value, &this->id))
+  if(this->id == 0 || db_execute_nonquery(SET_GROUP_EMAIL, "si", value, &this->id) > 0)
   {
     MyFree(this->email);
     if(value != NULL)
@@ -996,7 +996,7 @@ group_set_email(Group *this, const char *value)
 inline int
 group_set_url(Group *this, const char *value)
 {
-  if(db_execute_nonquery(SET_GROUP_URL, "si", value, &this->id))
+  if(db_execute_nonquery(SET_GROUP_URL, "si", value, &this->id) > 0)
   {
     MyFree(this->url);
     if(value != NULL)
@@ -1013,7 +1013,7 @@ inline int
 group_set_desc(Group *this, const char *value)
 {
   if(this->id == 0 ||
-      db_execute_nonquery(SET_GROUP_DESC, "si", value, &this->id))
+      db_execute_nonquery(SET_GROUP_DESC, "si", value, &this->id) > 0)
   {
     MyFree(this->desc);
     if(value != NULL)
@@ -1029,7 +1029,7 @@ group_set_desc(Group *this, const char *value)
 inline int
 group_set_priv(Group *this, unsigned char value)
 {
-  if(db_execute_nonquery(SET_GROUP_PRIVATE, "bi", &value, &this->id))
+  if(db_execute_nonquery(SET_GROUP_PRIVATE, "bi", &value, &this->id) > 0)
   {
     this->priv = value;
     return TRUE;
