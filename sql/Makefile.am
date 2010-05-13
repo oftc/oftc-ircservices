@@ -5,6 +5,7 @@ dist_pkgdata_DATA= \
 	chanserv-mysql.sql \
 	chanserv-pgsql.sql \
 	ganneffserv-pgsql.sql \
+  groupserv-pgsql.sql \
 	nickserv-mysql.sql \
 	nickserv-pgsql.sql \
 	operserv-mysql.sql \
