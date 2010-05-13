@@ -708,7 +708,7 @@ m_info(struct Service *service, struct Client *client,
     dbchannel_group_masters_list_free(&list);
   }
 
-  reply_user(service, service, client, CS_INFO_MASTERS, buf);
+  reply_user(service, service, client, CS_INFO_MASTERS_GROUP, buf);
 
   reply_user(service, service, client, CS_INFO_OPTION, "TOPICLOCK",
       dbchannel_get_topic_lock(regchptr) ? "ON" : "OFF");

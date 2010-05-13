@@ -497,6 +497,8 @@ CS_INFO_OPTION
 	%15s: %s
 CS_INFO_MASTERS
 	Channel masters: %s
+CS_INFO_MASTERS_GROUP
+	%s
 CS_INFO_REGTIME_FULL
 	Time Registered: %s (%dy %dm %dd %02d:%02d:%02d ago)
 CS_INFO_REGTIME_NOYEAR
