@@ -690,6 +690,26 @@ m_info(struct Service *service, struct Client *client,
 
   reply_user(service, service, client, CS_INFO_MASTERS, buf);
 
+  memset(buf, 0, sizeof(buf));
+
+  if(dbchannel_group_masters_list(dbchannel_get_id(regchptr), &list))
+  {
+    int comma = 0;
+
+    DLINK_FOREACH(ptr, list.head)
+    {
+      nick = (char *)ptr->data;
+      if(comma)
+        strlcat(buf, ", ", sizeof(buf));
+      strlcat(buf, nick, sizeof(buf));
+      if(!comma)
+        comma = 1;
+    }
+    dbchannel_group_masters_list_free(&list);
+  }
+
+  reply_user(service, service, client, CS_INFO_MASTERS, buf);
+
   reply_user(service, service, client, CS_INFO_OPTION, "TOPICLOCK",
       dbchannel_get_topic_lock(regchptr) ? "ON" : "OFF");
 

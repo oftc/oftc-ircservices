@@ -243,8 +243,20 @@ dbchannel_masters_list(unsigned int id, dlink_list *list)
   return db_string_list_by_id(GET_CHAN_MASTERS, list, id);
 }
 
+inline int
+dbchannel_group_masters_list(unsigned int id, dlink_list *list)
+{
+  return db_string_list_by_id(GET_CHAN_GROUP_MASTERS, list, id);
+}
+
 inline void
 dbchannel_masters_list_free(dlink_list *list)
+{
+  db_string_list_free(list);
+}
+
+inline void
+dbchannel_group_masters_list_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
