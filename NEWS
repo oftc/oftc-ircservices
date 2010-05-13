@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+1.4.1
+_____
+o Clarify GroupServ help
+o Allow services to run in background when using libevent
+o Fix caller logic to db_execute_nonquery to properly check for errors
+o Add GroupServ SET DESC
+o Include GroupServ schema in install
+
 1.4.0
 -----
 + Nickname autojoin support
