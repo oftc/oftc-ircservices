@@ -28,11 +28,11 @@ struct JupeEntry
   char *reason;
 };
 
-struct InfoChanList
+struct InfoList
 {
-  int channel_id;
+  int id;
   int ilevel;
-  char *channel;
+  char *name;
   char *level;
 };
 
@@ -206,6 +206,7 @@ enum db_queries
   GET_AJOINS,
   INSERT_AJOIN,
   DELETE_AJOIN,
+  GET_GROUPS_BY_ACCOUNT,
   QUERY_COUNT
 };
 

@@ -327,6 +327,8 @@ static query_t queries[QUERY_COUNT] = {
     "($1, $2)", EXECUTE },
   { DELETE_AJOIN, "DELETE FROM account_autojoin WHERE account_id=$1 AND channel_id=$2",
     EXECUTE },
+  { GET_GROUPS_BY_ACCOUNT, "SELECT group_id, name, level FROM \"group\" JOIN "
+    "group_access ON group_access.group_id = \"group\".id WHERE account_id=$1" },
 };
 
 

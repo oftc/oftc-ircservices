@@ -909,39 +909,54 @@ nickname_link_list_free(dlink_list *list)
   db_string_list_free(list);
 }
 
-static struct InfoChanList *
-row_to_infochanlist(row_t *row)
+static struct InfoList *
+row_to_infolist(row_t *row, char isgroup)
 {
-  struct InfoChanList *chan = MyMalloc(sizeof(struct InfoChanList));
-  chan->channel_id = atoi(row->cols[0]);
-  DupString(chan->channel, row->cols[1]);
+  struct InfoList *chan = MyMalloc(sizeof(struct InfoList));
+  chan->id = atoi(row->cols[0]);
+  DupString(chan->name, row->cols[1]);
   chan->ilevel = atoi(row->cols[2]);
-  switch(chan->ilevel)
+  if(!isgroup)
   {
-    case MASTER_FLAG:
-      chan->level = "MASTER";
-      break;
-    case CHANOP_FLAG:
-      chan->level = "CHANOP";
-      break;
-    case MEMBER_FLAG:
-      chan->level = "MEMBER";
-      break;
+    switch(chan->ilevel)
+    {
+      case MASTER_FLAG:
+        chan->level = "MASTER";
+        break;
+      case CHANOP_FLAG:
+        chan->level = "CHANOP";
+        break;
+      case MEMBER_FLAG:
+        chan->level = "MEMBER";
+        break;
+    }
+  }
+  else
+  {
+    switch(chan->ilevel)
+    {
+      case GRPMASTER_FLAG:
+        chan->level = "MASTER";
+        break;
+      case GRPMEMBER_FLAG:
+        chan->level = "MEMBER";
+        break;
+    }
   }
   return chan;
 }
 
-int
-nickname_chan_list(unsigned int id, dlink_list *list)
+static int
+info_list(unsigned int query, char isgroup, unsigned int id, dlink_list *list)
 {
   int error, i;
   result_set_t *results;
 
-  results = db_execute(GET_NICK_CHAN_INFO, &error, "i", &id);
+  results = db_execute(query, &error, "i", &id);
 
   if(results == NULL && error != 0)
   {
-    ilog(L_CRIT, "nickname_chan_list: database error %d", error);
+    ilog(L_CRIT, "nickname_info_list: database error %d", error);
     return FALSE;
   }
   else if(results == NULL)
@@ -952,9 +967,9 @@ nickname_chan_list(unsigned int id, dlink_list *list)
 
   for(i = 0; i < results->row_count; ++i)
   {
-    struct InfoChanList *chan;
+    struct InfoList *chan;
     row_t *row = &results->rows[i];
-    chan = row_to_infochanlist(row);
+    chan = row_to_infolist(row, isgroup);
     dlinkAddTail(chan, make_dlink_node(), list);
   }
 
@@ -963,23 +978,47 @@ nickname_chan_list(unsigned int id, dlink_list *list)
   return dlink_list_length(list);
 }
 
-void
-nickname_chan_list_free(dlink_list *list)
+int
+nickname_chan_list(unsigned int id, dlink_list *list)
+{
+  return info_list(GET_NICK_CHAN_INFO, FALSE, id, list);
+}
+
+static void
+info_list_free(dlink_list *list)
 {
   dlink_node *ptr, *next;
-  struct InfoChanList *chan;
+  struct InfoList *chan;
 
-  ilog(L_DEBUG, "Freeing string list %p of length %lu", list,
+  ilog(L_DEBUG, "Freeing info list %p of length %lu", list,
     dlink_list_length(list));
 
   DLINK_FOREACH_SAFE(ptr, next, list->head)
   {
-    chan = (struct InfoChanList *)ptr->data;
-    MyFree(chan->channel);
+    chan = (struct InfoList *)ptr->data;
+    MyFree(chan->name);
     MyFree(chan);
     dlinkDelete(ptr, list);
     free_dlink_node(ptr);
   }
+}
+
+void
+nickname_chan_list_free(dlink_list *list)
+{
+  info_list_free(list);
+}
+
+int
+nickname_group_list(unsigned int account, dlink_list *list)
+{
+  return info_list(GET_GROUPS_BY_ACCOUNT, TRUE, account, list);
+}
+
+void
+nickname_group_list_free(dlink_list *list)
+{
+  info_list_free(list);
 }
 
 inline int

@@ -1348,7 +1348,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   Nickname *nick;
   struct Client *target;
-  struct InfoChanList *chan = NULL;
+  struct InfoList *chan = NULL;
   char *name;
   char *link;
   char buf[IRC_BUFSIZE+1] = {0};
@@ -1466,13 +1466,25 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       MyFree(prinick);
     }
 
+    if(nickname_group_list(nickname_get_id(nick), &list))
+    {
+      reply_user(service, service, client, NS_INFO_GROUPS);
+      DLINK_FOREACH(ptr, list.head)
+      {
+        chan = (struct InfoList *)ptr->data;
+        reply_user(service, service, client, NS_INFO_GROUP, chan->name,
+            chan->level);
+      }
+      nickname_group_list_free(&list);
+    }
+
     if(nickname_chan_list(nickname_get_id(nick), &list))
     {
       reply_user(service, service, client, NS_INFO_CHANS);
       DLINK_FOREACH(ptr, list.head)
       {
-        chan = (struct InfoChanList *)ptr->data;
-        reply_user(service, service, client, NS_INFO_CHAN, chan->channel,
+        chan = (struct InfoList *)ptr->data;
+        reply_user(service, service, client, NS_INFO_CHAN, chan->name,
             chan->level);
       }
       nickname_chan_list_free(&list);

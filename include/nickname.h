@@ -100,6 +100,9 @@ void nickname_link_list_free(dlink_list *);
 int nickname_chan_list(unsigned int, dlink_list *);
 void nickname_chan_list_free(dlink_list *);
 
+int nickname_group_list(unsigned int, dlink_list *);
+void nickname_group_list_free(dlink_list *);
+
 int nickname_list_all(dlink_list *);
 void nickname_list_all_free(dlink_list *);
 

@@ -700,6 +700,10 @@ NS_INFO_CHANS
 	This nick is on the following channel access lists:
 NS_INFO_CHAN
 	  %20s: %s
+NS_INFO_GROUPS
+	This nick is on the following groups:
+NS_INFO_GROUP
+	  %20s: %s
 NS_NICK_IN_USE
 	This nickname is registered and protected.  If it is your nickname, you may
 	authenticate yourself to services with the IDENTIFY command.  You are

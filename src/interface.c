@@ -1811,7 +1811,7 @@ valid_wild_card(const char *arg)
 char *
 check_masterless_channels(unsigned int accid)
 {
-  struct InfoChanList *chan;
+  struct InfoList *chan;
   int mcount;
   dlink_node *ptr;
   dlink_list list = { 0 };
@@ -1820,18 +1820,18 @@ check_masterless_channels(unsigned int accid)
   {
     DLINK_FOREACH(ptr, list.head)
     {
-      chan = (struct InfoChanList *)ptr->data;
-      if(chanaccess_count(chan->channel_id) == 1)
+      chan = (struct InfoList *)ptr->data;
+      if(chanaccess_count(chan->id) == 1)
       {
         char *nick = nickname_nick_from_id(accid, TRUE);
         struct Channel *chptr;
 
         ilog(L_NOTICE, "Dropping channel %s because its access list would be "
-            "left empty by drop of nickname %s", chan->channel, nick);
+            "left empty by drop of nickname %s", chan->name, nick);
         MyFree(nick);
-        dbchannel_delete(dbchannel_find(chan->channel));
+        dbchannel_delete(dbchannel_find(chan->name));
 
-        chptr = hash_find_channel(chan->channel);
+        chptr = hash_find_channel(chan->name);
         if(chptr != NULL)
         {
           if(chptr->regchan != NULL)
@@ -1844,12 +1844,12 @@ check_masterless_channels(unsigned int accid)
         continue;
       }
       mcount = -1;
-      dbchannel_masters_count(chan->channel_id, &mcount);
+      dbchannel_masters_count(chan->id, &mcount);
       if(chan->ilevel == MASTER_FLAG && mcount <= 1)
       {
         char *cname;
 
-        DupString(cname, chan->channel);
+        DupString(cname, chan->name);
         nickname_chan_list_free(&list);
         return cname;
       }

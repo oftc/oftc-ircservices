@@ -631,12 +631,12 @@ group_link_list_free(dlink_list *list)
 }
 #endif
 
-static struct InfoChanList *
+static struct InfoList *
 row_to_infochanlist(row_t *row)
 {
-  struct InfoChanList *chan = MyMalloc(sizeof(struct InfoChanList));
-  chan->channel_id = atoi(row->cols[0]);
-  DupString(chan->channel, row->cols[1]);
+  struct InfoList *chan = MyMalloc(sizeof(struct InfoList));
+  chan->id = atoi(row->cols[0]);
+  DupString(chan->name, row->cols[1]);
   chan->ilevel = atoi(row->cols[2]);
   switch(chan->ilevel)
   {
@@ -674,7 +674,7 @@ group_chan_list(unsigned int id, dlink_list *list)
 
   for(i = 0; i < results->row_count; ++i)
   {
-    struct InfoChanList *chan;
+    struct InfoList *chan;
     row_t *row = &results->rows[i];
     chan = row_to_infochanlist(row);
     dlinkAddTail(chan, make_dlink_node(), list);
@@ -689,15 +689,15 @@ void
 group_chan_list_free(dlink_list *list)
 {
   dlink_node *ptr, *next;
-  struct InfoChanList *chan;
+  struct InfoList *chan;
 
   ilog(L_DEBUG, "Freeing group chan list %p of length %lu", list,
     dlink_list_length(list));
 
   DLINK_FOREACH_SAFE(ptr, next, list->head)
   {
-    chan = (struct InfoChanList *)ptr->data;
-    MyFree(chan->channel);
+    chan = (struct InfoList *)ptr->data;
+    MyFree(chan->name);
     MyFree(chan);
     dlinkDelete(ptr, list);
     free_dlink_node(ptr);

@@ -327,13 +327,13 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     if(group_chan_list(group_get_id(group), &list))
     {
-      struct InfoChanList *chan;
+      struct InfoList *chan;
       reply_user(service, service, client, GS_INFO_CHANS);
 
       DLINK_FOREACH(ptr, list.head)
       {
-        chan = (struct InfoChanList *)ptr->data;
-        reply_user(service, service, client, GS_INFO_CHAN, chan->channel,
+        chan = (struct InfoList *)ptr->data;
+        reply_user(service, service, client, GS_INFO_CHAN, chan->name,
           chan->level);
       }
       group_chan_list_free(&list);
