@@ -329,9 +329,9 @@ static query_t queries[QUERY_COUNT] = {
     EXECUTE },
   { GET_GROUPS_BY_ACCOUNT, "SELECT group_id, name, level FROM \"group\" JOIN "
     "group_access ON group_access.group_id = \"group\".id WHERE account_id=$1" },
-  { GET_CHAN_GROUP_MASTERS, "SELECT group FROM group, channel_access WHERE "
-    "channel_id=$1 AND level=4 AND channel_access.group_id=group.id "
-    "ORDER BY lower(group)", QUERY },
+  { GET_CHAN_GROUP_MASTERS, "SELECT name FROM \"group\", channel_access WHERE "
+    "channel_id=$1 AND level=4 AND channel_access.group_id=\"group\".id "
+    "ORDER BY lower(name)", QUERY },
 };
 
 
