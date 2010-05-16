@@ -237,6 +237,7 @@ struct ModeList ModeList[] = {
   { MODE_MODERATED,   'm' },
   { MODE_INVITEONLY,  'i' },
   { MODE_PARANOID,    'p' },
+  { MODE_NOCOLOR,     'c' },
   { 0, '\0' }
 };
 
@@ -861,6 +862,7 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
   unsigned       int fl;
   char           *s;
   char           *p; /* pointer used making sjbuf */
+  int             i;
 
   if (IsClient(source) || parc < 5)
     return;
@@ -881,27 +883,6 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
   {
     switch (*(s++))
     {
-      case 't':
-        mode.mode |= MODE_TOPICLIMIT;
-        break;
-      case 'n':
-        mode.mode |= MODE_NOPRIVMSGS;
-        break;
-      case 's':
-        mode.mode |= MODE_SECRET;
-        break;
-      case 'm':
-        mode.mode |= MODE_MODERATED;
-        break;
-      case 'i':
-        mode.mode |= MODE_INVITEONLY;
-        break;
-      case 'p':
-        mode.mode |= MODE_PARANOID;
-        break;
-      case 'c':
-        mode.mode |= MODE_NOCOLOR;
-        break;
       case 'k':
         strlcpy(mode.key, parv[4 + args], sizeof(mode.key));
         args++;
@@ -913,6 +894,11 @@ m_sjoin(struct Client *client, struct Client *source, int parc, char *parv[])
         args++;
         if (parc < 5+args)
           return;
+        break;
+      default:
+        for (i = 0; ServerModeList[i].letter != '\0'; i++)
+          if (ServerModeList[i].letter == *s)
+            mode.mode |= ServerModeList[i].mode;
         break;
     }
   }
