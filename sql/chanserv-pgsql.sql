@@ -1,4 +1,4 @@
-DROP TABLE channel CASCADE;
+DROP TABLE IF EXISTS channel CASCADE;
 CREATE TABLE channel(
   id                    SERIAL PRIMARY KEY,
   channel               VARCHAR(255) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE channel(
 );
 CREATE UNIQUE INDEX channel_channel_idx ON channel ((lower(channel)));
 
-DROP TABLE channel_access;
+DROP TABLE IF EXISTS channel_access;
 CREATE TABLE channel_access(
   id                   SERIAL PRIMARY KEY,
   channel_id           INTEGER NOT NULL REFERENCES channel(id) ON DELETE CASCADE,
@@ -36,7 +36,7 @@ CREATE TABLE channel_access(
 );
 CREATE INDEX channel_access_account_id_idx ON channel_access (account_id);
 
-DROP TABLE channel_akick;
+DROP TABLE IF EXISTS channel_akick;
 CREATE TABLE channel_akick(
   id                  SERIAL PRIMARY KEY,
   channel_id          INTEGER NOT NULL REFERENCES channel(id) ON DELETE CASCADE,
@@ -51,7 +51,7 @@ CREATE TABLE channel_akick(
 	(mask IS NULL)))
 );
 
-DROP TABLE forbidden_channel;
+DROP TABLE IF EXISTS forbidden_channel;
 CREATE TABLE forbidden_channel (
   channel             VARCHAR(255) PRIMARY KEY
 );

@@ -1,4 +1,4 @@
-DROP TABLE akill CASCADE;
+DROP TABLE IF EXISTS akill CASCADE;
 CREATE TABLE akill (
   id              SERIAL PRIMARY KEY,
   mask            VARCHAR(255) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE akill (
   UNIQUE (mask)
 );
 
-DROP TABLE sent_mail;
+DROP TABLE IF EXISTS sent_mail;
 CREATE TABLE sent_mail (
   id              SERIAL PRIMARY KEY,
   account_id      INTEGER REFERENCES account(id) ON DELETE SET NULL,
@@ -17,7 +17,7 @@ CREATE TABLE sent_mail (
   sent            INTEGER NOT NULL
 );
 
-DROP TABLE jupes CASCADE;
+DROP TABLE IF EXISTS jupes CASCADE;
 CREATE TABLE jupes (
   id              SERIAL PRIMARY KEY,
   name            VARCHAR(255) NOT NULL,

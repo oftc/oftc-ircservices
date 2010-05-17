@@ -1,4 +1,4 @@
-DROP TABLE account CASCADE;
+DROP TABLE IF EXISTS account CASCADE;
 CREATE TABLE account (
   id                  SERIAL PRIMARY KEY,
   primary_nick        INTEGER NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE account (
   reg_time            INTEGER NOT NULL -- The account itself
 );
 
-DROP TABLE nickname CASCADE;
+DROP TABLE IF EXISTS nickname CASCADE;
 CREATE TABLE nickname (
   id                  SERIAL PRIMARY KEY,
   nick                VARCHAR(255) NOT NULL,
@@ -39,14 +39,14 @@ CREATE INDEX nickname_account_id_idx ON nickname (account_id);
 -- reference
 ALTER TABLE account ADD FOREIGN KEY (primary_nick) REFERENCES nickname(id) DEFERRABLE INITIALLY DEFERRED;
 
-DROP TABLE forbidden_nickname;
+DROP TABLE IF EXISTS forbidden_nickname;
 CREATE TABLE forbidden_nickname (
   nick                VARCHAR(255) PRIMARY KEY
 );
 -- this is not so much for performance as for unique constraint reasons:
 CREATE UNIQUE INDEX forbidden_nickname_nick_idx ON forbidden_nickname ((lower(nick)));
 
-DROP TABLE account_access;
+DROP TABLE IF EXISTS account_access;
 CREATE TABLE account_access (
   id                  SERIAL PRIMARY KEY,
   account_id          INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE account_access (
 );
 CREATE INDEX account_access_account_id_idx ON account_access (account_id);
 
-DROP TABLE account_fingerprint;
+DROP TABLE IF EXISTS account_fingerprint;
 CREATE TABLE account_fingerprint (
   id                  SERIAL PRIMARY KEY,
   account_id          INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE account_fingerprint (
 CREATE INDEX account_fingerprint_account_id_idx ON account_fingerprint (account_id);
 CREATE UNIQUE INDEX account_fingerprint_fingerprint_idx ON account_fingerprint (fingerprint);
 
-DROP TABLE account_autojoin;
+DROP TABLE IF EXISTS account_autojoin;
 CREATE TABLE account_autojoin (
   id                  SERIAL PRIMARY KEY,
   account_id          INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,

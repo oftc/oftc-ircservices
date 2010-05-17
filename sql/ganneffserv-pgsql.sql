@@ -1,4 +1,4 @@
-DROP TABLE ganneffserv CASCADE;
+DROP TABLE IF EXISTS ganneffserv CASCADE;
 CREATE TABLE ganneffserv (
   id      SERIAL PRIMARY KEY,
   setter  INTEGER REFERENCES account(id) ON DELETE SET NULL,
