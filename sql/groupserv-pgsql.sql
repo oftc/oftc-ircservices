@@ -1,4 +1,4 @@
-DROP TABLE "group" CASCADE;
+DROP TABLE IF EXISTS "group" CASCADE;
 CREATE TABLE "group" (
   id                  SERIAL PRIMARY KEY,
   name                VARCHAR(32) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE "group" (
   reg_time            INTEGER NOT NULL 
 );
 
-DROP TABLE group_access;
+DROP TABLE IF EXISTS group_access;
 CREATE TABLE group_access(
   id                   SERIAL PRIMARY KEY,
   group_id             INTEGER NOT NULL REFERENCES "group"(id) ON DELETE CASCADE,
