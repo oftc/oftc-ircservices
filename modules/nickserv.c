@@ -623,6 +623,7 @@ m_drop(struct Service *service, struct Client *client,
     MyFree(masterless_channel);
     if(target != client)
       MyFree(target_nick);
+    return;
   }
 
   if(nickname_delete(client->nickname)) 
