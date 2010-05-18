@@ -1821,6 +1821,12 @@ check_masterless_channels(unsigned int accid)
     DLINK_FOREACH(ptr, list.head)
     {
       chan = (struct InfoList *)ptr->data;
+      /*
+      nickname_chan_list only returns channels that have an account access list
+      entry. chanaccess_count returns the aggregate count for both account and
+      group access entries. Therefore if the user has an access entry and there
+      is only one entry the channel is safe to drop.
+      */
       if(chanaccess_count(chan->id) == 1)
       {
         char *nick = nickname_nick_from_id(accid, TRUE);
@@ -1843,6 +1849,13 @@ check_masterless_channels(unsigned int accid)
 
         continue;
       }
+
+      /*
+      dbchannel_masters_count returns the total number of access entries that
+      have MASTER_FLAG (either account or group) so if the account is a MASTER
+      but there is also a group MASTER we won't report this as a channel that
+      needs to be handled
+      */
       mcount = -1;
       dbchannel_masters_count(chan->id, &mcount);
       if(chan->ilevel == MASTER_FLAG && mcount <= 1)
