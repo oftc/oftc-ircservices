@@ -186,11 +186,10 @@ static VALUE
 info_set(VALUE self, VALUE value)
 {
   struct Client *client = value_to_client(self);
-  const char* cvalue;
 
   Check_Type(value, T_STRING);
 
-  strlcpy(client->info, cvalue, sizeof(client->info));
+  strlcpy(client->info, StringValueCStr(value), sizeof(client->info));
   return value;
 }
 
@@ -205,11 +204,10 @@ static VALUE
 username_set(VALUE self, VALUE value)
 {
   struct Client *client = value_to_client(self);
-  const char* cvalue;
 
   Check_Type(value, T_STRING);
 
-  strlcpy(client->username, cvalue, sizeof(client->username));
+  strlcpy(client->username, StringValueCStr(value), sizeof(client->username));
   return value;
 }
 
