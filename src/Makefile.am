@@ -56,3 +56,4 @@ else
 services_LDADD+=$(top_srcdir)/modules/libmodules.la
 endif
 AM_YFLAGS=-d
+top_build_prefix=$(top_srcdir)/
