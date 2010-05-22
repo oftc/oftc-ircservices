@@ -101,11 +101,10 @@ static VALUE
 name_set(VALUE self, VALUE value)
 {
   struct Client *client = value_to_client(self);
-  const char* cvalue;
 
   Check_Type(value, T_STRING);
 
-  strlcpy(client->name, cvalue, sizeof(client->name));
+  strlcpy(client->name, StringValueCStr(value), sizeof(client->name));
   return value;
 }
 
@@ -120,11 +119,10 @@ static VALUE
 host_set(VALUE self, VALUE value)
 {
   struct Client *client = value_to_client(self);
-  const char* cvalue;
 
   Check_Type(value, T_STRING);
 
-  strlcpy(client->host, cvalue, sizeof(client->host));
+  strlcpy(client->host, StringValueCStr(value), sizeof(client->host));
   return value;
 }
 
@@ -142,11 +140,10 @@ static VALUE
 realhost_set(VALUE self, VALUE value)
 {
   struct Client *client = value_to_client(self);
-  const char* cvalue;
 
   Check_Type(value, T_STRING);
 
-  strlcpy(client->realhost, cvalue, sizeof(client->host));
+  strlcpy(client->realhost, StringValueCStr(value), sizeof(client->host));
   return value;
 }
 
@@ -171,11 +168,10 @@ static VALUE
 id_set(VALUE self, VALUE value)
 {
   struct Client *client = value_to_client(self);
-  const char* cvalue;
 
   Check_Type(value, T_STRING);
 
-  strlcpy(client->id, cvalue, sizeof(client->id));
+  strlcpy(client->id, StringValueCStr(value), sizeof(client->id));
   return value;
 }
 
