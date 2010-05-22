@@ -452,7 +452,7 @@ irc_sendmsg_akill(va_list args)
   if(strchr(mask, '@') == NULL)
     snprintf(userhost, USERLEN+HOSTLEN, "*@%s", mask);
   else
-    snprintf(userhost, USERLEN+HOSTLEN, mask);
+    snprintf(userhost, USERLEN+HOSTLEN, "%s", mask);
 
   nuh.nuhmask  = userhost;
   nuh.nickptr  = name;
