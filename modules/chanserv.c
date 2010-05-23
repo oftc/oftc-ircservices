@@ -2569,7 +2569,7 @@ cs_on_cmode_change(va_list args)
   if(chptr->regchan != NULL && dbchannel_get_autosave(chptr->regchan))
   {
     char buf[IRC_BUFSIZE+1];
-    char ret;
+    char ret = FALSE;
     snprintf(buf, IRC_BUFSIZE, "AUTOSAVED: (%s)", source->name);
     switch(mode)
     {
