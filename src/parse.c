@@ -463,7 +463,7 @@ handle_services_command(struct ServiceMessage *pmptr,
     if(from->access < IDENTIFIED_FLAG && mptr->access == CHIDENTIFIED_FLAG)
     {
       reply_user(service, NULL, from, SERV_NOT_IDENTIFIED, from->name);
-      if(regchptr != chptr->regchan)
+      if(chptr != NULL && regchptr != chptr->regchan)
         dbchannel_free(regchptr);
       return;
     }
