@@ -59,6 +59,11 @@ dnsbls:
   # appended at the beginning (i.e. 1ZZAAAAAA.sample.mynetwork.net)
     withid: Yes
   #
+  # hexip: (bool) [optional]
+  # if a client is found in this block it will append the hexencoded ip to the
+  # defined cloak (5bc6e331.cloak.example.com)
+    hexip: Yes
+  #
   # score: (integer) [optional]
   # a positive or negative value, applied to a result if a specific result if no
   # score is defined for the result, or the result is not found in the list of

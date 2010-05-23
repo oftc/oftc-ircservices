@@ -1,6 +1,7 @@
 class Bopm < ServiceModule
   require 'resolv'
   require 'yaml'
+  require 'ipaddr'
 
   def initialize()
     service_name('Bopm')
@@ -168,6 +169,14 @@ class Bopm < ServiceModule
       withid = false
     end
 
+    if entry.has_key?('hexip')
+      hexip = entry['hexip']
+    else
+      hexip = false
+    end
+
+    log(LOG_DEBUG, "hexip: #{hexip}")
+
     entry_score = default_score
     entry_reason = ''
     entry_count = 0
@@ -193,7 +202,7 @@ class Bopm < ServiceModule
 
       log(LOG_DEBUG, "#{req['host']} in #{entry['name']} (#{entry_score}) [#{entry_reason}]")
 
-      results << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid]
+      results << [entry['name'], addr, entry_score, entry_reason, entry['cloak'], withid, hexip]
     end
 
     if entry_count > 0
@@ -226,7 +235,7 @@ class Bopm < ServiceModule
   def newuser_final(host, score, blacklists, short_names, cid)
     client = Client.find(cid)
     if blacklists.length > 0
-      name, addr, escore, reason, cloak, withid = blacklists[0]
+      name, addr, escore, reason, cloak, withid, hexip = blacklists[0]
       snames = short_names.join(", ")
       if score >= @config['kill_score']
         if client
@@ -267,11 +276,18 @@ class Bopm < ServiceModule
 
           if @config['recloak_users'] or do_cloak
             log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
+            cloakstr = "#{cloak}"
+
             if withid
-              client.cloak("#{client.id}.#{cloak}")
-            else
-              client.cloak(cloak)
+              cloakstr = "#{client.id}.#{cloakstr}"
             end
+
+            if hexip and !client.sockhost.nil?
+              chex = IPAddr.new(client.sockhost).to_i.to_s(16)
+              cloakstr = "#{chex}.#{cloakstr}"
+            end
+
+            client.cloak(cloakstr)
           else
             log(LOG_DEBUG, "Not cloaking #{client.to_str} to #{cloak}")
           end
