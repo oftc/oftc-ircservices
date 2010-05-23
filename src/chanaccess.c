@@ -89,11 +89,6 @@ chanaccess_list(unsigned int channel, dlink_list *list)
     ilog(L_CRIT, "chanaccess_list: database error %d", error);
     return FALSE;
   }
-  else if(results == NULL)
-    res = 0;
-
-  if(results->row_count == 0)
-    res = 0;
 
   if(results != NULL)
   {
