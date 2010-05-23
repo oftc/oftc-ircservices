@@ -2877,7 +2877,6 @@ static void *
 cs_on_burst_done(va_list args)
 {
   dlink_node *ptr;
-  struct Client *chanserv_client = chanserv_client;
 
   DLINK_FOREACH(ptr, global_channel_list.head)
   {
