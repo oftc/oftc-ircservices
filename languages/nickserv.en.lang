@@ -376,7 +376,7 @@ NS_HELP_UNLINK_LONG
 NS_HELP_REGAIN_SHORT
 	%s: Release your nickname for you to use.
 NS_HELP_REGAIN_LONG
-	Usage: REGAIN nickname password
+	Usage: REGAIN nickname [password]
 	
 	If your nickname is being held by services, as is the case if your nickname
 	has been enforced recently, this command will release the hold and change

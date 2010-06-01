@@ -1697,13 +1697,16 @@ check_nick_pass(struct Client *client, Nickname *nick, const char *password)
   assert(nick);
   assert(nickname_get_salt(nick));
 
-  len = strlen(password) + SALTLEN + 1;
-
   if(client != NULL && *client->certfp != '\0')
   {
     if(nickname_cert_check(nick, client->certfp, NULL))
       return 1;
   }
+
+  if(EmptyString(password))
+      return 0;
+
+  len = strlen(password) + SALTLEN + 1;
 
   fullpass = MyMalloc(len);
   len = snprintf(fullpass, len, "%s%s", password,

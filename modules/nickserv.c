@@ -255,12 +255,12 @@ static struct ServiceMessage unforbid_msgtab = {
 };
 
 static struct ServiceMessage regain_msgtab = {
-  NULL, "REGAIN", 0, 2, 2, 0, USER_FLAG, NS_HELP_REGAIN_SHORT, 
+  NULL, "REGAIN", 0, 1, 2, 0, USER_FLAG, NS_HELP_REGAIN_SHORT, 
   NS_HELP_REGAIN_LONG, m_regain
 };
 
 static struct ServiceMessage reclaim_msgtab = {
-  NULL, "RECLAIM", 0, 2, 2, 0, USER_FLAG, NS_HELP_REGAIN_SHORT, 
+  NULL, "RECLAIM", 0, 1, 2, 0, USER_FLAG, NS_HELP_REGAIN_SHORT, 
   NS_HELP_REGAIN_LONG, m_regain
 };
 
@@ -1254,7 +1254,7 @@ m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  if(parc == 1 && (nickname_get_secure(nick) || !IsOnAccess(client)))
+  if(parc == 1 && (!check_nick_pass(client, nick, "") && (nickname_get_secure(nick) || !IsOnAccess(client))))
   {
     nickname_free(nick);
     reply_user(service, service, client, NS_REGAIN_FAILED_SECURITY, parv[1]);   
