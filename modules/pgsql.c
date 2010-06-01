@@ -304,7 +304,7 @@ static query_t queries[QUERY_COUNT] = {
       "WHERE group_id=$1 AND level=3 AND group_access.account_id=account.id "
       "AND account.primary_nick=nickname.id ORDER BY lower(nick)", QUERY },
   { GET_GROUP_MASTER_COUNT, "SELECT COUNT(id) FROM group_access "
-    "WHERE group_id=$1 AND level=4", QUERY },
+    "WHERE group_id=$1 AND level=3", QUERY },
   { INSERT_CHANACCESS_GROUP, "INSERT INTO channel_access "
     "(group_id, channel_id, level) VALUES ($1, $2, $3)", EXECUTE } ,
   { GET_CHAN_ACCESS_GROUP, "SELECT id, channel_id, account_id, group_id, level "
