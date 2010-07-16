@@ -23,8 +23,10 @@ def view_chan(request, channel):
 @render_to('ChanServ/access_list.html')
 def access_list(request, channel):
   chan = '#' + channel
-  list = ChannelAccess.objects.filter(channel__channel=chan)
+  dbchan = Channel.objects.get(channel=chan)
+  list = ChannelAccess.objects.filter(channel=dbchan)
 
   return {
+    'channel': dbchan,
     'list': list,
   }
