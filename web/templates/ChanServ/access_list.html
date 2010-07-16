@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block navmenu %}
+  {% if user.is_authenticated %}
+    <li><a href="/NickServ/">NickServ</a></li>
+    <li><a href="/ChanServ/">ChanServ</a></li>
+    <li><a href="/ChanServ/view/{{ channel.channel|slice:"1:" }}">{{ channel.channel }}</a></li>
+    <li class="current"><a href="/ChanServ/access/list/{{ channel.channel|slice:"1:" }}">Access List</a></li>
+  {% endif %}
+{% endblock %}
+
+{% block bodycontent %}
+  <h3>Access List</h3>
+  <br />
+  <table>
+    <thead>
+      <th>Name</th>
+      <th>Level</th>
+    </thead>
+    <tbody>
+      {% for access in list %}
+        <tr>
+          <td>
+            {% if access.account %}
+              {{ access.account.primary_nick.nick }}
+            {% else %}
+              {{ access.group.name }}
+            {% endif %}
+          </td>
+          <td>{{ access.get_level_display }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

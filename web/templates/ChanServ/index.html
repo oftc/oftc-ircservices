@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block navmenu %}
+  {% if user.is_authenticated %}
+    <li><a href="/NickServ/">NickServ</a></li>
+    <li class="current"><a href="/ChanServ/">ChanServ</a></li>
+  {% endif %}
+{% endblock %}
+
+{% block bodycontent %}
+  <h3>Channels on which you appear on the access list</h3>
+  {% for chan in channels %}
+    <a href='/ChanServ/view/{{ chan.channel.channel|slice:"1:" }}/'>{{ chan.channel.channel }}</a>
+  {% endfor %}
+{% endblock %}

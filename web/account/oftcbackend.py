@@ -20,6 +20,8 @@ class OFTCBackend(ModelBackend):
     if account.user == None:
       user = User()
       user.username = username
+      if account.flag_admin:
+        user.is_staff = True
       user.save()
       account.user = user
       account.save()

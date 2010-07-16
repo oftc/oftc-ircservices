@@ -1,5 +1,12 @@
 from django.db import models
 
+CHACCESS_LEVEL = (
+  (1, 'Identified User'),
+  (2, 'Channel Member'),
+  (3, 'Channel Operator'),
+  (4, 'Channel Master'),
+)
+
 class Channel(models.Model):
   channel = models.CharField(max_length=255)
   flag_private = models.BooleanField()
@@ -46,6 +53,6 @@ class ChannelAccess(models.Model):
   channel = models.ForeignKey(Channel)
   account = models.ForeignKey('account.Account')
   group = models.ForeignKey('GroupServ.Group')
-  level = models.IntegerField()
+  level = models.IntegerField(choices=CHACCESS_LEVEL)
   class Meta:
     db_table = u'channel_access'

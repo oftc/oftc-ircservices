@@ -19,3 +19,12 @@ def view_chan(request, channel):
     'channel': dbchan,
     'reg_time': datetime.fromtimestamp(dbchan.reg_time),
   }
+  
+@render_to('ChanServ/access_list.html')
+def access_list(request, channel):
+  chan = '#' + channel
+  list = ChannelAccess.objects.filter(channel__channel=chan)
+
+  return {
+    'list': list,
+  }

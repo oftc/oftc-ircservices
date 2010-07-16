@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block navmenu %}
+  {% if user.is_authenticated %}
+    <li><a href="/NickServ/">NickServ</a></li>
+    <li><a href="/ChanServ/">ChanServ</a></li>
+  {% endif %}
+{% endblock %}
+
+{% block bodycontent %}
+Welcome to my domain muhahaha.  If you want to mess about before I get around
+to implementing registration connect to ipng.org.uk:27062 or
+ipng.org.uk:27063(ssl) and register your nick on the irc server there.  Then
+you can login here.
+{% endblock %}
