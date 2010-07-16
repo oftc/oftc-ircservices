@@ -78,6 +78,7 @@ INSTALLED_APPS = (
     'NickServ',
     'ChanServ',
     'GroupServ',
+    'extras',
 )
 
 AUTHENTICATION_BACKENDS = (
