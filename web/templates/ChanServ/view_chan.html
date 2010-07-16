@@ -6,6 +6,7 @@
     <li><a href="/ChanServ/">ChanServ</a></li>
     <li class="current"><a href="/ChanServ/view/{{ channel.channel|slice:"1:" }}">{{ channel.channel }}</a></li>
     <li><a href="/ChanServ/access/list/{{ channel.channel|slice:"1:" }}">Access List</a></li>
+    <li><a href="/ChanServ/akick/list/{{ channel.channel|slice:"1:" }}">AKick List</a></li>
   {% endif %}
 {% endblock %}
 

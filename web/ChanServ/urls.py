@@ -4,4 +4,5 @@ urlpatterns = patterns('web.ChanServ.views',
   (r'^$', 'index'),
   (r'^view/(?P<channel>\w+)/$', 'view_chan'),
   (r'^access/list/(?P<channel>\w+)/$', 'access_list'),
+  (r'^akick/list/(?P<channel>\w+)/$', 'akick_list'),
 )

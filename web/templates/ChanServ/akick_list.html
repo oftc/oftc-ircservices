@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block navmenu %}
+  {% if user.is_authenticated %}
+    <li><a href="/NickServ/">NickServ</a></li>
+    <li><a href="/ChanServ/">ChanServ</a></li>
+    <li><a href="/ChanServ/view/{{ channel.channel|slice:"1:" }}">{{ channel.channel }}</a></li>
+    <li><a href="/ChanServ/access/list/{{ channel.channel|slice:"1:" }}">Access List</a></li>
+    <li class="current"><a href="/ChanServ/akick/list/{{ channel.channel|slice:"1:" }}">AKick List</a></li>
+  {% endif %}
+{% endblock %}
+
+{% block bodycontent %}
+  <h3>AKick List</h3>
+  <br />
+  <table>
+    <thead>
+      <th>Setter</th>
+      <th>Target</th>
+      <th>Reason</th>
+      <th>Time Set</th>
+      <th>Duration</th>
+    </thead>
+    <tbody>
+      {% for access in list %}
+        <tr>
+          <td>{{ access.setter.primary_nick.nick }}</td>
+          <td>
+            {% if access.target %}
+              {{ access.target.primary_nick.nick }}
+            {% else %}
+              {{ access.mask}}
+            {% endif %}
+          </td>
+          <td>{{ access.reason }}</td>
+          <td>{{ access.time }}</td>
+          <td>
+            {% ifequal access.duration 0 %}
+              Permenant
+            {% else %}
+              {{ access.duration }}
+            {% endifequal %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

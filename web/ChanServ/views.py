@@ -30,3 +30,14 @@ def access_list(request, channel):
     'channel': dbchan,
     'list': list,
   }
+
+@render_to('ChanServ/akick_list.html')
+def akick_list(request, channel):
+  chan = '#' + channel
+  dbchan = Channel.objects.get(channel=chan)
+  list = ChannelAKick.objects.filter(channel=dbchan)
+
+  return {
+    'channel': dbchan,
+    'list': list,
+  }
