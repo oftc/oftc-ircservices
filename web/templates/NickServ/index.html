@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block navmenu %}
+  {% if user.is_authenticated %}
+    <li class="current"><a href="/NickServ/">NickServ</a></li>
+    <li><a href="/NickServ/access/list/">Access List</a></li>
+    <li><a href="/NickServ/cert/list/">Certificate List</a></li>
+    <li><a href="/ChanServ/">ChanServ</a></li>
+  {% endif %}
+{% endblock %}
+
+{% block bodycontent %}
+  <h3>Nickname information for {{ account.primary_nick.nick }}.</h3>
+  <br />
+  
+  <table>
+    <tr>
+      <td>Time Registered</td>
+      <td>{{ reg_time }}</td>
+    </tr>
+    <tr>
+      <td>Last quit time</td>
+      <td>{{ quit_time }}</td>
+    </tr>
+    <tr>
+      <td>Last quit message</td>
+      <td>{{ account.last_quit_msg }}</td>
+    </tr>
+    <tr>
+      <td>Last host</td>
+      <td>{{ account.last_host }}</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td><a href="{{ account.url }}" target="_blank">{{ account.url }}</a></td>
+    </tr>
+    <tr>
+      <td>Cloak string</td>
+      <td>{{ account.cloak }}</td>
+    </tr>
+    <tr>
+      <td>E-mail address</td>
+      <td><a href="mailto:{{ account.email }}">{{ account.email }}</a></td>
+    </tr>
+    <tr>
+      <td>Nickname enforcement</td>
+      <td>{% if account.flag_enforce %}On{% else %}Off{% endif %}</td>
+    </tr>
+   <tr>
+      <td>Nickname security</td>
+      <td>{% if account.flag_secure %}On{% else %}Off{% endif %}</td>
+    </tr>
+   <tr>
+      <td>Nickname privacy</td>
+      <td>{% if account.flag_private %}On{% else %}Off{% endif %}</td>
+    </tr>
+   <tr>
+      <td>Cloak</td>
+      <td>{% if account.flag_cloak %}On{% else %}Off{% endif %}</td>
+    </tr>
+  </table>
+  <br />
+  Linked nicknames: <br />
+  {% for nickname in account.nickname_set.all %}
+    {{ nickname.nick }}
+  {% endfor %}
+{% endblock %}

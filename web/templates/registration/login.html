@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block bodycontent %}
+
+<center><h1>Log in to IRC Services</h1></center>
+<br />
+<br />
+
+{% if form.errors %}
+<p style="color: red">Your username and password didn't match. Please try again.</p>
+{% endif %}
+
+<h3>Please enter your services account name and password to continue</h3>
+
+<form method="post" action="{% url django.contrib.auth.views.login %}">
+<table>
+  <tr>
+    <td>{{ form.username.label_tag }}</td>
+    <td>{{ form.username }}</td>
+  </tr>
+  <tr>
+    <td>{{ form.password.label_tag }}</td>
+    <td>{{ form.password }}</td>
+  </tr>
+</table>
+<br />
+<input type="submit" value="Login" />
+<input type="hidden" name="next" value="/"/>
+</form>
+
+{% endblock %}

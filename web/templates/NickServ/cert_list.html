@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block navmenu %}
+  {% if user.is_authenticated %}
+    <li><a href="/NickServ/">NickServ</a></li>
+    <li><a href="/NickServ/access/list/">Access List</a></li>
+    <li class="current"><a href="/NickServ/cert/list/">Certificate List</a></li>
+    <li><a href="/ChanServ/">ChanServ</a></li>
+  {% endif %}
+{% endblock %}
+
+{% block bodycontent %}
+  <h3>Certificate List</h3>
+  <br />
+
+  {% for cert in list %}
+    {{ cert.fingerprint }} {{ cert.nickname.nick }}<br />
+  {% endfor %}
+{% endblock %}

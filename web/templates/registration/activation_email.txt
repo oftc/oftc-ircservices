@@ -1,0 +1,16 @@
+{% load i18n %}
+Hi,
+
+Someone (hopefully you) has requested an account on {{ site.name }}.  To
+complete the registration process and activate your account please click on
+the link below.  If your mail client breaks the link, be sure to copy the
+whole line into your browser.
+
+http://{{ site.domain }}{% url registration_activate activation_key %}
+
+Link is valid for {{ expiration_days }} days.  After this time your account
+will be deleted and you will need to register again.
+
+Thanks,
+
+{{ site.name }}
