@@ -139,3 +139,8 @@ a
 {
   clear: both;
 }
+
+table
+{
+  border-collapse: collapse;
+}

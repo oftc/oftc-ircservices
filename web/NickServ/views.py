@@ -5,15 +5,9 @@ from datetime import datetime
 @render_to('NickServ/index.html')
 def index(request):
   account = Account.objects.get(user=request.user)
-  if account.last_quit_time == None:
-    quittime = None
-  else:
-    quittime = datetime.fromtimestamp(account.last_quit_time)
 
   return {
     'account': account,
-    'reg_time': datetime.fromtimestamp(account.reg_time),
-    'quit_time': quittime,
   }
 
 @render_to('NickServ/access_list.html')

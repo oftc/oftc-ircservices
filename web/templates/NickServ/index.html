@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load oftctags %}
 
 {% block navmenu %}
   {% if user.is_authenticated %}
@@ -12,15 +13,14 @@
 {% block bodycontent %}
   <h3>Nickname information for {{ account.primary_nick.nick }}.</h3>
   <br />
-  
   <table>
     <tr>
       <td>Time Registered</td>
-      <td>{{ reg_time }}</td>
+      <td>{{ account.reg_time|fromts }}</td>
     </tr>
     <tr>
       <td>Last quit time</td>
-      <td>{{ quit_time }}</td>
+      <td>{{ account.last_quit_time|fromts }}</td>
     </tr>
     <tr>
       <td>Last quit message</td>

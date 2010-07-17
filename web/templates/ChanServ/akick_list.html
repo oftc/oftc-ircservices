@@ -34,7 +34,7 @@
             {% endif %}
           </td>
           <td>{{ access.reason }}</td>
-          <td>{{ access.time|fromts:"%Y-%m-%d %H:%M" }}</td>
+          <td>{{ access.time|fromts }}</td>
           <td>
             {% ifequal access.duration 0 %}
               Permenant
