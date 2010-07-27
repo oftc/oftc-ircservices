@@ -13,7 +13,18 @@
   <h3>Certificate List</h3>
   <br />
 
-  {% for cert in list %}
-    {{ cert.fingerprint }} {{ cert.nickname.nick }}<br />
-  {% endfor %}
+  <table class="list">
+    <thead>
+      <th>Fingerprint</th>
+      <th>Nickname</th>
+    </thead>
+    <tbody>
+      {% for cert in list %}
+        <tr>
+          <td>{{ cert.fingerprint }}</td>
+          <td>{{ cert.nickname.nick }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}

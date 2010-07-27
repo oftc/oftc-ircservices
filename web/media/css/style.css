@@ -144,3 +144,23 @@ table
 {
   border-collapse: collapse;
 }
+
+.list
+{
+  padding-left: 5px;
+}
+
+.list th
+{
+  background-color: #E5E5E5;
+}
+
+.list td
+{
+  padding: 0 15px;
+}
+
+.list tr:hover
+{
+  background-color: #B8C5D9;
+}
