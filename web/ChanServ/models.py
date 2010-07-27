@@ -7,6 +7,14 @@ CHACCESS_LEVEL = (
   (4, 'Channel Master'),
 )
 
+CHMODE_FLAG = (
+  (0, 'AKick'),
+  (1, 'AKill'),
+  (2, 'Invex'),
+  (3, 'Except'),
+  (4, 'Quiet'),
+)
+
 class Channel(models.Model):
   channel = models.CharField(max_length=255)
   flag_private = models.BooleanField()
@@ -40,7 +48,7 @@ class ChannelAKick(models.Model):
   reason = models.CharField(max_length=512)
   time = models.IntegerField()
   duration = models.IntegerField()
-  chmode = models.IntegerField()
+  chmode = models.IntegerField(choices=CHMODE_FLAG)
   class Meta:
     db_table = u'channel_akick'
 

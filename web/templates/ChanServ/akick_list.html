@@ -17,6 +17,7 @@
   <table class="list">
     <thead>
       <th>Setter</th>
+      <th>Type</th>
       <th>Target</th>
       <th>Reason</th>
       <th>Time Set</th>
@@ -26,6 +27,7 @@
       {% for access in list %}
         <tr>
           <td>{{ access.setter.primary_nick.nick }}</td>
+          <td>{{ access.get_chmode_display }}</td>
           <td>
             {% if access.target %}
               {{ access.target.primary_nick.nick }}
