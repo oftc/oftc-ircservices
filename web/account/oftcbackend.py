@@ -14,7 +14,7 @@ class OFTCBackend(ModelBackend):
     m.update(password)
     m.update(account.salt)
 
-    if not account.password == m.hexdigest().upper():
+    if not account.password.upper() == m.hexdigest().upper():
       return None
 
     if account.user == None:
