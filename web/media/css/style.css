@@ -153,6 +153,9 @@ table
 .list th
 {
   background-color: #E5E5E5;
+  font-size: 12px;
+  font-weight: bold;
+  font-style: normal;
 }
 
 .list td
