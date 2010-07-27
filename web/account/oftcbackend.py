@@ -6,7 +6,11 @@ import hashlib
 
 class OFTCBackend(ModelBackend):
   def authenticate(self, username=None, password=None):
-    nickname = Nickname.objects.get(nick=username)
+    try:
+      nickname = Nickname.objects.get(nick=username)
+    except Nickname.DoesNotExist:
+      return None
+
     account = nickname.account
 
     m = hashlib.sha1()
@@ -25,6 +29,9 @@ class OFTCBackend(ModelBackend):
       user.save()
       account.user = user
       account.save()
+    else:
+      account.user.is_staff = account.flag_admin
+      account.user.save()
 
     return account.user
   def get_user(self, user_id):
