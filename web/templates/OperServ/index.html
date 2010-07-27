@@ -4,13 +4,11 @@
   {% if user.is_authenticated %}
     <li><a href="/NickServ/">NickServ</a></li>
     <li><a href="/ChanServ/">ChanServ</a></li>
-  {% endif %}
-  {% if user.is_staff %}
-    <li><a href="/OperServ/">OperServ</a></li>
+    <li class="current"><a href="/OperServ/">OperServ</a></li>
+    <li><a href="/OperServ/jupe/list">Jupe List</a></li>
+    <li><a href="/OperServ/akill/list">AKill List</a></li>
   {% endif %}
 {% endblock %}
 
 {% block bodycontent %}
-This is the web frontend to OFTC IRC services.  See the menus on the left to
-explore the options available to you.
 {% endblock %}
