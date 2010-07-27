@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+1.4.2
+_____
++ Bopm option to append hexip to cloak
+o Prevent phantom cmode changes for +R and +S
+o Prevent masterless channels from being dropped
+o Allow REGAIN with CERTFP
+o Miscellaneous fixes from static analyzer
+
 1.4.1
 -----
 + Add GroupServ SET DESC
