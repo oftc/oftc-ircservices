@@ -1,10 +1,15 @@
 from django.db import models
 
+CHIDENTIFIED = 1
+CHMEMBER = 2
+CHOPERATOR = 3
+CHMASTER = 4
+
 CHACCESS_LEVEL = (
-  (1, 'Identified User'),
-  (2, 'Channel Member'),
-  (3, 'Channel Operator'),
-  (4, 'Channel Master'),
+  (CHIDENTIFIED, 'Identified User'),
+  (CHMEMBER, 'Channel Member'),
+  (CHOPERATOR, 'Channel Operator'),
+  (CHMASTER, 'Channel Master'),
 )
 
 CHMODE_FLAG = (

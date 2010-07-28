@@ -14,6 +14,7 @@ def index(request):
 def view_chan(request, channel):
   chan = '#' + channel
   dbchan = Channel.objects.get(channel=chan)
+  print request.user.has_perm('MASTER', dbchan)
   
   return {
     'channel': dbchan,
