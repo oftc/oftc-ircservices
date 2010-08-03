@@ -351,6 +351,7 @@ m_server(struct Client *client, struct Client *source, int parc, char *parv[])
     newclient->hopcount = atoi(parv[2]);
     SetServer(newclient);
     dlinkAdd(newclient, &newclient->node, &global_client_list);
+    dlinkAdd(newclient, &newclient->node, &global_server_list);
     hash_add_client(newclient);
     newclient->servptr = source;
     dlinkAdd(newclient, &newclient->lnode, &newclient->servptr->server_list);
@@ -369,6 +370,7 @@ m_sid(struct Client *client, struct Client *source, int parc, char *parv[])
   newclient->hopcount = atoi(parv[2]);
   SetServer(newclient);
   dlinkAdd(newclient, &newclient->node, &global_client_list);
+  dlinkAdd(newclient, &newclient->node, &global_server_list);
   hash_add_client(newclient);
   hash_add_id(newclient);
   newclient->servptr = source;

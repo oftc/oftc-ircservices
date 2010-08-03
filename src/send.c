@@ -56,10 +56,7 @@ iosend_default(va_list args)
 void
 send_queued_all(void)
 {
-  dlink_node *ptr;
-
-  DLINK_FOREACH(ptr, global_server_list.head)
-    send_queued_write((struct Client *) ptr->data);
+  send_queued_write(me.uplink);
 }
 
 
