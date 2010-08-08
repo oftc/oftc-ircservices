@@ -282,8 +282,7 @@ exit_one_client(struct Client *source_p)
   {
     dlinkDelete(&source_p->lnode, &source_p->servptr->server_list);
 
-    if ((lp = dlinkFindDelete(&global_server_list, source_p)) != NULL)
-      free_dlink_node(lp);
+    dlinkFindDelete(&global_server_list, source_p);
   }
 
   if(HasID(source_p))

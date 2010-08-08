@@ -139,8 +139,9 @@ struct Server
 
 struct Client
 {
-  dlink_node node;
-  dlink_node lnode;
+  dlink_node node;    /* global_client_list node */
+  dlink_node lnode;   /* local server or client list node */
+  dlink_node snode;   /* global_server_list node */
   dlink_list channel;
 
   dlink_list server_list;   /**< Servers on this server      */
