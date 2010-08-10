@@ -1373,6 +1373,7 @@ m_stats(struct Client *client_p, struct Client *source_p,
     dlink_list *usage = block_heap_get_usage();
     dlink_node *ptr = NULL, *next_ptr = NULL;
     struct BlockHeapInfo *bi = NULL;
+    unsigned long identified_count = 0;
 
     DLINK_FOREACH_SAFE(ptr, next_ptr, usage->head)
     {
@@ -1387,6 +1388,19 @@ m_stats(struct Client *client_p, struct Client *source_p,
       MyFree(bi);
     }
     MyFree(usage);
+
+    DLINK_FOREACH_SAFE(ptr, next_ptr, global_client_list.head)
+    {
+      struct Client *c = (struct Client *)ptr->data;
+      if(IsIdentified(c))
+        ++identified_count;
+    }
+
+    sendto_server(me.uplink,
+      ":%s %d %s z :Identified Percentage: identified %ld/%ld (%02f)",
+      me.name, 249, source_p->name, identified_count, global_client_list.length,
+      (identified_count * 1.0 / global_client_list.length * 1.0));
+
     sendto_server(me.uplink, ":%s 219 %s %c :End of /STATS report",
       me.name, source_p->name, 'z');
   }
