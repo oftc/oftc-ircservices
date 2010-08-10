@@ -25,7 +25,7 @@ class RubyServ < ServiceModule
       [CTCP_HOOK, 'ctcp_msg'],
       [EOB_HOOK, 'eob'],
     ])
-    #add_event('timer', 3)
+    #add_event('timer', 3, nil)
 
     @queryid = DB.prepare("SELECT nick,account_id,reg_time FROM nickname WHERE lower(nick) = lower($1)")
   end
@@ -36,7 +36,7 @@ class RubyServ < ServiceModule
     Channel.all_each { |x| log(LOG_DEBUG, "Channel #{x.name} found") }
   end
 
-  def timer()
+  def timer(arg)
     log(LOG_NOTICE, "Timer Called")
   end
 

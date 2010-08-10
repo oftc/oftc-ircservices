@@ -18,8 +18,8 @@ class Bopm < ServiceModule
       [QUIT_HOOK, 'client_quit'],
       ])
 
-    add_event('check_pending', 10)
-    add_event('expire_dns_request', 10)
+    add_event('check_pending', 10, nil)
+    add_event('expire_dns_request', 10, nil)
 
     File.open("#{CONFIG_PATH}/bopm.yaml", 'r') do |f|
       @config = YAML::load(f)
@@ -218,7 +218,7 @@ class Bopm < ServiceModule
 
     if req['count'] == 0 or really_stop
       finish_request(reqid)
-      check_pending()
+      check_pending(nil)
     end
   end
 
@@ -336,7 +336,7 @@ class Bopm < ServiceModule
     end
   end
 
-  def check_pending()
+  def check_pending(arg)
     if @outstanding_requests.keys.length < @dnsbl_max_requests and @pending_users.keys.length > 0
       id = @pending_users.keys.shift
       client = @pending_users[id]
@@ -345,7 +345,7 @@ class Bopm < ServiceModule
     end
   end
 
-  def expire_dns_request()
+  def expire_dns_request(arg)
     @outstanding_requests.keys.each do |reqid|
       req = @outstanding_requests[reqid]
       delta = req['ttl'] - Time.now.to_i

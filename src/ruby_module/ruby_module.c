@@ -607,11 +607,12 @@ enum EVENT_POSITION
   EVT_METHOD,
   EVT_TIMER,
   EVT_LAST,
+  EVT_ARG,
   EVT_COUNT,
 };
 
 VALUE
-rb_add_event(VALUE self, VALUE method, VALUE time)
+rb_add_event(VALUE self, VALUE method, VALUE time, VALUE arg)
 {
   VALUE sn = rb_iv_get(self, "@ServiceName");
   VALUE events = rb_hash_aref(ruby_server_events, sn);
@@ -619,6 +620,7 @@ rb_add_event(VALUE self, VALUE method, VALUE time)
   rb_ary_store(event, EVT_SELF, self);
   rb_ary_store(event, EVT_METHOD, method);
   rb_ary_store(event, EVT_TIMER, time);
+  rb_ary_store(event, EVT_ARG, arg);
   rb_ary_store(event, EVT_LAST, LONG2NUM(CurrentTime));
 
   if(events == Qnil)
@@ -662,7 +664,7 @@ rb_event_hdlr(va_list args)
   int delta;
   int handled = 0;
   VALUE keys = do_ruby_ret(ruby_server_events, rb_intern("keys"), 0);
-  VALUE key, events, event, self, method, timer, ltime;
+  VALUE key, events, event, self, method, timer, ltime, arg;
 
   for(i = 0; i < RARRAY(keys)->len; ++i)
   {
@@ -676,12 +678,13 @@ rb_event_hdlr(va_list args)
       method = rb_ary_entry(event, EVT_METHOD);
       timer = rb_ary_entry(event, EVT_TIMER);
       ltime = rb_ary_entry(event, EVT_LAST);
+      arg = rb_ary_entry(event, EVT_ARG);
 
       delta = CurrentTime - NUM2LONG(ltime);
 
       if(delta >= NUM2LONG(timer))
       {
-        do_ruby(self, rb_intern(StringValueCStr(method)), 0);
+        do_ruby(self, rb_intern(StringValueCStr(method)), 1, arg);
         rb_ary_store(event, EVT_LAST, LONG2NUM(CurrentTime));
         handled = 1;
         break;

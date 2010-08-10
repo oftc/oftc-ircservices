@@ -82,11 +82,11 @@ class GanneffServ < ServiceModule
       ]) # add_hook
 
     # We want to do stuff every now and then, run a timer event
-    add_event('cleanup_event', 90)
+    add_event('cleanup_event', 90, nil)
 
     # Make sure our channel config is saved every now and then. But dont
     # run as often as cleanup_event
-    add_event('save_data', 600)
+    add_event('save_data', 600, nil)
 
     debug(LOG_DEBUG, "Startup done, lets wait for trolls to kill.")
 
@@ -121,7 +121,7 @@ class GanneffServ < ServiceModule
   # Save data
   def SAVE(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} called SAVE")
-    save_data
+    save_data(nil)
     reply(client, "SAVE done")
 
     true
@@ -370,7 +370,7 @@ class GanneffServ < ServiceModule
   end
 
   # Called via event handlers, every X seconds.
-  def cleanup_event()
+  def cleanup_event(arg)
     debug(LOG_DEBUG, "Timer event CLEANUP starting")
     clean
     debug(LOG_DEBUG, "Timer event CLEANUP done")
@@ -649,7 +649,7 @@ class GanneffServ < ServiceModule
 # ------------------------------------------------------------------------
 
   # Save data to yaml
-  def save_data()
+  def save_data(arg)
     debug(LOG_DEBUG, "Saving channel data")
     #File.open("#{@langpath}/ganneffserv-channels.yaml", 'w') do |out|
     #  YAML.dump(@channels, out)

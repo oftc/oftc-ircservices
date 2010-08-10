@@ -23,7 +23,7 @@ static VALUE ServiceModule_kill_user(VALUE, VALUE, VALUE);
 static VALUE ServiceModule_load_language(VALUE, VALUE);
 static VALUE ServiceModule_lm(VALUE, VALUE);
 static VALUE ServiceModule_drop_nick(VALUE, VALUE);
-static VALUE ServiceModule_add_event(VALUE, VALUE, VALUE);
+static VALUE ServiceModule_add_event(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_send_cmode(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_dns_lookup(VALUE, VALUE, VALUE, VALUE);
 static VALUE ServiceModule_dns_lookup_reverse(VALUE, VALUE, VALUE, VALUE);
@@ -419,9 +419,9 @@ ServiceModule_drop_nick(VALUE self, VALUE nickname)
 }
 
 static VALUE
-ServiceModule_add_event(VALUE self, VALUE method, VALUE time)
+ServiceModule_add_event(VALUE self, VALUE method, VALUE time, VALUE arg)
 {
-  return rb_add_event(self, method, time);
+  return rb_add_event(self, method, time, arg);
 }
 
 static VALUE
@@ -620,7 +620,7 @@ Init_ServiceModule(void)
   rb_define_method(cServiceModule, "lm", ServiceModule_lm, 1);
 
   rb_define_method(cServiceModule, "drop_nick", ServiceModule_drop_nick, 1);
-  rb_define_method(cServiceModule, "add_event", ServiceModule_add_event, 2);
+  rb_define_method(cServiceModule, "add_event", ServiceModule_add_event, 3);
   rb_define_method(cServiceModule, "delete_event", ServiceModule_delete_event, 1);
   rb_define_method(cServiceModule, "send_cmode", ServiceModule_send_cmode, 3);
 
