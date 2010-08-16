@@ -720,7 +720,7 @@ m_info(struct Service *service, struct Client *client,
       dbchannel_get_restricted(regchptr) ? "ON" : "OFF");
 
   reply_user(service, service, client, CS_INFO_OPTION, "VERBOSE",
-      dbchannel_get_restricted(regchptr) ? "ON" : "OFF");
+      dbchannel_get_verbose(regchptr) ? "ON" : "OFF");
 
   reply_user(service, service, client, CS_INFO_OPTION, "AUTOLIMIT",
       dbchannel_get_autolimit(regchptr) ? "ON" : "OFF");
