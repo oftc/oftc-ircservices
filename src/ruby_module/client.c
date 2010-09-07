@@ -42,6 +42,7 @@ static VALUE ip_or_hostname(VALUE);
 static VALUE all_servers_each(VALUE);
 static VALUE client_length(VALUE);
 static VALUE client_each(VALUE);
+static VALUE channel_each(VALUE);
 
 void
 Init_Client(void)
@@ -84,6 +85,7 @@ Init_Client(void)
   rb_define_method(cClient, "ip_or_hostname", ip_or_hostname, 0);
   rb_define_method(cClient, "client_length", client_length, 0);
   rb_define_method(cClient, "client_each", client_each, 0);
+  rb_define_method(cClient, "channel_each", channel_each, 0);
 
   rb_define_singleton_method(cClient, "find", find, 1);
   rb_define_singleton_method(cClient, "all_servers_each", all_servers_each, 0);
@@ -447,6 +449,24 @@ client_each(VALUE self)
     {
       struct Client *c = ptr->data;
       rb_yield(client_to_value(c));
+    }
+  }
+
+  return self;
+}
+
+static VALUE
+channel_each(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+  dlink_node *ptr = NULL, *nptr = NULL;
+
+  if(rb_block_given_p())
+  {
+    DLINK_FOREACH_SAFE(ptr, nptr, client->channel.head)
+    {
+      struct Membership *ms = ptr->data;
+      rb_yield(channel_to_value(ms->chptr));
     }
   }
 

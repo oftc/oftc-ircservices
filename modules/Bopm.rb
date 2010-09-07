@@ -239,7 +239,12 @@ class Bopm < ServiceModule
       snames = short_names.join(", ")
       if score >= @config['kill_score']
         if client
-          lmsg = "KILLING #{client.to_str} with score: #{score} [#{snames}]"
+          channels = []
+          client.channel_each do |channel|
+            channels << channel.name
+          end
+          channels = channels.join(", ")
+          lmsg = "KILLING #{client.to_str} with score: #{score} [#{snames}] [#{channels}]"
         else
           lmsg = "KILLING #{host} with score: #{score} [#{snames}]"
         end
