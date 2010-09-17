@@ -13,8 +13,11 @@ class MoranServ < ServiceModule
         init_server_conns(300, 100)
         init_server_conns(3600, 1000)
     end
-    
-    def loaded()
+
+    def loaded
+        @server_conns.each_key{|time|
+            init_server_load(time)
+        }
     end
 
     def check_servers(time)
@@ -115,6 +118,15 @@ class MoranServ < ServiceModule
         @server_conns[time]['counts'].default = 0
         @server_conns[time]['event'] = add_event("check_servers", time, time)
         debug("Monitoring for an increase in #{threshold} new connections every #{time} seconds")
+    end
+
+    def init_server_load(time)
+        debug("Getting initial server loading for #{time} second period")
+        Client.all_servers_each {|server|
+            count = server.client_length
+            debug("#{server.name} has #{count} clients")
+            @server_conns[time]['counts'][server.name] = count
+        }
     end
 
     def debug(message)
