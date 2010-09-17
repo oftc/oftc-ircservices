@@ -26,7 +26,8 @@ class MoranServ < ServiceModule
             threshold = @server_conns[time]['threshold']
             debug("! #{server.name}: was #{old_count}, now #{count}, threshold #{threshold}")
             if delta.abs > threshold
-                notice("#{server.name} had #{delta} new connections in #{time} seconds (total clients: #{count}; threshold: |#{@server_conns[time]['threshold']}|)")
+                dir = delta > 0 ? '+' : '-'
+                notice("#{server.name} had #{dir}#{delta.abs} connections in #{time} seconds (total clients: #{count}; threshold: |#{@server_conns[time]['threshold']}|)")
             end
             @server_conns[time]['counts'][server.name] = count
         }
