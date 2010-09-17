@@ -1,0 +1,22 @@
+0 English
+MS_HELP_DEBUG_SHORT
+	%s: Toggles debug mode
+MS_HELP_DEBUG_LONG
+	Toggles debug mode
+MS_HELP_SHORT
+	%s: shows this help
+MS_HELP_LONG
+	Shows this help message
+MS_HELP_THRESHOLD_SHORT
+	%s: Changes threshold values
+MS_HELP_THRESHOLD_LONG
+	Usage: THRESHOLD [time] [value]
+	
+	Changes the threshold for time to value.
+	
+	time must be a registered threshold (you cannot add 
+	or delete them at this point)
+
+	Usage: THRESHOLD LIST
+
+	Lists current time periods and the respective threshold value
