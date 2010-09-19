@@ -1374,6 +1374,8 @@ m_stats(struct Client *client_p, struct Client *source_p,
     dlink_node *ptr = NULL, *next_ptr = NULL;
     struct BlockHeapInfo *bi = NULL;
     unsigned long identified_count = 0;
+    unsigned long identified_ssl = 0;
+    unsigned long identified_access = 0;
 
     DLINK_FOREACH_SAFE(ptr, next_ptr, usage->head)
     {
@@ -1393,13 +1395,21 @@ m_stats(struct Client *client_p, struct Client *source_p,
     {
       struct Client *c = (struct Client *)ptr->data;
       if(IsIdentified(c))
+      {
         ++identified_count;
+        if(IsSentCert(c))
+          ++identified_ssl;
+        else if(IsOnAccess(c))
+          ++identified_access;
+      }
     }
 
     sendto_server(me.uplink,
-      ":%s %d %s z :Identified Percentage: identified %ld/%ld (%02f)",
+      ":%s %d %s z :identified: %ld/%ld (%3.2f%) Access: %ld/%ld (%3.2f%) Cert: %ld/%ld (%3.2f%)",
       me.name, 249, source_p->name, identified_count, global_client_list.length,
-      (identified_count * 1.0 / global_client_list.length * 1.0));
+      (identified_count * 1.0 / global_client_list.length * 1.0) * 100,
+      identified_access, identified_count, (identified_access * 1.0 / identified_count * 1.0) * 100,
+      identified_ssl, identified_count, (identified_ssl * 1.0 / identified_count * 1.0) * 100);
 
     sendto_server(me.uplink, ":%s 219 %s %c :End of /STATS report",
       me.name, source_p->name, 'z');
