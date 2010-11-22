@@ -1904,10 +1904,6 @@ ns_on_nick_change(va_list args)
           kill_user(nickserv, target, "This nickname is registered and protected");
       }
     }
-    send_nick_change(nickserv, client, user->release_name);
-    user->release_to = NULL;
-    memset(user->release_name, 0, sizeof(user->release_name));
-    identify_user(client);
   }
 
   ilog(L_DEBUG, "%s changing nick to %s", oldnick, user->name);
