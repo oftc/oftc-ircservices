@@ -5,7 +5,7 @@ class MoranServ < ServiceModule
         service_name("MoranServ")
         load_language("moranserv.en")
         
-        @debug = true
+        @debug = false
 
         register_commands
 
