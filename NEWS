@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+1.5.0
+-----
++ MoranServ to follow user deltas on servers
++ Start of django frontend
+o Prevent crash in identification with enforced users
+
 1.4.2
 _____
 + Bopm option to append hexip to cloak
