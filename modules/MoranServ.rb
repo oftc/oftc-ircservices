@@ -1,17 +1,22 @@
 class MoranServ < ServiceModule
+    require 'yaml'
 
     def initialize()
         service_name("MoranServ")
         load_language("moranserv.en")
         
-        @debug = false
+        @debug = true
 
         register_commands
 
+        File.open("#{CONFIG_PATH}/moran.yaml", 'r') do |f|
+            @config = YAML::load(f)
+        end
+
         @server_conns = Hash.new
-        init_server_conns(30, 10)
-        init_server_conns(300, 100)
-        init_server_conns(3600, 1000)
+        @config['times'].each do |entry|
+            init_server_conns(entry['time'], entry['warn'])
+        end
     end
 
     def loaded
@@ -117,7 +122,7 @@ class MoranServ < ServiceModule
         @server_conns[time]['counts'] = Hash.new
         @server_conns[time]['counts'].default = 0
         @server_conns[time]['event'] = add_event("check_servers", time, time)
-        debug("Monitoring for an increase in #{threshold} new connections every #{time} seconds")
+        debug("Monitoring for a change of #{threshold} connections every #{time} seconds")
     end
 
     def init_server_load(time)

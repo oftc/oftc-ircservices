@@ -1,0 +1,8 @@
+---
+times:
+  - time: 30
+    warn: 10
+  - time: 300
+    warn: 100
+  - time: 3600
+    warn: 1000
