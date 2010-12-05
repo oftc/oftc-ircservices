@@ -1957,7 +1957,7 @@ clump_masks(struct Service *service, struct Channel *chptr, const char *mode,
     else
       del_id(chptr, tmp, id);
 
-    if(strlen(tmp) + strlen(masks) + strlen(modes) > max_size)
+    if(strlen(tmp) + strlen(masks) + strlen(modes) > max_size || strlen(modes) == 5)
     {
       send_cmode(service, chptr, modes, masks);
       modes[0] = '\0';
