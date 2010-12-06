@@ -562,7 +562,7 @@ class GanneffServ < ServiceModule
     reason = "#{reason}|#{operreason}"
 
     #client.host is always filled, check it for the cloak value
-    if client.host == "tor-irc.dnsbl.oftc.net"
+    if client.host =~ /.*.tor-irc.dnsbl.oftc.net$/
       debug(LOG_DEBUG, "Using /kill instead of AKILL for Tor user #{client.name}")
       ret = kill_user(client, reason)
     elsif client.host =~ /.*(noc|netop|netrep|chair|ombudsman|advisor).oftc.net/ # should this have an $ ending?
