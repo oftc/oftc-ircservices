@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+1.5.1
+-----
+o clump_masks should only do 4 at a time
+o GanneffServ only kills tor again
+
 1.5.0
 -----
 + MoranServ to follow user deltas on servers
