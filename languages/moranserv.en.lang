@@ -20,3 +20,24 @@ MS_HELP_THRESHOLD_LONG
 	Usage: THRESHOLD LIST
 
 	Lists current time periods and the respective threshold value
+MS_HELP_TRACK_SHORT
+	%s: Track a client, ip, or regular expression
+MS_HELP_TRACK_LONG
+	Usage: TRACK [value]
+	
+	No parameters returns a list of currently tracked items
+	
+	If value is a valid client all joins, parts are tracked until
+	the client quits
+	
+	The value can also be a valid ip or cidr range (including ipv6),
+	any client activity that matches the cidr/ip will be tracked
+	
+	Otherwise the value will be interpreted as a regexp which is matched
+	against host, realhost, and nick
+MS_HELP_UNTRACK_SHORT
+	%s: Remove a currently tracked item
+MS_HELP_UNTRACK_LONG
+	Usage: UNTRACK <value>
+	
+	Stop tracking item <value>, if "-" is specified remove all tracking

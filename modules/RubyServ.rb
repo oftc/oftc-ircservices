@@ -84,7 +84,7 @@ class RubyServ < ServiceModule
     rchannel = Channel.find(channel)
     rchannel.members_each { |x| log(LOG_DEBUG, "#{x.name} is also in #{rchannel.name}") }
   end
-  def part(client, source, channel, reason)
+  def part(source, client, channel, reason)
     self.client.part('#floodtest', nil) if channel.name.downcase == '#floodtest' and channel.members_length == 1
   end
   def nick(source, oldnick)

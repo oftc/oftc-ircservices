@@ -1,5 +1,6 @@
 class MoranServ < ServiceModule
     require 'yaml'
+    require 'ipaddr'
 
     def initialize()
         service_name("MoranServ")
@@ -17,6 +18,20 @@ class MoranServ < ServiceModule
         @config['times'].each do |entry|
             init_server_conns(entry['time'], entry['warn'])
         end
+
+        @track = []
+        @track_ids = Hash.new
+
+        @track_notices = Hash.new
+
+        add_hook([
+          [NEWUSR_HOOK, 'client_new'],
+          [QUIT_HOOK, 'client_quit'],
+          [JOIN_HOOK, 'client_join'],
+          [PART_HOOK, 'client_part'],
+        ])
+
+        add_event('drain_notices', 10, nil)
     end
 
     def loaded
@@ -88,6 +103,66 @@ class MoranServ < ServiceModule
         notice("#{client.name} set #{time} second THRESHOLD to #{new_threshold}")
     end
 
+    def TRACK(client, parv = [])
+      # TRACK <nick>
+      # TRACK <regexp>
+      # TRACK <ip>
+      # TRACK
+      if parv.length == 1
+        reply(client, "Track list")
+        @track.each do |t|
+          reply(client, "#{t['type']} -- #{t['value']}")
+        end
+        reply(client, "End of track list")
+      else
+        arg = parv[1]
+        track_client = Client.find(arg)
+        type = 'regexp'
+        value = arg
+        if track_client
+          type = 'client'
+          value = track_client.id
+          @track_ids[track_client.id] = true
+        else
+          begin
+            addr = IPAddr.new(arg)
+            type = 'ip'
+            value = arg
+          rescue Exception => e
+          end
+        end
+        t = Hash.new
+        t['type'] = type
+        t['value'] = value
+        @track << t
+        reply(client, "Added track of #{type} for #{value}")
+        notice("#{client.name} Added track of #{type} for #{value}")
+      end
+    end
+
+    def UNTRACK(client, parv = [])
+      arg = parv[1]
+      if arg == '-'
+        @track = []
+        @track_ids = Hash.new
+        reply(client, "No longer tracking any thing")
+        notice("#{client.name} has removed all tracking")
+      else
+        @track.length.times do |i|
+          if @track[i]['value'] == arg
+            if @track[i]['type'] == 'client'
+              @track_ids.delete(@track[i]['value'])
+            end
+            @track.delete_at(i)
+            reply(client, "No longer tracking #{arg}")
+            notice("#{client.name} has removed tracking for #{arg}")
+            return
+          end
+        end
+        reply(client, "Not currently tracking #{arg}")
+      end
+    end
+
     private
 
     def list_threshold(client)
@@ -113,6 +188,8 @@ class MoranServ < ServiceModule
                  ["HELP", 0, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, ADMIN_FLAG, lm('MS_HELP_SHORT'), lm('MS_HELP_LONG')],
                  ["DEBUG", 0, 0, 0, ADMIN_FLAG, lm('MS_HELP_DEBUG_SHORT'), lm('MS_HELP_DEBUG_LONG')],
                  ["THRESHOLD", 1, 2, 0, ADMIN_FLAG, lm('MS_HELP_THRESHOLD_SHORT'), lm('MS_HELP_THRESHOLD_LONG')],
+                 ["TRACK", 0, 1, 0, ADMIN_FLAG, lm('MS_HELP_TRACK_SHORT'), lm('MS_HELP_TRACK_LONG')],
+                 ["UNTRACK", 0, 1, 0, ADMIN_FLAG, lm('MS_HELP_UNTRACK_SHORT'), lm('MS_HELP_UNTRACK_LONG')],
         ])
     end
 
@@ -144,5 +221,90 @@ class MoranServ < ServiceModule
 
     def notice(message)
         log(LOG_NOTICE, message)
+    end
+
+    def track_event(client)
+      if @track_ids.has_key?(client.id)
+        t = Hash.new
+        t['type'] = 'client'
+        t['value'] = client.id
+        return true, t
+      else
+        @track.each do |t|
+          case t['type']
+            when 'ip'
+              begin
+                addr = IPAddr.new(t['value'])
+                if addr.include?(client.ip_or_hostname)
+                  return true, t
+                end
+              rescue Exception => e
+              end
+            when 'regexp'
+              begin
+                rxp = Regexp.new(t['value'])
+                if rxp.match(client.host) or rxp.match(client.realhost) or rxp.match(client.name)
+                  return true, t
+                end
+              rescue
+              end
+          end
+        end
+      end
+      return false, nil
+    end
+
+    def add_notice(track, message)
+      key = track['value']
+      @track_notices[key] = [] unless @track_notices.has_key?(key)
+      @track_notices[key] << message
+    end
+
+    def client_new(client)
+      tevent, t = track_event(client)
+      if tevent
+        add_notice(t, "C")
+      end
+      return true
+    end
+
+    def client_quit(client, reason)
+      tevent, t = track_event(client)
+      if tevent
+        add_notice(t, "Q:#{reason}")
+      end
+      if @track_ids.has_key?(client.id)
+        @track_ids.delete(client.id)
+        @track.length.times do |i|
+          if @track['type'] == 'client' and @track['value'] == client.id
+            @track.delete_at(i)
+          end
+        end
+      end
+      return true
+    end
+
+    def client_join(client, channel)
+      tevent, t = track_event(client)
+      if tevent
+        add_notice(t, "J:#{channel}")
+      end
+      return true
+    end
+
+    def client_part(source, client, channel, reason)
+      tevent, t = track_event(client)
+      if tevent
+        add_notice(t, "P:#{channel.name}:#{reason}")
+      end
+      return true
+    end
+
+    def drain_notices(data)
+      @track_notices.each do |key,value|
+        msg = value.join(", ")[0,400]
+        notice("#{key} => #{msg}")
+      end
+      @track_notices = Hash.new
     end
 end
