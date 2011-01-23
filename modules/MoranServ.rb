@@ -263,7 +263,7 @@ class MoranServ < ServiceModule
     def client_new(client)
       tevent, t = track_event(client)
       if tevent
-        add_notice(t, "C")
+        add_notice(t, "C:#{client.name}")
       end
       return true
     end
@@ -271,7 +271,7 @@ class MoranServ < ServiceModule
     def client_quit(client, reason)
       tevent, t = track_event(client)
       if tevent
-        add_notice(t, "Q:#{reason}")
+        add_notice(t, "Q:#{client.name}:#{reason}")
       end
       if @track_ids.has_key?(client.id)
         @track_ids.delete(client.id)
@@ -287,7 +287,7 @@ class MoranServ < ServiceModule
     def client_join(client, channel)
       tevent, t = track_event(client)
       if tevent
-        add_notice(t, "J:#{channel}")
+        add_notice(t, "J:#{client.name}:#{channel}")
       end
       return true
     end
@@ -295,7 +295,7 @@ class MoranServ < ServiceModule
     def client_part(source, client, channel, reason)
       tevent, t = track_event(client)
       if tevent
-        add_notice(t, "P:#{channel.name}:#{reason}")
+        add_notice(t, "P:#{client.name}:#{channel.name}:#{reason}")
       end
       return true
     end
