@@ -9,6 +9,7 @@ class MoranServ < ServiceModule
         @debug = false
 
         register_commands
+        prepare_queries
 
         File.open("#{CONFIG_PATH}/moran.yaml", 'r') do |f|
             @config = YAML::load(f)
@@ -19,8 +20,7 @@ class MoranServ < ServiceModule
             init_server_conns(entry['time'], entry['warn'])
         end
 
-        @track = []
-        @track_ids = Hash.new
+        load_track
 
         @track_notices = Hash.new
 
@@ -104,37 +104,24 @@ class MoranServ < ServiceModule
     end
 
     def TRACK(client, parv = [])
-      # TRACK <nick>
-      # TRACK <regexp>
-      # TRACK <ip>
+      # TRACK <nick> :<reason>
+      # TRACK <regexp> :<reason>
+      # TRACK <ip> :<reason>
       # TRACK
       if parv.length == 1
         reply(client, "Track list")
         @track.each do |t|
-          reply(client, "#{t['type']} -- #{t['value']}")
+          time = Time.at(t['time'].to_i).strftime('%Y-%m-%d %H:%M:%S')
+          reply(client, "#{t['value']} #{t['type']} #{t['setter']} #{time} #{t['reason']}")
         end
         reply(client, "End of track list")
       else
         arg = parv[1]
-        track_client = Client.find(arg)
-        type = 'regexp'
-        value = arg
-        if track_client
-          type = 'client'
-          value = track_client.id
-          @track_ids[track_client.id] = true
-        else
-          begin
-            addr = IPAddr.new(arg)
-            type = 'ip'
-            value = arg
-          rescue Exception => e
-          end
-        end
-        t = Hash.new
-        t['type'] = type
-        t['value'] = value
-        @track << t
+        type, value = find_type(arg)
+        reason = parv[-1]
+        add_track(client.name, type, value, reason, Time.now.to_i)
+        ret = DB.execute_nonquery(@database_queries['INSERT_TRACK'], 'iiss',
+          client.nick.account_id, Time.now.to_i, value, reason)
         reply(client, "Added track of #{type} for #{value}")
         notice("#{client.name} Added track of #{type} for #{value}")
       end
@@ -142,23 +129,12 @@ class MoranServ < ServiceModule
 
     def UNTRACK(client, parv = [])
       arg = parv[1]
-      if arg == '-'
-        @track = []
-        @track_ids = Hash.new
-        reply(client, "No longer tracking any thing")
-        notice("#{client.name} has removed all tracking")
+      ret = DB.execute_nonquery(@database_queries['DELETE_TRACK'], 's', "#{arg}")
+      if ret > 0
+        notice("#{client.name} has removed tracking for #{arg}")
+        reply(client, "No longer tracking #{arg}")
+        load_track
       else
-        @track.length.times do |i|
-          if @track[i]['value'] == arg
-            if @track[i]['type'] == 'client'
-              @track_ids.delete(@track[i]['value'])
-            end
-            @track.delete_at(i)
-            reply(client, "No longer tracking #{arg}")
-            notice("#{client.name} has removed tracking for #{arg}")
-            return
-          end
-        end
         reply(client, "Not currently tracking #{arg}")
       end
     end
@@ -188,9 +164,72 @@ class MoranServ < ServiceModule
                  ["HELP", 0, 2, SFLG_UNREGOK|SFLG_NOMAXPARAM, ADMIN_FLAG, lm('MS_HELP_SHORT'), lm('MS_HELP_LONG')],
                  ["DEBUG", 0, 0, 0, ADMIN_FLAG, lm('MS_HELP_DEBUG_SHORT'), lm('MS_HELP_DEBUG_LONG')],
                  ["THRESHOLD", 1, 2, 0, ADMIN_FLAG, lm('MS_HELP_THRESHOLD_SHORT'), lm('MS_HELP_THRESHOLD_LONG')],
-                 ["TRACK", 0, 1, 0, ADMIN_FLAG, lm('MS_HELP_TRACK_SHORT'), lm('MS_HELP_TRACK_LONG')],
+                 ["TRACK", 0, 1, SFLG_NOMAXPARAM, ADMIN_FLAG, lm('MS_HELP_TRACK_SHORT'), lm('MS_HELP_TRACK_LONG')],
                  ["UNTRACK", 0, 1, 0, ADMIN_FLAG, lm('MS_HELP_UNTRACK_SHORT'), lm('MS_HELP_UNTRACK_LONG')],
         ])
+    end
+
+    def prepare_queries
+      @database_queries = Hash.new
+      @database_queries['GET_ALL_TRACK'] = DB.prepare('
+        SELECT nick, time, track, reason
+        FROM moranserv_track, account, nickname
+        WHERE moranserv_track.setter = account.id
+        AND account.primary_nick = nickname.id
+      ')
+      @database_queries['INSERT_TRACK'] = DB.prepare('
+        INSERT INTO moranserv_track(setter, time, track, reason)
+        VALUES($1, $2, $3, $4)
+      ')
+      @database_queries['DELETE_TRACK'] = DB.prepare('
+        DELETE FROM moranserv_track WHERE lower(track) = lower($1)
+      ')
+    end
+
+    def add_track(setter, type, value, reason, time)
+      t = Hash.new
+      t['type'] = type
+      t['value'] = value
+      t['setter'] = setter
+      t['reason'] = reason
+      t['time'] = time
+      if type == 'client'
+        @track_ids[value] = true
+      end
+      @track << t
+    end
+
+    def find_type(arg)
+        track_client = Client.find(arg)
+        type = 'regexp'
+        value = arg
+        if track_client
+          type = 'client'
+          value = track_client.id
+        else
+          begin
+            addr = IPAddr.new(arg)
+            type = 'ip'
+            value = arg
+          rescue Exception => e
+          end
+        end
+      return type, value
+    end
+
+    def load_track
+        @track = []
+        @track_ids = Hash.new
+        result = DB.execute(@database_queries['GET_ALL_TRACK'], '')
+        result.row_each do |row|
+          setter = row[0]
+          time = row[1]
+          value = row[2]
+          reason = row[3]
+          type, value = find_type(value)
+          add_track(setter, type, value, reason, time)
+        end
+        result.free
     end
 
     def init_server_conns(time, threshold)

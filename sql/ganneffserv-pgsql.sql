@@ -8,4 +8,4 @@ CREATE TABLE ganneffserv (
   kills   INTEGER NOT NULL DEFAULT 0,
   monitor_only BOOLEAN NOT NULL DEFAULT 'False'
 );
-CREATE UNIQUE INDEX ganneffserv_channel_idx ON channel ((lower(channel)));
+CREATE UNIQUE INDEX ganneffserv_channel_idx ON ganneffserv ((lower(channel)));

@@ -21,9 +21,9 @@ MS_HELP_THRESHOLD_LONG
 
 	Lists current time periods and the respective threshold value
 MS_HELP_TRACK_SHORT
-	%s: Track a client, ip, or regular expression
+	%s: Track a client, ip, or regular expression, with no parameters list all
 MS_HELP_TRACK_LONG
-	Usage: TRACK [value]
+	Usage: TRACK [value [:reason]]
 	
 	No parameters returns a list of currently tracked items
 	
@@ -35,6 +35,8 @@ MS_HELP_TRACK_LONG
 	
 	Otherwise the value will be interpreted as a regexp which is matched
 	against host, realhost, and nick
+	
+	You should specify a reason you're tracking, you must include the colon
 MS_HELP_UNTRACK_SHORT
 	%s: Remove a currently tracked item
 MS_HELP_UNTRACK_LONG
