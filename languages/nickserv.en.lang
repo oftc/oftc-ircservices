@@ -393,6 +393,12 @@ NS_HELP_FORBID_LONG
 	use them will be forced to change their nickname.
 	
 	See also: UNFORBID
+NS_HELP_UNFORBID_SHORT
+	%s: Remove a nickname from the forbidden list.
+NS_HELP_UNFORBID_LONG
+	Usage: UNFORBID nickname
+	
+	Remove a nickname from the forbidden list.
 NS_HELP_INFO_SHORT
 	%s: Get information on a nickname.
 NS_HELP_INFO_LONG

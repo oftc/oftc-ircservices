@@ -250,8 +250,8 @@ static struct ServiceMessage forbid_msgtab = {
 };
 
 static struct ServiceMessage unforbid_msgtab = {
-  NULL, "UNFORBID", 0, 1, 1, 0, ADMIN_FLAG, NS_HELP_FORBID_SHORT, 
-  NS_HELP_FORBID_LONG, m_unforbid
+  NULL, "UNFORBID", 0, 1, 1, 0, ADMIN_FLAG, NS_HELP_UNFORBID_SHORT,
+  NS_HELP_UNFORBID_LONG, m_unforbid
 };
 
 static struct ServiceMessage regain_msgtab = {
