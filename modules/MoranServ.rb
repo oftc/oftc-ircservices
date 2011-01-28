@@ -32,9 +32,12 @@ class MoranServ < ServiceModule
         ])
 
         add_event('drain_notices', 10, nil)
+
+        @ready = false
     end
 
     def loaded
+        @ready = true
         @server_conns.each_key{|time|
             init_server_load(time)
         }
@@ -263,6 +266,10 @@ class MoranServ < ServiceModule
     end
 
     def track_event(client)
+      if not @ready
+        return false, nil
+      end
+
       if @track_ids.has_key?(client.id)
         t = Hash.new
         t['type'] = 'client'
