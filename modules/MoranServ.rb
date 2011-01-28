@@ -281,11 +281,11 @@ class MoranServ < ServiceModule
               end
             when 'regexp'
               begin
-                rxp = Regexp.new(t['value'])
+                rxp = Regexp.new(t['value'], Regexp::EXTENDED|Regexp::IGNORECASE)
                 if rxp.match(client.host) or rxp.match(client.realhost) or rxp.match(client.name)
                   return true, t
                 end
-              rescue
+              rescue Exception => e
               end
           end
         end
