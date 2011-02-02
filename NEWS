@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+1.5.2
+-----
++ MoranServ can now track clients, cidr, or regex
+o Add missing UNFORBID help messages
+
 1.5.1
 -----
 o clump_masks should only do 4 at a time
