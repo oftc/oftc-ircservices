@@ -8,9 +8,9 @@ NS_HELP_REG_SHORT
 NS_HELP_REG_LONG
 	Usage: REGISTER password e-mail
 	
-	Registers a nickname in our database for your use. Registering your nickname
+	Registers a nickname in our database for your use.  Registering your nickname
 	ensures it is reserved for your use and cannot be used by others if you do
-	not wish them to use it. It also allows you to associate various pieces of
+	not wish them to use it.  It also allows you to associate various pieces of
 	information with your nickname and also to have access to registered
 	channels.
 	
@@ -37,9 +37,9 @@ NS_HELP_DROP_LONG
 	Usage: DROP [auth-code]
 	
 	Releases your nickname for use and deletes it from the database.
-	This cannot be undone. You will be asked to confirm this action by following
-	the instructions given. If you already have a confirmation auth code, supply
-	it as a parameter. Releasing your nickname in this way will allow others to
+	This cannot be undone.  You will be asked to confirm this action by following
+	the instructions given.  If you already have a confirmation auth code, supply
+	it as a parameter.  Releasing your nickname in this way will allow others to
 	make use of it, or register it for their use, so make sure you really want
 	this before confirming.
 NS_HELP_ACCESS_SHORT
@@ -67,10 +67,10 @@ NS_HELP_ACCESS_ADD_SHORT
 NS_HELP_ACCESS_ADD_LONG
 	Usage: ACCESS ADD mask
 	
-	Add an access entry to your access list. If your IRC userhost matches this
+	Add an access entry to your access list.  If your IRC userhost matches this
 	entry, you will not receive notices asking you to identify when you
 	connect, and your nickname will not be changed even if you have ENFORCE
-	set. Additionally, if SECURE is set to OFF, you will be automatically
+	set.  Additionally, if SECURE is set to OFF, you will be automatically
 	identified to your nickname without having to use the IDENTIFY command.
 	
 	Example:
@@ -116,10 +116,10 @@ NS_HELP_CERT_ADD_SHORT
 NS_HELP_CERT_ADD_LONG
 	Usage: CERT ADD [fingerprint [nickname]]
 	
-	Add an access entry to your client certificate list. If you connect to IRC with
+	Add an access entry to your client certificate list.  If you connect to IRC with
 	SSL, and provide the client certificate with a fingerprint on your
 	certificate list you will be automatically identified to your nickname
-	without having to use the IDENTIFY command. If you are currently connected
+	without having to use the IDENTIFY command.  If you are currently connected
 	via SSL and have provided a valid client certificate, you may omit the
 	fingerprint parameter.
 	
@@ -159,7 +159,7 @@ NS_HELP_AJOIN_LONG
 	       AJOIN DEL #channel
 	       AJOIN LIST
 	
-	Maintains the nickname auto join list. Channels in this list will be
+	Maintains the nickname auto join list.  Channels in this list will be
 	automatically joined by your client every time you identify with services.
 	Channels must be registered with channel services to be able to be added to
 	the list.
@@ -175,7 +175,7 @@ NS_HELP_AJOIN_ADD_SHORT
 NS_HELP_AJOIN_ADD_LONG
 	Usage: AJOIN ADD #channel
 	
-	Add a channel to the auto join list. The channel must be registered with
+	Add a channel to the auto join list.  The channel must be registered with
 	channel services but does not necessarily need to currently exist on the
 	network.
 	
@@ -211,8 +211,8 @@ NS_HELP_SET_LANG_SHORT
 NS_HELP_SET_LANG_LONG
 	Usage: SET LANGUAGE [language id]
 	
-	SET the language services will communicate to you in. To see the list of
-	available translations execute SET LANGUAGE with no parameters. The default
+	SET the language services will communicate to you in.  To see the list of
+	available translations execute SET LANGUAGE with no parameters.  The default
 	language is English.
 	
 	Examples:
@@ -223,7 +223,7 @@ NS_HELP_SET_PASS_SHORT
 NS_HELP_SET_PASS_LONG
 	Usage: SET PASSWORD password
 	
-	SET the password of your current account. Please choose a password which you
+	SET the password of your current account.  Please choose a password which you
 	can remember but is not easily guessed.
 	
 	Example:
@@ -233,7 +233,7 @@ NS_HELP_SET_URL_SHORT
 NS_HELP_SET_URL_LONG
 	Usage: SET URL [url|-]
 	
-	SET URL field to be shown in the INFO command. Specify '-' (without the
+	SET URL field to be shown in the INFO command.  Specify '-' (without the
 	quotes) to remove your URL.
 	
 	Examples:
@@ -244,7 +244,7 @@ NS_HELP_SET_EMAIL_SHORT
 NS_HELP_SET_EMAIL_LONG
 	Usage: SET EMAIL [email]
 	
-	SET e-mail field to be used for password recovery. E-mail addresses are
+	SET e-mail field to be used for password recovery.  E-mail addresses are
 	shown in the INFO command if PRIVATE is turned off.
 	
 	Example:
@@ -254,7 +254,7 @@ NS_HELP_SET_ENFORCE_SHORT
 NS_HELP_SET_ENFORCE_LONG
 	Usage: SET ENFORCE [ON|OFF]
 	
-	ENFORCE enables or disables nickname enforcement of your account. This means
+	ENFORCE enables or disables nickname enforcement of your account.  This means
 	that if someone who is not not on your access list attempts to use your
 	nickname and doesn't identify within a given period their nick will be
 	forcefully changed.
@@ -270,9 +270,9 @@ NS_HELP_SET_SECURE_SHORT
 NS_HELP_SET_SECURE_LONG
 	Usage: SET SECURE [ON|OFF]
 	
-	SECURE enables or disables nickname security. If SECURE is off, when you
+	SECURE enables or disables nickname security.  If SECURE is off, when you
 	change to your nickname you be automatically identified if your userhost
-	matches an entry in your access list. If secure is on, you will not be
+	matches an entry in your access list.  If secure is on, you will not be
 	automatically identified, but you will not have your nickname changed by the
 	ENFORCE option.
 	
@@ -288,7 +288,7 @@ NS_HELP_SET_CLOAK_SHORT
 NS_HELP_SET_CLOAK_LONG
 	Usage: SET CLOAK [ON|OFF]
 	
-	CLOAK enables or disables a cloak on your current account. If your account
+	CLOAK enables or disables a cloak on your current account.  If your account
 	has a cloak set on it, when cloak is enabled your hostname will be changed
 	to the cloak when you identify (or are automatically identified) to services.
 	
@@ -301,7 +301,7 @@ NS_HELP_CLOAKSTRING_LONG
 	Usage: CLOAKSTRING nick [cloakstring|-]
 	
 	Sets or displays the cloak on the account of the specified nickname.
-	This command is restricted to services admins. Specify '-' (without the
+	This command is restricted to services admins.  Specify '-' (without the
 	quotes) to unset the cloak string.
 	
 	Examples:
@@ -315,7 +315,7 @@ NS_HELP_SET_MASTER_SHORT
 NS_HELP_SET_MASTER_LONG
 	Usage: SET MASTER [nickname]
 	
-	Sets the master nickname of this account. The master nickname is the one
+	Sets the master nickname of this account.  The master nickname is the one
 	that will display in services displays such as access lists.
 	
 	Example:
@@ -370,7 +370,7 @@ NS_HELP_UNLINK_SHORT
 NS_HELP_UNLINK_LONG
 	Usage: UNLINK
 	
-	Unlink this nickname from a master nickname. This removes the link from the
+	Unlink this nickname from a master nickname.  This removes the link from the
 	master nickname and reverts this nickname to be a standalone nickname with
 	all the settings it had (including password) before it was linked.
 NS_HELP_REGAIN_SHORT
@@ -380,7 +380,7 @@ NS_HELP_REGAIN_LONG
 	
 	If your nickname is being held by services, as is the case if your nickname
 	has been enforced recently, this command will release the hold and change
-	your nickname to the nickname that you specify. This command will also
+	your nickname to the nickname that you specify.  This command will also
 	free up your nickname if another user is using it and will change your
 	current nickname to be your registered nickname if successful.
 NS_HELP_FORBID_SHORT
@@ -389,7 +389,7 @@ NS_HELP_FORBID_LONG
 	Usage: FORBID nickname
 	
 	Adds the nickname specified to the forbidden nickname list, preventing it to
-	be used. Forbidden nicknames may not be registered and anyone attempting to
+	be used.  Forbidden nicknames may not be registered and anyone attempting to
 	use them will be forced to change their nickname.
 	
 	See also: UNFORBID
@@ -405,7 +405,7 @@ NS_HELP_INFO_LONG
 	Usage: INFO [nickname]
 	
 	Displays all the information that services knows about a nickname, or your
-	nickname if no nickname is specified. Settings will only be shown if this
+	nickname if no nickname is specified.  Settings will only be shown if this
 	nickname is yours, or is linked to yours, or if you are a services admin.
 	E-mail addresses are not shown for PRIVATE accounts.
 NS_HELP_SENDPASS_SHORT
@@ -414,8 +414,8 @@ NS_HELP_SENDPASS_LONG
 	Usage: SENDPASS nickname [auth-code newpassword]
 	
 	Sends a password reset request to the e-mail address registered on this
-	account. This e-mail will contain an authentication code which you will need
-	to supply to complete the password reset process. If you have specified such
+	account.  This e-mail will contain an authentication code which you will need
+	to supply to complete the password reset process.  If you have specified such
 	code, and it is valid, your password will be reset to the password you
 	specify.
 NS_HELP_SUDO_SHORT
@@ -424,11 +424,11 @@ NS_HELP_SUDO_LONG
 	Usage: SUDO nickname command
 	
 	This will execute the specified commands as if you are the user that you
-	specify, including taking on their access level. This command should be used
-	with extreme care and caution and only if absolutely necessary. Changing
-	other users settings maliciously is impolite at best. It can also cause harm
+	specify, including taking on their access level.  This command should be used
+	with extreme care and caution and only if absolutely necessary.  Changing
+	other users settings maliciously is impolite at best.  It can also cause harm
 	to your own nickname if you execute it on a command that does not make
-	sense (REGISTER, IDENTIFY etc). This command is restricted to services
+	sense (REGISTER, IDENTIFY etc).  This command is restricted to services
 	admins.
 NS_HELP_LIST_SHORT
 	%s: Shows a list of nicknames matching a specified pattern.
@@ -436,8 +436,8 @@ NS_HELP_LIST_LONG
 	Usage: LIST pattern [FORBID]
 	
 	Shows a list of nicknames which are registered and match the pattern
-	specified. If you specify FORBID, only forbidden nicknames will be shown.
-	The forbid option is restricted to IRC Operators. Results will be limited to
+	specified.  If you specify FORBID, only forbidden nicknames will be shown.
+	The forbid option is restricted to IRC Operators.  Results will be limited to
 	50 matches, so try to be specific with your pattern.
 NS_HELP_STATUS_SHORT
 	%s: Shows the identified status of a nickname
@@ -454,28 +454,28 @@ NS_HELP_RESETPASS_LONG
 	Reset a password for the given nickname, if successful the new password will
 	be replied to you.
 NS_ALREADY_REG
-	Nickname %s is already registered. If this is your nickname you may try
-	IDENTIFY instead. If this is not your nickname then it may have been
-	registered by someone else first. Please choose another nickname and try
+	Nickname %s is already registered.  If this is your nickname you may try
+	IDENTIFY instead.  If this is not your nickname then it may have been
+	registered by someone else first.  Please choose another nickname and try
 	again, or if you believe this nickname to be unused, contact network
 	support.
 NS_REG_COMPLETE
 	Nickname %s has been registered successfully and is now yours to use.
 	See HELP SET for information on settings that you can set on your new
-	nickname. If you change nickname or reconnect to the IRC network you will be
-	required to identify using the password you chose when you registered. See
+	nickname.  If you change nickname or reconnect to the IRC network you will be
+	required to identify using the password you chose when you registered.  See
 	HELP IDENTIFY for more information on identifying your nickname.
 NS_REG_FAIL
-	Nickname %s failed to register. This is usually caused by an internal
-	problem within services or a database problem. Please try again in a short
-	while. If this is not the first time you have received this message, please
+	Nickname %s failed to register.  This is usually caused by an internal
+	problem within services or a database problem.  Please try again in a short
+	while.  If this is not the first time you have received this message, please
 	contact network support.
 NS_REG_FAIL_TOOSHORT
 	The nick you are trying to register is invalid, please choose another nick to
 	complete your registration
 NS_REG_FIRST
-	Nickname %s is not registered. The nickname you specify must be a
-	registered nickname. See HELP REGISTER for more information. If you believe
+	Nickname %s is not registered.  The nickname you specify must be a
+	registered nickname.  See HELP REGISTER for more information.  If you believe
 	this to be incorrect, there could be a database problem; contact network
 	support if this problem persists.
 NS_NICKFORBID
@@ -484,13 +484,13 @@ NS_NICKFORBID
 NS_IDENTIFIED
 	You are successfully identified as %s.
 NS_IDENTIFY_ACCESS
-	This hostname matches an entry on the access list of nickname %s. You
+	This hostname matches an entry on the access list of nickname %s.  You
 	have been automatically identified.
 NS_IDENTIFY_CERT
 	You are connected using SSL and have provided a matching client certificate
-	for nickname %s. You have been automatically identified.
+	for nickname %s.  You have been automatically identified.
 NS_IDENT_FAIL
-	Identify failed as %s. You may have entered an incorrect password. If
+	Identify failed as %s.  You may have entered an incorrect password.  If
 	you believe you have entered the correct password and are still getting this
 	message, please contact network support.
 NS_CURR_LANGUAGE
@@ -506,8 +506,8 @@ NS_SET_SUCCESS
 NS_SET_PASS_SUCCESS
 	Password successfully changed.
 NS_SET_FAILED
-	Failed to SET %s to %s. This may be an internal problem, please try
-	again later. If this is not the first time you have seen this message please
+	Failed to SET %s to %s.  This may be an internal problem, please try
+	again later.  If this is not the first time you have seen this message please
 	contact network support.
 NS_SET_PASS_FAILED
 	Password change failed.
@@ -515,32 +515,32 @@ NS_SET_VALUE
 	%s is SET to: %s.
 NS_NEED_IDENTIFY
 	You need to identify to nickname services before you can execute this
-	command. See HELP IDENTIFY for more information.
+	command.  See HELP IDENTIFY for more information.
 NS_NICK_DROPPED
-	Nickname %s has been dropped. It is now free to be registered by other
+	Nickname %s has been dropped.  It is now free to be registered by other
 	users.
 NS_DROP_AUTH
 	If you are sure you wish to drop this nickname then type /msg %s DROP %d:%s
 NS_DROP_AUTH_FAIL
 	The auth code you supplied is invalid or has expired.  Nickname %s NOT
-	dropped. This may be an internal error, please try again later. If this is
+	dropped.  This may be an internal error, please try again later.  If this is
 	not the first time you have seen this message, please contact network
 	support.
 NS_NICK_DROPFAIL
-	DROP failed on nickname %s. This may have been an internal error, please
-	try again shortly. If this is not the first time you have seen this message
+	DROP failed on nickname %s.  This may have been an internal error, please
+	try again shortly.  If this is not the first time you have seen this message
 	please contact network support.
 NS_DROP_FAIL_MASTERLESS
-	Unable to DROP nickname %s. Channel %s would be left with no
-	masters. Drop this channel first, or assign someone else as master.
+	Unable to DROP nickname %s.  Channel %s would be left with no
+	masters.  Drop this channel first, or assign someone else as master.
 NS_ACCESS_ADD
 	ACCESS list entry %s added.
 NS_ACCESS_ADDFAIL
-	Failed to add ACCESS list entry %s. This may have been an internal error,
-	please try again shortly. If this is not the first time you have seen this
+	Failed to add ACCESS list entry %s.  This may have been an internal error,
+	please try again shortly.  If this is not the first time you have seen this
 	message please contact network support.
 NS_ACCESS_INVALID
-	ACCESS list entry %s is not a userhost (user@host). Please try again with
+	ACCESS list entry %s is not a userhost (user@host).  Please try again with
 	a valid user@host address.
 NS_ACCESS_START
 	ACCESS list:
@@ -557,15 +557,15 @@ NS_ACCESS_DEL_ERROR
 	again.  If this is not the first time you have seen this message please
 	contact network support.
 NS_AJOIN_INVALID_CHAN
-	Channel name %s is invalid. Channel names must begin with '#'.
+	Channel name %s is invalid.  Channel names must begin with '#'.
 NS_AJOIN_CHAN_NOT_REG
-	Channel %s is not registered with channel services. Unable to add
+	Channel %s is not registered with channel services.  Unable to add
 	auto join entries for channels that are not registered.
 NS_AJOIN_ADD
 	AJOIN entry %s has been added.
 NS_AJOIN_ADDFAIL
-	AJOIN entry %s failed to be added. This may have been an internal error,
-	please try again shortly. If this is not the first time you have seen this
+	AJOIN entry %s failed to be added.  This may have been an internal error,
+	please try again shortly.  If this is not the first time you have seen this
 	message please contact network support.
 NS_AJOIN_START
 	AJOIN list:
@@ -585,19 +585,19 @@ NS_CERT_ADD
 	CERT list entry %s added to nickname %s.
 NS_CERT_ADDFAIL
 	Failed to add CERT list entry %s to nickname %s.  This may have been 
-	an internal error, please try again shortly. If this is not the first time 
+	an internal error, please try again shortly.  If this is not the first time 
 	you have seen this message please contact network support.
 NS_CERT_ADDFAIL_NONICK
 	Failed to add CERT list entry because %s is not registered.
 NS_CERT_ADDFAIL_NOTYOURNICK
 	Failed to add CERT list entry because %s is not registered by you.
 NS_CERT_INVALID
-	CERT list entry %s is not a valid fingerprint. Please try again with
-	a valid fingerprint. Fingerprints may only contain the letters a-z and the
+	CERT list entry %s is not a valid fingerprint.  Please try again with
+	a valid fingerprint.  Fingerprints may only contain the letters a-z and the
 	numbers 0-9.
 NS_CERT_YOUHAVENONE
 	You are not connected via SSL or have not provided a valid client
-	certificate. You must provide a fingerprint to add.
+	certificate.  You must provide a fingerprint to add.
 NS_CERT_EXISTS
 	Certificate fingerprint %s is already added to your account.
 NS_CERT_START
@@ -614,33 +614,33 @@ NS_CERT_DEL_ERROR
 	An error occured attempting to modify the CERT list.  If this is not the
 	first time you have seen this message, please contact network support.
 NS_REGAIN_SUCCESS
-	REGAIN succeed on nickname %s. You have been changed to your nickname.
+	REGAIN succeed on nickname %s.  You have been changed to your nickname.
 NS_REGAIN_FAILED
-	REGAIN failed on nickname %s. You may have given an incorrect password.
+	REGAIN failed on nickname %s.  You may have given an incorrect password.
 	If you believe this to be incorrect please contact network support.
 NS_REGAIN_FAILED_SECURITY
-	Access Denied. Either you are not on the access list for this nickname, or
-	it has SECURE set on it. If you believe this to be incorrect please contact
+	Access Denied.  Either you are not on the access list for this nickname, or
+	it has SECURE set on it.  If you believe this to be incorrect please contact
 	network support.
 NS_REGAIN_NOTONLINE
-	%s is not online. The nickname may be freely used and does not
+	%s is not online.  The nickname may be freely used and does not
 	require regain or ghost.
 NS_LINK_NOMASTER
-	Master nickname %s not registered. The nickname you want to link to must
+	Master nickname %s not registered.  The nickname you want to link to must
 	be registered with nickname services.
 NS_LINK_NOSLAVE
-	Slave nickname %s not registered. The nickname you want to link to must
+	Slave nickname %s not registered.  The nickname you want to link to must
 	be registered with nickname services.
 NS_LINK_BADPASS
-	Incorrect password for master nickname %s. You must supply the correct
+	Incorrect password for master nickname %s.  You must supply the correct
 	password for the master nickname in order to link to it.
 NS_LINK_NOSELF
-	This nickname is already linked to that master. You may not link a nickname
-	which is already linked to a master. If you wish to do this, you will need
+	This nickname is already linked to that master.  You may not link a nickname
+	which is already linked to a master.  If you wish to do this, you will need
 	to UNLINK one of the nicknames first.
 NS_LINK_FAIL
-	LINK failed to master %s. This may have been an internal error, please
-	try again shortly. If this is not the first time you have seen this
+	LINK failed to master %s.  This may have been an internal error, please
+	try again shortly.  If this is not the first time you have seen this
 	message please contact network support.
 NS_LINK_OK
 	Nickname %s is now linked to master %s.
@@ -649,7 +649,7 @@ NS_UNLINK_FAILED
 NS_UNLINK_OK
 	Nickname %s is now unlinked.
 NS_UNLINK_NOLINK
-	Nickname %s is not linked. You cannot unlink a nickname which does not
+	Nickname %s is not linked.  You cannot unlink a nickname which does not
 	contain a link in the first place.
 NS_INFO_START
 	Nickname information for %s (%s)
@@ -722,7 +722,7 @@ NS_NICK_IN_USE_IWILLCHANGE
 	are getting this notice because you are not on the access list for the %s
 	nickname.
 NS_NICK_FORBID_IWILLCHANGE
-	This nickname, %s, may not be used. Choose another or I will forcefully
+	This nickname, %s, may not be used.  Choose another or I will forcefully
 	change your nickname.
 NS_FORBID_OK
 	%s has been forbidden and may now not be used.
@@ -734,20 +734,20 @@ NS_NOREG_GUEST
 	Guest nicknames are reserved for services use and may not be registered.
 	Please change your nickname and try again.
 NS_NOREG_FORBID
-	%s is forbidden and may not be registered or used. Please change your
+	%s is forbidden and may not be registered or used.  Please change your
 	nickname and try again.
 NS_INVALID_EMAIL
-	%s is not a valid e-mail address. Please use a valid e-mail address so
-	that you may recover your password should you forget it. Your e-mail will
+	%s is not a valid e-mail address.  Please use a valid e-mail address so
+	that you may recover your password should you forget it.  Your e-mail will
 	only be used to confirm limited services actions (such as requesting a new
 	password if you forget your current one).
 NS_LANG_LIST
 	%d : %s
 NS_MASTER_NOT_LINKED
-	%s is not linked to your nickname. You may not set a master nickname
+	%s is not linked to your nickname.  You may not set a master nickname
 	which is not linked to this one.
 NS_MASTER_SET_OK
-	Master nickname set to %s. This nickname will now show in services lists
+	Master nickname set to %s.  This nickname will now show in services lists
 	such as access lists.
 NS_MASTER_SET_FAIL
 	Failed to set master nickname to %s.
@@ -763,11 +763,11 @@ NS_SENDPASS_SENT
 NS_SENDPASS_NEED_PASS
 	You must specify a new password to be set on the account.
 NS_SENDPASS_AUTH_FAIL
-	The auth code you provided is either invalid or has expired. Password has
+	The auth code you provided is either invalid or has expired.  Password has
 	not been reset.
 NS_NO_SENDPASS_YET
 	This account or the e-mail address on this account has already had a mail
-	sent to it. Please respond to that mail. If you feel this is incorrect,
+	sent to it.  Please respond to that mail.  If you feel this is incorrect,
 	contact network support.
 NS_SENDPASS_SUBJECT
 	OFTC Nickname password reset request
@@ -797,7 +797,7 @@ NS_LIST_NO_MATCHES
 NS_LIST_ENTRY
 	%s
 NS_LIST_END
-	End of LIST. %d matches found.
+	End of LIST.  %d matches found.
 NS_INVALID_CLOAK
 	The cloak string %s is invalid.
 NS_STATUS_SSL

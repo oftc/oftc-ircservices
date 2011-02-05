@@ -18,14 +18,14 @@ GS_HLP_ADD_LONG
 	
 	#<channel> is the channel to monitor.
 	
-	<type> is the type of the channel. This is either
+	<type> is the type of the channel.  This is either
 	J    for a channel where every join triggers a kill
 	CRFJ for a channel where Connect, Register nick, Join channel within
-	     15 seconds (ie. Fast) triggers a kill
+	     15 seconds (i.e. fast) triggers a kill
 	If it is omitted a default J is taken.
 	
-	:<reason> is the reason to use with the kill. A default contact email
-	is added if no support@oftc.net is found within reason. Do not
+	:<reason> is the reason to use with the kill.  A default contact email
+	is added if no support@oftc.net is found within reason.  Do not
 	forget the :
 	
 	Usage: ADD #<channel> <type> :<reason>
@@ -57,9 +57,9 @@ GS_HLP_SAV_SHORT
 GS_HLP_SAV_LONG
 	Saves channel data
 GS_HLP_ENF_SHORT
-	%s: Enforces all known channels again. Don't run!
+	%s: Enforces all known channels again.  Don't run!
 GS_HLP_ENF_LONG
-	Enforces all known channels again. Don't run!
+	Enforces all known channels again.  Don't run!
 GS_HLP_STS_SHORT
 	%s: Statistics
 GS_HLP_STS_LONG

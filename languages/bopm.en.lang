@@ -9,7 +9,7 @@ BP_CHECK_LONG
 	Usage: CHECK [nickname|hostname|IP [dnsblacklist]]
 	
 	Check if a client, hostname, or IP exists in the configured blacklists or in a
-	specified blacklist. The result will show the list of blacklists the hostname
+	specified blacklist.  The result will show the list of blacklists the hostname
 	are listed in, the return code from the blacklist, and the score of a specific
 	hit, as well as the total score.
 	

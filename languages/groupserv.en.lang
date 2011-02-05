@@ -53,7 +53,7 @@ GS_HELP_SET_DESC_SHORT
 GS_HELP_SET_DESC_LONG
 	Usage: SET channel DESC [text]
 	
-	Sets descriptive text associated with the group. This is usually
+	Sets descriptive text associated with the group.  This is usually
 	used to define the purpose of the group and is displayed with
 	the group listing in the INFO command.
 GS_HELP_SET_PRIVATE_SHORT
@@ -188,7 +188,7 @@ GS_LIST_NO_MATCHES
 GS_LIST_ENTRY
 	%s
 GS_LIST_END
-	End of LIST. %d matches found.
+	End of LIST.  %d matches found.
 GS_NAMESTART_AT
 	Group name must start with the '@' character.
 GS_ACCESS_BADLEVEL

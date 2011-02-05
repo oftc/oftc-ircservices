@@ -4,18 +4,18 @@ CS_HELP_REG_SHORT
 CS_HELP_REG_LONG
 	Usage: REGISTER channel description
 	
-	Registers a channel for your usage. To register the channel you must be an
+	Registers a channel for your usage.  To register the channel you must be an
 	operator, and the channel name must begin with '#'.
 CS_HELP_SHORT
 	%s: Shows this help.
 CS_HELP_LONG
-	Shows this help message. Use HELP <command> for help with a command.
+	Shows this help message.  Use HELP <command> for help with a command.
 CS_HELP_SET_DESC_SHORT
 	%s: Set the channel description (free form text).
 CS_HELP_SET_DESC_LONG
 	Usage: SET channel DESC [text]
 	
-	Sets descriptive text associated with the channel. This is usually
+	Sets descriptive text associated with the channel.  This is usually
 	used to define the purpose of the channel and is displayed with
 	the channel listing in the INFO command.
 CS_HELP_SET_URL_SHORT
@@ -23,32 +23,32 @@ CS_HELP_SET_URL_SHORT
 CS_HELP_SET_URL_LONG
 	Usage: SET channel URL [url|-]
 	
-	Sets a homepage for the channel. This web address is displayed in the
-	listing reported by the INFO command. Specify '-' (without the quotes) to
+	Sets a homepage for the channel.  This web address is displayed in the
+	listing reported by the INFO command.  Specify '-' (without the quotes) to
 	remove the channel URL.
 CS_HELP_SET_EMAIL_SHORT
 	%s: Sets the channel's e-mail address.
 CS_HELP_SET_EMAIL_LONG
 	Usage: SET channel EMAIL [email|-]
 	
-	Sets a contact e-mail address for the channel. This is displayed in the
-	listing reported by the INFO command. Specify '-' (without the quotes) to
+	Sets a contact e-mail address for the channel.  This is displayed in the
+	listing reported by the INFO command.  Specify '-' (without the quotes) to
 	remove the channel e-mail.
 CS_HELP_SET_ENTRYMSG_SHORT
 	%s: Sets the channel greeting.
 CS_HELP_SET_ENTRYMSG_LONG
 	Usage: SET channel ENTRYMSG [message|-]
 	
-	Sets the greeting message for the channel. This greeting will be displayed
-	to all users joining the channel in the form of a notice. Specifying
+	Sets the greeting message for the channel.  This greeting will be displayed
+	to all users joining the channel in the form of a notice.  Specifying
 	'-' (without the quotes) as the entry message will disable sending a greeting.
 CS_HELP_SET_TOPIC_SHORT
 	%s: Sets the channel topic.
 CS_HELP_SET_TOPIC_LONG
 	Usage: SET channel TOPIC [topic|-]
 	
-	Sets the channel topic. The change in topic will be reflected on IRC right
-	away and the topic will be stored. The topic will be set when the channel is
+	Sets the channel topic.  The change in topic will be reflected on IRC right
+	away and the topic will be stored.  The topic will be set when the channel is
 	created and this is the topic that will be used with the TOPICLOCK command.
 	Specifying '-' (without the quotes) will remove the channel topic.
 CS_HELP_SET_TOPICLOCK_SHORT
@@ -57,7 +57,7 @@ CS_HELP_SET_TOPICLOCK_LONG
 	Usage: SET channel TOPICLOCK [ON|OFF]
 	
 	Enabling TOPICLOCK will attempt to keep the channel topic synced to the
-	TOPIC setting. If the channel topic is changed via IRC, channel services
+	TOPIC setting.  If the channel topic is changed via IRC, channel services
 	will override it.
 CS_HELP_SET_PRIVATE_SHORT
 	%s: Control channel privacy.
@@ -71,7 +71,7 @@ CS_HELP_SET_RESTRICTED_LONG
 	Usage: SET channel RESTRICTED [ON|OFF]
 	
 	This setting will only allow users with access level MEMBER to remain in the
-	channel. All other users will be kicked and banned from the channel upon
+	channel.  All other users will be kicked and banned from the channel upon
 	joining it.
 CS_HELP_SET_VERBOSE_SHORT
 	%s: Control channel verbosity.
@@ -85,18 +85,18 @@ CS_HELP_SET_MLOCK_SHORT
 CS_HELP_SET_MLOCK_LONG
 	Usage: SET channel MLOCK [modelock]
 	
-	Sets the mode which should be enforced on the channel. If the channel's mode
-	is changed, services may override it depending on the MLOCK setting. '+'
+	Sets the mode which should be enforced on the channel.  If the channel's mode
+	is changed, services may override it depending on the MLOCK setting.  '+'
 	modes will always be set on a channel and will be replaced if they are
-	removed. '-' modes will always be unset on a channel and will be removed if
-	they are set. Setting the mode lock to '+' will disable mode locking.
+	removed.  '-' modes will always be unset on a channel and will be removed if
+	they are set.  Setting the mode lock to '+' will disable mode locking.
 CS_HELP_SET_AUTOLIMIT_SHORT
 	%s: Automatic channel limiting.
 CS_HELP_SET_AUTOLIMIT_LONG
 	Usage: SET channel AUTOLIMIT [ON|OFF]
 	
 	If enabled, this setting will enforce the channel client limit (usually
-	channel mode +l) to just above the number of people on the channel. This
+	channel mode +l) to just above the number of people on the channel.  This
 	helps prevent against scores of people (or bots) from joining the channel at
 	once.
 CS_HELP_SET_EXPIREBANS_SHORT
@@ -149,41 +149,41 @@ CS_HELP_SET_LEAVEOPS_SHORT
 CS_HELP_SET_LEAVEOPS_LONG
 	Usage: SET channel LEAVEOPS [ON|OFF]
 	
-	There are two instances where this setting is used. First, when a channel
+	There are two instances where this setting is used.  First, when a channel
 	is empty and a user joins it, the IRC server software will grant them
-	channel operator status. If this person is not on the channel access list at
+	channel operator status.  If this person is not on the channel access list at
 	level CHANOP or higher, IRC services will remove their channel operator
-	status. If this setting is ON, IRC services will not remove the channel
+	status.  If this setting is ON, IRC services will not remove the channel
 	operator status.
 	
 	The other instance where this is used is when, for whatever reason, IRC
 	services leaves the IRC network and rejoins (this could be a services restart,
-	or a IRC server split). In this instance persons may have been granted
+	or a IRC server split).  In this instance persons may have been granted
 	channel operator status by other users and on rejoining the network, IRC
 	services will enforce the channel's access list and remove channel operator
-	status from anyone not on the access list at level CHANOP or higher. If this
+	status from anyone not on the access list at level CHANOP or higher.  If this
 	setting is ON, IRC services will not remove the channel operator status.
 CS_HELP_SET_SHORT
 	%s: Change channel settings.
 CS_HELP_SET_LONG
-	Changes channel settings. Most settings can be viewed if you do not specify
-	a parameter. The settings that can be changed are:
+	Changes channel settings.  Most settings can be viewed if you do not specify
+	a parameter.  The settings that can be changed are:
 CS_HELP_AKICK_ADD_SHORT
 	%s: Add a new AKICK on the channel.
 CS_HELP_AKICK_ADD_LONG
 	Usage: AKICK channel ADD mask|nickname [reason]
 	
-	Adds the specified mask or nickname to the channel auto kick list. If a
+	Adds the specified mask or nickname to the channel auto kick list.  If a
 	nickname is specified that nickname will always be prevented from joining
-	the channel regardless of their host. If a reason is specified it will be
-	used when the user is kicked from the channel. If it is not specified, a
+	the channel regardless of their host.  If a reason is specified it will be
+	used when the user is kicked from the channel.  If it is not specified, a
 	default kick message will be used.
 CS_HELP_AKICK_DEL_SHORT
 	%s: Remove an AKICK from the channel.
 CS_HELP_AKICK_DEL_LONG
 	Usage: AKICK channel DEL mask|nickname
 	
-	Removes the specified mask or nickname from the channel auto kick list. This
+	Removes the specified mask or nickname from the channel auto kick list.  This
 	will not remove any bans which are currently set in the channel.
 CS_HELP_AKICK_LIST_SHORT
 	%s: List channel AKICKs.
@@ -196,36 +196,36 @@ CS_HELP_AKICK_ENFORCE_SHORT
 CS_HELP_AKICK_ENFORCE_LONG
 	Usage: AKICK channel ENFORCE
 	
-	Enforces the current channel auto kick list. This will remove any users which
-	match entries in the list. This command is helpful if unwanted persons have
+	Enforces the current channel auto kick list.  This will remove any users which
+	match entries in the list.  This command is helpful if unwanted persons have
 	managed to gain access to the channel whilst services was down or during
 	a netsplit.
 CS_HELP_AKICK_SHORT
 	%s: Channel Auto Kick list.
 CS_HELP_AKICK_LONG
-	Commands for managing the channel auto kick list. Persons on the list will
-	not be permitted to join the channel and will be removed from it. The
+	Commands for managing the channel auto kick list.  Persons on the list will
+	not be permitted to join the channel and will be removed from it.  The
 	following commands can be used to manipulate the list:
 CS_HELP_DROP_SHORT
 	%s: Unregister the channel.
 CS_HELP_DROP_LONG
 	Usage: DROP channel
 	
-	Unregisters the channel and releases it for use. This cannot be undone.
+	Unregisters the channel and releases it for use.  This cannot be undone.
 CS_HELP_DEOP_SHORT
 	%s: Remove channel operator status.
 CS_HELP_DEOP_LONG
 	Usage: DEOP channel [nickname]
 	
-	Removes your channel operator status on the channel. If a nickname is
+	Removes your channel operator status on the channel.  If a nickname is
 	specified it removes their operator status instead.
 CS_HELP_DEVOICE_SHORT
 	%s: Remove channel voice status.
 CS_HELP_DEVOICE_LONG
 	Usage: DEVOICE channel [nickname]
 	
-	Removes your channel voice status on the channel. If a nickname is
-	specified it removes their voice status instead. You must have access of
+	Removes your channel voice status on the channel.  If a nickname is
+	specified it removes their voice status instead.  You must have access of
 	CHANOP or higher to be able to use other nicks.
 CS_HELP_INFO_SHORT
 	%s: Show channel information.
@@ -244,7 +244,7 @@ CS_HELP_VOICE_SHORT
 CS_HELP_VOICE_LONG
 	Usage: VOICE channel [nickname]
 	
-	Grants channel voice status to you or, if specified, another user. You must
+	Grants channel voice status to you or, if specified, another user.  You must
 	have CHANOP or higher access to specify another user.
 CS_HELP_UNBAN_SHORT
 	%s: Unban yourself on a channel.
@@ -269,27 +269,27 @@ CS_HELP_INVITE_LONG
 CS_HELP_CLEAR_SHORT
 	%s: Clear groups of settings on the channel.
 CS_HELP_CLEAR_LONG
-	Clear various settings. The settings that can be cleared are:
+	Clear various settings.  The settings that can be cleared are:
 CS_HELP_ACCESS_SHORT
 	%s: Maintains the channel access list.
 CS_HELP_ACCESS_LONG
 	The channel access list specifies which nicknames are allowed access to the
-	channel and at what level their access is. The commands available are
+	channel and at what level their access is.  The commands available are
 	as follows:
 CS_HELP_CLEAR_BANS_SHORT
 	%s: Remove all bans on a channel.
 CS_HELP_CLEAR_BANS_LONG
 	Usage: CLEAR channel BANS
 	
-	This command will remove all of the bans set on a channel. It will not
-	remove any auto kicks which may be set. This command may be useful if you
+	This command will remove all of the bans set on a channel.  It will not
+	remove any auto kicks which may be set.  This command may be useful if you
 	have a large number of bans which need to be removed.
 CS_HELP_CLEAR_QUIETS_SHORT
 	%s: Remove all quiets on a channel.
 CS_HELP_CLEAR_QUIETS_LONG
 	Usage: CLEAR channel QUIET
 	
-	This command will remove all of the quiets set on a channel. This command may
+	This command will remove all of the quiets set on a channel.  This command may
 	be useful if you have a large number of bans which need to be removed.
 CS_HELP_CLEAR_OPS_SHORT
 	%s: Deop all the channel operators on a channel.
@@ -316,7 +316,7 @@ CS_HELP_CLEAR_USERS_SHORT
 CS_HELP_CLEAR_USERS_LONG
 	Usage CLEAR channel USERS [reason]
 	
-	Removes all the users from the channel. (Including you if you are on it!)
+	Removes all the users from the channel.  (Including you if you are on it!)
 	You may include an optional message.
 CS_HELP_ACCESS_ADD_SHORT
 	%s: Add a nickname to the channel access list.
@@ -325,13 +325,13 @@ CS_HELP_ACCESS_ADD_LONG
 	
 	Add the specified nickname to the access list at the specified level.
 	
-	MASTER - The highest level of access possible on a channel. Setting this
-	level of access will allow full management of the channel. Be careful who
+	MASTER - The highest level of access possible on a channel.  Setting this
+	level of access will allow full management of the channel.  Be careful who
 	you give this to.
-	CHANOP - Channel operator level access. Enables the user to perform channel
-	operator functions. OP/DEOP, AKICK management etc.
-	MEMBER - Recognises the user as a member of the channel. Allows users to
-	request voice for themselves. Gives them access to the channel when it is
+	CHANOP - Channel operator level access.  Enables the user to perform channel
+	operator functions.  OP/DEOP, AKICK management etc.
+	MEMBER - Recognises the user as a member of the channel.  Allows users to
+	request voice for themselves.  Gives them access to the channel when it is
 	invite only and allows them to view channel settings.
 CS_HELP_ACCESS_DEL_SHORT
 	%s: Remove a nickname from the channel access list.
@@ -355,8 +355,8 @@ CS_HELP_LIST_LONG
 	Usage: LIST pattern [FORBID]
 	
 	Shows a list of channels which are registered and match the pattern
-	specified. If you specify FORBID, only forbidden channels will be shown.
-	The forbid option is restricted to IRC Operators. Results will be limited to
+	specified.  If you specify FORBID, only forbidden channels will be shown.
+	The forbid option is restricted to IRC Operators.  Results will be limited to
 	50 matches, so try to be specific with your pattern.
 CS_HELP_FORBID_SHORT
 	%s: Forbid a channel from being used.
@@ -364,8 +364,8 @@ CS_HELP_FORBID_LONG
 	Usage: FORBID channel
 	
 	Adds the channel specified to the forbidden channel list, preventing
-	it to be used. Forbidden channels may not be registered and anyone
-	attempting to use them will be removed from the channel. This option is only
+	it to be used.  Forbidden channels may not be registered and anyone
+	attempting to use them will be removed from the channel.  This option is only
 	available to services admins.
 	
 	See also: UNFORBID
@@ -445,10 +445,10 @@ CS_HELP_QUIET_LIST_LONG
 	
 	Lists all QUIET in the list
 CS_REGISTER_NICK
-	Nick %s is not registered. The nickname you specify must be currently
+	Nick %s is not registered.  The nickname you specify must be currently
 	registered with nickname services.
 CS_REGISTER_GROUP
-	Group %s is not registered. The group you specify must be currently
+	Group %s is not registered.  The group you specify must be currently
 	registered with group services.
 CS_ALREADY_REG
 	Channel %s is already registered.
@@ -463,8 +463,8 @@ CS_NOT_ONCHAN
 CS_NOT_OPPED
 	You are not opped on that channel.
 CS_NOT_REG
-	Channel %s is not registered with channel services. If you believe this
-	to be incorrect there could be a database problem. Contact network support
+	Channel %s is not registered with channel services.  If you believe this
+	to be incorrect there could be a database problem.  Contact network support
 	if this problem persists.
 CS_DROPPED
 	Channel %s has been dropped.
@@ -477,7 +477,7 @@ CS_SET_SUCCESS
 CS_SET_FAILED
 	Setting %s to %s failed on channel %s.
 CS_NOT_EXIST
-	channel does not exist. XXX
+	Channel does not exist.  XXX
 CS_INFO_CHAN_START
 	Channel information for %s
 CS_INFO_CHAN_MEMBER
@@ -522,7 +522,7 @@ CS_INFO_LAST_USED_UNKNOWN
 CS_INFO_LAST_USED_ONLINE
 	Channel is currently in use.
 CS_AKICK_NONICK
-	%s is not a registered nickname. Try a mask instead.
+	%s is not a registered nickname.  Try a mask instead.
 CS_AKICK_ADDED
 	AKICK %s added.
 CS_AKICK_ADDFAIL
@@ -575,10 +575,10 @@ CS_NOT_OP
 CS_NOT_VOICE
 	User %s is not voiced on channel %s.
 CS_NO_VOICE_OTHERS
-	You do not have access to voice others on %s. You need CHANOP or higher
+	You do not have access to voice others on %s.  You need CHANOP or higher
 	access.
 CS_NO_DEVOICE_OTHERS
-	You do not have access to devoice others on %s. You need CHANOP or
+	You do not have access to devoice others on %s.  You need CHANOP or
 	higher access.
 CS_NICK_NOT_ONLINE
 	User %s is not online.
@@ -587,13 +587,13 @@ CS_ALREADY_ON_CHAN
 CS_INVITED
 	User %s has been invited to %s.
 CS_ACCESS_BADLEVEL
-	Unknown access level %s. The access level you specify must be one of the
-	available access levels. See HELP ACCESS for more information.
+	Unknown access level %s.  The access level you specify must be one of the
+	available access levels.  See HELP ACCESS for more information.
 CS_ACCESS_ADDOK
 	%s added to %s access list as %s.
 CS_ACCESS_ADDFAIL
-	Failed to add %s to %s access list as %s. It is possible that
-	they are already on the access list. If this is not the case and this is not
+	Failed to add %s to %s access list as %s.  It is possible that
+	they are already on the access list.  If this is not the case and this is not
 	the first time you have seen this message, please contact network support.
 CS_ACCESS_LIST
 	%d: %s %s
@@ -605,7 +605,7 @@ CS_ACCESS_DELFAIL
 	Failed to remove %s from the access list of %s.
 CS_ACCESS_NOMASTERS
 	You cannot remove %s from the access list of %s because it is the
-	last MASTER entry. Add another MASTER to the access list and try again.
+	last MASTER entry.  Add another MASTER to the access list and try again.
 CS_ACCESS_ALREADY_ON
 	You cannot add %s to the access list of %s because they are already
 	on the list at that level.
@@ -620,7 +620,7 @@ CS_BAD_MLOCK
 	'%c' is not a valid mode letter.
 CS_MLOCK_CONFLICT_LIMIT
 	ChanServ has detected a conflict with your MLOCK and AUTOLIMIT settings.
-	As a result AUTOLIMIT has been turned OFF. If you wish to have AUTOLIMIT
+	As a result AUTOLIMIT has been turned OFF.  If you wish to have AUTOLIMIT
 	turned ON you must not include -l in your MLOCK.
 CS_NEED_LIMIT
 	You must provide a positive limit when using 'l' with MLOCK.
@@ -633,7 +633,7 @@ CS_LIST_NO_MATCHES
 CS_LIST_ENTRY
 	%s
 CS_LIST_END
-	End of LIST. %d matches found.
+	End of LIST.  %d matches found.
 CS_FORBID_BAD_DURATIONCHAR
 	Invalid duration character, '%c'.
 CS_FORBID_OK
@@ -641,14 +641,14 @@ CS_FORBID_OK
 CS_FORBID_FAIL
 	%s failed to be forbidden.
 CS_NOREG_FORBID
-	%s is forbidden and may not be registered or used. Please choose another
+	%s is forbidden and may not be registered or used.  Please choose another
 	channel.
 CS_CHAN_NOT_FORBID
 	Channel %s was not forbidden.
 CS_UNFORBID_OK
 	Channel %s is no longer forbidden and may be used.
 CS_UNFORBID_FAIL
-	Channel %s failed to be removed from the forbidden list. Likely cause is an
+	Channel %s failed to be removed from the forbidden list.  Likely cause is an
 	internal database error.
 CS_FS_NOT_LOADED
 	FloodServ is not currently connected; when it returns it will join %s.

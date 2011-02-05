@@ -16,9 +16,9 @@ SERV_SUB_HELP_FOOTER
 SERV_UNKNOWN_CMD
 	Unknown command %s, /msg %s HELP for help.
 SERV_TOOFEW_PARAM
-	Too few parameters.  Expected at least %d. Got %d.
+	Too few parameters.  Expected at least %d.  Got %d.
 SERV_TOOMANY_PARAM
-	Too many parameters.  Expected no more than %d. Got %d.
+	Too many parameters.  Expected no more than %d.  Got %d.
 SERV_NOT_IDENTIFIED
 	Nickname %s is not identified to nickname services.
 SERV_ACCESS_DENIED
@@ -30,20 +30,20 @@ SERV_UNREG_GROUP
 SERV_NO_ACCESS_CHAN
 	You do not have access to the %s command on channel %s.
 SERV_NO_ACCESS_CHAN_ID
-	You do not have access to the %s command on channel %s. Identifying 
-	to your nickname may give you this access. See nickname services' HELP 
+	You do not have access to the %s command on channel %s.  Identifying 
+	to your nickname may give you this access.  See nickname services' HELP 
 	IDENTIFY command for more information.
 SERV_NO_ACCESS_GROUP
 	You do not have access to the %s command for the group %s.
 SERV_NO_ACCESS_GROUP_ID
-	You do not have access to the %s command on group %s. Identifying to
-	your nickname may give you this access. See nickname services' HELP IDENTIFY
+	You do not have access to the %s command on group %s.  Identifying to
+	your nickname may give you this access.  See nickname services' HELP IDENTIFY
 	command for more information.
 SERV_NO_ACCESS
 	You do not have access to the %s command.
 SERV_NO_ACCESS_REGFIRST
-	You do not have access to the %s command. Identifying to your nickname
-	 may help. See HELP IDENTIFY for more information.
+	You do not have access to the %s command.  Identifying to your nickname
+	 may help.  See HELP IDENTIFY for more information.
 SERV_UNKNOWN_OPTION
 	Unknown option %s, /msg %s HELP %s for help.
 SERV_DATETIME_FORMAT
