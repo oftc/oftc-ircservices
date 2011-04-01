@@ -227,14 +227,14 @@ class Bopm < ServiceModule
     if @outstanding_requests.has_key?(reqid)
       req = @outstanding_requests[reqid]
       @outstanding_requests.delete(reqid)
-      r = get_priority(req['results'])
-      req['final'].call(req['host'], req['score'], r, req['shortnames'], req['final_data'])
+      req['final'].call(req['host'], req['score'], req['results'], req['shortnames'], req['final_data'])
     end
   end
 
   def newuser_final(host, score, blacklists, short_names, cid)
     client = Client.find(cid)
-    if blacklists.length > 0
+    r = get_priority(blacklists)
+    if r.length > 0
       name, addr, escore, reason, cloak, withid, hexip = blacklists[0]
       snames = short_names.join(", ")
       if score >= @config['kill_score']
@@ -312,8 +312,10 @@ class Bopm < ServiceModule
       end
     
       reply(client, "Results for #{host}")
-      blacklists.each do |name,addr,escore,reason,cloak,withid|
-        reply(client, "Found in #{name} (#{addr}) [#{reason}] score: #{escore}")
+      blacklists.each do |b|
+        b.each do |name,addr,escore,reason,cloak,withid|
+          reply(client, "Found in #{name} (#{addr}) [#{reason}] score: #{escore}")
+        end
       end
       reply(client, "Total score: #{score}")
     end
