@@ -783,7 +783,7 @@ NS_SENDPASS_BODY
 	/msg %s SENDPASS %s %ld:%s <yournewpassword>
 	
 	If this was not you, please do not be concerned, no action has been
-	taken on your nickname.  If think you have received this message in
+	taken on your nickname.  If you think you have received this message in
 	error, please forward this message to support@oftc.net.  Do not reply
 	to this mail as it is sent from an unattended address.
 	
