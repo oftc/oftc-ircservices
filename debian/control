@@ -2,8 +2,11 @@ Source: oftc-ircservices
 Section: devel
 Priority: extra
 Maintainer: Christoph Berg <myon@debian.org>
-Build-Depends: debhelper (>> 5.0.0), quilt (>= 0.40-1), libyada-dev, libssl-dev, flex, bison, libltdl3-dev
-Standards-Version: 3.7.3
+Build-Depends: debhelper (>> 7), libssl-dev, flex, bison, libltdl3-dev
+Standards-Version: 3.9.2
+Homepage: http://www.oftc.net/releases/
+Vcs-Browser: http://git.oftc.net/?p=oftc-ircservices.git
+Vcs-Git: git://git.oftc.net/oftc-ircservices.git
 
 Package: oftc-ircservices
 Architecture: any
@@ -13,7 +16,6 @@ Description: IRC services as used by oftc.net
  IRC services provide nickname registration (NickServ), channel registration
  (ChanServ), flood detection (FloodServ), IRC operator tools (OperServ), and
  hooks for various scripting languages for custom services.
-Homepage: http://www.oftc.net/releases/
 
 Package: oftc-ircservices-dbg
 Architecture: any

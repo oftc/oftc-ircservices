@@ -1,11 +1,10 @@
 #!/usr/bin/make -f
 
-include /usr/share/quilt/quilt.make
-
 build-indep:
 build build-arch: build-stamp
 build-stamp: $(QUILT_STAMPFN)
-	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+		--with-nicklen=30 --with-topiclen=390 --enable-debugging --disable-python
 	$(MAKE)
 	touch $@
 
@@ -15,6 +14,7 @@ install: build-stamp
 	dh_installdirs etc/oftc-ircservices var/log/oftc-ircservices
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/oftc-ircservices
 	cd $(CURDIR)/debian/oftc-ircservices/etc && mv example.conf oftc-ircservices/services.conf
+	cd $(CURDIR)/debian/oftc-ircservices/etc && mv *sample* oftc-ircservices
 	cd $(CURDIR)/debian/oftc-ircservices/usr/bin && mv services oftc-ircservices
 
 binary-indep:
@@ -33,7 +33,7 @@ binary binary-arch: install
 	dh_gencontrol
 	dh_builddeb
 
-clean: unpatch
+clean:
 	-$(MAKE) clean
 	dh_clean build-stamp
 
