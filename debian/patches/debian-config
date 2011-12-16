@@ -1,0 +1,21 @@
+--- a/include/defines.h
++++ b/include/defines.h
+@@ -3,15 +3,15 @@
+ #ifndef INCLUDED_defines_h
+ #define INCLUDED_defines_h
+ 
+-#define LOGDIR      LOCALSTATEDIR "/log/"
++#define LOGDIR      LOCALSTATEDIR "/log/" PACKAGE "/"
+ #define PIDDIR      LOCALSTATEDIR "/run/"
+ #define AUTOMODPATH LIBDIR "/" PACKAGE "/autoload/"
+ #define MODPATH     LIBDIR "/" PACKAGE "/"
+ #define LANGPATH    DATADIR "/" PACKAGE "/"
+-#define CPATH       SYSCONFDIR "/services.conf"
++#define CPATH       SYSCONFDIR "/" PACKAGE "/services.conf"
+ #define DPATH       PREFIX "/"
+ #define LPATH       LOGDIR "services.log"
+-#define PPATH       PIDDIR "services.pid"
++#define PPATH       PIDDIR "oftc-ircservices.pid"
+ 
+ #define SENDMAIL_PATH "/usr/sbin/sendmail -t"
+ 

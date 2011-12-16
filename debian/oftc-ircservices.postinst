@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+case $1 in
+    configure)
+	getent passwd irc > /dev/null 2>&1 ||
+		adduser --system --home /var/run/ircd --no-create-home --gid irc irc
+	chown irc:irc /var/log/oftc-ircservices
+	;;
+esac
+
+#DEBHELPER#
+
+exit 0
