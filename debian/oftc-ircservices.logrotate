@@ -1,0 +1,13 @@
+/var/log/oftc-ircservices/*.log {
+	weekly
+	missingok
+	rotate 4
+	notifempty
+	compress
+	delaycompress
+	create 644 irc irc
+	sharedscripts
+	postrotate
+		/etc/init.d/oftc-ircservices reload > /dev/null
+	endscript
+}

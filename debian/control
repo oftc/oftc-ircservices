@@ -2,7 +2,7 @@ Source: oftc-ircservices
 Section: devel
 Priority: extra
 Maintainer: Christoph Berg <myon@debian.org>
-Build-Depends: debhelper (>> 7), libssl-dev, flex, bison, libltdl3-dev
+Build-Depends: debhelper (>> 7), libevent-dev, libssl-dev, flex, bison, libltdl3-dev
 Standards-Version: 3.9.2
 Homepage: http://www.oftc.net/releases/
 Vcs-Browser: http://git.oftc.net/?p=oftc-ircservices.git
