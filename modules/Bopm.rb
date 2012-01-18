@@ -235,7 +235,7 @@ class Bopm < ServiceModule
     client = Client.find(cid)
     r = get_priority(blacklists)
     if r.length > 0
-      name, addr, escore, reason, cloak, withid, hexip = blacklists[0]
+      name, addr, escore, reason, cloak, withid, hexip = r[0]
       snames = short_names.join(", ")
       if score >= @config['kill_score']
         if client
