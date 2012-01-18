@@ -499,7 +499,13 @@ class GanneffServ < ServiceModule
     end
 
     if @badserver.length > 0
-      if @badserver == client.from.name
+      ## Check when they were connected, this prevents against a badserv that splits
+      ## comes back and all the old connects get considered as spammers
+      ## XXX XXX XXX
+      ## If the server is split longer than @delay and new connects happen, upon
+      ## reintroduction those new connects won't be considered new enough to kill.
+      delta = Time.new.to_i - client.firsttime
+      if @badserver == client.from.name and delta < @delay
         return akill(client, "Spammer", "Badserv:#{@badserver}", "")
       else
         debug(LOG_DEBUG, "#{nick} not on badserv #{@badserver} but on #{client.from.name}, not killing")
