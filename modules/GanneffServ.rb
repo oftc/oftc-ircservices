@@ -504,8 +504,7 @@ class GanneffServ < ServiceModule
       ## XXX XXX XXX
       ## If the server is split longer than @delay and new connects happen, upon
       ## reintroduction those new connects won't be considered new enough to kill.
-      delta = Time.new.to_i - client.firsttime
-      if @badserver == client.from.name and delta < @delay
+      if @badserver == client.from.name and Time.new.to_i - client.firsttime < @delay
         return akill(client, "Spammer", "Badserv:#{@badserver}", "")
       else
         debug(LOG_DEBUG, "#{nick} not on badserv #{@badserver} but on #{client.from.name}, not killing")
