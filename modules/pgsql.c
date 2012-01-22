@@ -212,6 +212,7 @@ static query_t queries[QUERY_COUNT] = {
     "AND level=4 AND channel_access.account_id=account.id AND "
       "account.primary_nick=nickname.id ORDER BY lower(nick)", QUERY },
   { DELETE_ACCOUNT_CHACCESS, "DELETE FROM channel_access WHERE account_id=$1", EXECUTE },
+  { DELETE_ACCOUNT_GROUPACCESS, "DELETE FROM group_access WHERE account_id=$1", EXECUTE },
   { DELETE_DUPLICATE_CHACCESS, "DELETE FROM channel_access WHERE "
       "(account_id=$1 AND level <= (SELECT level FROM channel_access AS x WHERE"
       " x.account_id=$2 AND x.channel_id = channel_access.channel_id)) OR "

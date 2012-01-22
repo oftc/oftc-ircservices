@@ -221,6 +221,9 @@ nickname_delete(Nickname *nick)
       ret = db_execute_nonquery(DELETE_ACCOUNT_CHACCESS, "i", &nick->id);
       if(ret == -1)
         goto failure;
+      ret = db_execute_nonquery(DELETE_ACCOUNT_GROUPACCESS, "i", &nick->id);
+      if(ret == -1)
+        goto failure;
       ret = db_execute_nonquery(DELETE_ACCOUNT, "i", &nick->id);
       if(ret == -1)
         goto failure;
