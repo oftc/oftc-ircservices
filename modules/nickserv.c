@@ -86,6 +86,7 @@ static void m_sendpass(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
 static void m_status(struct Service *, struct Client *, int, char*[]);
 static void m_enslave(struct Service *, struct Client *, int, char*[]);
+static void m_dropnick(struct Service *, struct Client *, int, char*[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -289,6 +290,11 @@ static struct ServiceMessage enslave_msgtab = {
   NS_HELP_ENSLAVE_LONG, m_enslave
 };
 
+static struct ServiceMessage dropnick_msgtab = {
+  NULL, "DROPNICK", 0, 1, 1, 0, ADMIN_FLAG|OPER_FLAG, NS_HELP_DROPNICK_SHORT,
+    NS_HELP_DROPNICK_LONG, m_dropnick
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -322,7 +328,8 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &status_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &enslave_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &resetpass_msgtab);
-  
+  mod_add_servcmd(&nickserv->msg_tree, &dropnick_msgtab);
+
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
   ns_newuser_hook     = install_hook(on_newuser_cb, ns_on_newuser);
@@ -1635,6 +1642,49 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 
   ilog(L_INFO, "%s executed %s SUDO on %s: %s", client->name, service->name, 
       nickname_get_nick(nick), newparv[2]);
+
+  process_privmsg(1, me.uplink, client, 3, newparv);
+  MyFree(newparv[2]);
+  MyFree(newparv);
+
+  nickname_free(client->nickname);
+  client->nickname = oldnick;
+  client->access = oldaccess;
+}
+
+/* XXX This steals the concept from SUDO above, but is limited to only DROPing */
+static void
+m_dropnick(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  Nickname *oldnick, *nick;
+  char **newparv;
+  int oldaccess;
+
+  oldnick = client->nickname;
+  oldaccess = client->access;
+
+  nick = nickname_find(parv[1]);
+  if(nick == NULL)
+  {
+    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
+    return;
+  }
+
+  client->nickname = nick;
+  if(nickname_get_admin(nick))
+    client->access = ADMIN_FLAG;
+  else
+    client->access = IDENTIFIED_FLAG;
+
+  newparv = MyMalloc(4 * sizeof(char*));
+
+  newparv[0] = parv[0];
+  newparv[1] = service->name;
+
+  DupString(newparv[2], "DROP");
+
+  ilog(L_INFO, "%s executed %s DROPNICK on %s", client->name, service->name,
+      nickname_get_nick(nick));
 
   process_privmsg(1, me.uplink, client, 3, newparv);
   MyFree(newparv[2]);

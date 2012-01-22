@@ -42,6 +42,15 @@ NS_HELP_DROP_LONG
 	it as a parameter.  Releasing your nickname in this way will allow others to
 	make use of it, or register it for their use, so make sure you really want
 	this before confirming.
+NS_HELP_DROPNICK_SHORT
+	%s: Releases the nickname for use.
+NS_HELP_DROPNICK_LONG
+	Usage: DROPNICK nickname
+	
+	Releases the specified nickname for use and deletes it from the database.
+	This cannot be undone. Releasing a nickname in this way will allow others to
+	make use of it, or register it for their use, so make sure you really want
+	this.
 NS_HELP_ACCESS_SHORT
 	%s: Maintains the nickname ACCESS list.
 NS_HELP_ACCESS_LONG
