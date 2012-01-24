@@ -33,6 +33,12 @@ class MoranServ < ServiceModule
 
         add_event('drain_notices', 10, nil)
 
+        @spambot = Hash.new
+        @MAX_JOIN_LEAVE_COUNT = 25
+        @MAX_JOIN_LEAVE_TIME = 60
+        @JOIN_LEAVE_EXPIRE = 120
+        @MAX_TOKILL = 5
+
         @ready = false
     end
 
@@ -306,10 +312,54 @@ class MoranServ < ServiceModule
       @track_notices[key] << message
     end
 
+    def spambot_track(client)
+      if not @spambot.has_key?(client.id)
+        @spambot[client.id] = Hash.new
+        @spambot[client.id]['count'] = 0
+        @spambot[client.id]['last_join'] = 0
+        @spambot[client.id]['last_part'] = 0
+        @spambot[client.id]['tokill'] = 0
+      end
+    end
+
+    def check_spambot(client)
+      spambot_track(client)
+      entry = @spambot[client.id]
+      if entry['count'] > @MAX_JOIN_LEAVE_COUNT
+        if @ready
+          entry['tokill'] += 1
+          if entry['tokill'] > @MAX_TOKILL 
+            if not client.is_identified? and Time.new.to_i - client.firsttime < 3600
+              kill_user(client, "Possible spambot -- mail support@oftc.net with questions.")
+            else
+              notice("Wanted to kill #{client.to_str} because they're a spambot | Identified: #{client.is_identified?} | Time online (< 3600 required): #{Time.new.to_i - client.firsttime}")
+            end
+          end
+        end
+      else
+        delta = Time.new.to_i - entry['last_part']
+        if delta > @JOIN_LEAVE_EXPIRE
+          dcount = delta / @JOIN_LEAVE_EXPIRE
+          if dcount > entry['count']
+            entry['count'] = 0
+          else
+            entry['count'] -= dcount
+          end
+        else
+          if Time.new.to_i - entry['last_join'] < @MAX_JOIN_LEAVE_TIME
+            entry['count'] += 1
+          end
+        end
+      end
+    end
+    
     def client_new(client)
       tevent, t = track_event(client)
       if tevent
         add_notice(t, "C:#{client.name}")
+      end
+      if not client.is_oper? and not client.is_admin?
+        spambot_track(client)
       end
       return true
     end
@@ -327,6 +377,9 @@ class MoranServ < ServiceModule
           end
         end
       end
+      if @spambot.has_key?(client.id)
+        @spambot.delete(client.id)
+      end
       return true
     end
 
@@ -335,6 +388,10 @@ class MoranServ < ServiceModule
       if tevent
         add_notice(t, "J:#{client.name}:#{channel}")
       end
+      if not client.is_oper? and not client.is_admin?
+        check_spambot(client)
+        @spambot[client.id]['last_join'] = Time.new.to_i
+      end
       return true
     end
 
@@ -342,6 +399,10 @@ class MoranServ < ServiceModule
       tevent, t = track_event(client)
       if tevent
         add_notice(t, "P:#{client.name}:#{channel.name}:#{reason}")
+      end
+      if not client.is_oper? and not client.is_admin?
+        check_spambot(client)
+        @spambot[client.id]['last_part'] = Time.new.to_i
       end
       return true
     end
