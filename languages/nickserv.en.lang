@@ -280,7 +280,7 @@ NS_HELP_SET_SECURE_LONG
 	Usage: SET SECURE [ON|OFF]
 	
 	SECURE enables or disables nickname security.  If SECURE is off, when you
-	change to your nickname you be automatically identified if your userhost
+	change to your nickname you will be automatically identified if your userhost
 	matches an entry in your access list.  If secure is on, you will not be
 	automatically identified, but you will not have your nickname changed by the
 	ENFORCE option.
