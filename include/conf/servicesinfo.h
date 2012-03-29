@@ -40,6 +40,7 @@ struct ServicesInfoConf
   time_t def_akill_dur;
   time_t def_forbid_dur;
   int min_nonwildcard;
+  char tor_list_fname[PATH_MAX+1];
 };
 
 EXTERN struct ServicesInfoConf ServicesInfo;

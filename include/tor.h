@@ -13,7 +13,4 @@ struct TorNode {
 void init_tor();
 void cleanup_tor();
 
-void tornode_add (const char*);
-void tornode_clear (void);
-
 #endif

@@ -46,6 +46,7 @@ reset_servicesinfo(va_list args)
 #ifdef IPV6
   memset(&ServicesInfo.vhost6, 0, sizeof(ServicesInfo.vhost6));
 #endif
+  memset(&ServicesInfo.tor_list_fname, 0, sizeof(ServicesInfo.tor_list_fname));
 
   return pass_callback(hreset);
 }
@@ -159,6 +160,13 @@ si_set_vhost(void *value, void *where)
 }
 
 static void
+si_set_tor_list(void *value, void *unused)
+{
+  char *fname = (char *)value;
+  strlcpy(ServicesInfo.tor_list_fname, fname, sizeof(ServicesInfo.tor_list_fname));
+}
+
+static void
 si_set_rsa_private_key(void *value, void *unused)
 {
 }
@@ -204,6 +212,7 @@ init_servicesinfo(void)
       &ServicesInfo.def_forbid_dur);
   add_conf_field(s, "min_nonwildcard", CT_NUMBER, NULL, 
       &ServicesInfo.min_nonwildcard);
+  add_conf_field(s, "tor_list_fname", CT_STRING, si_set_tor_list, NULL);
 
   s->after = after_servicesinfo;
 }

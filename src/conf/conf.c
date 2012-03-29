@@ -34,6 +34,7 @@ char conf_linebuf[CONF_BUFSIZE];
 struct Callback *reset_conf = NULL;
 struct Callback *verify_conf = NULL;
 struct Callback *switch_conf_pass = NULL;
+struct Callback *on_config_loaded_cb = NULL;
 
 static dlink_list conf_section_list = {NULL, NULL, 0};
 
@@ -53,6 +54,7 @@ init_conf(void)
   reset_conf = register_callback("reset_conf", NULL);
   verify_conf = register_callback("verify_conf", NULL);
   switch_conf_pass = register_callback("switch_conf_pass", NULL);
+  on_config_loaded_cb = register_callback("config_loaded", NULL);
 
   init_servicesinfo();
   init_logging();
@@ -77,6 +79,7 @@ cleanup_conf()
   unregister_callback(reset_conf);
   unregister_callback(verify_conf);
   unregister_callback(switch_conf_pass);
+  unregister_callback(on_config_loaded_cb);
 }
 
 /*

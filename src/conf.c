@@ -76,4 +76,6 @@ read_services_conf(int cold)
   execute_callback(verify_conf);
   conf_pass = 0;
   fbclose(conf_curctx.f);
+
+  execute_callback(on_config_loaded_cb, cold);
 }
