@@ -40,6 +40,7 @@
 #include "send.h"
 #include "events.h"
 #include "event.h"
+#include "tor.h"
 
 #include <signal.h>
 #include <sys/wait.h>
@@ -233,6 +234,7 @@ int main(int argc, char *argv[])
   init_parser();
   init_channel_modes();
   init_mqueue();
+  init_tor();
 
   me.from = me.servptr = &me;
   SetServer(&me);
@@ -359,6 +361,7 @@ services_die(const char *msg, int rboot)
   cleanup_channel();
   cleanup_interface();
   cleanup_mqueue();
+  cleanup_tor();
   unregister_callback(iorecv_cb);
   unregister_callback(connected_cb);
   unregister_callback(iosend_cb);

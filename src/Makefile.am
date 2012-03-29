@@ -35,7 +35,8 @@ services_SOURCES= akick.c					    \
 									parse.c				      \
 									servicemask.c		    \
 									services.c			    \
-									send.c
+									send.c              \
+									tor.c
 
 services_LDADD=conf/libconf.a $(top_srcdir)/libio/libio.a @LIBLTDL@
 services_LDFLAGS=-levent

@@ -1,5 +1,7 @@
 #include <ruby.h>
 #include "libruby_module.h"
+#include "tor.h"
+#include "hash.h"
 
 VALUE cClient = Qnil;
 VALUE cNickname;
@@ -32,6 +34,7 @@ static VALUE is_server(VALUE);
 static VALUE is_client(VALUE);
 static VALUE is_me(VALUE);
 static VALUE is_services_client(VALUE);
+static VALUE is_tor(VALUE);
 static VALUE join(VALUE, VALUE);
 static VALUE part(VALUE, VALUE, VALUE);
 static VALUE m_exit(VALUE, VALUE, VALUE);
@@ -77,6 +80,7 @@ Init_Client(void)
   rb_define_method(cClient, "is_client?", is_client, 0);
   rb_define_method(cClient, "is_me?", is_me, 0);
   rb_define_method(cClient, "is_services_client?", is_services_client, 0);
+  rb_define_method(cClient, "is_tor?", is_tor, 0);
   rb_define_method(cClient, "join", join, 1);
   rb_define_method(cClient, "part", part, 2);
   rb_define_method(cClient, "exit", m_exit, 2);
@@ -322,6 +326,13 @@ static VALUE is_services_client(VALUE self)
 {
   struct Client *client = value_to_client(self);
   return IsMe(client->from) ? Qtrue : Qfalse;
+}
+
+static VALUE is_tor(VALUE self)
+{
+  struct Client *client = value_to_client(self);
+  struct TorNode *node = find_tor(client->sockhost);
+  return node != NULL ? Qtrue : Qfalse;
 }
 
 static VALUE

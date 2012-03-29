@@ -64,5 +64,9 @@ void hash_add_mqueue(struct MessageQueue **, struct MessageQueue *);
 void hash_del_mqueue(struct MessageQueue **, struct MessageQueue *);
 struct MessageQueue **new_mqueue_hash();
 
+struct TorNode *find_tor(const char *);
+void hash_add_tor(struct TorNode *);
+void hash_del_tor(struct TorNode *);
+
 unsigned int strhash(const char *);
 #endif  /* INCLUDED_hash_h */

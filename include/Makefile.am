@@ -38,4 +38,5 @@ noinst_HEADERS= akick.h						  \
 								send.h					    \
 								servicemask.h			  \
 								services.h				  \
-								stdinc.h
+								stdinc.h            \
+								tor.h

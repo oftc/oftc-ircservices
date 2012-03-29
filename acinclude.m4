@@ -358,6 +358,11 @@ AC_DEFUN([AX_ARG_WITH_FMSG_HEAP_SIZE],[
   AC_ARG_WITH([fmsg-heap-size],[AC_HELP_STRING([--fmsg-size=<value>],[Set fmsg heap size (default 256).])],[fmsg_heap_size="$withval"],[fmsg_heap_size="256"])
   AC_DEFINE_UNQUOTED([FMSG_HEAP_SIZE],[$fmsg_heap_size],[Size of the floodserv fmsg heap.])
 ])dnl }}}
+dnl {{{ ax_arg_with_tornode_heap_size
+AC_DEFUN([AX_ARG_WITH_TORNODE_HEAP_SIZE],[
+  AC_ARG_WITH([tornode-heap-size],[AC_HELP_STRING([--tornode-size=<value>],[Set tornode heap size (default 256).])],[tornode_heap_size="$withval"],[tornode_heap_size="256"])
+  AC_DEFINE_UNQUOTED([TORNODE_HEAP_SIZE],[$tornode_heap_size],[Size of the heap for tracking tor nodes.])
+])dnl }}}
 dnl {{{ ax_arg_enable_halfops
 AC_DEFUN([AX_ARG_ENABLE_HALFOPS],[
   AC_ARG_ENABLE([halfops],[AC_HELP_STRING([--enable-halfops],[Enable halfops support.])],[halfops="$enableval"],[halfops="no"])

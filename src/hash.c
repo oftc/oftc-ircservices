@@ -37,6 +37,7 @@
 #include "language.h"
 #include "nickname.h"
 #include "interface.h"
+#include "tor.h"
 
 /*static BlockHeap *service_heap = NULL;
 static BlockHeap *namehost_heap = NULL;
@@ -53,6 +54,7 @@ static struct Client *idTable[HASHSIZE];
 static struct Client *clientTable[HASHSIZE];
 static struct Channel *channelTable[HASHSIZE];
 static struct Service *serviceTable[HASHSIZE];
+static struct TorNode *torTable[HASHSIZE];
 
 /* init_hash()
  *
@@ -82,6 +84,7 @@ init_hash(void)
     clientTable[i]      = NULL;
     channelTable[i]     = NULL;
     serviceTable[i]     = NULL;
+    torTable[i]         = NULL;
   }
 }
 
@@ -657,4 +660,68 @@ new_mqueue_hash()
     tmp[i] = NULL;
 
   return tmp;
+}
+
+void
+hash_add_tor(struct TorNode *node)
+{
+  unsigned int hashv = strhash(node->host);
+
+  node->next = torTable[hashv];
+  torTable[hashv] = node;
+}
+
+void
+hash_del_tor(struct TorNode *node)
+{
+  unsigned int hashv = strhash(node->host);
+  struct TorNode *tmp = torTable[hashv];
+
+  if (tmp != NULL)
+  {
+    if (tmp == node)
+    {
+      torTable[hashv] = node->next;
+      node->next = node;
+    }
+    else
+    {
+      while (tmp->next != node)
+      {
+        if ((tmp = tmp->next) == NULL)
+          return;
+      }
+
+      tmp->next = tmp->next->next;
+      node->next = node;
+    }
+  }
+}
+
+struct TorNode *
+find_tor(const char *host)
+{
+  unsigned int hashv = strhash(host);
+  struct TorNode *node;
+
+  if ((node = torTable[hashv]) != NULL)
+  {
+    if (irccmp(host, node->host))
+    {
+      struct TorNode *prev;
+
+      while (prev = node, (node = node->next) != NULL)
+      {
+        if (!irccmp(host, node->host))
+        {
+          prev->next = node->next;
+          node->next = torTable[hashv];
+          torTable[hashv] = node;
+          break;
+        }
+      }
+    }
+  }
+
+  return node;
 }
