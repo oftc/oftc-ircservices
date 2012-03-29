@@ -37,6 +37,9 @@ dnsbl_request_timeout: 300
 # unless recloak_users is True
 exempt_hosts:
   - example.com
+# default_tor_cloak: (string) [optional]
+# If the client matches the tor list, don't perform dnsbl and apply this cloak
+default_tor_cloak: "tor-irc.dnsbl.example.com"
 #
 # List of DNSBLs to check against 
 dnsbls:

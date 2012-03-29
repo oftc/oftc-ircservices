@@ -558,8 +558,15 @@ fs_on_privmsg(va_list args)
         DupString(akill->mask, mask);
         DupString(akill->reason, FS_KILL_MSG);
 
-        akill_add(akill);
-        send_akill(floodserv, fsclient->name, akill);
+        if (find_tor(source->sockhost) == NULL)
+        {
+          akill_add(akill);
+          send_akill(floodserv, fsclient->name, akill);
+        }
+        else
+        {
+          kill_user(floodserv, source, FS_KILL_MSG);
+        }
 
         if(akill != NULL)
           free_servicemask(akill);
