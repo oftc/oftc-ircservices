@@ -20,10 +20,12 @@ config_loaded(va_list args)
   FBFILE *t = NULL;
   char buffer[256];
 
-  if(!EmptyString(ServicesInfo.tor_list_fname)) {
+  if(!EmptyString(ServicesInfo.tor_list_fname))
+  {
     ilog(L_DEBUG, "Opening tor list: %s", ServicesInfo.tor_list_fname);
     t = fbopen(ServicesInfo.tor_list_fname, "r");
-    if (t != NULL) {
+    if (t != NULL)
+    {
       tornode_clear();
       while(fbgets(buffer, sizeof(buffer), t) != NULL)
       {
