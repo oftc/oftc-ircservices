@@ -196,7 +196,7 @@ static struct ServiceMessage cert_msgtab = {
 };
 
 static struct ServiceMessage ajoin_sub[] = {
-  { NULL, "ADD", 0, 0, 2, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_ADD_SHORT, 
+  { NULL, "ADD", 0, 1, 2, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_ADD_SHORT, 
     NS_HELP_AJOIN_ADD_LONG, m_ajoin_add },
   { NULL, "LIST", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_AJOIN_LIST_SHORT, 
     NS_HELP_AJOIN_LIST_LONG, m_ajoin_list },
