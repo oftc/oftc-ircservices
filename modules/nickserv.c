@@ -398,20 +398,33 @@ process_enforce_list(void *param)
 }
 
 static void
+release_client(struct Client *user, dlink_node *ptr, const char *reason) {
+  if (ptr == NULL)
+  {
+    dlinkFindDelete(&nick_release_list, user);
+  }
+  else
+  {
+    dlinkDelete(ptr, &nick_release_list);
+    free_dlink_node(ptr);
+  }
+
+  user->enforce_time = 0;
+  exit_client(user, &me, reason);
+}
+
+static void
 process_release_list(void *param)
 {
   dlink_node *ptr, *ptr_next;
-  
+
   DLINK_FOREACH_SAFE(ptr, ptr_next, nick_release_list.head)
   {
-    struct Client *user = (struct Client *)ptr->data;  
+    struct Client *user = (struct Client *)ptr->data;
 
     if(CurrentTime > user->release_time)
     {
-      exit_client(user, &me, "Held nickname released");
-      dlinkDelete(ptr, &nick_release_list);
-      free_dlink_node(ptr);
-      user->enforce_time = 0;
+      release_client(user, ptr, "Held nickname released");
     }
   }
 }
@@ -652,6 +665,10 @@ m_drop(struct Service *service, struct Client *client,
       reply_user(service, service, client, NS_NICK_DROPPED, target_nick);
       ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
         client->username, client->host, target_nick);
+      target = find_client(target_nick);
+      if (target) {
+        release_client(target, NULL, "Nick has been dropped");
+      }
     }
   }
   else
