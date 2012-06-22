@@ -249,6 +249,8 @@ int main(int argc, char *argv[])
   init_python();
 #endif
 
+  init_kill();
+
   write_pidfile(ServicesState.pidfile);
   ilog(L_NOTICE, "Services Ready");
 

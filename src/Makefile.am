@@ -28,6 +28,7 @@ services_SOURCES= akick.c					    \
 									interface.c			    \
 									jupe.c				      \
 									language.c			    \
+                  kill.c              \
 									m_error.c			      \
 									mqueue.c			      \
 									nickname.c			    \
