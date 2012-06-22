@@ -141,7 +141,7 @@ void deop_user(struct Service *, struct Channel *, struct Client *);
 void voice_user(struct Service *, struct Channel *, struct Client *);
 void devoice_user(struct Service *, struct Channel *, struct Client *);
 void invite_user(struct Service *, struct Channel *, struct Client *);
-void kill_user(struct Service *, struct Client *, const char *);
+void send_kill(struct Service *, struct Client *, const char *);
 void ban_mask(struct Service *, struct Channel *, const char *);
 void ban_mask_many(struct Service *, struct Channel *, dlink_list *);
 void unban_mask(struct Service *, struct Channel *, const char *);

@@ -36,7 +36,7 @@ check_kills(void *param)
   {
     struct KillRequest *request = (struct KillRequest *)ptr->data;
 
-    kill_user(request->service, request->client, request->reason);
+    send_kill(request->service, request->client, request->reason);
 
     dlinkDelete(ptr, &kill_list);
     free_dlink_node(ptr);
@@ -52,7 +52,7 @@ init_kill()
 }
 
 void
-add_kill(struct Service *service, struct Client *client, const char *reason)
+kill_user(struct Service *service, struct Client *client, const char *reason)
 {
   struct KillRequest *request = MyMalloc(sizeof(struct KillRequest));
 

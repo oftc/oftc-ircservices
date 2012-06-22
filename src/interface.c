@@ -603,7 +603,7 @@ reply_mail(struct Service *service, struct Client *client,
 }
 
 void
-kill_user(struct Service *service, struct Client *client, const char *reason)
+send_kill(struct Service *service, struct Client *client, const char *reason)
 {
   if(ServicesState.debugmode)
     ilog(L_DEBUG, "Was going to kill: %s (%s)", client->name, reason);
