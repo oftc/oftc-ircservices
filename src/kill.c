@@ -62,3 +62,37 @@ kill_user(struct Service *service, struct Client *client, const char *reason)
 
   dlinkAdd(request, make_dlink_node(), &kill_list);  
 }
+
+void
+kill_remove_service(struct Service *service)
+{
+  dlink_node *ptr, *nptr;
+
+  DLINK_FOREACH_SAFE(ptr, nptr, kill_list.head)
+  {
+    struct KillRequest *request = (struct KillRequest *)ptr->data;
+
+    if(request->service == service)
+    {
+      dlinkDelete(ptr, &kill_list);
+      free_dlink_node(ptr);
+    }
+  }
+}
+
+void
+kill_remove_client(struct Client *client)
+{
+  dlink_node *ptr, *nptr;
+
+  DLINK_FOREACH_SAFE(ptr, nptr, kill_list.head)
+  {
+    struct KillRequest *request = (struct KillRequest *)ptr->data;
+
+    if(request->client == client)
+    {
+      dlinkDelete(ptr, &kill_list);
+      free_dlink_node(ptr);
+    }
+  }
+}

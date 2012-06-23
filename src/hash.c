@@ -38,6 +38,7 @@
 #include "nickname.h"
 #include "interface.h"
 #include "tor.h"
+#include "kill.h"
 
 /*static BlockHeap *service_heap = NULL;
 static BlockHeap *namehost_heap = NULL;
@@ -254,6 +255,9 @@ hash_del_service(struct Service *service)
 {
   unsigned int hashv = strhash(service->name);
   struct Service *tmp = serviceTable[hashv];
+
+  /* Ugly, but prevents us from having to do it in every service unload */
+  kill_remove_service(service);
 
   if (tmp != NULL)
   {

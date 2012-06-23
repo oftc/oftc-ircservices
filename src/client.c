@@ -40,6 +40,7 @@
 #include "interface.h"
 #include "msg.h"
 #include "nickserv.h"
+#include "kill.h"
 
 dlink_list global_client_list;
 dlink_list global_server_list;
@@ -309,6 +310,8 @@ exit_one_client(struct Client *source_p)
 
   if((lp = dlinkFindDelete(&delay_akill_list, source_p)) != NULL)
     free_dlink_node(lp);
+
+  kill_remove_client(source_p);
 
   /* XXX TODO FIXME
    * We probably want to free the uplink if for whatever reason we get
