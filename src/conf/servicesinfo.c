@@ -167,6 +167,13 @@ si_set_tor_list(void *value, void *unused)
 }
 
 static void
+si_set_default_cloak(void *value, void *unused)
+{
+  char *cloak = (char *)value;
+  strlcpy(ServicesInfo.default_cloak, cloak, sizeof(ServicesInfo.default_cloak));
+}
+
+static void
 si_set_rsa_private_key(void *value, void *unused)
 {
 }
@@ -213,6 +220,7 @@ init_servicesinfo(void)
   add_conf_field(s, "min_nonwildcard", CT_NUMBER, NULL, 
       &ServicesInfo.min_nonwildcard);
   add_conf_field(s, "tor_list_fname", CT_STRING, si_set_tor_list, NULL);
+  add_conf_field(s, "default_cloak", CT_STRING, si_set_default_cloak, NULL);
 
   s->after = after_servicesinfo;
 }

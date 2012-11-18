@@ -41,6 +41,7 @@ struct ServicesInfoConf
   time_t def_forbid_dur;
   int min_nonwildcard;
   char tor_list_fname[PATH_MAX+1];
+  char default_cloak[HOSTLEN+1];
 };
 
 EXTERN struct ServicesInfoConf ServicesInfo;
