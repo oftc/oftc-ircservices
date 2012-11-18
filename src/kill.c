@@ -48,7 +48,7 @@ check_kills(void *param)
 void
 init_kill()
 {
-  eventAdd("Check kills", check_kills, NULL, 0);
+  eventAdd("Check kills", check_kills, NULL, 1);
 }
 
 void
