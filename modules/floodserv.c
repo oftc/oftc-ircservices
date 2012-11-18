@@ -68,6 +68,7 @@
 #include "mqueue.h"
 #include "akill.h"
 #include "servicemask.h"
+#include "kill.h"
 
 static struct Service *floodserv = NULL;
 static struct Client  *fsclient  = NULL;

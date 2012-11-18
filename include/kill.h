@@ -1,6 +1,7 @@
 #ifndef INCLUDED_kill_h
 #define INCLUDED_kill_h 
 
+void init_kill();
 void kill_user(struct Service *, struct Client *, const char *);
 void kill_remove_service(struct Service *);
 void kill_remove_client(struct Client *);

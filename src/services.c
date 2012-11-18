@@ -41,6 +41,7 @@
 #include "events.h"
 #include "event.h"
 #include "tor.h"
+#include "kill.h"
 
 #include <signal.h>
 #include <sys/wait.h>

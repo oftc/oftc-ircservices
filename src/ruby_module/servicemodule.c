@@ -5,6 +5,7 @@
 #include "servicemask.h"
 #include "akill.h"
 #include "send.h"
+#include "kill.h"
 
 VALUE cServiceModule = Qnil;
 VALUE cClient;

@@ -1,6 +1,6 @@
 /*
  *  oftc-ircservices: an exstensible and flexible IRC Services package
- *  nickserv.c: A C implementation of Nickname Services 
+ *  nickserv.c: A C implementation of Nickname Services
  *
  *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
  *
@@ -43,6 +43,7 @@
 #include "nickserv.h"
 #include "crypt.h"
 #include "dbmail.h"
+#include "kill.h"
 
 static struct Service *nickserv = NULL;
 static struct Client *nickserv_client = NULL;
