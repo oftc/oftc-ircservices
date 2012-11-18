@@ -292,7 +292,7 @@ static struct ServiceMessage enslave_msgtab = {
 };
 
 static struct ServiceMessage dropnick_msgtab = {
-  NULL, "DROPNICK", 0, 1, 1, 0, ADMIN_FLAG|OPER_FLAG, NS_HELP_DROPNICK_SHORT,
+  NULL, "DROPNICK", 0, 1, 1, 0, OPER_FLAG, NS_HELP_DROPNICK_SHORT,
     NS_HELP_DROPNICK_LONG, m_dropnick
 };
 
