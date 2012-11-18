@@ -24,8 +24,9 @@
 #include "stdinc.h"
 #include "interface.h"
 #include "kill.h"
+#include "client.h"
 
-static dlink_list kill_list;
+static dlink_list kill_list = { 0 };
 
 static void
 check_kills(void *param)
@@ -37,11 +38,11 @@ check_kills(void *param)
     struct KillRequest *request = (struct KillRequest *)ptr->data;
 
     send_kill(request->service, request->client, request->reason);
-
-    dlinkDelete(ptr, &kill_list);
-    free_dlink_node(ptr);
-
-    MyFree(request);
+    /*
+       Sending this actual kill will remove the user from the kill_list so we
+       don't need to free it ourself, albeit if the kill_list is large it may
+       not be the most efficient removal
+     */
   }
 }
 
@@ -54,13 +55,20 @@ init_kill()
 void
 kill_user(struct Service *service, struct Client *client, const char *reason)
 {
-  struct KillRequest *request = MyMalloc(sizeof(struct KillRequest));
+  struct KillRequest *request;
 
-  request->service = service;
-  request->client = client;
-  request->reason = reason;
+  if (!IsKilling(client))
+  {
+    SetKilling(client);
 
-  dlinkAdd(request, make_dlink_node(), &kill_list);  
+    request = MyMalloc(sizeof(struct KillRequest));
+
+    request->service = service;
+    request->client = client;
+    request->reason = reason;
+
+    dlinkAdd(request, make_dlink_node(), &kill_list);
+  }
 }
 
 void
