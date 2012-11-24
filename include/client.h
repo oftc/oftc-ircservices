@@ -41,7 +41,6 @@ extern dlink_list delay_akill_list;
 #define FLAGS_ONACCESS      0x00000020UL /* Client isnt authed with nickserv but does match the access list*/
 #define FLAGS_ENFORCE       0x00000040UL /* User is to be enforced */
 #define FLAGS_SENTCERT      0x00000080UL /* User identified via SSL */
-#define FLAGS_KILLING       0x00000100UL /* User is being killed */
 
 #define STAT_SERVER         0x01
 #define STAT_CLIENT         0x02
@@ -84,20 +83,17 @@ extern dlink_list delay_akill_list;
 #define IsOnAccess(x)           ((x)->flags & FLAGS_ONACCESS)
 #define IsEnforce(x)            ((x)->flags & FLAGS_ENFORCE)
 #define IsSentCert(x)           ((x)->flags & FLAGS_SENTCERT)
-#define IsKilling(x)            ((x)->flags & FLAGS_KILLING)
 
 #define SetConnecting(x)        ((x)->flags |= FLAGS_CONNECTING)
 #define SetClosing(x)           ((x)->flags |= FLAGS_CLOSING)
 #define SetOnAccess(x)          ((x)->flags |= FLAGS_ONACCESS)
 #define SetEnforce(x)           ((x)->flags |= FLAGS_ENFORCE)
 #define SetSentCert(x)          ((x)->flags |= FLAGS_SENTCERT)
-#define SetKilling(x)           ((x)->flags |= FLAGS_KILLING)
 
 #define ClearConnecting(x)      ((x)->flags &= ~FLAGS_CONNECTING)
 #define ClearOnAccess(x)        ((x)->flags &= ~FLAGS_ONACCESS)
 #define ClearEnforce(x)         ((x)->flags &= ~FLAGS_ENFORCE)
 #define ClearSentCert(x)        ((x)->flags &= ~FLAGS_SENTCERT)
-#define ClearKilling(x)         ((x)->flags &= ~FLAGS_KILLING)
 
 #define IsServer(x)             ((x)->status & STAT_SERVER)
 #define IsClient(x)             ((x)->status & STAT_CLIENT)
@@ -146,6 +142,7 @@ struct Client
   dlink_node node;    /* global_client_list node */
   dlink_node lnode;   /* local server or client list node */
   dlink_node snode;   /* global_server_list node */
+  dlink_node *kill_node; /* client is on the kill list */
   dlink_list channel;
 
   dlink_list server_list;   /**< Servers on this server      */
@@ -186,7 +183,7 @@ struct Client
   int flags;
 
   struct irc_ssaddr ip;
-  int           aftype; 
+  int           aftype;
 } Client;
 
 void init_client();

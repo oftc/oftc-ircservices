@@ -37,12 +37,9 @@ check_kills(void *param)
   {
     struct KillRequest *request = (struct KillRequest *)ptr->data;
 
+    /* This will exit_one_client which calls kill_remove_client and frees
+       associated ptrs */
     send_kill(request->service, request->client, request->reason);
-    /*
-       Sending this actual kill will remove the user from the kill_list so we
-       don't need to free it ourself, albeit if the kill_list is large it may
-       not be the most efficient removal
-     */
   }
 }
 
@@ -57,17 +54,16 @@ kill_user(struct Service *service, struct Client *client, const char *reason)
 {
   struct KillRequest *request;
 
-  if (!IsKilling(client))
+  if (client->kill_node == NULL)
   {
-    SetKilling(client);
-
     request = MyMalloc(sizeof(struct KillRequest));
 
     request->service = service;
     request->client = client;
     request->reason = reason;
 
-    dlinkAdd(request, make_dlink_node(), &kill_list);
+    client->kill_node = make_dlink_node();
+    dlinkAdd(request, client->kill_node, &kill_list);
   }
 }
 
@@ -84,6 +80,7 @@ kill_remove_service(struct Service *service)
     {
       dlinkDelete(ptr, &kill_list);
       free_dlink_node(ptr);
+      MyFree(request);
     }
   }
 }
@@ -91,16 +88,13 @@ kill_remove_service(struct Service *service)
 void
 kill_remove_client(struct Client *client)
 {
-  dlink_node *ptr, *nptr;
-
-  DLINK_FOREACH_SAFE(ptr, nptr, kill_list.head)
+  if (client->kill_node != NULL)
   {
+    dlink_node *ptr = client->kill_node;
     struct KillRequest *request = (struct KillRequest *)ptr->data;
-
-    if(request->client == client)
-    {
-      dlinkDelete(ptr, &kill_list);
-      free_dlink_node(ptr);
-    }
+    dlinkDelete(ptr, &kill_list);
+    free_dlink_node(ptr);
+    client->kill_node = NULL;
+    MyFree(request);
   }
 }
