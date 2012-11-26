@@ -399,7 +399,8 @@ process_enforce_list(void *param)
 }
 
 static void
-release_client(struct Client *user, dlink_node *ptr, const char *reason) {
+release_client(struct Client *user, dlink_node *ptr, const char *reason)
+{
   if (ptr == NULL)
   {
     dlinkFindDelete(&nick_release_list, user);
@@ -667,7 +668,8 @@ m_drop(struct Service *service, struct Client *client,
       ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
         client->username, client->host, target_nick);
       target = find_client(target_nick);
-      if (target) {
+      if (target)
+      {
         release_client(target, NULL, "Nick has been dropped");
       }
     }
@@ -898,7 +900,8 @@ m_cloakstring(struct Service *service, struct Client *client,
   else
     reply_user(service, service, client, NS_SET_FAILED, "CLOAKSTRING", parv[2]);
 
-  if(nickname_get_cloak_on(nick) && (target = find_client(parv[1])) != NULL) {
+  if(nickname_get_cloak_on(nick) && (target = find_client(parv[1])) != NULL)
+  {
     cloak_user(target, parv[2]);
   }
 
