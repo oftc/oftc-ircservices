@@ -104,6 +104,7 @@ void reply_mail(struct Service *, struct Client *, unsigned int,
     unsigned int, ...);
 void global_notice(struct Service *, char *, ...);
 void cloak_user(struct Client *, const char *);
+void do_cloak(struct Client *);
 void do_help(struct Service *, struct Client *, const char *, int, char **);
 void identify_user(struct Client *);
 void send_nick_change(struct Service *, struct Client *, const char *);

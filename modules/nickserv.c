@@ -829,8 +829,21 @@ static void
 m_set_cloak(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
+  unsigned char old = nickname_get_cloak_on(client->nickname);
+  Nickname *nick;
+
   m_set_flag(service, client, parv[1], "CLOAK",
     &nickname_get_cloak_on, &nickname_set_cloak_on);
+
+  if (!old && nickname_get_cloak_on(client->nickname))
+  {
+    nick = nickname_find(client->name);
+
+    if (nickname_get_id(client->nickname) == nickname_get_id(nick))
+      do_cloak(client);
+
+    nickname_free(nick);
+  }
 }
 
 static void
@@ -838,6 +851,7 @@ m_cloakstring(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   Nickname *nick = nickname_find(parv[1]);
+  struct Client *target;
 
   if(nick == NULL)
   {
@@ -883,6 +897,10 @@ m_cloakstring(struct Service *service, struct Client *client,
   }
   else
     reply_user(service, service, client, NS_SET_FAILED, "CLOAKSTRING", parv[2]);
+
+  if(nickname_get_cloak_on(nick) && (target = find_client(parv[1])) != NULL) {
+    cloak_user(target, parv[2]);
+  }
 
   nickname_free(nick);
 }
