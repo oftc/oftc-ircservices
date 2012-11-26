@@ -1028,7 +1028,7 @@ do_cloak(struct Client *client)
   Nickname *nick = client->nickname;
   char cloak[HOSTLEN+1];
 
-  if (nickname_get_cloak_on(nick))
+  if (nick != NULL && nickname_get_cloak_on(nick))
   {
     if (!EmptyString(nickname_get_cloak(nick)))
     {

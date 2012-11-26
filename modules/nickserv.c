@@ -852,8 +852,18 @@ static void
 m_cloakstring(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname *nick = nickname_find(parv[1]);
-  struct Client *target;
+  Nickname *nick;
+  struct Client *target = find_client(parv[1]);
+
+  if (target != NULL)
+    nick = target->nickname;
+
+  /* They may be connected but not identified */
+  if (nick == NULL)
+  {
+    target = NULL;
+    nick = nickname_find(parv[1]);
+  }
 
   if(nick == NULL)
   {
@@ -867,7 +877,10 @@ m_cloakstring(struct Service *service, struct Client *client,
       reply_user(service, service, client, NS_SET_VALUE, "CLOAKSTRING", "Not Set");
     else
       reply_user(service, service, client, NS_SET_VALUE, "CLOAKSTRING", nickname_get_cloak(nick));
-    nickname_free(nick);
+
+    if (target == NULL)
+      nickname_free(nick);
+
     return;
   }
 
@@ -877,7 +890,9 @@ m_cloakstring(struct Service *service, struct Client *client,
   {
     if(!valid_hostname(parv[2]))
     {
-      nickname_free(nick);
+      if (target == NULL)
+        nickname_free(nick);
+
       reply_user(service, service, client, NS_INVALID_CLOAK, parv[2]);
       return;
     }
@@ -896,16 +911,15 @@ m_cloakstring(struct Service *service, struct Client *client,
         reply);
     ilog(L_NOTICE, "%s set CLOAKSTRING of %s to %s", client->name, nickname_get_nick(nick),
         reply);
+
+    if(target != NULL)
+      do_cloak(target);
   }
   else
     reply_user(service, service, client, NS_SET_FAILED, "CLOAKSTRING", parv[2]);
 
-  if(nickname_get_cloak_on(nick) && (target = find_client(parv[1])) != NULL)
-  {
-    cloak_user(target, parv[2]);
-  }
-
-  nickname_free(nick);
+  if (target == NULL)
+    nickname_free(nick);
 }
 
 static void
