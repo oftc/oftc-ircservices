@@ -24,6 +24,7 @@ noinst_HEADERS= akick.h						  \
 								hostmask.h				  \
 								interface.h				  \
 								jupe.h					    \
+								kill.h							\
 								language.h				  \
 								modules.h				    \
 								mqueue.h				    \
