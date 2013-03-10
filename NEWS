@@ -3,6 +3,9 @@ Release Notes
 1.5.7
 -----
 o Don't set cloak on user who isn't identified
+o AJOIN list should use channel_id
+o AJOIN shouldn't allow duplicates
+o Clarify MoranServ TRACK help
 
 1.5.6
 -----
