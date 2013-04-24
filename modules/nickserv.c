@@ -473,9 +473,6 @@ m_register(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
   Nickname *nick;
-  char *pass;
-  char *password;
-  char salt[SALTLEN+1];
 
   if(strncasecmp(client->name, "guest", 5) == 0)
   {
@@ -522,18 +519,10 @@ m_register(struct Service *service, struct Client *client,
 
   nick = nickname_new();
 
-  make_random_string(salt, sizeof(salt));
-  nickname_set_salt(nick, salt);
-  password = MyMalloc(strlen(parv[1]) + SALTLEN + 1);
-  snprintf(password, strlen(parv[1]) + SALTLEN + 1, "%s%s", parv[1], 
-        nickname_get_salt(nick));
+  set_nickname_password(nick, parv[1]);
 
-  pass = crypt_pass(password, TRUE);
-  nickname_set_pass(nick, pass);
   nickname_set_nick(nick, client->name);
   nickname_set_email(nick, parv[2]);
-  MyFree(pass);
-  MyFree(password);
 
   if(nickname_register(nick))
   {
@@ -738,30 +727,14 @@ m_set_password(struct Service *service, struct Client *client,
         int parc, char *parv[])
 {
   Nickname *nick;
-  char *pass;
-  char *password;
-  char salt[SALTLEN+1];
   
   nick = client->nickname;
 
-  make_random_string(salt, sizeof(salt));
-  password = MyMalloc(strlen(parv[1]) + SALTLEN + 1);
-  snprintf(password, strlen(parv[1]) + SALTLEN + 1, "%s%s", parv[1], 
-      salt);
-  
-  pass = crypt_pass(password, 1);
-  MyFree(password);
-  if(nickname_set_pass(nick, pass))
-  {
-    nickname_set_salt(nick, salt);
+  if(set_nickname_password(nick, pass))
     reply_user(service, service, client, NS_SET_PASS_SUCCESS);
-  }
   else
-  {
     reply_user(service, service, client, NS_SET_PASS_FAILED);
-    MyFree(pass);
-    return;
-  }
+
   MyFree(pass);
 }
 
@@ -1719,10 +1692,8 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
 {
   Nickname *nick, *temp;
   char buf[IRC_BUFSIZE+1] = {0};
-  char password[PASSLEN+1] = {0};
   char *hmac;
   char *auth;
-  char *pass;
   int timestamp;
 
   if((nick = nickname_find(parv[1])) == NULL)
@@ -1796,16 +1767,11 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
     return;
   }
 
-  snprintf(password, sizeof(password), "%s%s", parv[3], nickname_get_salt(nick));
-  
-  pass = crypt_pass(password, 1);
-  /* XXX: what about the salt?  shouldn't we make a new one and store that too? -- weasel */
-  if(nickname_set_pass(nick, pass))
+  if(set_nickname_password(nick, parv[3]))
     reply_user(service, service, client, NS_SET_PASS_SUCCESS);
   else
     reply_user(service, service, client, NS_SET_PASS_FAILED);
 
-  MyFree(pass);
   nickname_free(nick);
 }
 
@@ -2404,4 +2370,26 @@ m_set_string(struct Service * service, struct Client *client,
       value == NULL ? "Not Set" : value);
 
   return ret;
+}
+
+static int
+set_nickname_password(struct Nickname *nick, const char *new_password)
+{
+  char salt[SALTLEN+1];
+  char *password, *pass;
+
+  make_random_string(salt, sizeof(salt));
+  password = MyMalloc(strlen(new_password) + SALTLEN + 1);
+  snprintf(password, strlen(new_password) + SALTLEN + 1, "%s%s", new_password, 
+        salt);
+
+  pass = crypt_pass(password, TRUE);
+  MyFree(password);
+  if(!nickname_set_pass(nick, pass))
+    return FALSE;
+  if(!nickname_set_salt(nick, salt))
+    return FALSE;
+  MyFree(pass);
+ 
+  return TRUE;
 }
