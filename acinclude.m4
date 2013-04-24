@@ -162,12 +162,12 @@ AC_DEFUN([AX_ARG_ENABLE_IOLOOP_MECHANISM],[
   dnl {{{ check for kqueue mechanism support
   iopoll_mechanism_kqueue=1
   AC_DEFINE_UNQUOTED([__IOPOLL_MECHANISM_KQUEUE],[$iopoll_mechanism_kqueue],[kqueue mechanism])
-  AC_LINK_IFELSE([AC_LANG_FUNC_LINK_TRY([kevent])],[is_kqueue_mechanism_available="yes"],[is_kqueue_mechanism_available="no"])
+  AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_FUNC_LINK_TRY([kevent])])],[is_kqueue_mechanism_available="yes"],[is_kqueue_mechanism_available="no"])
   dnl }}}
   dnl {{{ check for epoll oechanism support
   iopoll_mechanism_epoll=2
   AC_DEFINE_UNQUOTED([__IOPOLL_MECHANISM_EPOLL],[$iopoll_mechanism_epoll],[epoll mechanism])
-  AC_RUN_IFELSE([
+  AC_RUN_IFELSE([AC_LANG_PROGRAM([
 #include <sys/epoll.h>
 #include <sys/syscall.h>
 #if defined(__stub_epoll_create) || defined(__stub___epoll_create) || defined(EPOLL_NEED_BODY)
@@ -197,7 +197,7 @@ AC_DEFUN([AX_ARG_ENABLE_IOLOOP_MECHANISM],[
 _syscall1(int, epoll_create, int, size)
 #endif
 main() { return epoll_create(256) == -1 ? 1 : 0; }
-  ],[is_epoll_mechanism_available="yes"],[is_epoll_mechanism_available="no"])
+  ])],[is_epoll_mechanism_available="yes"],[is_epoll_mechanism_available="no"])
   dnl }}}
   dnl {{{ check for devpoll mechanism support
   iopoll_mechanism_devpoll=3
@@ -226,12 +226,12 @@ main () { return 1; } /* F_SETSIG not defined */
   dnl {{{ check for poll mechanism support
   iopoll_mechanism_poll=5
   AC_DEFINE_UNQUOTED([__IOPOLL_MECHANISM_POLL],[$iopoll_mechanism_poll],[poll mechanism])
-  AC_LINK_IFELSE([AC_LANG_FUNC_LINK_TRY([poll])],[is_poll_mechanism_available="yes"],[is_poll_mechanism_available="no"])
+  AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_FUNC_LINK_TRY([poll])])],[is_poll_mechanism_available="yes"],[is_poll_mechanism_available="no"])
   dnl }}}
   dnl {{{ check for select mechanism support
   iopoll_mechanism_select=6
   AC_DEFINE_UNQUOTED([__IOPOLL_MECHANISM_SELECT],[$iopoll_mechanism_select],[select mechanism])
-  AC_LINK_IFELSE([AC_LANG_FUNC_LINK_TRY([select])],[is_select_mechanism_available="yes"],[is_select_mechanism_available="no"])
+  AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_FUNC_LINK_TRY([select])])],[is_select_mechanism_available="yes"],[is_select_mechanism_available="no"])
   dnl }}}
   dnl {{{ determine the optimal mechanism
   optimal_iopoll_mechanism="none"
