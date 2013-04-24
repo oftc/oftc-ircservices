@@ -72,5 +72,5 @@ CREATE TABLE account_autojoin (
   account_id          INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
   channel_id          INTEGER REFERENCES channel(id) ON DELETE CASCADE NOT NULL
 );
-
 CREATE INDEX account_autojoin_idx ON account_autojoin(id);
+CREATE UNIQUE INDEX account_autojoin_account_channel_idx ON account_autojoin(account_id, channel_id);

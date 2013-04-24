@@ -1003,7 +1003,6 @@ void
 identify_user(struct Client *client)
 {
   Nickname *nick = client->nickname;
-  char cloak[HOSTLEN+1];
 
   if(nickname_get_admin(nick) && IsOper(client))
     client->access = ADMIN_FLAG;
@@ -1012,7 +1011,24 @@ identify_user(struct Client *client)
   else
     client->access = IDENTIFIED_FLAG;
 
-  if (nickname_get_cloak_on(nick))
+  do_cloak(client);
+
+  nickname_set_last_realname(nick, client->info);
+  nickname_set_last_host(nick, client->host);
+  nickname_set_last_seen(nick, CurrentTime);
+
+  client->num_badpass = 0;
+
+  execute_callback(on_identify_cb, me.uplink, client);
+}
+
+void
+do_cloak(struct Client *client)
+{
+  Nickname *nick = client->nickname;
+  char cloak[HOSTLEN+1];
+
+  if (nick != NULL && nickname_get_cloak_on(nick))
   {
     if (!EmptyString(nickname_get_cloak(nick)))
     {
@@ -1024,14 +1040,6 @@ identify_user(struct Client *client)
       cloak_user(client, cloak);
     }
   }
-
-  nickname_set_last_realname(nick, client->info);
-  nickname_set_last_host(nick, client->host);
-  nickname_set_last_seen(nick, CurrentTime);
-
-  client->num_badpass = 0;
-
-  execute_callback(on_identify_cb, me.uplink, client);
 }
 
 void

@@ -322,7 +322,7 @@ static query_t queries[QUERY_COUNT] = {
     "channel.id=channel_access.channel_id AND channel_access.group_id=$1 "
     "ORDER BY lower(channel.channel)", QUERY },
   { GET_AJOINS, "SELECT channel.channel FROM account_autojoin "
-    "JOIN channel ON channel.id=account_autojoin.id WHERE account_autojoin.account_id=$1",
+    "JOIN channel ON channel.id=account_autojoin.channel_id WHERE account_autojoin.account_id=$1",
     QUERY },
   { INSERT_AJOIN, "INSERT INTO account_autojoin (account_id, channel_id) VALUES "
     "($1, $2)", EXECUTE },

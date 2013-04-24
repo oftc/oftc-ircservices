@@ -355,6 +355,9 @@ NS_HELP_LINK_LONG
 	fingerprint on the list of the master nickname, you do not need to specify a
 	password.
 	
+	Both the master and the slave must already be registered for this command to
+	succeed.
+	
 	See also: HELP UNLINK
 	          HELP ENSLAVE
 	          HELP SET MASTER
@@ -370,6 +373,9 @@ NS_HELP_ENSLAVE_LONG
 	are connecting via SSL and your client certificate fingerprint matches a
 	fingerprint on the list of the specified nickname, you do not need to
 	specify a password.
+	
+	Both the master and the slave must already be registered for this command to
+	succeed.
 	
 	See also: HELP LINK
 	          HELP UNLINK

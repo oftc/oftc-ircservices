@@ -1,5 +1,34 @@
 Release Notes
 =============
+1.5.7
+-----
+o Don't set cloak on user who isn't identified
+o AJOIN list should use channel_id
+o AJOIN shouldn't allow duplicates
+o Clarify MoranServ TRACK help
+
+1.5.6
+-----
++ Default cloak on hex representation of account id
++ Cloak can take effect without reidentification
+o Remove enforced clients on drop
+o delay kills issued in services handlers
+
+1.5.5
+-----
+o AJOIN requires 1 parameter
+
+1.5.4
+-----
++ Only kill clients listed from tor exit nodes
++ MoranServ kill clients that trigger hybrid spambot notice
++ DROPNICK command accessible by OPERs
+o Deleting an account should remove group access as well
+
+1.5.3
+-----
+o BADSERV should only kill if the clients are new enough
+o BOPM CHECK should report all entries
 
 1.5.2
 -----

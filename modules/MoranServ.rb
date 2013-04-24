@@ -126,6 +126,9 @@ class MoranServ < ServiceModule
         reply(client, "End of track list")
       else
         arg = parv[1]
+        if arg.downcase == "list"
+          reply(client, "To list tracks, you probably want to run TRACK with no arguments. Moran.")
+        end
         type, value = find_type(arg)
         reason = parv[-1]
         add_track(client.name, type, value, reason, Time.now.to_i)
