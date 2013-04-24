@@ -51,7 +51,7 @@ services_LDADD+=python_module/libpython_module.a
 endif
 services_LDFLAGS+=-export-dynamic
 services_CFLAGS=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/languages
-INCLUDES=@INCLTDL@
+AM_CPPFLAGS=@INCLTDL@
 if USE_SHARED_MODULES
 services_LDADD+=
 else
