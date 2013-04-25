@@ -61,6 +61,8 @@ static dlink_list nick_release_list = { NULL, NULL, 0 };
 
 static int guest_number;
 
+static int set_nickname_password(Nickname *, const char *);
+
 static void process_enforce_list(void *);
 static void process_release_list(void *);
 
@@ -732,12 +734,10 @@ m_set_password(struct Service *service, struct Client *client,
   
   nick = client->nickname;
 
-  if(set_nickname_password(nick, pass))
+  if(set_nickname_password(nick, parv[1]))
     reply_user(service, service, client, NS_SET_PASS_SUCCESS);
   else
     reply_user(service, service, client, NS_SET_PASS_FAILED);
-
-  MyFree(pass);
 }
 
 static void
@@ -2408,7 +2408,7 @@ m_set_string(struct Service * service, struct Client *client,
 }
 
 static int
-set_nickname_password(struct Nickname *nick, const char *new_password)
+set_nickname_password(Nickname *nick, const char *new_password)
 {
   char salt[SALTLEN+1];
   char *password, *pass;
