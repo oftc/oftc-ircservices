@@ -4,7 +4,11 @@ dnl {{{ ax_check_lib_ipv4
 AC_DEFUN([AX_CHECK_LIB_IPV4],[
   AC_SEARCH_LIBS([socket],[socket],,[AC_MSG_ERROR([socket library not found])])
   AC_CHECK_FUNCS([inet_aton inet_ntop inet_pton])
-  AC_CHECK_TYPES([struct sockaddr_in, struct sockaddr_storage, struct addrinfo],,,[#include <netdb.h>])
+  AC_CHECK_TYPES([struct sockaddr_in, struct sockaddr_storage, struct addrinfo],,,[
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+    #include <netdb.h>
+  ])
   AC_CHECK_MEMBERS([struct sockaddr_in.sin_len],,,[#include <netdb.h>])
 ])dnl }}}
 dnl {{{ ax_check_lib_ipv6
@@ -285,7 +289,6 @@ AC_DEFUN([AX_ARG_DISABLE_SHARED_MODULES],[
   AC_CHECK_FUNCS([dlopen dlinfo])
   if test "$shared_modules" = "yes" ; then
     use_shared_modules="yes"
-    AC_CHECK_LIB([dl],[dlopen],,[AC_MSG_ERROR([dl library not found])])
     AC_DEFINE([USE_SHARED_MODULES],[1],[Define to 1 if you want to use shared modules.])
   else
     use_shared_modules="no"

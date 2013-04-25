@@ -23,6 +23,7 @@
  */
 
 #include "libioinc.h"
+#include <netinet/in.h>
 
 #ifndef INADDRSZ 
 #define INADDRSZ 4

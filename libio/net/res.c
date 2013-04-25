@@ -21,6 +21,7 @@
 
 #include "libioinc.h"
 #include "reslib.h"
+#include <netinet/in.h>
 
 #if (CHAR_BIT != 8)
 #error this code needs to be able to address individual octets 

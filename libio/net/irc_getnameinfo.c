@@ -42,6 +42,7 @@
  */
 
 #include "libioinc.h"
+#include <netinet/in.h>
 
 /*  $Id$ */
 

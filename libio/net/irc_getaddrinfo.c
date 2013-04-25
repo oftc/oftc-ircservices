@@ -30,6 +30,7 @@
 #include "libioinc.h"
 
 #include <stdarg.h>
+#include <netinet/in.h>
 
 /*  $Id$ */
 

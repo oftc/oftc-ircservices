@@ -44,11 +44,12 @@
 
 #include "libioinc.h"
 #include "reslib.h"
+#include <netinet/in.h>
 
 #ifndef IN6ADDR_ANY_INIT
 /* Stolen from glibc */
 const struct in6_addr in6addr_any =
-{ { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } };
+{ { { 0 } } };
 #endif
 
 #ifndef HAVE_INET_ATON
