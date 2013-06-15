@@ -1546,7 +1546,7 @@ nickname_set_reg_time(Nickname *this, time_t value)
 inline int
 nickname_set_last_seen(Nickname *this, time_t value)
 {
-  if(db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", &value, &this->id) > 0)
+  if(db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", &value, &this->nickid) > 0)
   {
     this->last_seen = value;
     return TRUE;
