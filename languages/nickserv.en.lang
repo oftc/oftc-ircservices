@@ -355,8 +355,8 @@ NS_HELP_LINK_LONG
 	fingerprint on the list of the master nickname, you do not need to specify a
 	password.
 	
-	Both the master and the slave must already be registered for this command to
-	succeed.
+	Both the master and the slave must already be REGISTERed for this command
+	to succeed.
 	
 	See also: HELP UNLINK
 	          HELP ENSLAVE
@@ -374,8 +374,8 @@ NS_HELP_ENSLAVE_LONG
 	fingerprint on the list of the specified nickname, you do not need to
 	specify a password.
 	
-	Both the master and the slave must already be registered for this command to
-	succeed.
+	Both the master and the slave must already be REGISTERed for this command
+	to succeed.
 	
 	See also: HELP LINK
 	          HELP UNLINK
@@ -490,9 +490,10 @@ NS_REG_FAIL_TOOSHORT
 	complete your registration
 NS_REG_FIRST
 	Nickname %s is not registered.  The nickname you specify must be a
-	registered nickname.  See HELP REGISTER for more information.  If you believe
-	this to be incorrect, there could be a database problem; contact network
-	support if this problem persists.
+	registered nickname.  See HELP REGISTER for more information.
+	
+	If you believe this to be incorrect, there could be a database problem;
+	contact network support if this problem persists.
 NS_NICKFORBID
 	This nickname (%s) is on the forbidden list and may not be registered or
 	used in any services commands.
@@ -505,9 +506,12 @@ NS_IDENTIFY_CERT
 	You are connected using SSL and have provided a matching client certificate
 	for nickname %s.  You have been automatically identified.
 NS_IDENT_FAIL
-	Identify failed as %s.  You may have entered an incorrect password.  If
-	you believe you have entered the correct password and are still getting this
-	message, please contact network support.
+	Identify failed as %s.  You may have entered an incorrect password.
+	
+	If you have forgotten your password please see HELP SENDPASS
+	
+	If you believe you have entered the correct password and are still getting
+	this message, please contact network support.
 NS_CURR_LANGUAGE
 	Current language is %s (%d).
 NS_AVAIL_LANGUAGE
@@ -669,52 +673,52 @@ NS_UNLINK_NOLINK
 NS_INFO_START
 	Nickname information for %s (%s)
 NS_INFO
-	Last quit message: %s
-	        Last host: %s
-	              URL: %s
-	     Cloak string: %s
+	  Last quit message: %s
+	          Last host: %s
+	                URL: %s
+	       Cloak string: %s
 NS_INFO_MASTER
 	The master nickname for this account is %s.
 NS_INFO_REGTIME_FULL
-	  Time registered: %s (%dy %dm %dd %02d:%02d:%02d ago)
+	    Time registered: %s (%dy %dm %dd %02d:%02d:%02d ago)
 NS_INFO_REGTIME_NOYEAR
-	  Time registered: %s (%dm %dd %02d:%02d:%02d ago)
+	    Time registered: %s (%dm %dd %02d:%02d:%02d ago)
 NS_INFO_REGTIME_NOMONTH
-	  Time registered: %s (%dd %02d:%02d:%02d ago)
+	    Time registered: %s (%dd %02d:%02d:%02d ago)
 NS_INFO_REGTIME_NODAY
-	  Time registered: %s (%02d:%02d:%02d ago)
+	    Time registered: %s (%02d:%02d:%02d ago)
 NS_INFO_REGTIME_UNKNOWN
-	  Time registered: Unknown
+	    Time registered: Unknown
 NS_INFO_QUITTIME_FULL
-	   Last quit time: %s (%dy %dm %dd %02d:%02d:%02d ago)
+	  Account last quit: %s (%dy %dm %dd %02d:%02d:%02d ago)
 NS_INFO_QUITTIME_NOYEAR
-	   Last quit time: %s (%dm %dd %02d:%02d:%02d ago)
+	  Account last quit: %s (%dm %dd %02d:%02d:%02d ago)
 NS_INFO_QUITTIME_NOMONTH
-	   Last quit time: %s (%dd %02d:%02d:%02d ago)
+	  Account last quit: %s (%dd %02d:%02d:%02d ago)
 NS_INFO_QUITTIME_NODAY
-	   Last quit time: %s (%02d:%02d:%02d ago)
+	  Account last quit: %s (%02d:%02d:%02d ago)
 NS_INF_QUITTIME_UNKNOWN
-	   Last quit time: Unknown
+	  Account last quit: Unknown
 NS_INFO_SEENTIME_FULL
-	        Last seen: %s (%dy %dm %dd %02d:%02d:%02d ago)
+	 Nickname last seen: %s (%dy %dm %dd %02d:%02d:%02d ago)
 NS_INFO_SEENTIME_NOYEAR
-	        Last seen: %s (%dm %dd %02d:%02d:%02d ago)
+	 Nickname last seen: %s (%dm %dd %02d:%02d:%02d ago)
 NS_INFO_SEENTIME_NOMONTH
-	        Last seen: %s (%dd %02d:%02d:%02d ago)
+	 Nickname last seen: %s (%dd %02d:%02d:%02d ago)
 NS_INFO_SEENTIME_NODAY
-	        Last seen: %s (%02d:%02d:%02d ago)
+	 Nickname last seen: %s (%02d:%02d:%02d ago)
 NS_INFO_SEENTIME_UNKNOWN
-	        Last seen: Unknown
+	 Nickname last seen: Unknown
 NS_INFO_LANGUAGE
-	         Language: %s (%d)
+	           Language: %s (%d)
 NS_INFO_EMAIL
-	   E-mail address: %s
+	     E-mail address: %s
 NS_INFO_ONLINE
 	%s is currently online from nick %s
 NS_INFO_ONLINE_NONICK
 	%s is currently online
 NS_INFO_OPTION
-	%17s: %s
+	%19s: %s
 NS_INFO_LINKS
 	The following nicks are linked in to this account: %s
 NS_INFO_CHANS
