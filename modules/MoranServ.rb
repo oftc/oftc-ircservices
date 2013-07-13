@@ -325,6 +325,14 @@ class MoranServ < ServiceModule
       end
     end
 
+    def should_ignore_client(client)
+      if client.is_oper? or client.is_admin? or client.is_services_client?
+        return true
+      else
+        return false
+      end
+    end
+
     def check_spambot(client)
       spambot_track(client)
       entry = @spambot[client.id]
@@ -361,7 +369,7 @@ class MoranServ < ServiceModule
       if tevent
         add_notice(t, "C:#{client.name}")
       end
-      if not client.is_oper? and not client.is_admin?
+      if not should_ignore_client(client)
         spambot_track(client)
       end
       return true
@@ -391,7 +399,7 @@ class MoranServ < ServiceModule
       if tevent
         add_notice(t, "J:#{client.name}:#{channel}")
       end
-      if not client.is_oper? and not client.is_admin?
+      if not should_ignore_client(client)
         check_spambot(client)
         @spambot[client.id]['last_join'] = Time.new.to_i
       end
@@ -403,7 +411,7 @@ class MoranServ < ServiceModule
       if tevent
         add_notice(t, "P:#{client.name}:#{channel.name}:#{reason}")
       end
-      if not client.is_oper? and not client.is_admin?
+      if not should_ignore_client(client)
         check_spambot(client)
         @spambot[client.id]['last_part'] = Time.new.to_i
       end
