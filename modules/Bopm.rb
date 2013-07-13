@@ -376,10 +376,7 @@ class Bopm < ServiceModule
       end
     end
 
-    # reverse the ip
-    host = host.split('.').reverse.join('.') unless host.nil?
-
-    return host
+    return IPAddr.new(host).reverse.split(".").reverse.drop(2).reverse.join(".")
   end
 
   def dnsbl_check(host, allow_stop, final, final_data)
