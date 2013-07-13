@@ -2,6 +2,8 @@ Release Notes
 =============
 1.5.8
 -----
+o Bopm should handle IPv6 better
+o MoranServ should actually ignore clients that are safe
 
 1.5.7
 -----
