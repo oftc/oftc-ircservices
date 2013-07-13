@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -e
+
+PACKAGE=oftc-ircservices
+VERSION=$(grep AC_INIT configure.ac | sed -r 's#.*([0-9]+\.[0-9]+\.[0-9]+).*#\1#')
+DESTDIR=/var/www/wwwiki.oftc.net/htdocs/releases/$PACKAGE
+DESTHOST=www.oftc.net
+
+echo "Preparing to cut release for $VERSION"
+
+echo 'This is about to run `git clean -fdx` press any key to continue'
+read
+
+echo "Tagging release $PACKAGE-$VERSION"
+
+git tag -d $PACKAGE-$VERSION || true
+
+if [ "$OFTC_GPG" != "" ]; then
+  git tag -u $OFTC_GPG -m "Version $VERSION" -s $PACKAGE-$VERSION
+else
+  git tag -m "Version $VERSION" -s $PACKAGE-$VERSION
+fi
+
+echo "Cleaning directory"
+git clean -fdx
+
+echo -e "\nRunning autogen.sh\n"
+./autogen.sh
+
+echo -e "\nRunning configure\n"
+./configure
+
+echo -e "\nRunning make dist\n"
+make dist
+
+md5sum $PACKAGE-$VERSION.tar.gz > $PACKAGE-$VERSION.tar.gz.md5sum
+gpg --clearsign $PACKAGE-$VERSION.tar.gz.md5sum
+scp $PACKAGE-$VERSION.tar.gz* $DESTHOST:$DESTDIR/
+
+perl -pi -e 's/(\d+)\.(\d+)\.(\d+)/$1.".".$2.".".($3 + 1)/e' configure.ac
+
+VERSION=$(grep AC_INIT configure.ac | sed -r 's#.*([0-9]+\.[0-9]+\.[0-9]+).*#\1#')
+
+git add configure.ac
+git commit -m "Now working $VERSION"
+git push --tags origin HEAD:master
