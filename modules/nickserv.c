@@ -825,7 +825,7 @@ static void
 m_cloakstring(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
-  Nickname *nick;
+  Nickname *nick = NULL;
   struct Client *target = find_client(parv[1]);
 
   if (target != NULL)
