@@ -171,7 +171,7 @@ read_packet(fde_t *fd, void *data)
        * If true, then we can recover from this error.  Just jump out of
        * the loop and re-register a new io-request.
        */
-      if (length < 0 && ignoreErrno(errno))
+      if (ignoreErrno(errno))
         break;
 
       ilog(L_ERROR, "Lost server connection. (Their side).");
