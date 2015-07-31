@@ -2,7 +2,7 @@
 # vim: set fdm=marker ts=2 sw=2 et:
 
 AC_PREREQ(2.59)
-AC_INIT([oftc-ircservices],[1.5.11])
+AC_INIT([oftc-ircservices],[1.5.12])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
 AM_MAINTAINER_MODE
