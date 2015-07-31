@@ -1530,7 +1530,13 @@ m_akick_enforce(struct Service *service, struct Client *client,
   dlink_node *next_ptr;
 
   chptr = hash_find_channel(parv[1]);
-  regchptr = chptr == NULL ? dbchannel_find(parv[1]) : chptr->regchan;
+
+  if(chptr == NULL)
+  {
+    reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
+    return;
+  }
+  regchptr = chptr->regchan;
 
   DLINK_FOREACH_SAFE(ptr, next_ptr, chptr->members.head)
   {
@@ -1542,10 +1548,8 @@ m_akick_enforce(struct Service *service, struct Client *client,
 
   reply_user(service, service, client, CS_AKICK_ENFORCE, numkicks, 
       dbchannel_get_channel(regchptr));
-
-  if(chptr == NULL)
-    dbchannel_free(regchptr);
 }
+
 
 static void
 m_clear_bans(struct Service *service, struct Client *client, int parc, 
