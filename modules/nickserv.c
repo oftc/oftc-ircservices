@@ -2297,6 +2297,22 @@ ns_on_identify(va_list args)
   {
     char *channel = (char *)ptr->data;
 
+    struct Channel *chptr = hash_find_channel(channel);
+    if(chptr != NULL)
+    {
+      if(find_bmask(client, &chptr->banlist) != NULL && find_bmask(client, &chptr->exceptlist) == NULL)
+        continue;
+
+      if(InviteOnlyChannel(chptr) && find_bmask(client, &chptr->invexlist) == NULL)
+        continue;
+
+      if(chptr->mode.key[0] != '\0')
+        continue;
+
+      if(SslOnlyChannel(chptr))
+        continue;
+    }
+
     send_autojoin(nickserv, client, channel);
   }
 

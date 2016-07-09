@@ -73,6 +73,8 @@
 /* knock is forbidden, halfops can't kick/deop other halfops.
  * +pi means paranoid and will generate notices on each invite */
 #define ParanoidChannel(x)       (((x)->mode.mode & MODE_PARANOID))
+#define InviteOnlyChannel(x)     (((x)->mode.mode & MODE_INVITEONLY))
+#define SslOnlyChannel(x)        (((x)->mode.mode & MODE_SSLONLY))
 
 struct ChModeChange
 {
