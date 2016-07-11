@@ -500,12 +500,11 @@ static void
 m_bmask(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
   static char modebuf[IRC_BUFSIZE];
-  static char parabuf[IRC_BUFSIZE];
   static char banbuf[IRC_BUFSIZE];
   struct Channel *chptr;
-  char *s, *t, *mbuf, *pbuf;
+  char *s, *t;
   long mode_type;
-  int mlen, tlen;
+  int tlen;
 
   if ((chptr = hash_find_channel(parv[2])) == NULL)
     return;
@@ -537,15 +536,12 @@ m_bmask(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
       return; 
   }
 
-  parabuf[0] = '\0';
   s = banbuf;
   strlcpy(s, parv[4], sizeof(banbuf));
 
   /* only need to construct one buffer, for non-ts6 servers */
-  mlen = ircsprintf(modebuf, ":%s MODE %s +",
+  ircsprintf(modebuf, ":%s MODE %s +",
                     source_p->name, chptr->chname);
-  mbuf = modebuf + mlen;
-  pbuf = parabuf;
 
   do 
   {

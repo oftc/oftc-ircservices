@@ -585,7 +585,7 @@ void
 set_user_mode(struct Client *client_p, struct Client *source_p,
               int parc, char *parv[])
 {
-  unsigned int flag, setflags;
+  unsigned int flag;
   char **p, *m; 
   struct Client *target_p;
   int what = MODE_ADD;
@@ -608,9 +608,6 @@ set_user_mode(struct Client *client_p, struct Client *source_p,
   }
 
   //execute_callback(entering_umode_cb, client_p, source_p);
-
-  /* find flags already set for user */
-  setflags = source_p->umodes;
 
   /* parse mode change string(s) */
   for (p = &parv[2]; p && *p; p++)

@@ -1750,7 +1750,6 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
     char *parv[])
 {
   struct Channel *chptr;
-  DBChannel *regchptr;
   dlink_node *ptr, *nptr;
   char buf[IRC_BUFSIZE+1];
   int usercount = 0;
@@ -1762,7 +1761,6 @@ m_clear_users(struct Service *service, struct Client *client, int parc,
     reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
     return;
   }
-  regchptr = chptr->regchan;
 
   if(parc > 1)
   {
@@ -1792,7 +1790,6 @@ static void
 m_op(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel *regchptr;
   struct Client *target;
   struct Membership *ms;
 
@@ -1803,8 +1800,6 @@ m_op(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
     return;
   }
-
-  regchptr = chptr->regchan;
 
   if(parv[2] == NULL)
     target = client;
@@ -1832,7 +1827,6 @@ static void
 m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel *regchptr;
   struct Client *target;
   struct Membership *ms;
 
@@ -1844,7 +1838,6 @@ m_deop(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
-  regchptr = chptr->regchan;
   if(parv[2] == NULL)
     target = client;
   else
@@ -1971,7 +1964,6 @@ static void
 m_invite(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   struct Channel *chptr;
-  DBChannel *regchptr;
   struct Client *target;
 
   chptr = hash_find_channel(parv[1]);
@@ -1981,8 +1973,6 @@ m_invite(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, CS_CHAN_NOT_USED, parv[1]);
     return;
   }
-  
-  regchptr = chptr->regchan;
 
   if(parv[2] == NULL)
     target = client;

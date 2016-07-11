@@ -26,6 +26,7 @@
 #include "conf/service.h"
 #include "ruby_module.h"
 #include "python_module.h"
+#include "mem/dynlink.h"
 #include <sys/types.h>
 #include <dirent.h>
 #include <ltdl.h>

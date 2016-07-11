@@ -293,13 +293,14 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(IsOper(client) || (access != NULL && access->level >= GRPMEMBER_FLAG))
   {
-    const char *ptr = group_get_desc(group);
-    ptr = group_get_url(group);
-    ptr = group_get_email(group);
+    const char *desc = group_get_desc(group);
+    const char *email = group_get_email(group);
+    const char *url = group_get_url(group);
+    
     reply_user(service, service, client, GS_INFO,
-        group_get_desc(group),
-        group_get_url(group) == NULL ? "Not Set" : group_get_url(group),
-        group_get_email(group) == NULL ? "Not Set" : group_get_email(group));
+               desc,
+               url == NULL ? "Not Set" : url,
+               email == NULL ? "Not Set" : email);
   }
 
   reply_user(service, service, client, GS_INFO_OPTION, "PRIVATE",

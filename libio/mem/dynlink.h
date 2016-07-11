@@ -25,8 +25,6 @@
 #ifndef INCLUDED_libio_mem_dynlink_h
 #define INCLUDED_libio_mem_dynlink_h
 
-#ifdef HAVE_LIBDL
-
 // Loads a module given by name. void ** receives module base address
 // (best we can determine). Return value: module handle or NULL.
 
@@ -44,7 +42,5 @@ void modunload(void *);
 // error description.
 
 const char *moderror(void);
-
-#endif /* HAVE_LIBDL */
 
 #endif /* INCLUDED_libio_mem_dynlink_h */

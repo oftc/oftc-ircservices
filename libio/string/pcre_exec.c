@@ -354,7 +354,6 @@ because they are used a lot in loops. */
 register int  rrc;    /* Returns from recursive calls */
 register int  i;      /* Used for loops not involving calls to RMATCH() */
 register int  c;      /* Character values not kept over RMATCH() calls */
-register BOOL utf8;   /* Local copy of UTF-8 flag for speed */
 
 /* When recursion is not being used, all "local" variables that have to be
 preserved over calls to RMATCH() are part of a "frame" which is obtained from
@@ -472,7 +471,6 @@ performance when true recursion is being used. */
 if (md->match_call_count++ >= md->match_limit) RRETURN(PCRE_ERROR_MATCHLIMIT);
 
 original_ims = ims;    /* Save for resetting on ')' */
-utf8 = md->utf8;       /* Local copy of the flag */
 
 /* At the start of a bracketed group, add the current subject pointer to the
 stack of such pointers, to be re-instated at the end of the group when we hit
