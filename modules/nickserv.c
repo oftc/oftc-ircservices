@@ -501,7 +501,7 @@ m_register(struct Service *service, struct Client *client,
     return;
   }
 
-  if(strlen(client->name) < 3) /* TODO XXX FIXME configurable? */
+  if(strlen(client->name) < 2) /* TODO XXX FIXME configurable? */
   {
     reply_user(service, service, client, NS_REG_FAIL_TOOSHORT);
     return;
