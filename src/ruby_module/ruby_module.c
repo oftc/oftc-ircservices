@@ -83,7 +83,7 @@ ruby_script_error()
   char *err;
   int i;
 
-  if(!NIL_P(ruby_errinfo))
+  if(!NIL_P(rb_errinfo()))
   {
     lasterr = rb_gv_get("$!");
     VALUE tmp2 = rb_class_path(CLASS_OF(lasterr));
@@ -91,7 +91,7 @@ ruby_script_error()
     VALUE tmp = rb_obj_as_string(lasterr);
     err = StringValueCStr(tmp);
     ilog(L_DEBUG, "RUBY ERROR: Error while executing Ruby Script: %s", err);
-    array = rb_funcall(ruby_errinfo, rb_intern("backtrace"), 0);
+    array = rb_funcall(rb_errinfo(), rb_intern("backtrace"), 0);
     ilog(L_DEBUG, "RUBY ERROR: BACKTRACE");
     for (i = 0; i < RARRAY_LEN(array); ++i)
     {
@@ -722,7 +722,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
     return 0;
   }
 
-  rb_protect(RB_CALLBACK(ruby_exec), (VALUE)NULL, &status);
+  rb_protect(RB_CALLBACK(ruby_exec_node), (VALUE)NULL, &status);
 
   if(ruby_handle_error(status))
   {
