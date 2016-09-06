@@ -25,15 +25,16 @@ AC_DEFUN([AX_CHECK_LIB_RUBY],[
     if test "$RUBY" = "no" ; then
       have_ruby="no"
     else
-      AC_SEARCH_LIBS([ruby_init],[ruby1.8],[have_ruby="yes"],[have_ruby="no"])
+      AC_SEARCH_LIBS([ruby_init],[ruby-2.3 ruby-2.1],[have_ruby="yes"],[have_ruby="no"])
       if test "$have_ruby" = "yes" ; then
-        ruby_cflags=$($RUBY -r mkmf -e 'print "-I" + Config::CONFIG[["archdir"]]')
-        ruby_ldflags=$($RUBY -r mkmf -e 'print "-L" + Config::CONFIG[["libdir"]] + " " + Config::CONFIG[["LIBS"]]')
+        ruby_so_name=[$($RUBY -r rbconfig -e 'print RbConfig::CONFIG["RUBY_SO_NAME"]')]
+        ruby_cflags=$(pkg-config $ruby_so_name --cflags)
+        ruby_ldflags=$(pkg-config $ruby_so_name --libs)
         AC_SUBST([RUBY_CFLAGS],["$ruby_cflags"])
         AC_SUBST([RUBY_LDFLAGS],["$ruby_ldflags"])
 				AC_DEFINE_UNQUOTED([HAVE_RUBY], [$have_ruby], [Is ruby enabled])
       else
-        AC_MSG_WARN([Ruby 1.8 not found, disabling])
+        AC_MSG_ERROR([Ruby not found (use --disable-ruby to go without)])
       fi
     fi
   fi
