@@ -40,7 +40,7 @@ create_db_list(int argc, VALUE *argv, VALUE self,
   *query_id = NUM2INT(query);
   *format = StringValueCStr(fmt);
   len = strlen(*format);
-  ary_len = RARRAY(args)->len;
+  ary_len = RARRAY_LEN(args);
 
   if(len != ary_len)
   {

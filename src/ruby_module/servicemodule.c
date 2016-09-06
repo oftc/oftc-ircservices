@@ -64,7 +64,7 @@ ServiceModule_register(VALUE self, VALUE commands)
 
   Check_Type(commands, T_ARRAY);
 
-  for(i = RARRAY(commands)->len-1; i >= 0; --i)
+  for(i = RARRAY_LEN(commands)-1; i >= 0; --i)
   {
     VALUE name, param_min, param_max, flags, access, hlp_shrt, hlp_long;
     char *tmp;
@@ -133,11 +133,11 @@ ServiceModule_add_hook(VALUE self, VALUE hooks)
 {
   Check_Type(hooks, T_ARRAY);
 
-  if(RARRAY(hooks)->len > 0)
+  if(RARRAY_LEN(hooks) > 0)
   {
     int i;
     VALUE current, hook, type;
-    for(i=0; i < RARRAY(hooks)->len; ++i)
+    for(i=0; i < RARRAY_LEN(hooks); ++i)
     {
       current = rb_ary_entry(hooks, i);
 
@@ -203,7 +203,7 @@ ServiceModule_do_help(VALUE self, VALUE client, VALUE value, VALUE parv)
 
     DupString(cvalue, StringValueCStr(value));
 
-    argc = RARRAY(parv)->len - 1;
+    argc = RARRAY_LEN(parv) - 1;
     argv = ALLOCA_N(char *, argc);
 
     for(i = 0; i < argc; ++i)

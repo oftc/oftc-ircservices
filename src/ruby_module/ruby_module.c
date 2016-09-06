@@ -93,7 +93,7 @@ ruby_script_error()
     ilog(L_DEBUG, "RUBY ERROR: Error while executing Ruby Script: %s", err);
     array = rb_funcall(ruby_errinfo, rb_intern("backtrace"), 0);
     ilog(L_DEBUG, "RUBY ERROR: BACKTRACE");
-    for (i = 0; i < RARRAY(array)->len; ++i)
+    for (i = 0; i < RARRAY_LEN(array); ++i)
     {
       tmp = rb_ary_entry(array, i);
       ilog(L_DEBUG, "RUBY ERROR:   %s", StringValueCStr(tmp));
@@ -259,7 +259,7 @@ do_hook(VALUE hooks, int parc, ...)
   va_end(args);
 
   keys = do_ruby_ret(hooks, rb_intern("keys"), 0);
-  for(i = 0; i < RARRAY(keys)->len; ++i)
+  for(i = 0; i < RARRAY_LEN(keys); ++i)
   {
     VALUE key, value;
     key = rb_ary_entry(keys, i);
@@ -563,7 +563,7 @@ rb_eob_hdlr(va_list args)
   VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_EOB);
   VALUE ret = do_hook(hooks, 0, Qnil);
 
-  while(RARRAY(preloaded_modules)->len > 0)
+  while(RARRAY_LEN(preloaded_modules) > 0)
   {
     VALUE self = rb_ary_pop(preloaded_modules);
     do_ruby_ret(self, rb_intern("loaded"), 0);
@@ -666,12 +666,12 @@ rb_event_hdlr(va_list args)
   VALUE keys = do_ruby_ret(ruby_server_events, rb_intern("keys"), 0);
   VALUE key, events, event, self, method, timer, ltime, arg;
 
-  for(i = 0; i < RARRAY(keys)->len; ++i)
+  for(i = 0; i < RARRAY_LEN(keys); ++i)
   {
     key = rb_ary_entry(keys, i);
     events = rb_hash_aref(ruby_server_events, key);
 
-    for(j = 0; j < RARRAY(events)->len; ++j)
+    for(j = 0; j < RARRAY_LEN(events); ++j)
     {
       event = rb_ary_entry(events, j);
       self = rb_ary_entry(event, EVT_SELF);
