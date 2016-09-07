@@ -711,26 +711,26 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   ilog(L_DEBUG, "RUBY INFO: Loading ruby module: %s", path);
 
-  rb_protect(RB_CALLBACK(rb_load_file), (VALUE)path, &status);
-
+  rb_protect(RB_CALLBACK(rb_require), (VALUE)path, &status);
   if(ruby_handle_error(status))
   {
     ilog(L_DEBUG, "RUBY INFO: Failed to load file %s", path);
     return 0;
   }
+  ilog(L_DEBUG, "RUBY INFO: Loaded file %s", path);
 
-  rb_protect(RB_CALLBACK(ruby_exec_node), (VALUE)NULL, &status);
-
+/*
+  rb_protect(RB_CALLBACK(ruby_exec_node), node, &status);
   if(ruby_handle_error(status))
   {
     ilog(L_DEBUG, "RUBY INFO: Failed to exec node %s", path);
     return 0;
   }
+  ilog(L_DEBUG, "RUBY INFO: Executed node %s", path);
+*/
 
   strlcpy(classname, fname, strlen(fname)-2);
-
   klass = rb_protect(RB_CALLBACK(rb_path2class), (VALUE)(classname), &status);
-
   if(ruby_handle_error(status))
     return 0;
 
