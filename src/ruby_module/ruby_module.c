@@ -79,19 +79,20 @@ static void unhook_events(VALUE);
 static void
 ruby_script_error()
 {
-  VALUE lasterr, array;
+  VALUE errinfo, lasterr, array;
   char *err;
   int i;
 
-  if(!NIL_P(rb_errinfo()))
+  errinfo = rb_errinfo();
+  if(!NIL_P(errinfo))
   {
     lasterr = rb_gv_get("$!");
     VALUE tmp2 = rb_class_path(CLASS_OF(lasterr));
-    ilog(L_DEBUG, "RUBY ERROR: %s", StringValueCStr(tmp2));
+    ilog(L_ERROR, "RUBY ERROR: %s", StringValueCStr(tmp2));
     VALUE tmp = rb_obj_as_string(lasterr);
     err = StringValueCStr(tmp);
-    ilog(L_DEBUG, "RUBY ERROR: Error while executing Ruby Script: %s", err);
-    array = rb_funcall(rb_errinfo(), rb_intern("backtrace"), 0);
+    ilog(L_ERROR, "RUBY ERROR: Error while executing Ruby Script: %s", err);
+    array = rb_funcall(errinfo, rb_intern("backtrace"), 0);
     ilog(L_DEBUG, "RUBY ERROR: BACKTRACE");
     for (i = 0; i < RARRAY_LEN(array); ++i)
     {
