@@ -80,7 +80,6 @@ static void
 ruby_script_error()
 {
   VALUE errinfo, lasterr, array;
-  char *err;
   int i;
 
   errinfo = rb_errinfo();
@@ -88,16 +87,13 @@ ruby_script_error()
   {
     lasterr = rb_gv_get("$!");
     VALUE tmp2 = rb_class_path(CLASS_OF(lasterr));
-    ilog(L_ERROR, "RUBY ERROR: %s", StringValueCStr(tmp2));
     VALUE tmp = rb_obj_as_string(lasterr);
-    err = StringValueCStr(tmp);
-    ilog(L_ERROR, "RUBY ERROR: Error while executing Ruby Script: %s", err);
+    ilog(L_ERROR, "RUBY ERROR: %s: %s", StringValueCStr(tmp2), StringValueCStr(tmp));
     array = rb_funcall(errinfo, rb_intern("backtrace"), 0);
-    ilog(L_DEBUG, "RUBY ERROR: BACKTRACE");
     for (i = 0; i < RARRAY_LEN(array); ++i)
     {
       tmp = rb_ary_entry(array, i);
-      ilog(L_DEBUG, "RUBY ERROR:   %s", StringValueCStr(tmp));
+      ilog(L_DEBUG, "RUBY BACKTRACE:   %s", StringValueCStr(tmp));
     }
   }
 }
@@ -727,7 +723,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   if(ruby_handle_error(status))
   {
-    ilog(L_DEBUG, "RUBY INFO: Failed to load file %s", path);
+    ilog(L_DEBUG, "RUBY INFO: Failed to exec node %s", path);
     return 0;
   }
 
