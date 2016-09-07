@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+#	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+#	cd $(CURDIR)/debian/oftc-ircservices/etc && mv example.conf oftc-ircservices/services.conf
+#	cd $(CURDIR)/debian/oftc-ircservices/usr/bin && mv services oftc-ircservices
+
+override_dh_auto_configure:
+	./autogen.sh
+	dh_auto_configure
+
+override_dh_auto_clean:
+	# ignore errors because libltdl/ might not yet be there
+	-dh_auto_clean
+
+%:
+	dh $@

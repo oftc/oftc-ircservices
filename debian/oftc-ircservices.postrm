@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+case $1 in
+    purge)
+	rm -rf /var/log/oftc-ircservices
+	;;
+esac
+
+#DEBHELPER#
+
+exit 0
