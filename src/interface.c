@@ -1034,7 +1034,7 @@ do_cloak(struct Client *client)
     {
       cloak_user(client, nickname_get_cloak(nick));
     }
-    else if (!EmptyString(ServicesInfo.default_cloak))
+    else if (!EmptyString(ServicesInfo.default_cloak) && nickname_get_verified(nick))
     {
       snprintf(cloak, HOSTLEN, ServicesInfo.default_cloak, nickname_get_id(nick));
       cloak_user(client, cloak);
