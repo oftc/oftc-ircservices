@@ -21,6 +21,7 @@ CREATE TABLE account (
   last_quit_time      INTEGER,
   reg_time            INTEGER NOT NULL -- The account itself
 );
+CREATE UNIQUE INDEX account_primary_nick_idx ON account (primary_nick);
 
 DROP TABLE IF EXISTS nickname CASCADE;
 CREATE TABLE nickname (
