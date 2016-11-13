@@ -47,16 +47,22 @@ CREATE OR REPLACE VIEW cs_view AS
     GROUP BY 1, 2, 3, 4, 5;
 
 CREATE OR REPLACE VIEW ns_view AS
-    SELECT nickname.nick,
-	mktime(nickname.last_seen) AS last_seen,
-	mktime(account.reg_time) AS reg_time,
-	mktime(account.last_quit_time) AS last_quit_time,
-	account.last_host,
-	account.last_realname,
-	account.last_quit_msg,
-	account.email,
-	account.cloak,
-	account.url
-    FROM account JOIN nickname ON (account.primary_nick = nickname.id);
+    SELECT (SELECT nick FROM nickname
+		WHERE account.primary_nick = nickname.id),
+	(SELECT array_agg(nick) FROM nickname
+		WHERE account.id = nickname.account_id
+		AND nickname.id <> account.primary_nick) AS nicks,
+	abstime(reg_time) AS reg_time,
+	abstime(last_quit_time) AS last_quit_time,
+	(SELECT abstime(MAX(last_seen)) FROM nickname
+		WHERE account.id = nickname.account_id) AS last_seen,
+	last_host,
+	last_realname,
+	last_quit_msg,
+	email,
+	cloak,
+	flag_verified,
+	id
+    FROM account;
 
 COMMIT;
