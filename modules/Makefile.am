@@ -4,12 +4,11 @@ AM_CPPFLAGS=-I$(top_srcdir)/libio -I$(top_srcdir)/include -I$(top_srcdir)/langua
 if USE_SHARED_MODULES
 AM_LDFLAGS=-no-undefined -module -avoid-version
 pkglib_LTLIBRARIES=chanserv.la operserv.la nickserv.la groupserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
-dist_pkgdata_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb MoranServ.rb
 else
 AM_LDFLAGS=-static
 noinst_LTLIBRARIES=chanserv.la operserv.la nickserv.la groupserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
-dist_pkgdata_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb MoranServ.rb
 endif
+dist_pkgdata_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb MoranServ.rb
 chanserv_la_SOURCES=chanserv.c
 operserv_la_SOURCES=operserv.c
 nickserv_la_SOURCES=nickserv.c
