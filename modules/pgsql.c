@@ -507,13 +507,14 @@ internal_execute(int id, int *error, const char *format,
   size_t count = 0;
 
   len = strlen(format);
-  if (len > 0)
+  if (len > 0) {
     params = MyMalloc(sizeof(char*) * len);
 
-  DLINK_FOREACH(ptr, args->head)
-  {
-    void_to_char(format[count], &params[count], ptr->data);
-    count++;
+    DLINK_FOREACH(ptr, args->head)
+    {
+      void_to_char(format[count], &params[count], ptr->data);
+      count++;
+    }
   }
 
   snprintf(name, sizeof(name), "Query: %d", id);
