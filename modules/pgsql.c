@@ -333,6 +333,8 @@ static query_t queries[QUERY_COUNT] = {
   { GET_CHAN_GROUP_MASTERS, "SELECT name FROM \"group\", channel_access WHERE "
     "channel_id=$1 AND level=4 AND channel_access.group_id=\"group\".id "
     "ORDER BY lower(name)", QUERY },
+  { SET_SYNCHRONOUS_COMMIT, "UPDATE pg_settings SET setting = 'on' WHERE name = 'synchronous_commit'", EXECUTE },
+  { UNSET_SYNCHRONOUS_COMMIT, "UPDATE pg_settings SET setting = 'off' WHERE name = 'synchronous_commit'", EXECUTE },
 };
 
 
@@ -421,6 +423,8 @@ pg_connect(const char *connection_string)
     }
   }
 
+  pgsql->execute_nonquery(UNSET_SYNCHRONOUS_COMMIT, "", NULL); /* turn safe commits off until burst is completed */
+
   return 1;
 }
 
@@ -495,7 +499,7 @@ internal_execute(int id, int *error, const char *format,
     dlink_list *args)
 {
   PGresult *result;
-  char **params;
+  char **params = NULL;
   char name[TEMP_BUFSIZE];
   char log_params[IRC_BUFSIZE];
   int ret, len, i = 0;
@@ -503,7 +507,8 @@ internal_execute(int id, int *error, const char *format,
   size_t count = 0;
 
   len = strlen(format);
-  params = MyMalloc(sizeof(char*) * len);
+  if (len > 0)
+    params = MyMalloc(sizeof(char*) * len);
 
   DLINK_FOREACH(ptr, args->head)
   {

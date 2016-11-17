@@ -325,6 +325,7 @@ m_eob(struct Client *client, struct Client *source, int parc, char *parv[])
   ClearConnecting(me.uplink);
   ServicesState.fully_connected = 1;
   execute_callback(on_burst_done_cb);
+  db_execute_nonquery(SET_SYNCHRONOUS_COMMIT, ""); /* burst is done, do safe commits now */
 }
 
 static void
