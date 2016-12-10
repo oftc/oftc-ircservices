@@ -26,6 +26,7 @@ libtool
 ltmain.sh
 missing
 src/conf/lexer.c
+src/conf/lex.yylexer.c
 src/conf/parser.c
 src/conf/parser.h
 src/services
