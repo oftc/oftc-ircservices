@@ -27,7 +27,7 @@ DROP TABLE IF EXISTS nickname CASCADE;
 CREATE TABLE nickname (
   id                  SERIAL PRIMARY KEY,
   nick                VARCHAR(255) NOT NULL,
-  account_id          INTEGER REFERENCES account(id) NOT NULL,
+  account_id          INTEGER REFERENCES account(id) ON DELETE CASCADE NOT NULL,
   reg_time            INTEGER NOT NULL, -- This nickname
   last_seen           INTEGER
 );
@@ -38,7 +38,7 @@ CREATE INDEX nickname_account_id_idx ON nickname (account_id);
 
 -- This needs to be here because of the table creation order and the circular
 -- reference
-ALTER TABLE account ADD FOREIGN KEY (primary_nick) REFERENCES nickname(id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE account ADD FOREIGN KEY (primary_nick) REFERENCES nickname(id) DEFERRABLE INITIALLY DEFERRED; -- no CASCADE here
 
 DROP TABLE IF EXISTS forbidden_nickname;
 CREATE TABLE forbidden_nickname (
