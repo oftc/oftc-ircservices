@@ -133,7 +133,7 @@ NS_HELP_CERT_ADD_LONG
 	fingerprint parameter.
 	
 	If you specify a nickname to add this fingerprint to, when you connect to
-	the network, providing this fingerpritn, you will automatically be
+	the network, providing this fingerprint, you will automatically be
 	identified to your account, and services will change your nickname to that
 	nickname.  The nickname you specify must be one linked to your account.
 	
@@ -630,7 +630,7 @@ NS_CERT_DEL
 NS_CERT_DEL_NONE
 	%s was not found on the CERT list.
 NS_CERT_DEL_ERROR
-	An error occured attempting to modify the CERT list.  If this is not the
+	An error occurred attempting to modify the CERT list.  If this is not the
 	first time you have seen this message, please contact network support.
 NS_REGAIN_SUCCESS
 	REGAIN succeed on nickname %s.  You have been changed to your nickname.
