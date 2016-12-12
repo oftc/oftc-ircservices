@@ -697,7 +697,7 @@ NS_INFO_QUITTIME_NOMONTH
 	  Account last quit: %s (%dd %02d:%02d:%02d ago)
 NS_INFO_QUITTIME_NODAY
 	  Account last quit: %s (%02d:%02d:%02d ago)
-NS_INF_QUITTIME_UNKNOWN
+NS_INFO_QUITTIME_UNKNOWN
 	  Account last quit: Unknown
 NS_INFO_SEENTIME_FULL
 	 Nickname last seen: %s (%dy %dm %dd %02d:%02d:%02d ago)
