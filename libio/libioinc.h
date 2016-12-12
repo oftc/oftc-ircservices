@@ -44,6 +44,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <limits.h>
+#include <bsd/string.h> /* strlcpy */
 
 #include "irc_libio.h"
 
