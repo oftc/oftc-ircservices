@@ -280,7 +280,7 @@ ssl_get_cipher(SSL *ssl)
   const char *name = NULL;
   int bits;
 
-  switch (ssl->session->ssl_version)
+  switch (SSL_version(ssl))
   {
     case SSL2_VERSION:
       name = "SSLv2";

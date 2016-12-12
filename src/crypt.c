@@ -85,7 +85,7 @@ crypt_pass_old(char *password)
 char *
 crypt_pass(char *password, int encode)
 {
-  EVP_MD_CTX mdctx;
+  EVP_MD_CTX *mdctx;
   const EVP_MD *md;
   unsigned char md_value[EVP_MAX_MD_SIZE];
   char buffer[2*DIGEST_LEN + 1];
@@ -94,11 +94,12 @@ crypt_pass(char *password, int encode)
 
   md = EVP_get_digestbyname(DIGEST_FUNCTION);
 
-  EVP_MD_CTX_init(&mdctx);
-  EVP_DigestInit_ex(&mdctx, md, NULL);
-  EVP_DigestUpdate(&mdctx, password, strlen(password));
-  EVP_DigestFinal_ex(&mdctx, md_value, &md_len);
-  EVP_MD_CTX_cleanup(&mdctx);
+  mdctx = EVP_MD_CTX_create();
+  EVP_MD_CTX_init(mdctx);
+  EVP_DigestInit_ex(mdctx, md, NULL);
+  EVP_DigestUpdate(mdctx, password, strlen(password));
+  EVP_DigestFinal_ex(mdctx, md_value, &md_len);
+  EVP_MD_CTX_destroy(mdctx);
 
   if(encode)
   {

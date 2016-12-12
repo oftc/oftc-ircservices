@@ -70,8 +70,8 @@ AC_DEFUN([AX_CHECK_LIB_PYTHON],[
 dnl {{{ ax_check_lib_openssl
 AC_DEFUN([AX_CHECK_LIB_OPENSSL],[
   AC_CHECK_HEADER([openssl/sha.h],,[AC_MSG_ERROR([openssl header files not found])])
-  AC_CHECK_LIB([ssl],[SSL_library_init],,[AC_MSG_ERROR([openssl library not found])])
-  AC_CHECK_LIB([crypto],[EVP_MD_CTX_init],,[AC_MSG_ERROR([openssl library not found])])
+  AC_CHECK_LIB([ssl],[SSL_new],,[AC_MSG_ERROR([openssl library not found])])
+  AC_CHECK_LIB([crypto],[EVP_CIPHER_CTX_new],,[AC_MSG_ERROR([crypto library not found])])
 ])dnl }}}
 dnl {{{
 AC_DEFUN([AX_CHECK_LIB_EVENT],[
