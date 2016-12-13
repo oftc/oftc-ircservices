@@ -32,51 +32,6 @@ LIBIO_EXTERN void MyFree(void *);
 LIBIO_EXTERN void _DupString(char **, const char *);
 LIBIO_EXTERN void mem_frob(void *, int);
 
-/* forte (and maybe others) don't like double declarations, 
- * so we don't declare the inlines unless GNUC
- */
-#ifdef __GNUC__
-LIBIO_EXTERN inline void *
-MyMalloc(size_t size)
-{
-  void *ret = calloc(1, size);
-
-  if (ret == NULL)
-    outofmemory();
-  return(ret);
-}
-
-LIBIO_EXTERN inline void *
-MyRealloc(void *x, size_t y)
-{
-  void *ret = realloc(x, y);
-
-  if (ret == NULL)
-    outofmemory();
-  return(ret);    
-}
-
-LIBIO_EXTERN inline void
-MyFree(void *x)
-{
-  if (x != NULL)
-    free(x);
-}
-
-LIBIO_EXTERN inline void
-_DupString(char **x, const char *y)
-{
-  if(y == NULL)
-    return;
-
-  (*x) = malloc(strlen(y) + 1);
-
-  if (x == NULL)
-    outofmemory();
-  strcpy((*x), y); 
-}
-#endif /* __GNUC__ */
-
 #define DupString(x,y) _DupString(&(x), (y))
 
 #endif /* INCLUDED_libio_mem_memory_h */
