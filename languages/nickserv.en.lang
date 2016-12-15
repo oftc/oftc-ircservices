@@ -14,13 +14,17 @@ NS_HELP_REG_LONG
 	information with your nickname and also to have access to registered
 	channels.
 	
+	Choose a password that you can remember but is not easily guessed.
+	
 	The e-mail address you enter will be used in case you forget your password,
 	so make sure it is valid and correct.
 	
-	Choose a password that you can remember but is not easily guessed.
-	
 	Once your nickname is registered, see HELP SET for information on settings
 	that can be set on it.
+	
+	Some services operations require nicknames to be VERIFIED.  To verify
+	your nick, go to https://services.oftc.net/, log in with your NickServ
+	password, and follow the instructions there.
 NS_HELP_ID_SHORT
 	%s: Identify your nickname.
 NS_HELP_ID_LONG
@@ -423,10 +427,6 @@ NS_HELP_INFO_LONG
 	nickname if no nickname is specified.  Settings will only be shown if this
 	nickname is yours, or is linked to yours, or if you are a services admin.
 	E-mail addresses are not shown for PRIVATE accounts.
-	
-	Some services operations require nicknames to be VERIFIED.  To verify
-	a nick, go to https://services.oftc.net/, log in with the NickServ
-	credentials, and complete the CAPTCHA challenge.
 NS_HELP_SENDPASS_SHORT
 	%s: Send a password reset request.
 NS_HELP_SENDPASS_LONG
@@ -484,6 +484,10 @@ NS_REG_COMPLETE
 	nickname.  If you change nickname or reconnect to the IRC network you will be
 	required to identify using the password you chose when you registered.  See
 	HELP IDENTIFY for more information on identifying your nickname.
+	
+	Some services operations require nicknames to be VERIFIED.  To verify
+	your nick, go to https://services.oftc.net/, log in with your NickServ
+	password, and follow the instructions there.
 NS_REG_FAIL
 	Nickname %s failed to register.  This is usually caused by an internal
 	problem within services or a database problem.  Please try again in a short
@@ -667,7 +671,7 @@ NS_LINK_FAIL
 	message please contact network support.
 NS_LINK_NOTVERIFIED
 	Linking failed.  To link nicknames, both %s and %s and must be
-	verified.  See HELP INFO for details.
+	verified.  See HELP REGISTER for details.
 NS_LINK_OK
 	Nickname %s is now linked to master %s.
 NS_UNLINK_FAILED
