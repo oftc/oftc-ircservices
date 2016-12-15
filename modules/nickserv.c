@@ -1335,6 +1335,13 @@ m_link(struct Service *service, struct Client *client, int parc, char *parv[])
     return;
   }
 
+  if(!nickname_get_verified(master_nick) || !nickname_get_verified(nick))
+  {
+    nickname_free(master_nick);
+    reply_user(service, service, client, NS_LINK_NOTVERIFIED, nickname_get_nick(nick), parv[1]);
+    return;
+  }
+
   if(!nickname_link(master_nick, nick))
   {
     nickname_free(master_nick);
@@ -1886,6 +1893,13 @@ m_enslave(struct Service *service, struct Client *client, int parc, char *parv[]
   {
     nickname_free(slave_nick);
     reply_user(service, service, client, NS_LINK_BADPASS, parv[1]);
+    return;
+  }
+
+  if(!nickname_get_verified(slave_nick) || !nickname_get_verified(nick))
+  {
+    nickname_free(slave_nick);
+    reply_user(service, service, client, NS_LINK_NOTVERIFIED, nickname_get_nick(nick), parv[1]);
     return;
   }
 

@@ -423,6 +423,10 @@ NS_HELP_INFO_LONG
 	nickname if no nickname is specified.  Settings will only be shown if this
 	nickname is yours, or is linked to yours, or if you are a services admin.
 	E-mail addresses are not shown for PRIVATE accounts.
+	
+	Some services operations require nicknames to be VERIFIED.  To verify
+	a nick, go to https://services.oftc.net/, log in with the NickServ
+	credentials, and complete the CAPTCHA challenge.
 NS_HELP_SENDPASS_SHORT
 	%s: Send a password reset request.
 NS_HELP_SENDPASS_LONG
@@ -661,6 +665,9 @@ NS_LINK_FAIL
 	LINK failed to master %s.  This may have been an internal error, please
 	try again shortly.  If this is not the first time you have seen this
 	message please contact network support.
+NS_LINK_NOTVERIFIED
+	Linking failed.  To link nicknames, both %s and %s and must be
+	verified.  See HELP INFO for details.
 NS_LINK_OK
 	Nickname %s is now linked to master %s.
 NS_UNLINK_FAILED
