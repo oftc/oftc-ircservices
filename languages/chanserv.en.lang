@@ -287,7 +287,7 @@ CS_HELP_CLEAR_BANS_LONG
 CS_HELP_CLEAR_QUIETS_SHORT
 	%s: Remove all quiets on a channel.
 CS_HELP_CLEAR_QUIETS_LONG
-	Usage: CLEAR channel QUIET
+	Usage: CLEAR channel QUIETS
 	
 	This command will remove all of the quiets set on a channel.  This command may
 	be useful if you have a large number of bans which need to be removed.
