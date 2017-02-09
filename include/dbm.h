@@ -64,6 +64,7 @@ typedef struct DataBaseModule
   int64_t (*next_id)(const char *, const char *);
   int64_t (*insert_id)(const char *, const char *);
   int (*is_connected)();
+  int (*process_notifies)();
 } database_t;
 
 enum db_queries
@@ -255,5 +256,7 @@ void db_log(const char *, ...);
 int db_string_list(unsigned int, dlink_list *);
 int db_string_list_by_id(unsigned int, dlink_list *, unsigned int);
 void db_string_list_free(dlink_list *);
+
+void db_process_notifies();
 
 #endif /* INCLUDED_dbm_h */

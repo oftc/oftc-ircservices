@@ -288,6 +288,9 @@ int main(int argc, char *argv[])
       break;
     }
 
+    /* TODO: hook this into the select() machinery */
+    db_process_notifies();
+
     comm_select();
     send_queued_all();
 

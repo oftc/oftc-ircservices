@@ -480,3 +480,10 @@ db_string_list_free(dlink_list *list)
     free_dlink_node(ptr);
   }
 }
+
+void
+db_process_notifies()
+{
+  if(database->is_connected())
+    database->process_notifies();
+}

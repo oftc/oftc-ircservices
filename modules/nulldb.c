@@ -46,6 +46,7 @@ static int commit_transaction();
 static int rollback_transaction();
 static void free_result(result_set_t *);
 static int is_connected();
+static int process_notifies();
 
 INIT_MODULE(nulldb, "$Revision: $")
 {
@@ -63,6 +64,7 @@ INIT_MODULE(nulldb, "$Revision: $")
   nulldb->insert_id = insertid;
   nulldb->next_id = nextid;
   nulldb->is_connected = is_connected;
+  nulldb->process_notifies = process_notifies;
 
   return nulldb;
 }
@@ -141,4 +143,10 @@ static int64_t
 nextid(const char *table, const char *column)
 {
   return 1;
+}
+
+static int
+process_notifies()
+{
+  return TRUE;
 }

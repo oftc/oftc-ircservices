@@ -1,6 +1,6 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
- *  pgsql.c : A database module to interfacing with postgresql
+ *  oftc-ircservices: an extensible and flexible IRC Services package
+ *  pgsql.c : A database module to interfacing with PostgreSQL
  *
  *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
  *
@@ -58,6 +58,7 @@ static int pg_rollback_transaction();
 static void pg_free_result(result_set_t *);
 static int void_to_char(char, char **, void *);
 static int pg_is_connected();
+static int pg_process_notifies();
 
 static query_t queries[QUERY_COUNT] = { 
   { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
@@ -354,6 +355,7 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
   pgsql->insert_id = pg_insertid;
   pgsql->next_id = pg_nextid;
   pgsql->is_connected = pg_is_connected;
+  pgsql->process_notifies = pg_process_notifies;
 
   return pgsql;
 }
@@ -423,6 +425,7 @@ pg_connect(const char *connection_string)
     }
   }
 
+  PQexec(pgsql->connection, "LISTEN foobar"); /* XXX */
   pgsql->execute_nonquery(UNSET_SYNCHRONOUS_COMMIT, "", NULL); /* turn safe commits off until burst is completed */
 
   return 1;
@@ -815,4 +818,26 @@ pg_nextid(const char *table, const char *column)
   MyFree(pgquery);
   return(id);
 
+}
+
+static int
+pg_process_notifies()
+{
+  PGnotify *notify;
+  //db_log("pg_process_notifies");
+
+  /* check for input */
+  if (PQconsumeInput(pgsql->connection) == 0) {
+    db_log("PG process notifies Error: %s", PQerrorMessage(pgsql->connection));
+    return FALSE;
+  }
+
+  /* process any notifications */
+  while ((notify = PQnotifies(pgsql->connection)) != NULL)
+  {
+    db_log("PG Notify [%d]: %s(%s)", notify->be_pid, notify->relname, notify->extra);
+    PQfreemem(notify);
+  }
+
+  return TRUE;
 }
