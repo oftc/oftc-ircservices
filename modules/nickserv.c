@@ -90,6 +90,7 @@ static void m_list(struct Service *, struct Client *, int, char *[]);
 static void m_status(struct Service *, struct Client *, int, char*[]);
 static void m_enslave(struct Service *, struct Client *, int, char*[]);
 static void m_dropnick(struct Service *, struct Client *, int, char*[]);
+static void m_verify(struct Service *, struct Client *, int, char*[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -296,6 +297,11 @@ static struct ServiceMessage enslave_msgtab = {
 static struct ServiceMessage dropnick_msgtab = {
   NULL, "DROPNICK", 0, 1, 1, 0, OPER_FLAG, NS_HELP_DROPNICK_SHORT,
     NS_HELP_DROPNICK_LONG, m_dropnick
+};
+
+static struct ServiceMessage verify_msgtab = {
+  NULL, "VERIFY", 0, 0, 1, 0, USER_FLAG, NS_HELP_VERIFY_SHORT,
+  NS_HELP_VERIFY_LONG, m_verify
 };
 
 INIT_MODULE(nickserv, "$Revision$")
@@ -2354,6 +2360,22 @@ m_status(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     reply_user(service, service, client, NS_STATUS_OFFLINE, name);
     return;  
+  }
+}
+
+static void
+m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  if(IsIdentified(client) && nickname_get_verified(client->nickname))
+  {
+    send_umode(NULL, client, "+R");
+    reply_user(service, service, client, NS_VERIFY_SUCCESS);
+    return;
+  }
+  else
+  {
+    reply_user(service, service, client, NS_VERIFY_FAIL);
+    return;
   }
 }
 

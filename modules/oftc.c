@@ -621,7 +621,7 @@ oftc_identify(va_list args)
   /* XXX */
   uplink = uplink;
   
-  if(!IsConnecting(me.uplink) || !IsIdentified(client))
+  if((!IsConnecting(me.uplink) || !IsIdentified(client)) && nickname_get_verified(client->nickname))
     send_umode(NULL, client, "+R");
 
   SetIdentified(client);
