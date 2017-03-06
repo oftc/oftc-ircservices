@@ -33,6 +33,15 @@ dbmail_is_sent(unsigned int account, const char *email)
   return ret;
 }
 
+int
+dbmail_delete_sent(unsigned int account)
+{
+  if(db_execute_nonquery(DELETE_SENT_MAIL, "i", &account) == 1)
+    return TRUE;
+  else
+    return FALSE;
+}
+
 void
 dbmail_expire_sentmail(void *param)
 {
