@@ -1812,9 +1812,14 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
   }
 
   if(set_nickname_password(nick, parv[3]))
+  {
     reply_user(service, service, client, NS_SET_PASS_SUCCESS);
+    dbmail_delete_sent(nickname_get_id(nick));
+  }
   else
+  {
     reply_user(service, service, client, NS_SET_PASS_FAILED);
+  }
 
   nickname_free(nick);
 }
