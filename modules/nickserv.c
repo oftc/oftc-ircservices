@@ -90,7 +90,7 @@ static void m_list(struct Service *, struct Client *, int, char *[]);
 static void m_status(struct Service *, struct Client *, int, char*[]);
 static void m_enslave(struct Service *, struct Client *, int, char*[]);
 static void m_dropnick(struct Service *, struct Client *, int, char*[]);
-static void m_verify(struct Service *, struct Client *, int, char*[]);
+static void m_checkverify(struct Service *, struct Client *, int, char*[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -299,9 +299,9 @@ static struct ServiceMessage dropnick_msgtab = {
     NS_HELP_DROPNICK_LONG, m_dropnick
 };
 
-static struct ServiceMessage verify_msgtab = {
-  NULL, "VERIFY", 0, 0, 1, 0, USER_FLAG, NS_HELP_VERIFY_SHORT,
-  NS_HELP_VERIFY_LONG, m_verify
+static struct ServiceMessage checkverify_msgtab = {
+  NULL, "CHECKVERIFY", 0, 0, 1, 0, USER_FLAG, NS_HELP_CHECKVERIFY_SHORT,
+  NS_HELP_CHECKVERIFY_LONG, m_checkverify
 };
 
 INIT_MODULE(nickserv, "$Revision$")
@@ -338,6 +338,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &enslave_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &resetpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &dropnick_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &checkverify_msgtab);
 
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -2364,17 +2365,18 @@ m_status(struct Service *service, struct Client *client, int parc, char *parv[])
 }
 
 static void
-m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
+m_checkverify(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   if(IsIdentified(client) && nickname_get_verified(client->nickname))
   {
     send_umode(NULL, client, "+R");
-    reply_user(service, service, client, NS_VERIFY_SUCCESS);
+    do_cloak(client);
+    reply_user(service, service, client, NS_CHECKVERIFY_SUCCESS);
     return;
   }
   else
   {
-    reply_user(service, service, client, NS_VERIFY_FAIL);
+    reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
     return;
   }
 }
