@@ -338,6 +338,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &enslave_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &resetpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &dropnick_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &verify_msgtab);
 
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
