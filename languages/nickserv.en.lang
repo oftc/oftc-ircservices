@@ -55,10 +55,10 @@ NS_HELP_DROPNICK_LONG
 	This cannot be undone. Releasing a nickname in this way will allow others to
 	make use of it, or register it for their use, so make sure you really want
 	this.
-NS_HELP_VERIFY_SHORT
+NS_HELP_CHECKVERIFY_SHORT
 	%s: Sets +R if you recently verified your nickname.
-NS_HELP_VERIFY_LONG
-	Usage: VERIFY
+NS_HELP_CHECKVERIFY_LONG
+	Usage: CHECKVERIFY
 	
 	Checks the database to determine whether or not your nickname is verified.
 	If it is and you are not currently mode +R, sets +R.
@@ -851,7 +851,7 @@ NS_RESETPASS_FAIL
 	Failed to reset to a random password
 NS_RESETPASS_SUCCESS
 	Successfully reset password for %s to %s
-NS_VERIFY_FAIL
+NS_CHECKVERIFY_FAIL
 	To set +R, your nick must be registered and verified.
-NS_VERIFY_SUCCESS
+NS_CHECKVERIFY_SUCCESS
 	Successfully set +R on your nick.
