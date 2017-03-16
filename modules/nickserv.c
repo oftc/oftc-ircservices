@@ -2370,6 +2370,7 @@ m_checkverify(struct Service *service, struct Client *client, int parc, char *pa
   if(IsIdentified(client) && nickname_get_verified(client->nickname))
   {
     send_umode(NULL, client, "+R");
+    do_cloak(client);
     reply_user(service, service, client, NS_CHECKVERIFY_SUCCESS);
     return;
   }
