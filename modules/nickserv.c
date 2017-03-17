@@ -2376,7 +2376,7 @@ m_checkverify(struct Service *service, struct Client *client, int parc, char *pa
   if(nickname_get_verified(client->nickname))
   {
     reply_user(service, service, client, NS_CHECKVERIFY_ALREADY);
-    return
+    return;
   }
   
   /* Refresh from the DB */
