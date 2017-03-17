@@ -855,3 +855,5 @@ NS_CHECKVERIFY_FAIL
 	To set +R, your nick must be registered and verified.
 NS_CHECKVERIFY_SUCCESS
 	Successfully set +R on your nick.
+NS_CHECKVERIFY_ALREADY
+	You're already verified.
