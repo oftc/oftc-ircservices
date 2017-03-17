@@ -2367,6 +2367,8 @@ m_status(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_checkverify(struct Service *service, struct Client *client, int parc, char *parv[])
 {
+  Nickname *nick;
+
   if(!IsIdentified(client))
   {
     reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
@@ -2380,14 +2382,18 @@ m_checkverify(struct Service *service, struct Client *client, int parc, char *pa
   }
   
   /* Refresh from the DB */
-  client->nickname = nickname_find(client->name);
-  if(!client->nickname)
+  nick = nickname_find(client->name);
+  if(!nick)
   {
     /* Handle disappearing nicknames sanely */
     ClearIdentified(client);
+    nickname_free(client->nickname);
+    client->nickname = NULL;
     reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
     return;
   }
+  nickname_free(client->nickname);
+  client->nickname = nick;
   
   if(nickname_get_verified(client->nickname))
   {
