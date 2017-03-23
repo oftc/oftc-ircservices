@@ -1540,9 +1540,15 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
       nickname_chan_list_free(&list);
     }
   }
-  else if(!nickname_get_priv(nick))
-    reply_user(service, service, client, NS_INFO_EMAIL, nickname_get_email(nick));
- 
+  else
+  {
+    if(!nickname_get_priv(nick))
+      reply_user(service, service, client, NS_INFO_EMAIL, nickname_get_email(nick));
+    
+    reply_user(service, service, client, NS_INFO_OPTION, "VERIFIED", nickname_get_verified(nick) ? "YES" :
+        "NO");
+  }
+
   if(nick != client->nickname)
     nickname_free(nick);
 }
