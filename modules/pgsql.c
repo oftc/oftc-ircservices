@@ -231,7 +231,6 @@ static query_t queries[QUERY_COUNT] = {
       "($1, $2, $3)", EXECUTE },
   { GET_SENT_MAIL, "SELECT id FROM sent_mail WHERE account_id=$1 OR email=$2",
     QUERY },
-  { DELETE_SENT_MAIL, "DELETE FROM sent_mail WHERE account_id=$1", EXECUTE },
   { DELETE_EXPIRED_SENT_MAIL, "DELETE FROM sent_mail WHERE sent + $1 < $2", EXECUTE },
   { GET_NICKS, "SELECT nick FROM account, nickname WHERE account.id=nickname.account_id AND "
        "account.flag_private='f' ORDER BY lower(nick)", QUERY },
