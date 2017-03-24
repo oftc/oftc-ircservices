@@ -340,10 +340,10 @@ class MoranServ < ServiceModule
         if @ready
           entry['tokill'] += 1
           if entry['tokill'] > @MAX_TOKILL 
-            if not client.is_identified? and Time.new.to_i - client.firsttime < 3600
+            if not (client.is_identified? and client.nick.verified?) and Time.new.to_i - client.firsttime < 3600
               kill_user(client, "Possible spambot -- mail support@oftc.net with questions.")
             else
-              notice("Wanted to kill #{client.to_str} because they're a spambot | Identified: #{client.is_identified?} | Time online (< 3600 required): #{Time.new.to_i - client.firsttime}")
+              notice("Wanted to kill #{client.to_str} because they're a spambot | Identified/verified: #{client.is_identified?} | Time online (< 3600 required): #{Time.new.to_i - client.firsttime}")
             end
           end
         end
