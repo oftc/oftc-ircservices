@@ -425,7 +425,7 @@ pg_connect(const char *connection_string)
     }
   }
 
-  PQexec(pgsql->connection, "LISTEN foobar"); /* XXX */
+  PQexec(pgsql->connection, "LISTEN account_verify");
   pgsql->execute_nonquery(UNSET_SYNCHRONOUS_COMMIT, "", NULL); /* turn safe commits off until burst is completed */
 
   return 1;

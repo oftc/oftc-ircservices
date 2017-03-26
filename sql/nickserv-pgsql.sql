@@ -75,3 +75,17 @@ CREATE TABLE account_autojoin (
 );
 CREATE INDEX account_autojoin_idx ON account_autojoin(id);
 CREATE UNIQUE INDEX account_autojoin_account_channel_idx ON account_autojoin(account_id, channel_id);
+
+-- triggers
+
+CREATE OR REPLACE FUNCTION account_verify_trigger()
+RETURNS trigger LANGUAGE plpgsql AS
+$$BEGIN
+  PERFORM pg_notify('account_verify', NEW.id::text);
+  RETURN NEW;
+END$$;
+
+CREATE TRIGGER account_verify_trigger AFTER UPDATE ON account
+  FOR EACH ROW
+  WHEN (OLD.flag_verified = false AND NEW.flag_verified = true)
+  EXECUTE PROCEDURE account_verify_trigger();
