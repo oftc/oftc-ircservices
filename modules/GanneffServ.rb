@@ -398,7 +398,7 @@ class GanneffServ < ServiceModule
           end
         else # if @channels...["monitoronly"]
           debug(LOG_NOTICE, "#{nick} joined channel #{channel}, killing")
-          drop_nick(nick) unless @nicks[client.id]["registered"].nil?
+          drop_nick(nick) if @nicks.has_key?(client.id) and @nicks[client.id]["registered"]
           ret = akill(client, "#{@channels[channel]["reason"]}", "J:#{channel}", channel)
         end # if @channels...["monitoronly"]
         debug(LOG_DEBUG, "join_hook says that ret is #{ret}")
