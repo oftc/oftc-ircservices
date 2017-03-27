@@ -22,7 +22,7 @@ NS_HELP_REG_LONG
 	Once your nickname is registered, see HELP SET for information on settings
 	that can be set on it.
 	
-	Some services operations require nicknames to be VERIFIED.  To verify
+	To complete the registration, the nickname must be VERIFIED.  To verify
 	your nick, go to https://services.oftc.net/, log in with your NickServ
 	password, and follow the instructions there.
 NS_HELP_ID_SHORT
@@ -492,7 +492,7 @@ NS_REG_COMPLETE
 	required to identify using the password you chose when you registered.  See
 	HELP IDENTIFY for more information on identifying your nickname.
 	
-	Some services operations require nicknames to be VERIFIED.  To verify
+	To complete the registration, the nickname must be VERIFIED.  To verify
 	your nick, go to https://services.oftc.net/, log in with your NickServ
 	password, and follow the instructions there.
 NS_REG_FAIL
