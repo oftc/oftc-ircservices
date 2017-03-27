@@ -516,7 +516,7 @@ m_register(struct Service *service, struct Client *client,
 
   if(CurrentTime - client->firsttime < 60) /* TODO XXX FIXME configurable? */
   {
-    ilog(L_NOTICE, "Warning: %s tried to register after %ld seconds online",
+    ilog(L_NOTICE, "Warning: %s registered after only %ld seconds online",
         client->name, CurrentTime - client->firsttime);
   }
 
