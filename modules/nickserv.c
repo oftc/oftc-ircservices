@@ -540,8 +540,9 @@ m_register(struct Service *service, struct Client *client,
     identify_user(client);
 
     reply_user(service, service, client, NS_REG_COMPLETE, client->name);
-    global_notice(NULL, "%s!%s@%s registered nick %s\n", client->name, 
-        client->username, client->host, nickname_get_nick(nick));
+    global_notice(NULL, "%s!%s@%s registered nick %s (email: %s)\n", client->name,
+        client->username, client->host, nickname_get_nick(nick),
+        nickname_get_email(nick));
 
     execute_callback(on_nick_reg_cb, client);
     return;
