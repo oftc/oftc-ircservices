@@ -1360,7 +1360,7 @@ enforce_mode_lock(struct Service *service, struct Channel *channel,
     /* our separate_modes routine allows us to determine if +l or +k exist, and
      * preserves positioning, add +lk if need be since they're not in the bitmodes
      */
-    if(limit_pos > 0 && parv[limit_pos] != NULL)
+    if(limit_pos > 0 && limit_pos < 3 && parv[limit_pos] != NULL)
     {
       strlcat(mode_diff, "l", sizeof(mode_diff));
       snprintf(param, MODEBUFLEN, "%s ", parv[limit_pos]);
@@ -1368,7 +1368,7 @@ enforce_mode_lock(struct Service *service, struct Channel *channel,
         channel->mode.limit = atoi(parv[limit_pos]);
     }
 
-    if(key_pos > 0 && parv[key_pos] != NULL)
+    if(key_pos > 0 && key_pos < 3 && parv[key_pos] != NULL)
     {
       strlcat(mode_diff, "k", sizeof(mode_diff));
       strlcat(param, parv[key_pos], MODEBUFLEN);
