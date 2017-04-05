@@ -1772,8 +1772,8 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
     temp = client->nickname;
     client->nickname = nick;
 
-    snprintf(buf, IRC_BUFSIZE, "SENDPASS %ld %d %s", CurrentTime, 
-        nickname_get_id(nick), nickname_get_nick(nick));
+    snprintf(buf, IRC_BUFSIZE, "SENDPASS %ld %d %s %s", CurrentTime, 
+        nickname_get_id(nick), nickname_get_nick(nick), nickname_get_pass(nick));
     hmac = generate_hmac(buf);
 
     reply_user(service, service, client, NS_SENDPASS_SENT);
@@ -1806,8 +1806,8 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
   *auth = '\0';
   auth++;
 
-  snprintf(buf, IRC_BUFSIZE, "SENDPASS %s %d %s", parv[2], nickname_get_id(nick), 
-      nickname_get_nick(nick));
+  snprintf(buf, IRC_BUFSIZE, "SENDPASS %s %d %s %s", parv[2], nickname_get_id(nick), 
+      nickname_get_nick(nick), nickname_get_pass(nick));
   hmac = generate_hmac(buf);
 
   if(strncmp(hmac, auth, strlen(hmac)) != 0)
