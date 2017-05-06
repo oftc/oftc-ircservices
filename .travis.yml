@@ -1,0 +1,16 @@
+dist: trusty
+sudo: required
+language: c
+compiler:
+  - clang
+  - gcc
+
+install:
+  - sudo apt-get install -y debhelper pkg-config zlib1g-dev libbsd-dev libevent-dev autoconf automake libtool libltdl-dev libpq-dev postgresql-server-dev-all libssl-dev ruby ruby-dev flex bison
+
+before_script:
+  - ./autogen.sh
+
+script:
+  - make
+
