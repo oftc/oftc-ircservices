@@ -4,13 +4,13 @@
 
 LIBTOOLIZE_FLAGS="--automake --ltdl --force --install --copy"
 AUTOMAKE_FLAGS="--add-missing"
+CONFIGURE_FLAGS="--prefix=/home/oftc/ircservices/services --with-nicklen=30 --with-topiclen=390 --disable-python"
 
 ARGV0=$0
-ARGS="$@"
 
 run() {
-	echo "$ARGV0: running \`$@' $ARGS"
-	$@ $ARGS
+	echo "$ARGV0: running \`$@'"
+	"$@"
 }
 
 ## jump out if one of the programs returns 'false'
@@ -71,4 +71,4 @@ sed -i -e 's/install-sh ltmain.sh missing mkinstalldirs/install-sh ltmain.sh mis
 run $AUTOHEADER
 run $AUTOMAKE $AUTOMAKE_FLAGS
 run $AUTOCONF
-test "$ARGS" = "" && echo "Now type './configure ...' and 'make' to compile."
+run ./configure $CONFIGURE_FLAGS "$@"
