@@ -27,49 +27,6 @@
 void (* outofmemory) (void) = abort;
 
 /*
- * MyMalloc - allocate memory, call outofmemory on failure
- */
-void *
-MyMalloc(size_t size)
-{
-  void *ret = calloc(1, size);
-
-  if (ret == NULL)
-    outofmemory();
-  return ret;
-}
-
-/*
- * MyRealloc - reallocate memory, call outofmemory on failure
- */
-void *
-MyRealloc(void *x, size_t y)
-{
-  void *ret = realloc(x, y);
-
-  if (ret == NULL)
-    outofmemory();
-  return ret;
-}
-
-void
-MyFree(void *x)
-{
-  if (x)
-    free(x);
-}
-
-void
-_DupString(char **x, const char *y)
-{
-  if(y == NULL)
-    return;
-
-  (*x) = malloc(strlen(y) + 1);
-  strcpy((*x), y);
-}
-
-/*
  * frob some memory. debugging time.
  * -- adrian
  */

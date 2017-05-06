@@ -1024,61 +1024,61 @@ nickname_group_list_free(dlink_list *list)
   info_list_free(list);
 }
 
-inline int
+int
 nickname_list_all(dlink_list *list)
 {
   return db_string_list(GET_NICKS_OPER, list);
 }
 
-inline void
+void
 nickname_list_all_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 nickname_list_regular(dlink_list *list)
 {
   return db_string_list(GET_NICKS, list);
 }
 
-inline void
+void
 nickname_list_regular_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 nickname_list_forbid(dlink_list *list)
 {
   return db_string_list(GET_FORBIDS, list);
 }
 
-inline void
+void
 nickname_list_forbid_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 nickname_list_admins(dlink_list *list)
 {
   return db_string_list(GET_ADMINS, list);
 }
 
-inline void
+void
 nickname_list_admins_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline Nickname *
+Nickname *
 nickname_new()
 {
   return MyMalloc(sizeof(Nickname));
 }
 
-inline void
+void
 nickname_free(Nickname *nick)
 {
   ilog(L_DEBUG, "Freeing nick %p for %s", nick, nickname_get_nick(nick));
@@ -1141,187 +1141,187 @@ nickname_reset_pass(Nickname *this, char **clear_pass)
 }
 
 /* Nickname getters */
-inline dlink_node
+dlink_node
 nickname_get_node(Nickname *this)
 {
   return this->node;
 }
 
 
-inline unsigned int
+unsigned int
 nickname_get_id(Nickname *this)
 {
   return this->id;
 }
 
-inline unsigned int
+unsigned int
 nickname_get_nickid(Nickname *this)
 {
   return this->nickid;
 }
 
-inline unsigned int
+unsigned int
 nickname_get_pri_nickid(Nickname *this)
 {
   return this->pri_nickid;
 }
 
-inline const char *
+const char *
 nickname_get_nick(Nickname *this)
 {
   return this->nick;
 }
 
-inline const char *
+const char *
 nickname_get_pass(Nickname *this)
 {
   return this->pass;
 }
 
-inline const char *
+const char *
 nickname_get_salt(Nickname *this)
 {
   return this->salt;
 }
 
-inline const char *
+const char *
 nickname_get_cloak(Nickname *this)
 {
   return this->cloak;
 }
 
-inline const char *
+const char *
 nickname_get_email(Nickname *this)
 {
   return this->email;
 }
 
-inline const char *
+const char *
 nickname_get_url(Nickname *this)
 {
   return this->url;
 }
 
-inline const char *
+const char *
 nickname_get_last_realname(Nickname *this)
 {
   return this->last_realname;
 }
 
-inline const char *
+const char *
 nickname_get_last_host(Nickname *this)
 {
   return this->last_host;
 }
 
-inline const char *
+const char *
 nickname_get_last_quit(Nickname *this)
 {
   return this->last_quit;
 }
 
-inline unsigned int
+unsigned int
 nickname_get_status(Nickname *this)
 {
   return this->status;
 }
 
-inline unsigned int
+unsigned int
 nickname_get_language(Nickname *this)
 {
   return this->language;
 }
 
-inline unsigned char
+unsigned char
 nickname_get_enforce(Nickname *this)
 {
   return this->enforce;
 }
 
-inline unsigned char
+unsigned char
 nickname_get_secure(Nickname *this)
 {
   return this->secure;
 }
 
-inline unsigned char
+unsigned char
 nickname_get_verified(Nickname *this)
 {
   return this->verified;
 }
 
-inline unsigned char
+unsigned char
 nickname_get_cloak_on(Nickname *this)
 {
   return this->cloak_on;
 }
 
-inline unsigned char
+unsigned char
 nickname_get_admin(Nickname *this)
 {
   return this->admin;
 }
 
-inline unsigned char
+unsigned char
 nickname_get_email_verified(Nickname *this)
 {
   return this->email_verified;
 }
 
-inline unsigned char
+unsigned char
 nickname_get_priv(Nickname *this)
 {
   return this->priv;
 }
 
-inline time_t
+time_t
 nickname_get_reg_time(Nickname *this)
 {
   return this->reg_time;
 }
 
-inline time_t
+time_t
 nickname_get_last_seen(Nickname *this)
 {
   return this->last_seen;
 }
 
-inline time_t
+time_t
 nickname_get_last_quit_time(Nickname *this)
 {
   return this->last_quit_time;
 }
 
 /* Nickname setters */
-inline int
+int
 nickname_set_id(Nickname *this, unsigned int value)
 {
   this->id = value;
   return TRUE;
 }
 
-inline int
+int
 nickname_set_nickid(Nickname *this, unsigned int value)
 {
   this->nickid = value;
   return TRUE;
 }
 
-inline int
+int
 nickname_set_pri_nickid(Nickname *this, unsigned int value)
 {
   this->pri_nickid = value;
   return TRUE;
 }
 
-inline int
+int
 nickname_set_nick(Nickname *this, const char *value)
 {
   strlcpy(this->nick, value, sizeof(this->nick));
   return TRUE;
 }
 
-inline int
+int
 nickname_set_pass(Nickname *this, const char *value)
 {
   /* on registration we need to set before the DB knows it */
@@ -1338,7 +1338,7 @@ nickname_set_pass(Nickname *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_salt(Nickname *this, const char *value)
 {
   if(this->id == 0 || db_execute_nonquery(SET_NICK_SALT, "si", value,
@@ -1355,7 +1355,7 @@ nickname_set_salt(Nickname *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_cloak(Nickname *this, const char *value)
 {
   if(db_execute_nonquery(SET_NICK_CLOAK, "si", value, &this->id) > 0)
@@ -1371,7 +1371,7 @@ nickname_set_cloak(Nickname *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_email(Nickname *this, const char *value)
 {
   /* on registration we need to set before the DB knows it */
@@ -1388,7 +1388,7 @@ nickname_set_email(Nickname *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_url(Nickname *this, const char *value)
 {
   if(db_execute_nonquery(SET_NICK_URL, "si", value, &this->id) > 0)
@@ -1404,7 +1404,7 @@ nickname_set_url(Nickname *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_last_realname(Nickname *this, const char *value)
 {
   if(db_execute_nonquery(SET_NICK_LAST_REALNAME, "si", value, &this->id) > 0)
@@ -1417,7 +1417,7 @@ nickname_set_last_realname(Nickname *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_last_host(Nickname *this, const char *value)
 {
   if(db_execute_nonquery(SET_NICK_LAST_HOST, "si", value, &this->id) > 0)
@@ -1430,7 +1430,7 @@ nickname_set_last_host(Nickname *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_last_quit(Nickname *this, const char *value)
 {
   if(db_execute_nonquery(SET_NICK_LAST_QUIT, "si", value, &this->id) > 0)
@@ -1443,14 +1443,14 @@ nickname_set_last_quit(Nickname *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_status(Nickname *this, unsigned int value)
 {
   this->status = value;
   return TRUE;
 }
 
-inline int
+int
 nickname_set_language(Nickname *this, unsigned int value)
 {
   if(db_execute_nonquery(SET_NICK_LANGUAGE, "ii", &value, &this->id) > 0)
@@ -1462,7 +1462,7 @@ nickname_set_language(Nickname *this, unsigned int value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_enforce(Nickname *this, unsigned char value)
 {
   if(db_execute_nonquery(SET_NICK_ENFORCE, "bi", &value, &this->id) > 0)
@@ -1474,7 +1474,7 @@ nickname_set_enforce(Nickname *this, unsigned char value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_secure(Nickname *this, unsigned char value)
 {
   if(db_execute_nonquery(SET_NICK_SECURE, "bi", &value, &this->id) > 0)
@@ -1486,14 +1486,14 @@ nickname_set_secure(Nickname *this, unsigned char value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_verified(Nickname *this, unsigned char value)
 {
   this->verified = value;
   return TRUE;
 }
 
-inline int
+int
 nickname_set_cloak_on(Nickname *this, unsigned char value)
 {
   if(db_execute_nonquery(SET_NICK_CLOAKON, "bi", &value, &this->id) > 0)
@@ -1505,7 +1505,7 @@ nickname_set_cloak_on(Nickname *this, unsigned char value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_admin(Nickname *this, unsigned char value)
 {
   if(db_execute_nonquery(SET_NICK_ADMIN, "bi", &value, &this->id) > 0)
@@ -1517,14 +1517,14 @@ nickname_set_admin(Nickname *this, unsigned char value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_email_verified(Nickname *this, unsigned char value)
 {
   this->email_verified = value;
   return TRUE;
 }
 
-inline int
+int
 nickname_set_priv(Nickname *this, unsigned char value)
 {
   if(db_execute_nonquery(SET_NICK_PRIVATE, "bi", &value, &this->id) > 0)
@@ -1536,14 +1536,14 @@ nickname_set_priv(Nickname *this, unsigned char value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_reg_time(Nickname *this, time_t value)
 {
   this->reg_time = value;
   return TRUE;
 }
 
-inline int
+int
 nickname_set_last_seen(Nickname *this, time_t value)
 {
   if(db_execute_nonquery(SET_NICK_LAST_SEEN, "ii", &value, &this->nickid) > 0)
@@ -1555,7 +1555,7 @@ nickname_set_last_seen(Nickname *this, time_t value)
     return FALSE;
 }
 
-inline int
+int
 nickname_set_last_quit_time(Nickname *this, time_t value)
 {
   if(db_execute_nonquery(SET_NICK_LAST_QUITTIME, "ii", &value, &this->id) > 0)

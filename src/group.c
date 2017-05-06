@@ -331,19 +331,19 @@ group_id_from_name(const char *group)
   return id;
 }
 
-inline int
+int
 group_masters_list(unsigned int id, dlink_list *list)
 {
   return db_string_list_by_id(GET_GROUP_MASTERS, list, id);
 }
 
-inline void
+void
 group_masters_list_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 group_masters_count(unsigned int id, int *count)
 {
   int error;
@@ -358,13 +358,13 @@ group_masters_count(unsigned int id, int *count)
   return TRUE;
 }
 
-inline int
+int
 group_list_all(dlink_list *list)
 {
   return db_string_list(GET_GROUPS_OPER, list);
 }
 
-inline int
+int
 group_list_regular(dlink_list *list)
 {
   return db_string_list(GET_GROUPS, list);
@@ -705,50 +705,50 @@ group_chan_list_free(dlink_list *list)
 }
 
 #if 0
-inline void
+void
 group_list_all_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
 
-inline void
+void
 group_list_regular_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 group_list_forbid(dlink_list *list)
 {
   return db_string_list(GET_FORBIDS, list);
 }
 
-inline void
+void
 group_list_forbid_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 group_list_admins(dlink_list *list)
 {
   return db_string_list(GET_ADMINS, list);
 }
 
-inline void
+void
 group_list_admins_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 #endif
 
-inline Group *
+Group *
 group_new()
 {
   return MyMalloc(sizeof(Group));
 }
-inline void
+void
 group_free(Group *group)
 {
   ilog(L_DEBUG, "Freeing group %p for %s", group, group_get_name(group));
@@ -810,173 +810,173 @@ group_reset_pass(Group *this, char **clear_pass)
 }
 
 /* Group getters */
-inline dlink_node
+dlink_node
 group_get_node(Group *this)
 {
   return this->node;
 }
 #endif
 
-inline unsigned int
+unsigned int
 group_get_id(Group *this)
 {
   return this->id;
 }
 
 #if 0
-inline unsigned int
+unsigned int
 group_get_nameid(Group *this)
 {
   return this->groupid;
 }
 
-inline unsigned int
+unsigned int
 group_get_pri_groupid(Group *this)
 {
   return this->pri_groupid;
 }
 #endif
 
-inline const char *
+const char *
 group_get_name(Group *this)
 {
   return this->name;
 }
 
 #if 0
-inline const char *
+const char *
 group_get_pass(Group *this)
 {
   return this->pass;
 }
 
-inline const char *
+const char *
 group_get_salt(Group *this)
 {
   return this->salt;
 }
 
-inline const char *
+const char *
 group_get_cloak(Group *this)
 {
   return this->cloak;
 }
 #endif
 
-inline const char *
+const char *
 group_get_desc(Group *this)
 {
   return this->desc;
 }
 
-inline const char *
+const char *
 group_get_email(Group *this)
 {
   return this->email;
 }
 
-inline const char *
+const char *
 group_get_url(Group *this)
 {
   return this->url;
 }
 
 #if 0
-inline const char *
+const char *
 group_get_last_realname(Group *this)
 {
   return this->last_realname;
 }
 
-inline const char *
+const char *
 group_get_last_host(Group *this)
 {
   return this->last_host;
 }
 
-inline const char *
+const char *
 group_get_last_quit(Group *this)
 {
   return this->last_quit;
 }
 
-inline unsigned int
+unsigned int
 group_get_status(Group *this)
 {
   return this->status;
 }
 
-inline unsigned int
+unsigned int
 group_get_language(Group *this)
 {
   return this->language;
 }
 
-inline unsigned char
+unsigned char
 group_get_enforce(Group *this)
 {
   return this->enforce;
 }
 
-inline unsigned char
+unsigned char
 group_get_secure(Group *this)
 {
   return this->secure;
 }
 
-inline unsigned char
+unsigned char
 group_get_verified(Group *this)
 {
   return this->verified;
 }
 
-inline unsigned char
+unsigned char
 group_get_cloak_on(Group *this)
 {
   return this->cloak_on;
 }
 
-inline unsigned char
+unsigned char
 group_get_admin(Group *this)
 {
   return this->admin;
 }
 
-inline unsigned char
+unsigned char
 group_get_email_verified(Group *this)
 {
   return this->email_verified;
 }
 #endif
 
-inline unsigned char
+unsigned char
 group_get_priv(Group *this)
 {
   return this->priv;
 }
 
-inline time_t
+time_t
 group_get_regtime(Group *this)
 {
   return this->reg_time;
 }
 
 /* Group setters */
-inline int
+int
 group_set_id(Group *this, unsigned int value)
 {
   this->id = value;
   return TRUE;
 }
 
-inline int
+int
 group_set_name(Group *this, const char *value)
 {
   strlcpy(this->name, value, sizeof(this->name));
   return TRUE;
 }
 
-inline int
+int
 group_set_email(Group *this, const char *value)
 {
   /* on registration we need to set before the DB knows it */
@@ -993,7 +993,7 @@ group_set_email(Group *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 group_set_url(Group *this, const char *value)
 {
   if(db_execute_nonquery(SET_GROUP_URL, "si", value, &this->id) > 0)
@@ -1009,7 +1009,7 @@ group_set_url(Group *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 group_set_desc(Group *this, const char *value)
 {
   if(this->id == 0 ||
@@ -1026,7 +1026,7 @@ group_set_desc(Group *this, const char *value)
     return FALSE;
 }
 
-inline int
+int
 group_set_priv(Group *this, unsigned char value)
 {
   if(db_execute_nonquery(SET_GROUP_PRIVATE, "bi", &value, &this->id) > 0)
@@ -1038,7 +1038,7 @@ group_set_priv(Group *this, unsigned char value)
     return FALSE;
 }
 
-inline int
+int
 group_set_regtime(Group *this, time_t value)
 {
   this->reg_time = value;
