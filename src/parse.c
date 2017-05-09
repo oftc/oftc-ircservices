@@ -1204,7 +1204,7 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
             /* Replace the sub command name with the command arguments */
             for(j = 2; j <= i; j++)
               servpara[j-1] = servpara[j];
-            if(!(sub->flags & SFLG_KEEPARG) || i > 2)
+            if(!(sub->flags & SFLG_KEEPARG) || i > 1)
               i--;
             break;
           }
