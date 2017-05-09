@@ -64,12 +64,12 @@ int group_list_regular(dlink_list *);
 void group_list_regular_free(dlink_list *);
 
 Group *group_new();
-inline void group_free(Group *);
+void group_free(Group *);
 
 /* Group getters */
 
 unsigned int group_get_id(Group *);
-inline const char *group_get_name(Group *);
+const char *group_get_name(Group *);
 const char *group_get_email(Group *);
 const char *group_get_url(Group *);
 const char *group_get_desc(Group *);
@@ -77,11 +77,11 @@ unsigned char group_get_priv(Group *);
 time_t group_get_regtime(Group *);
 
 /* Group setters */
-inline int group_set_id(Group *, unsigned int);
-inline int group_set_name(Group *, const char *);
-inline int group_set_desc(Group *, const char *);
-inline int group_set_url(Group *, const char *);
-inline int group_set_email(Group *, const char *);
-inline int group_set_priv(Group *, unsigned char);
-inline int group_set_regime(Group *, time_t);
+int group_set_id(Group *, unsigned int);
+int group_set_name(Group *, const char *);
+int group_set_desc(Group *, const char *);
+int group_set_url(Group *, const char *);
+int group_set_email(Group *, const char *);
+int group_set_priv(Group *, unsigned char);
+int group_set_regime(Group *, time_t);
 #endif

@@ -201,67 +201,67 @@ dbchannel_is_forbid(const char *channel)
   return TRUE;
 }
 
-inline int
+int
 dbchannel_list_all(dlink_list *list)
 {
   return db_string_list(GET_CHANNELS_OPER, list);
 }
 
-inline void
+void
 dbchannel_list_all_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 dbchannel_list_regular(dlink_list *list)
 {
   return db_string_list(GET_CHANNELS, list);
 }
 
-inline void
+void
 dbchannel_list_regular_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 dbchannel_list_forbid(dlink_list *list)
 {
   return db_string_list(GET_CHANNEL_FORBID_LIST, list);
 }
 
-inline void
+void
 dbchannel_list_forbid_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 dbchannel_masters_list(unsigned int id, dlink_list *list)
 {
   return db_string_list_by_id(GET_CHAN_MASTERS, list, id);
 }
 
-inline int
+int
 dbchannel_group_masters_list(unsigned int id, dlink_list *list)
 {
   return db_string_list_by_id(GET_CHAN_GROUP_MASTERS, list, id);
 }
 
-inline void
+void
 dbchannel_masters_list_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline void
+void
 dbchannel_group_masters_list_free(dlink_list *list)
 {
   db_string_list_free(list);
 }
 
-inline int
+int
 dbchannel_masters_count(unsigned int id, int *count)
 {
   int error;
@@ -276,192 +276,192 @@ dbchannel_masters_count(unsigned int id, int *count)
   return TRUE;
 }
 
-inline DBChannel*
+DBChannel*
 dbchannel_new()
 {
   return MyMalloc(sizeof(DBChannel));
 }
 
 /* Member getters */
-inline dlink_node
+dlink_node
 dbchannel_get_node(DBChannel *this)
 {
   return this->node;
 }
 
-inline unsigned int
+unsigned int
 dbchannel_get_id(DBChannel *this)
 {
   return this->id;
 }
 
-inline time_t
+time_t
 dbchannel_get_regtime(DBChannel *this)
 {
   return this->regtime;
 }
 
-inline time_t
+time_t
 dbchannel_get_last_used(DBChannel *this)
 {
   return this->last_used;
 }
 
-inline const char *
+const char *
 dbchannel_get_channel(DBChannel *this)
 {
   return this->channel;
 }
 
-inline const char *
+const char *
 dbchannel_get_description(DBChannel *this)
 {
   return this->description;
 }
 
-inline const char *
+const char *
 dbchannel_get_entrymsg(DBChannel *this)
 {
   return this->entrymsg;
 }
 
-inline const char *
+const char *
 dbchannel_get_url(DBChannel *this)
 {
   return this->url;
 }
 
-inline const char *
+const char *
 dbchannel_get_email(DBChannel *this)
 {
   return this->email;
 }
 
-inline const char *
+const char *
 dbchannel_get_topic(DBChannel *this)
 {
   return this->topic;
 }
 
-inline const char *
+const char *
 dbchannel_get_mlock(DBChannel *this)
 {
   return this->mlock;
 }
 
-inline char dbchannel_get_priv(DBChannel *this)
+char dbchannel_get_priv(DBChannel *this)
 {
   return this->priv;
 }
 
-inline char
+char
 dbchannel_get_restricted(DBChannel *this)
 {
   return this->restricted;
 }
 
-inline char
+char
 dbchannel_get_topic_lock(DBChannel *this)
 {
   return this->topic_lock;
 }
 
-inline char
+char
 dbchannel_get_verbose(DBChannel *this)
 {
   return this->verbose;
 }
 
-inline char
+char
 dbchannel_get_autolimit(DBChannel *this)
 {
   return this->autolimit;
 }
 
-inline char
+char
 dbchannel_get_expirebans(DBChannel *this)
 {
   return this->expirebans;
 }
 
-inline char
+char
 dbchannel_get_floodserv(DBChannel *this)
 {
   return this->floodserv;
 }
 
-inline char
+char
 dbchannel_get_autoop(DBChannel *this)
 {
   return this->autoop;
 }
 
-inline char
+char
 dbchannel_get_autovoice(DBChannel *this)
 {
   return this->autovoice;
 }
 
-inline char
+char
 dbchannel_get_autosave(DBChannel *this)
 {
   return this->autosave;
 }
 
-inline char
+char
 dbchannel_get_leaveops(DBChannel *this)
 {
   return this->leaveops;
 }
 
-inline unsigned int
+unsigned int
 dbchannel_get_expirebans_lifetime(DBChannel *this)
 {
   return this->expirebans_lifetime;
 }
 
 /* FloodServ */
-inline struct MessageQueue **
+struct MessageQueue **
 dbchannel_get_flood_hash(DBChannel *this)
 {
   return this->flood_hash;
 }
 
-inline dlink_list *
+dlink_list *
 dbchannel_get_flood_list(DBChannel *this)
 {
   return &this->flood_list;
 }
 
-inline struct MessageQueue *
+struct MessageQueue *
 dbchannel_get_gqueue(DBChannel *this)
 {
   return this->gqueue;
 }
 
 /* Memer setters */
-inline int
+int
 dbchannel_set_node(DBChannel *this, dlink_node node)
 {
   this->node = node;
   return TRUE;
 }
 
-inline int
+int
 dbchannel_set_id(DBChannel *this, unsigned int id)
 {
   this->id = id;
   return TRUE;
 }
 
-inline int
+int
 dbchannel_set_regtime(DBChannel *this, time_t regtime)
 {
   this->regtime = regtime;
   return TRUE;
 }
 
-inline int
+int
 dbchannel_set_last_used(DBChannel *this, time_t last_used)
 {
   if(this->id == 0 || db_execute_nonquery(SET_CHAN_LAST_USED, "ii", &this->id, &last_used) > 0)
@@ -473,14 +473,14 @@ dbchannel_set_last_used(DBChannel *this, time_t last_used)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_channel(DBChannel *this, const char *name)
 {
   strlcpy(this->channel, name, sizeof(this->channel));
   return TRUE;
 }
 
-inline int
+int
 dbchannel_set_description(DBChannel *this, const char *description)
 {
   if(this->id == 0 || db_execute_nonquery(SET_CHAN_DESC, "si", description, &this->id) > 0)
@@ -496,7 +496,7 @@ dbchannel_set_description(DBChannel *this, const char *description)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_entrymsg(DBChannel *this, const char *entrymsg)
 {
   if(db_execute_nonquery(SET_CHAN_ENTRYMSG, "si", entrymsg, &this->id) > 0)
@@ -512,7 +512,7 @@ dbchannel_set_entrymsg(DBChannel *this, const char *entrymsg)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_url(DBChannel *this, const char *url)
 {
   if(db_execute_nonquery(SET_CHAN_URL, "si", url, &this->id) > 0)
@@ -528,7 +528,7 @@ dbchannel_set_url(DBChannel *this, const char *url)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_email(DBChannel *this, const char *email)
 {
   if(db_execute_nonquery(SET_CHAN_EMAIL, "si", email, &this->id) > 0)
@@ -544,7 +544,7 @@ dbchannel_set_email(DBChannel *this, const char *email)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_topic(DBChannel *this, const char *topic)
 {
   if(db_execute_nonquery(SET_CHAN_TOPIC, "si", topic, &this->id) > 0)
@@ -560,7 +560,7 @@ dbchannel_set_topic(DBChannel *this, const char *topic)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_mlock(DBChannel *this, const char *mlock)
 {
   if(db_execute_nonquery(SET_CHAN_MLOCK, "si", mlock, &this->id) > 0)
@@ -576,7 +576,7 @@ dbchannel_set_mlock(DBChannel *this, const char *mlock)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_priv(DBChannel *this, char priv)
 {
   if(db_execute_nonquery(SET_CHAN_PRIVATE, "bi", &priv, &this->id) > 0)
@@ -588,7 +588,7 @@ dbchannel_set_priv(DBChannel *this, char priv)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_restricted(DBChannel *this, char restricted)
 {
   if(db_execute_nonquery(SET_CHAN_RESTRICTED, "bi", &restricted, &this->id) > 0)
@@ -600,7 +600,7 @@ dbchannel_set_restricted(DBChannel *this, char restricted)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_topic_lock(DBChannel *this, char topic_lock)
 {
   if(db_execute_nonquery(SET_CHAN_TOPICLOCK, "bi", &topic_lock, &this->id) > 0)
@@ -612,7 +612,7 @@ dbchannel_set_topic_lock(DBChannel *this, char topic_lock)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_verbose(DBChannel *this, char verbose)
 {
   if(db_execute_nonquery(SET_CHAN_VERBOSE, "bi", &verbose, &this->id) > 0)
@@ -624,7 +624,7 @@ dbchannel_set_verbose(DBChannel *this, char verbose)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_autolimit(DBChannel *this, char autolimit)
 {
   if(db_execute_nonquery(SET_CHAN_AUTOLIMIT, "bi", &autolimit, &this->id) > 0)
@@ -636,7 +636,7 @@ dbchannel_set_autolimit(DBChannel *this, char autolimit)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_expirebans(DBChannel *this, char expirebans)
 {
   if(db_execute_nonquery(SET_CHAN_EXPIREBANS, "bi", &expirebans, &this->id) > 0)
@@ -648,7 +648,7 @@ dbchannel_set_expirebans(DBChannel *this, char expirebans)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_floodserv(DBChannel *this, char floodserv)
 {
   if(db_execute_nonquery(SET_CHAN_FLOODSERV, "bi", &floodserv, &this->id) > 0)
@@ -660,7 +660,7 @@ dbchannel_set_floodserv(DBChannel *this, char floodserv)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_autoop(DBChannel *this, char autoop)
 {
   if(db_execute_nonquery(SET_CHAN_AUTOOP, "bi", &autoop, &this->id) > 0)
@@ -672,7 +672,7 @@ dbchannel_set_autoop(DBChannel *this, char autoop)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_autovoice(DBChannel *this, char autovoice)
 {
   if(db_execute_nonquery(SET_CHAN_AUTOVOICE, "bi", &autovoice, &this->id) > 0)
@@ -684,7 +684,7 @@ dbchannel_set_autovoice(DBChannel *this, char autovoice)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_autosave(DBChannel *this, char autosave)
 {
   if(db_execute_nonquery(SET_CHAN_AUTOSAVE, "bi", &autosave, &this->id) > 0)
@@ -696,7 +696,7 @@ dbchannel_set_autosave(DBChannel *this, char autosave)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_leaveops(DBChannel *this, char leaveops)
 {
   if(db_execute_nonquery(SET_CHAN_LEAVEOPS, "bi", &leaveops, &this->id) > 0)
@@ -708,7 +708,7 @@ dbchannel_set_leaveops(DBChannel *this, char leaveops)
     return FALSE;
 }
 
-inline int
+int
 dbchannel_set_expirebans_lifetime(DBChannel *this, unsigned int time)
 {
   if(db_execute_nonquery(SET_EXPIREBANS_LIFETIME, "ii", &time, &this->id) > 0)
@@ -721,21 +721,21 @@ dbchannel_set_expirebans_lifetime(DBChannel *this, unsigned int time)
 }
 
 /* FloodServ */
-inline int
+int
 dbchannel_set_flood_hash(DBChannel *this, struct MessageQueue ** queue)
 {
   this->flood_hash = queue;
   return TRUE;
 }
 
-inline int
+int
 dbchannel_set_gqueue(DBChannel *this, struct MessageQueue *queue)
 {
   this->gqueue = queue;
   return TRUE;
 }
 
-inline void
+void
 dbchannel_free(DBChannel *this)
 {
   MyFree(this->description);
