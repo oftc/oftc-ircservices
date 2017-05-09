@@ -1166,7 +1166,7 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
     i = string_to_array(s, servpara);
     servpara[i] = NULL;
     
-    if(mptr->flags & SFLG_KEEPARG)
+    if(i > 2 && mptr->flags & SFLG_KEEPARG)
     {
       char *tmp;
       int j;
