@@ -43,7 +43,7 @@ SERV_NO_ACCESS
 	You do not have access to the %s command.
 SERV_NO_ACCESS_REGFIRST
 	You do not have access to the %s command.  To access this command the
-	nickname you are currently using must be REGISTERED and you must be
+	nickname you are currently using must be REGISTERED, VERIFIED and you must be
 	IDENTIFIED to it.  See HELP REGISTER and HELP IDENTIFY for more information.
 SERV_UNKNOWN_OPTION
 	Unknown option %s, /msg %s HELP %s for help.
