@@ -1708,6 +1708,7 @@ m_dropnick(struct Service *service, struct Client *client, int parc, char *parv[
   Nickname *oldnick, *nick;
   char **newparv;
   int oldaccess;
+  struct Client *enforcer;
 
   oldnick = client->nickname;
   oldaccess = client->access;
@@ -1742,6 +1743,9 @@ m_dropnick(struct Service *service, struct Client *client, int parc, char *parv[
   nickname_free(client->nickname);
   client->nickname = oldnick;
   client->access = oldaccess;
+
+  if((enforcer = find_client(parv[1])) && MyConnect(enforcer))
+    release_client(enforcer, NULL, "No longer necessary");
 }
 
 static void 
