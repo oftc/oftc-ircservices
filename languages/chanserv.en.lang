@@ -463,9 +463,7 @@ CS_NOT_ONCHAN
 CS_NOT_OPPED
 	You are not opped on that channel.
 CS_NOT_REG
-	Channel %s is not registered with channel services.  If you believe this
-	to be incorrect there could be a database problem.  Contact network support
-	if this problem persists.
+	Channel %s is not registered with channel services.
 CS_DROPPED
 	Channel %s has been dropped.
 CS_DROP_FAILED
@@ -537,7 +535,7 @@ CS_MASK_DEL_NONE
 	%s is not on the %s list.
 CS_MASK_DEL_ERROR
 	Failed to remove %s from the %s list.  If this is not the first time
-	you have seen this message, please contact network support.
+	you have seen this message, please contact network support at <support@oftc.net>.
 CS_AKICK_ENFORCE
 	%d users affected by AKICK enforcement on channel %s.
 CS_RESTRICTED_ENFORCE
@@ -594,7 +592,8 @@ CS_ACCESS_ADDOK
 CS_ACCESS_ADDFAIL
 	Failed to add %s to %s access list as %s.  It is possible that
 	they are already on the access list.  If this is not the case and this is not
-	the first time you have seen this message, please contact network support.
+	the first time you have seen this message, please contact network support at
+	<support@oftc.net>.
 CS_ACCESS_LIST
 	%d: %s %s
 CS_ACCESS_LISTEND

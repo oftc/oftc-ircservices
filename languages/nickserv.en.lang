@@ -483,8 +483,7 @@ NS_ALREADY_REG
 	Nickname %s is already registered.  If this is your nickname you may try
 	IDENTIFY instead.  If this is not your nickname then it may have been
 	registered by someone else first.  Please choose another nickname and try
-	again, or if you believe this nickname to be unused, contact network
-	support.
+	again.
 NS_REG_COMPLETE
 	Nickname %s has been registered successfully and is now yours to use.
 	See HELP SET for information on settings that you can set on your new
@@ -499,16 +498,13 @@ NS_REG_FAIL
 	Nickname %s failed to register.  This is usually caused by an internal
 	problem within services or a database problem.  Please try again in a short
 	while.  If this is not the first time you have received this message, please
-	contact network support.
+	contact network support at <support@oftc.net>.
 NS_REG_FAIL_TOOSHORT
 	The nick you are trying to register is too short, please choose another nick
 	to complete your registration.
 NS_REG_FIRST
 	Nickname %s is not registered.  The nickname you specify must be a
 	registered nickname.  See HELP REGISTER for more information.
-	
-	If you believe this to be incorrect, there could be a database problem;
-	contact network support if this problem persists.
 NS_NICKFORBID
 	This nickname (%s) is on the forbidden list and may not be registered or
 	used in any services commands.
@@ -526,7 +522,7 @@ NS_IDENT_FAIL
 	If you have forgotten your password please see HELP SENDPASS
 	
 	If you believe you have entered the correct password and are still getting
-	this message, please contact network support.
+	this message, please contact network support at <support@oftc.net>.
 NS_CURR_LANGUAGE
 	Current language is %s (%d).
 NS_AVAIL_LANGUAGE
@@ -542,7 +538,7 @@ NS_SET_PASS_SUCCESS
 NS_SET_FAILED
 	Failed to SET %s to %s.  This may be an internal problem, please try
 	again later.  If this is not the first time you have seen this message please
-	contact network support.
+	contact network support at <support@oftc.net>.
 NS_SET_PASS_FAILED
 	Password change failed.
 NS_SET_VALUE
@@ -559,11 +555,11 @@ NS_DROP_AUTH_FAIL
 	The auth code you supplied is invalid or has expired.  Nickname %s NOT
 	dropped.  This may be an internal error, please try again later.  If this is
 	not the first time you have seen this message, please contact network
-	support.
+	support at <support@oftc.net>.
 NS_NICK_DROPFAIL
 	DROP failed on nickname %s.  This may have been an internal error, please
 	try again shortly.  If this is not the first time you have seen this message
-	please contact network support.
+	please contact network support at <support@oftc.net>.
 NS_DROP_FAIL_MASTERLESS
 	Unable to DROP nickname %s.  Channel %s would be left with no
 	masters.  Drop this channel first, or assign someone else as master.
@@ -572,7 +568,7 @@ NS_ACCESS_ADD
 NS_ACCESS_ADDFAIL
 	Failed to add ACCESS list entry %s.  This may have been an internal error,
 	please try again shortly.  If this is not the first time you have seen this
-	message please contact network support.
+	message please contact network support at <support@oftc.net>.
 NS_ACCESS_INVALID
 	ACCESS list entry %s is not a userhost (user@host).  Please try again with
 	a valid user@host address.
@@ -589,7 +585,7 @@ NS_ACCESS_DEL_NONE
 NS_ACCESS_DEL_ERROR
 	An error occured attempting to delete the ACCESS list entry.  Please try
 	again.  If this is not the first time you have seen this message please
-	contact network support.
+	contact network support at <support@oftc.net>.
 NS_AJOIN_INVALID_CHAN
 	Channel name %s is invalid.  Channel names must begin with '#'.
 NS_AJOIN_CHAN_NOT_REG
@@ -600,7 +596,7 @@ NS_AJOIN_ADD
 NS_AJOIN_ADDFAIL
 	AJOIN entry %s failed to be added.  This may have been an internal error,
 	please try again shortly.  If this is not the first time you have seen this
-	message please contact network support.
+	message please contact network support at <support@oftc.net>.
 NS_AJOIN_START
 	AJOIN list:
 NS_AJOIN_ENTRY
@@ -614,13 +610,13 @@ NS_AJOIN_DEL_NONE
 NS_AJOIN_DEL_ERROR
 	An error occured attempting to delete the AJOIN entry.  Please try again.
 	If this is not the first time you have seen this message please contact
-	network support.
+	network support at <support@oftc.net>.
 NS_CERT_ADD
 	CERT list entry %s added to nickname %s.
 NS_CERT_ADDFAIL
 	Failed to add CERT list entry %s to nickname %s.  This may have been 
 	an internal error, please try again shortly.  If this is not the first time 
-	you have seen this message please contact network support.
+	you have seen this message please contact network support at <support@oftc.net>.
 NS_CERT_ADDFAIL_NONICK
 	Failed to add CERT list entry because %s is not registered.
 NS_CERT_ADDFAIL_NOTYOURNICK
@@ -646,16 +642,18 @@ NS_CERT_DEL_NONE
 	%s was not found on the CERT list.
 NS_CERT_DEL_ERROR
 	An error occurred attempting to modify the CERT list.  If this is not the
-	first time you have seen this message, please contact network support.
+	first time you have seen this message, please contact network support
+	at <support@oftc.net>.
 NS_REGAIN_SUCCESS
 	REGAIN succeed on nickname %s.  You have been changed to your nickname.
 NS_REGAIN_FAILED
 	REGAIN failed on nickname %s.  You may have given an incorrect password.
-	If you believe this to be incorrect please contact network support.
+	If you believe this to be incorrect please contact network support at
+	<support@oftc.net>.
 NS_REGAIN_FAILED_SECURITY
 	Access Denied.  Either you are not on the access list for this nickname, or
 	it has SECURE set on it.  If you believe this to be incorrect please contact
-	network support.
+	network support at <support@oftc.net>.
 NS_REGAIN_NOTONLINE
 	%s is not online.  The nickname may be freely used and does not
 	require regain or ghost.
@@ -675,7 +673,7 @@ NS_LINK_NOSELF
 NS_LINK_FAIL
 	LINK failed to master %s.  This may have been an internal error, please
 	try again shortly.  If this is not the first time you have seen this
-	message please contact network support.
+	message please contact network support at <support@oftc.net>.
 NS_LINK_NOTVERIFIED
 	Linking failed.  To link nicknames, both %s and %s and must be
 	verified.  See HELP REGISTER for details.
@@ -805,7 +803,7 @@ NS_SENDPASS_AUTH_FAIL
 NS_NO_SENDPASS_YET
 	This account or the e-mail address on this account has already had a mail
 	sent to it.  Please respond to that mail.  If you feel this is incorrect,
-	contact network support.
+	contact network support at <support@oftc.net>.
 NS_SENDPASS_SUBJECT
 	OFTC Nickname password reset request
 NS_SENDPASS_BODY
