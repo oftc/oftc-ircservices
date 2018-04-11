@@ -324,7 +324,9 @@ class Bopm < ServiceModule
   def newuser(client)
     if not client.is_services_client?
       if client.is_tor? and @config.has_key?('default_tor_cloak') and @config['default_tor_cloak'].length
-        client.cloak("#{client.id}.#{@config['default_tor_cloak']}")
+        if !exempt_host(client.host) or @config['recloak_users']
+          client.cloak("#{client.id}.#{@config['default_tor_cloak']}")
+        end
       elsif @outstanding_requests.keys.length > @dnsbl_max_requests
         @pending_users[client.id] = client
         log(LOG_DEBUG, "Add client to pending_list: #{client.to_str}")
