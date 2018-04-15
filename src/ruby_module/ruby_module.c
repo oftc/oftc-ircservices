@@ -695,6 +695,13 @@ rb_event_hdlr(va_list args)
   return pass_callback(ruby_event_hook);
 }
 
+VALUE
+rb_load_wrapper(VALUE path)
+{
+  rb_load(path, 0);
+  return Qtrue;
+}
+
 int
 load_ruby_module(const char *name, const char *dir, const char *fname)
 {
@@ -711,7 +718,7 @@ load_ruby_module(const char *name, const char *dir, const char *fname)
 
   ilog(L_DEBUG, "RUBY INFO: Loading ruby module: %s", path);
 
-  rb_protect(RB_CALLBACK(rb_require), (VALUE)path, &status);
+  rb_protect(RB_CALLBACK(rb_load_wrapper), rb_str_new2(path), &status);
   if(ruby_handle_error(status))
   {
     ilog(L_DEBUG, "RUBY INFO: Failed to load file %s", path);
