@@ -293,6 +293,7 @@ m_mod_reload(struct Service *service, struct Client *client,
   char *parm = parv[1];
   char *mbn;
   struct Module *module;
+  char modname[PATH_MAX];
 
   mbn = basename(parm);
   module = find_module(mbn, 0);
@@ -312,16 +313,17 @@ m_mod_reload(struct Service *service, struct Client *client,
   }
   ilog(L_NOTICE, "Reloading %s by request of %s", parm, client->name);
   reply_user(service, service, client, OS_MOD_RELOADING, parm, client->name);
+  snprintf(modname, sizeof(modname), "%s.%s", parm, module->type == MODTYPE_RUBY ? "rb" : "so");
   unload_module(module);
-  if (load_module(parm) != NULL)
+  if (load_module(modname) != NULL)
   {
-    ilog(L_NOTICE, "Module %s loaded", parm);
-    reply_user(service, service, client, OS_MOD_LOADED,parm);
+    ilog(L_NOTICE, "Module %s loaded", modname);
+    reply_user(service, service, client, OS_MOD_LOADED, modname);
   }
   else
   {
-    ilog(L_NOTICE, "Module %s could not be loaded!", parm);
-    reply_user(service, service, client, OS_MOD_LOADFAIL, parm);
+    ilog(L_NOTICE, "Module %s could not be loaded!", modname);
+    reply_user(service, service, client, OS_MOD_LOADFAIL, modname);
   }
 }
 
