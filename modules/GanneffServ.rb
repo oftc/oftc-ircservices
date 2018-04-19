@@ -564,7 +564,6 @@ class GanneffServ < ServiceModule
     if not reason.include?("support@oftc.net")
       reason = "#{reason} - Contact support@oftc.net for help."
     end # if not reason.include?
-    reason = "#{reason}|#{operreason}"
 
     #client.host is always filled, check it for the cloak value
     if client.is_tor?
@@ -574,6 +573,7 @@ class GanneffServ < ServiceModule
       debug(LOG_DEBUG, "Not issuing AKILL for #{client.name} having cloak #{client.host}, real host #{client.realhost}")
       ret = false # continue with callbacks, we haven't set any kill
     else # if host
+      reason = "#{reason}|#{operreason}"
       debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
       ret = akill_add("*@#{host}", reason, @akill_duration)
     end # if host
