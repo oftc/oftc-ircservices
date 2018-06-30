@@ -1,6 +1,6 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
- *  chanserv.c: A C implementation of Chanell Services
+ *  oftc-ircservices: an extensible and flexible IRC Services package
+ *  chanserv.c: A C implementation of Channel Services
  *
  *  Copyright (C) 2006 The OFTC Coding department
  *

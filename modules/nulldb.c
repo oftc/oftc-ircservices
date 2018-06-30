@@ -1,6 +1,6 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
- *  pgsql.c : A database module to interfacing with postgresql
+ *  oftc-ircservices: an extensible and flexible IRC Services package
+ *  pgsql.c : A database module to interfacing with PostgreSQL
  *
  *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
  *

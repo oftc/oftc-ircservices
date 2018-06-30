@@ -1,6 +1,6 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
- *  groupserv.c: A C implementation of Group Services 
+ *  oftc-ircservices: an extensible and flexible IRC Services package
+ *  groupserv.c: A C implementation of Group Services
  *
  *  Copyright (C) 2009 Stuart Walsh and the OFTC Coding department
  *

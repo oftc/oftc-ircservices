@@ -1,5 +1,5 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  oftc-ircservices: an extensible and flexible IRC Services package
  *  irc.c: The default IRC protocol handler
  *
  *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department

@@ -1,5 +1,5 @@
 /*
- *  oftc-ircservices: an exstensible and flexible IRC Services package
+ *  oftc-ircservices: an extensible and flexible IRC Services package
  *  operserv.c: A C implementation of Operator Services
  *
  *  Copyright (C) 2006 Stuart Walsh and the OFTC Coding department
