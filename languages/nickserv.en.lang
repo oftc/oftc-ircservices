@@ -17,7 +17,7 @@ NS_HELP_REG_LONG
 	Choose a password that you can remember but is not easily guessed.
 	
 	The e-mail address you enter will be used in case you forget your password,
-	so make sure it is valid and correct.
+	so make sure it is valid and correct.  We do not validate e-mail addresses.
 	
 	Once your nickname is registered, see HELP SET for information on settings
 	that can be set on it.
@@ -493,7 +493,8 @@ NS_REG_COMPLETE
 	
 	To complete the registration, the nickname must be VERIFIED.  To verify
 	your nick, go to https://services.oftc.net/, log in with your NickServ
-	password, and follow the instructions there.
+	password, and follow the instructions there.  Note that we do not validate
+	the e-mail address.
 NS_REG_FAIL
 	Nickname %s failed to register.  This is usually caused by an internal
 	problem within services or a database problem.  Please try again in a short
