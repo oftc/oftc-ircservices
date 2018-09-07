@@ -280,7 +280,7 @@ class Bopm < ServiceModule
           end
 
           if @config['recloak_users'] or do_cloak
-            log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score}")
+            log(LOG_NOTICE, "CLOAK #{client.to_str} to #{cloak} score: #{score} [#{snames}] [#{channels}]")
             cloakstr = "#{cloak}"
 
             if withid
