@@ -382,11 +382,8 @@ class MoranServ < ServiceModule
       end
       if @track_ids.has_key?(client.id)
         @track_ids.delete(client.id)
-        @track.length.times do |i|
-          if @track['type'] == 'client' and @track['value'] == client.id
-            @track.delete_at(i)
-          end
-        end
+        @track.delete_if { |t| t['type'] == 'client' and t['value'] == client.id }
+        DB.execute_nonquery(@database_queries['DELETE_TRACK'], 's', "#{client.id}")
       end
       if @spambot.has_key?(client.id)
         @spambot.delete(client.id)
