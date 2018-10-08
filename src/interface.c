@@ -2029,11 +2029,11 @@ dns_resolve_host(const char *host, evdns_callback_type callback, void *arg, int 
 
   if(ipv6)
   {
-    return evdns_resolve_ipv6(host, 0, callback, arg);
+    return evdns_resolve_ipv6(host, DNS_QUERY_NO_SEARCH, callback, arg);
   }
   else
   {
-    return evdns_resolve_ipv4(host, 0, callback, arg);
+    return evdns_resolve_ipv4(host, DNS_QUERY_NO_SEARCH, callback, arg);
   }
 }
 
@@ -2058,13 +2058,13 @@ dns_resolve_ip(const char *ip, evdns_callback_type callback, void *arg)
 
   if(res->ai_family == AF_INET)
   {
-    ret = evdns_resolve_reverse(&((struct sockaddr_in *)res->ai_addr)->sin_addr, 0,
+    ret = evdns_resolve_reverse(&((struct sockaddr_in *)res->ai_addr)->sin_addr, DNS_QUERY_NO_SEARCH,
         callback, arg);
   }
   else if(res->ai_family == AF_INET6)
   {
     ret = evdns_resolve_reverse_ipv6(&((struct sockaddr_in6 *)res->ai_addr)->sin6_addr,
-        0, callback, arg);
+        DNS_QUERY_NO_SEARCH, callback, arg);
   }
   else
   {
