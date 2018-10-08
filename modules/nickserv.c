@@ -666,7 +666,7 @@ m_drop(struct Service *service, struct Client *client,
       reply_user(service, service, client, NS_NICK_DROPPED, target_nick);
       ilog(L_NOTICE, "%s!%s@%s dropped nick %s", client->name, 
         client->username, client->host, target_nick);
-      if (target)
+      if (target && MyConnect(target))
       {
         release_client(target, NULL, "Nick has been dropped");
       }
