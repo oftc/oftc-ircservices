@@ -351,7 +351,7 @@ NS_HELP_SET_PRIVATE_LONG
 	
 	Enables the private flag on your nickname which prevents your e-mail address
 	being shown in an INFO request, prevents your nickname showing in a LIST, and
-	also prevents the information from showing in the web interface.
+	also prevents the information from being shown in the web interface.
 NS_HELP_LINK_SHORT
 	%s: Link this nickname to a master nickname.
 NS_HELP_LINK_LONG
