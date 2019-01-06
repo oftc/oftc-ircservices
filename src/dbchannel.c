@@ -464,7 +464,7 @@ dbchannel_set_regtime(DBChannel *this, time_t regtime)
 int
 dbchannel_set_last_used(DBChannel *this, time_t last_used)
 {
-  if(this->id == 0 || db_execute_nonquery(SET_CHAN_LAST_USED, "ii", &this->id, &last_used) > 0)
+  if(this->id == 0 || db_execute_nonquery(SET_CHAN_LAST_USED, "ii", &last_used, &this->id) > 0)
   {
     this->last_used = last_used;
     return TRUE;
