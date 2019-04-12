@@ -789,7 +789,7 @@ expire_akills(void *param)
   {
     akill = (struct ServiceMask *)ptr->data;
     setter = nickname_nick_from_id(akill->setter, TRUE);
-    ilog(L_NOTICE, "AKill Expired: %s set by %s on %s(%s)",
+    ilog(L_NOTICE, "AKill Expired: %s set by %s on %s (%s)",
         akill->mask, setter, smalldate(akill->time_set), akill->reason);
     akill_remove_mask(akill->mask);
     MyFree(setter);
