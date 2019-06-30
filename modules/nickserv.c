@@ -670,6 +670,15 @@ m_drop(struct Service *service, struct Client *client,
       {
         release_client(target, NULL, "Nick has been dropped");
       }
+      else if(target)
+      {
+        ClearIdentified(target);
+        if(target->nickname != NULL)
+          nickname_free(target->nickname);
+        target->nickname = NULL;
+        target->access = USER_FLAG;
+        send_umode(nickserv, target, "-R");
+      }
     }
   }
   else
