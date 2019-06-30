@@ -439,7 +439,7 @@ Init_Nickname(void)
   rb_define_method(cNickname, "secure?", secure, 0);
   rb_define_method(cNickname, "secure=", secure_set, 1);
   rb_define_method(cNickname, "verified?", verified, 0);
-  rb_define_method(cNickname, "verfied", verified_set, 1);
+  rb_define_method(cNickname, "verified=", verified_set, 1);
   rb_define_method(cNickname, "cloaked?", cloak_on, 0);
   rb_define_method(cNickname, "cloaked=", cloak_on_set, 1);
   rb_define_method(cNickname, "admin?", admin, 0);
