@@ -300,7 +300,7 @@ static struct ServiceMessage dropnick_msgtab = {
 };
 
 static struct ServiceMessage checkverify_msgtab = {
-  NULL, "CHECKVERIFY", 0, 0, 1, 0, USER_FLAG, NS_HELP_CHECKVERIFY_SHORT,
+  NULL, "CHECKVERIFY", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_CHECKVERIFY_SHORT,
   NS_HELP_CHECKVERIFY_LONG, m_checkverify
 };
 
@@ -2384,12 +2384,6 @@ m_checkverify(struct Service *service, struct Client *client, int parc, char *pa
 {
   Nickname *nick;
 
-  if(!IsIdentified(client))
-  {
-    reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
-    return;
-  }
-  
   if(nickname_get_verified(client->nickname))
   {
     reply_user(service, service, client, NS_CHECKVERIFY_ALREADY);
