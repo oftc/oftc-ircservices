@@ -136,6 +136,7 @@ static query_t queries[QUERY_COUNT] = {
   { SET_NICK_ENFORCE, "UPDATE account SET flag_enforce=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_ADMIN, "UPDATE account SET flag_admin=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_PRIVATE, "UPDATE account SET flag_private=$1 WHERE id=$2", EXECUTE },
+  { SET_NICK_VERIFIED, "UPDATE account SET flag_verified=$1 WHERE id=$2", EXECUTE },
   { DELETE_NICKACCESS, "DELETE FROM account_access WHERE account_id=$1 AND entry=$2",
     EXECUTE },
   { DELETE_ALL_NICKACCESS, "DELETE FROM account_access WHERE account_id=$1", EXECUTE },
