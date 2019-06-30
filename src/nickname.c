@@ -1489,8 +1489,13 @@ nickname_set_secure(Nickname *this, unsigned char value)
 int
 nickname_set_verified(Nickname *this, unsigned char value)
 {
-  this->verified = value;
-  return TRUE;
+  if(db_execute_nonquery(SET_NICK_VERIFIED, "bi", &value, &this->id) > 0)
+  {
+    this->verified = value;
+    return TRUE;
+  }
+  else
+    return FALSE;
 }
 
 int
