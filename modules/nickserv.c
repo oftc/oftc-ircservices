@@ -2432,6 +2432,9 @@ m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Client *target;
   char *toggle = "YES";
   unsigned char on;
+  char * link;
+  dlink_node *ptr;
+  dlink_list list = { 0 };
 
   nick = nickname_find(parv[1]);
   if(!nick)
@@ -2461,28 +2464,36 @@ m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
 
   if(nickname_set_verified(nick, on))
   {
-    target = find_client(parv[1]);
-    if(target)
+    nickname_link_list(nickname_get_id(nick), &list);
+    DLINK_FOREACH(ptr, list.head)
     {
-      if(on)
+      link = (char *)ptr->data;
+      if(target = find_client(link) != NULL && IsIdentified(target))
       {
-        send_umode(NULL, client, "+R");
-        do_cloak(client);
-      }
-      else
-      {
-        send_umode(NULL, client, "-R");
+        // I hate this, but it's the safest way to all linked online nicks' verified status
+        nickname_free(target->nickname);
+        target->nickname = nickname_find(link);
+
+        if(on)
+        {
+          send_umode(NULL, target, "+R");
+          do_cloak(target);
+        }
+        else
+        {
+          send_umode(NULL, target, "-R");
+        }
       }
     }
+    nickname_link_list_free(&list);
 
     reply_user(service, service, client, NS_VERIFY_SUCCESS, parv[1], toggle);
-    return;
   }
   else
   {
     reply_user(service, service, client, NS_VERIFY_FAIL, parv[1], toggle);
-    return;
   }
+  nickname_free(nick);
 }
 
 static int
