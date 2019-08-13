@@ -91,6 +91,7 @@ static void m_status(struct Service *, struct Client *, int, char*[]);
 static void m_enslave(struct Service *, struct Client *, int, char*[]);
 static void m_dropnick(struct Service *, struct Client *, int, char*[]);
 static void m_checkverify(struct Service *, struct Client *, int, char*[]);
+static void m_verify(struct Service *, struct Client *, int, char*[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -304,6 +305,11 @@ static struct ServiceMessage checkverify_msgtab = {
   NS_HELP_CHECKVERIFY_LONG, m_checkverify
 };
 
+static struct ServiceMessage verify_msgtab = {
+  NULL, "VERIFY", 0, 1, 2, 0, OPER_FLAG, NS_HELP_VERIFY_SHORT,
+  NS_HELP_VERIFY_LONG, m_verify
+};
+
 INIT_MODULE(nickserv, "$Revision$")
 {
   nickserv = make_service("NickServ");
@@ -339,6 +345,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &resetpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &dropnick_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &checkverify_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &verify_msgtab);
 
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -2411,6 +2418,66 @@ m_checkverify(struct Service *service, struct Client *client, int parc, char *pa
   else
   {
     reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
+    return;
+  }
+}
+
+static void
+m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  Nickname *nick;
+  struct Client *target;
+  char *toggle = "YES";
+  unsigned char on;
+
+  nick = nickname_find(parv[1]);
+  if(!nick)
+  {
+    reply_user(service, service, client, NS_REG_FIRST, parv[1]);
+    return;
+  }
+
+  if(parc == 2)
+  {
+    toggle = parv[2];
+  }
+
+  if(!strcasecmp(toggle, "YES"))
+  {
+    on = TRUE;
+  }
+  else if(!strcasecmp(toggle, "NO"))
+  {
+    on = FALSE;
+  }
+  else
+  {
+    reply_user(service, service, client, NS_VERIFY_YESNO);
+    return;
+  }
+
+  if(nickname_set_verified(nick, on))
+  {
+    target = find_client(parv[1]);
+    if(target)
+    {
+      if(on)
+      {
+        send_umode(NULL, client, "+R");
+        do_cloak(client);
+      }
+      else
+      {
+        send_umode(NULL, client, "-R");
+      }
+    }
+
+    reply_user(service, service, client, NS_VERIFY_SUCCESS, parv[1], toggle);
+    return;
+  }
+  else
+  {
+    reply_user(service, service, client, NS_VERIFY_FAIL, parv[1], toggle);
     return;
   }
 }

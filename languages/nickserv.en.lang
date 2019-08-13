@@ -479,6 +479,13 @@ NS_HELP_RESETPASS_LONG
 	
 	Reset a password for the given nickname, if successful the new password will
 	be replied to you.
+NS_HELP_VERIFY_SHORT
+	%s: Verify (or unverify) a nickname
+NS_HELP_VERIFY_LONG
+	Usage: VERIFY nick [YES|NO]
+	
+	Verify a nickname if YES or no parameter is given.  Unverify a nickname if NO
+	is given.
 NS_ALREADY_REG
 	Nickname %s is already registered.  If this is your nickname you may try
 	IDENTIFY instead.  If this is not your nickname then it may have been
@@ -856,3 +863,9 @@ NS_CHECKVERIFY_SUCCESS
 	Successfully set +R on your nick.
 NS_CHECKVERIFY_ALREADY
 	You're already verified.
+NS_VERIFY_YESNO
+	The second parameter, if given, must be YES or NO
+NS_VERIFY_SUCCESS
+	Changed verified status of %s to %s
+NS_VERIFY_FAIL
+	Failed to change verified status of %s to %s
