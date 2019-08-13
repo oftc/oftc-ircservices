@@ -2432,7 +2432,7 @@ m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
   struct Client *target;
   char *toggle = "YES";
   unsigned char on;
-  char * link;
+  char *link;
   dlink_node *ptr;
   dlink_list list = { 0 };
 
@@ -2468,7 +2468,7 @@ m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
     DLINK_FOREACH(ptr, list.head)
     {
       link = (char *)ptr->data;
-      if(target = find_client(link) != NULL && IsIdentified(target))
+      if((target = find_client(link)) != NULL && IsIdentified(target))
       {
         // I hate this, but it's the safest way to all linked online nicks' verified status
         nickname_free(target->nickname);
