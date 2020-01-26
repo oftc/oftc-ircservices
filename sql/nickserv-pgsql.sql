@@ -6,7 +6,7 @@ CREATE TABLE account (
   salt                CHAR(16) NOT NULL,
   url                 VARCHAR(255),
   email               VARCHAR(255) NOT NULL,
-  cloak               VARCHAR(255),
+  cloak               VARCHAR(255) UNIQUE,
   flag_enforce        BOOLEAN NOT NULL DEFAULT 'False',
   flag_secure         BOOLEAN NOT NULL DEFAULT 'False',
   flag_verified       BOOLEAN NOT NULL DEFAULT 'False',
