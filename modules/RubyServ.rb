@@ -27,7 +27,7 @@ class RubyServ < ServiceModule
     ])
     #add_event('timer', 3, nil)
 
-    @queryid = DB.prepare("SELECT nick,account_id,reg_time FROM nickname WHERE lower(nick) = lower($1)")
+    @queryid = DB.prepare("SELECT nick,account_id,reg_time FROM nickname WHERE irc_lower(nick) = irc_lower($1)")
   end
 
   def loaded()

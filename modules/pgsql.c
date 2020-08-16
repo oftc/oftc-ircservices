@@ -67,12 +67,12 @@ static query_t queries[QUERY_COUNT] = {
     "flag_private, language, last_host, last_realname, "
     "last_quit_msg, last_quit_time, account.reg_time, nickname.reg_time, "
     "last_seen FROM account, nickname WHERE account.id = nickname.account_id AND "
-    "lower(nick) = lower($1)", QUERY },
+    "irc_lower(nick) = irc_lower($1)", QUERY },
   { GET_NICK_FROM_ACCID, "SELECT nick from account, nickname WHERE account.id=$1 AND "
     "account.primary_nick=nickname.id", QUERY },
   { GET_NICK_FROM_NICKID, "SELECT nick from nickname WHERE id=$1", QUERY },
-  { GET_ACCID_FROM_NICK, "SELECT account_id from nickname WHERE lower(nick)=lower($1)", QUERY },
-  { GET_NICKID_FROM_NICK, "SELECT id from nickname WHERE lower(nick)=lower($1)", QUERY },
+  { GET_ACCID_FROM_NICK, "SELECT account_id from nickname WHERE irc_lower(nick)=irc_lower($1)", QUERY },
+  { GET_NICKID_FROM_NICK, "SELECT id from nickname WHERE irc_lower(nick)=irc_lower($1)", QUERY },
   { INSERT_ACCOUNT, "INSERT INTO account (primary_nick, password, salt, email, reg_time) VALUES "
     "($1, $2, $3, $4, $5)", EXECUTE },
   { INSERT_NICK, "INSERT INTO nickname (id, nick, account_id, reg_time, last_seen) VALUES "
@@ -83,7 +83,7 @@ static query_t queries[QUERY_COUNT] = {
     EXECUTE },
   { GET_NICKACCESS, "SELECT id, entry FROM account_access WHERE account_id=$1 ORDER BY id", QUERY },
   { GET_ADMINS, "SELECT nick FROM account,nickname WHERE flag_admin=true AND "
-    "account.primary_nick = nickname.id ORDER BY lower(nick)", QUERY },
+    "account.primary_nick = nickname.id ORDER BY irc_lower(nick)", QUERY },
   /* XXX: ORDER BY missing here */
   { GET_AKILLS, "SELECT akill.id, setter, mask, reason, time, duration FROM akill ORDER BY akill.time",
     QUERY },
@@ -92,14 +92,14 @@ static query_t queries[QUERY_COUNT] = {
       "FROM channel_access JOIN account ON "
       "channel_access.account_id=account.id JOIN nickname ON "
       "account.primary_nick=nickname.id WHERE channel_id=$1 "
-      "ORDER BY level, lower(nickname.nick) DESC", QUERY },
+      "ORDER BY level, irc_lower(nickname.nick) DESC", QUERY },
   { GET_CHANID_FROM_CHAN, "SELECT id from channel WHERE "
-      "lower(channel)=lower($1)", QUERY },
+      "irc_lower(channel)=irc_lower($1)", QUERY },
   { GET_FULL_CHAN, "SELECT id, channel, description, entrymsg, reg_time, "
       "flag_private, flag_restricted, flag_topic_lock, flag_verbose, "
       "flag_autolimit, flag_expirebans, flag_floodserv, flag_autoop, "
       "flag_autovoice, flag_leaveops, url, email, topic, mlock, expirebans_lifetime, "
-      "flag_autosave, last_used FROM channel WHERE lower(channel)=lower($1)", QUERY },
+      "flag_autosave, last_used FROM channel WHERE irc_lower(channel)=irc_lower($1)", QUERY },
   { INSERT_CHAN, "INSERT INTO channel (channel, description, reg_time, last_used) "
     "VALUES($1, $2, $3, $4)", EXECUTE },
   { INSERT_CHANACCESS, "INSERT INTO channel_access (account_id, channel_id, level) VALUES "
@@ -124,7 +124,7 @@ static query_t queries[QUERY_COUNT] = {
   { SET_NICK_SALT, "UPDATE account SET salt=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_URL, "UPDATE account SET url=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_EMAIL, "UPDATE account SET email=$1 WHERE id=$2", EXECUTE },
-  { SET_NICK_CLOAK, "UPDATE account SET cloak=lower($1) WHERE id=$2", EXECUTE },
+  { SET_NICK_CLOAK, "UPDATE account SET cloak=irc_lower($1) WHERE id=$2", EXECUTE },
   { SET_NICK_LAST_QUIT, "UPDATE account SET last_quit_msg=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_LAST_HOST, "UPDATE account SET last_host=$1 WHERE id=$2", EXECUTE },
   { SET_NICK_LAST_REALNAME, "UPDATE account SET last_realname=$1 where id=$2", EXECUTE },
@@ -175,14 +175,14 @@ static query_t queries[QUERY_COUNT] = {
   { SET_CHAN_AUTOSAVE, "UPDATE channel SET flag_autosave=$1 WHERE id=$2", EXECUTE },
   { SET_CHAN_LEAVEOPS, "UPDATE channel SET flag_leaveops=$1 WHERE id=$2", EXECUTE },
   { INSERT_FORBID, "INSERT INTO forbidden_nickname (nick) VALUES ($1)", EXECUTE },
-  { GET_FORBID, "SELECT nick FROM forbidden_nickname WHERE lower(nick)=lower($1)",
+  { GET_FORBID, "SELECT nick FROM forbidden_nickname WHERE irc_lower(nick)=irc_lower($1)",
     QUERY },
-  { DELETE_FORBID, "DELETE FROM forbidden_nickname WHERE lower(nick)=lower($1)", 
+  { DELETE_FORBID, "DELETE FROM forbidden_nickname WHERE irc_lower(nick)=irc_lower($1)",
     EXECUTE },
   { INSERT_CHAN_FORBID, "INSERT INTO forbidden_channel (channel) VALUES ($1)", EXECUTE },
-  { GET_CHAN_FORBID, "SELECT channel FROM forbidden_channel WHERE lower(channel)=lower($1)",
+  { GET_CHAN_FORBID, "SELECT channel FROM forbidden_channel WHERE irc_lower(channel)=irc_lower($1)",
       QUERY },
-  { DELETE_CHAN_FORBID, "DELETE FROM forbidden_channel WHERE lower(channel)=lower($1)",
+  { DELETE_CHAN_FORBID, "DELETE FROM forbidden_channel WHERE irc_lower(channel)=irc_lower($1)",
     EXECUTE },
   { INSERT_AKICK_ACCOUNT, "INSERT INTO channel_akick (channel_id, target, setter, reason, "
     "time, duration, chmode) VALUES ($1, $2, $3, $4, $5, $6, $7)", EXECUTE },
@@ -198,20 +198,20 @@ static query_t queries[QUERY_COUNT] = {
   { DELETE_AKICK_MASK, "DELETE FROM channel_akick WHERE channel_id=$1 AND mask=$2 "
     " AND chmode = $3", EXECUTE },
   { DELETE_AKICK_ACCOUNT, "DELETE FROM channel_akick WHERE channel_id=$1 AND target IN (SELECT account_id "
-    "FROM nickname WHERE lower(nick)=lower($2)) AND chmode = $3", EXECUTE },
+    "FROM nickname WHERE irc_lower(nick)=irc_lower($2)) AND chmode = $3", EXECUTE },
   { SET_NICK_MASTER, "UPDATE account SET primary_nick=$1 WHERE id=$2", EXECUTE },
   { DELETE_AKILL, "DELETE FROM akill WHERE mask=$1", EXECUTE },
   { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=$1 AND level=4",
     QUERY },
-  { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=$1 ORDER BY lower(nick)", QUERY },
+  { GET_NICK_LINKS, "SELECT nick FROM nickname WHERE account_id=$1 ORDER BY irc_lower(nick)", QUERY },
   { GET_NICK_LINKS_COUNT, "SELECT count(nick) FROM nickname WHERE account_id=$1", QUERY },
   { GET_NICK_CHAN_INFO, "SELECT channel.id, channel, level FROM "
     "channel, channel_access WHERE "
       "channel.id=channel_access.channel_id AND channel_access.account_id=$1 "
-      "ORDER BY lower(channel.channel)", QUERY },
+      "ORDER BY irc_lower(channel.channel)", QUERY },
   { GET_CHAN_MASTERS, "SELECT nick FROM account, nickname, channel_access WHERE channel_id=$1 "
     "AND level=4 AND channel_access.account_id=account.id AND "
-      "account.primary_nick=nickname.id ORDER BY lower(nick)", QUERY },
+      "account.primary_nick=nickname.id ORDER BY irc_lower(nick)", QUERY },
   { DELETE_ACCOUNT_CHACCESS, "DELETE FROM channel_access WHERE account_id=$1", EXECUTE },
   { DELETE_ACCOUNT_GROUPACCESS, "DELETE FROM group_access WHERE account_id=$1", EXECUTE },
   { DELETE_DUPLICATE_CHACCESS, "DELETE FROM channel_access WHERE "
@@ -234,12 +234,12 @@ static query_t queries[QUERY_COUNT] = {
     QUERY },
   { DELETE_EXPIRED_SENT_MAIL, "DELETE FROM sent_mail WHERE sent + $1 < $2", EXECUTE },
   { GET_NICKS, "SELECT nick FROM account, nickname WHERE account.id=nickname.account_id AND "
-       "account.flag_private='f' ORDER BY lower(nick)", QUERY },
-  { GET_NICKS_OPER, "SELECT nick FROM nickname ORDER BY lower(nick)", QUERY },
-  { GET_FORBIDS, "SELECT nick FROM forbidden_nickname ORDER BY lower(nick)", QUERY },
-  { GET_CHANNELS, "SELECT channel FROM channel WHERE flag_private='f' ORDER BY lower(channel)", QUERY },
-  { GET_CHANNELS_OPER, "SELECT channel FROM channel ORDER BY lower(channel)", QUERY },
-  { GET_CHANNEL_FORBID_LIST, "SELECT channel FROM forbidden_channel ORDER BY lower(channel)", QUERY },
+       "account.flag_private='f' ORDER BY irc_lower(nick)", QUERY },
+  { GET_NICKS_OPER, "SELECT nick FROM nickname ORDER BY irc_lower(nick)", QUERY },
+  { GET_FORBIDS, "SELECT nick FROM forbidden_nickname ORDER BY irc_lower(nick)", QUERY },
+  { GET_CHANNELS, "SELECT channel FROM channel WHERE flag_private='f' ORDER BY irc_lower(channel)", QUERY },
+  { GET_CHANNELS_OPER, "SELECT channel FROM channel ORDER BY irc_lower(channel)", QUERY },
+  { GET_CHANNEL_FORBID_LIST, "SELECT channel FROM forbidden_channel ORDER BY irc_lower(channel)", QUERY },
   { SAVE_NICK, "UPDATE account SET url=$1, email=$2, cloak=$3, flag_enforce=$4, "
     "flag_secure=$5, flag_verified=$6, flag_cloak_enabled=$7, "
       "flag_admin=$8, flag_email_verified=$9, flag_private=$10, language=$11, "
@@ -291,7 +291,7 @@ static query_t queries[QUERY_COUNT] = {
       "group_access JOIN account ON "
       "group_access.account_id=account.id JOIN nickname ON "
       "account.primary_nick=nickname.id WHERE group_id=$1 "
-      "ORDER BY level, lower(nickname.nick) DESC", QUERY },
+      "ORDER BY level, irc_lower(nickname.nick) DESC", QUERY },
   { GET_GROUP_ACCESS, "SELECT id, group_id, account_id, level "
     "FROM group_access WHERE group_id=$1 AND account_id=$2", QUERY },
   { INSERT_GROUPACCESS, "INSERT INTO group_access "
@@ -304,7 +304,7 @@ static query_t queries[QUERY_COUNT] = {
     QUERY },
   { GET_GROUP_MASTERS, "SELECT nick FROM account, nickname, group_access "
       "WHERE group_id=$1 AND level=3 AND group_access.account_id=account.id "
-      "AND account.primary_nick=nickname.id ORDER BY lower(nick)", QUERY },
+      "AND account.primary_nick=nickname.id ORDER BY irc_lower(nick)", QUERY },
   { GET_GROUP_MASTER_COUNT, "SELECT COUNT(id) FROM group_access "
     "WHERE group_id=$1 AND level=3", QUERY },
   { INSERT_CHANACCESS_GROUP, "INSERT INTO channel_access "
@@ -314,14 +314,14 @@ static query_t queries[QUERY_COUNT] = {
   { GET_CHAN_ACCESSES_GROUP, "SELECT ca.id, ca.channel_id, ca.account_id, "
       "ca.group_id, ca.level FROM channel_access AS ca "
       "JOIN \"group\" ON ca.group_id=\"group\".id WHERE ca.channel_id=$1 " 
-      "ORDER BY level, lower(\"group\".name) DESC", QUERY },
-  { GET_GROUPS_OPER, "SELECT name FROM \"group\" ORDER BY lower(name) DESC", QUERY },
-  { GET_GROUPS, "SELECT name FROM \"group\" WHERE flag_private='f' ORDER BY lower(name) DESC",
+      "ORDER BY level, irc_lower(\"group\".name) DESC", QUERY },
+  { GET_GROUPS_OPER, "SELECT name FROM \"group\" ORDER BY irc_lower(name) DESC", QUERY },
+  { GET_GROUPS, "SELECT name FROM \"group\" WHERE flag_private='f' ORDER BY irc_lower(name) DESC",
     QUERY },
   { GET_GROUP_CHAN_INFO, "SELECT channel.id, channel, level FROM "
     "channel, channel_access WHERE "
     "channel.id=channel_access.channel_id AND channel_access.group_id=$1 "
-    "ORDER BY lower(channel.channel)", QUERY },
+    "ORDER BY irc_lower(channel.channel)", QUERY },
   { GET_AJOINS, "SELECT channel.channel FROM account_autojoin "
     "JOIN channel ON channel.id=account_autojoin.channel_id WHERE account_autojoin.account_id=$1",
     QUERY },
@@ -333,7 +333,7 @@ static query_t queries[QUERY_COUNT] = {
     "group_access ON group_access.group_id = \"group\".id WHERE account_id=$1" },
   { GET_CHAN_GROUP_MASTERS, "SELECT name FROM \"group\", channel_access WHERE "
     "channel_id=$1 AND level=4 AND channel_access.group_id=\"group\".id "
-    "ORDER BY lower(name)", QUERY },
+    "ORDER BY irc_lower(name)", QUERY },
   { SET_SYNCHRONOUS_COMMIT, "UPDATE pg_settings SET setting = 'on' WHERE name = 'synchronous_commit'", EXECUTE },
   { UNSET_SYNCHRONOUS_COMMIT, "UPDATE pg_settings SET setting = 'off' WHERE name = 'synchronous_commit'", EXECUTE },
 };

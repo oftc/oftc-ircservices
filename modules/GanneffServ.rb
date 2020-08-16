@@ -96,10 +96,10 @@ class GanneffServ < ServiceModule
       ganneffserv.setter = account.id AND account.primary_nick = nickname.id')
     @dbq['INSERT_CHAN'] = DB.prepare('INSERT INTO ganneffserv(setter, time,
       channel, reason, monitor_only) VALUES($1, $2, $3, $4, $5)')
-    @dbq['DELETE_CHAN'] = DB.prepare('DELETE FROM ganneffserv WHERE channel =
-      lower($1)')
+    @dbq['DELETE_CHAN'] = DB.prepare('DELETE FROM ganneffserv WHERE irc_lower(channel) =
+      irc_lower($1)')
     @dbq['INCREASE_KILLS'] = DB.prepare('UPDATE ganneffserv SET kills = kills+1
-      WHERE channel = lower($1)')
+      WHERE irc_lower(channel) = irc_lower($1)')
   end # def initialize
 
 ########################################################################

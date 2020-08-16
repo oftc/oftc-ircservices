@@ -31,7 +31,7 @@ CREATE TABLE nickname (
   reg_time            INTEGER NOT NULL, -- This nickname
   last_seen           INTEGER
 );
-CREATE UNIQUE INDEX nickname_nick_idx ON nickname ((lower(nick)));
+CREATE UNIQUE INDEX nickname_nick_idx ON nickname (irc_lower(nick));
 -- this speeds up GET_NICK_LINKS("SELECT nick FROM nickname WHERE account_id=?d") for instance.
 -- it's otherwise not often needed
 CREATE INDEX nickname_account_id_idx ON nickname (account_id);
@@ -45,7 +45,7 @@ CREATE TABLE forbidden_nickname (
   nick                VARCHAR(255) PRIMARY KEY
 );
 -- this is not so much for performance as for unique constraint reasons:
-CREATE UNIQUE INDEX forbidden_nickname_nick_idx ON forbidden_nickname ((lower(nick)));
+CREATE UNIQUE INDEX forbidden_nickname_nick_idx ON forbidden_nickname (irc_lower(nick));
 
 DROP TABLE IF EXISTS account_access;
 CREATE TABLE account_access (

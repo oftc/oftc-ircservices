@@ -9,6 +9,8 @@ CREATE TABLE "group" (
   reg_time            INTEGER NOT NULL 
 );
 
+CREATE UNIQUE INDEX group_lower_name_idx ON "group" (irc_lower(name));
+
 DROP TABLE IF EXISTS group_access;
 CREATE TABLE group_access(
   id                   SERIAL PRIMARY KEY,

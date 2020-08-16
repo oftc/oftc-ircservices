@@ -23,7 +23,7 @@ CREATE TABLE channel(
   reg_time              INTEGER NOT NULL,
   last_used             INTEGER NOT NULL
 );
-CREATE UNIQUE INDEX channel_channel_idx ON channel ((lower(channel)));
+CREATE UNIQUE INDEX channel_channel_idx ON channel (irc_lower(channel));
 
 DROP TABLE IF EXISTS channel_access;
 CREATE TABLE channel_access(
@@ -56,6 +56,6 @@ CREATE TABLE forbidden_channel (
   channel             VARCHAR(255) PRIMARY KEY
 );
 -- this is not so much for performance as for unique constraint reasons:
-CREATE UNIQUE INDEX forbidden_channel_channel_idx ON forbidden_channel ((lower(channel)));
+CREATE UNIQUE INDEX forbidden_channel_channel_idx ON forbidden_channel (irc_lower(channel));
 CREATE UNIQUE INDEX channel_akick_mode_mask_idx ON channel_akick(channel_id, chmode, mask);
 CREATE UNIQUE INDEX channel_akick_mode_target_idx ON channel_akick(channel_id, chmode, target);

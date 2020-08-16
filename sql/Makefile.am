@@ -2,6 +2,7 @@
 
 MAINTAINERCLEANFILES=Makefile.in
 dist_pkgdata_DATA= \
+	common-pgsql.sql \
 	chanserv-pgsql.sql \
 	ganneffserv-pgsql.sql \
 	groupserv-pgsql.sql \
