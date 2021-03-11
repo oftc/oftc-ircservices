@@ -25,7 +25,7 @@ AC_DEFUN([AX_CHECK_LIB_RUBY],[
     if test "$RUBY" = "no" ; then
       have_ruby="no"
     else
-      AC_SEARCH_LIBS([ruby_init],[ruby-2.3 ruby-2.1 ruby-1.9.1],[have_ruby="yes"],[have_ruby="no"])
+      AC_SEARCH_LIBS([ruby_init],[ruby-2.5 ruby-2.3 ruby-2.1 ruby-1.9.1],[have_ruby="yes"],[have_ruby="no"])
       if test "$have_ruby" = "yes" ; then
         ruby_so_name=[$($RUBY -r rbconfig -e 'print RbConfig::CONFIG["RUBY_SO_NAME"]')]
         test "$ruby_so_name" = "ruby-1.9.1" && ruby_so_name="ruby-1.9"
