@@ -184,7 +184,7 @@ struct Client
 
   struct irc_ssaddr ip;
   int           aftype;
-} Client;
+};
 
 void init_client();
 void init_uid();
