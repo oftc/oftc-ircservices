@@ -50,8 +50,6 @@ static BlockHeap *topic_heap = NULL;
 BlockHeap *ban_heap            = NULL;
 dlink_list global_channel_list = { NULL, NULL, 0 };
 
-struct Callback *on_channel_created_cb;
-
 void
 init_channel(void)
 {
