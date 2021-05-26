@@ -329,7 +329,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &ajoin_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &ghost_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &link_msgtab);
-  mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);
+  /*mod_add_servcmd(&nickserv->msg_tree, &unlink_msgtab);*/
   mod_add_servcmd(&nickserv->msg_tree, &info_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &forbid_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &unforbid_msgtab);
