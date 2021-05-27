@@ -275,7 +275,7 @@ NS_HELP_SET_ENFORCE_LONG
 	Usage: SET ENFORCE [ON|OFF]
 	
 	ENFORCE enables or disables nickname enforcement of your account.  This means
-	that if someone who is not not on your access list attempts to use your
+	that if someone who is not on your access list attempts to use your
 	nickname and doesn't identify within a given period their nick will be
 	forcefully changed.
 	
