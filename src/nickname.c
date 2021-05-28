@@ -166,7 +166,7 @@ nickname_register(Nickname *nick)
 
   assert(tmp == nickid);
 
-  ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nickid, &accid);
+  ret = db_execute_nonquery(SET_NICK_PRIMARY, "ii", &nickid, &accid);
   if(ret == -1)
     goto failure;
 
@@ -232,7 +232,7 @@ nickname_delete(Nickname *nick)
     {
       newid = atoi(tmp);
       MyFree(tmp);
-      ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &newid, &nick->id);
+      ret = db_execute_nonquery(SET_NICK_PRIMARY, "ii", &newid, &nick->id);
       if(ret == -1)
         goto failure;
       ret = db_execute_nonquery(DELETE_NICK, "i", &nick->nickid);
@@ -424,15 +424,15 @@ nickname_id_from_nick(const char *nick, int is_accid)
 }
 
 /*
- * nickname_set_master:
+ * nickname_set_primary:
  *
- * Sets the master nickname of an account to the nickname specified. 
+ * Sets the primary nickname of an account to the nickname specified. 
  *
  * Returns TRUE on success, FALSE otherwise.
  *
  */
 int
-nickname_set_master(Nickname *nick, const char *master)
+nickname_set_primary(Nickname *nick, const char *master)
 {
   int newid, ret;
 
@@ -441,7 +441,7 @@ nickname_set_master(Nickname *nick, const char *master)
   if(newid == -1)
     return FALSE;
 
-  ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &newid, &nick->id);
+  ret = db_execute_nonquery(SET_NICK_PRIMARY, "ii", &newid, &nick->id);
 
   return (ret != -1);
 }
@@ -524,7 +524,7 @@ nickname_unlink(Nickname *nick)
     if(ret == -1)
       goto failure;
 
-    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nick->nickid, &newid);
+    ret = db_execute_nonquery(SET_NICK_PRIMARY, "ii", &nick->nickid, &newid);
     if(ret == -1)
       goto failure;
   }
@@ -537,12 +537,12 @@ nickname_unlink(Nickname *nick)
     new_nickid = atoi(tmp);
     MyFree(tmp);
     
-    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &nick->pri_nickid,
+    ret = db_execute_nonquery(SET_NICK_PRIMARY, "ii", &nick->pri_nickid,
         &nick->id);
     if(ret == -1)
       goto failure;
    
-    ret = db_execute_nonquery(SET_NICK_MASTER, "ii", &new_nickid, &newid);
+    ret = db_execute_nonquery(SET_NICK_PRIMARY, "ii", &new_nickid, &newid);
     if(ret == -1)
       goto failure;
 

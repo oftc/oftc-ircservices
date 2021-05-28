@@ -101,7 +101,7 @@ static void m_set_url(struct Service *, struct Client *, int, char *[]);
 static void m_set_email(struct Service *, struct Client *, int, char *[]);
 static void m_set_cloak(struct Service *, struct Client *, int, char *[]);
 static void m_cloakstring(struct Service *, struct Client *, int, char *[]);
-static void m_set_master(struct Service *, struct Client *, int, char *[]);
+static void m_set_primary(struct Service *, struct Client *, int, char *[]);
 static void m_set_private(struct Service *, struct Client *, int, char *[]);
 static void m_resetpass(struct Service *, struct Client *, int, char *[]);
 
@@ -163,8 +163,8 @@ static struct ServiceMessage set_sub[] = {
     NS_HELP_SET_SECURE_LONG, m_set_secure },
   { NULL, "CLOAK", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_CLOAK_SHORT, 
     NS_HELP_SET_CLOAK_LONG, m_set_cloak },
- { NULL, "MASTER", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_MASTER_SHORT, 
-    NS_HELP_SET_MASTER_LONG, m_set_master },
+ { NULL, "PRIMARY", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_PRIMARY_SHORT, 
+    NS_HELP_SET_PRIMARY_LONG, m_set_primary },
   { NULL, "PRIVATE", 0, 0, 1, 0, IDENTIFIED_FLAG, NS_HELP_SET_PRIVATE_SHORT, 
     NS_HELP_SET_PRIVATE_LONG, m_set_private },
   { NULL, NULL, 0, 0, 0, 0, 0, 0, 0, NULL }
@@ -962,7 +962,7 @@ m_set_enforce(struct Service *service, struct Client *client,
 }
 
 static void
-m_set_master(struct Service *service, struct Client *client, 
+m_set_primary(struct Service *service, struct Client *client, 
     int parc, char *parv[])
 {
   Nickname *nick = client->nickname;
@@ -971,21 +971,21 @@ m_set_master(struct Service *service, struct Client *client,
   {
     char *prinick = nickname_nick_from_id(nickname_get_id(nick), TRUE);
 
-    reply_user(service, service, client, NS_SET_VALUE, "MASTER", prinick);
+    reply_user(service, service, client, NS_SET_VALUE, "PRIMARY", prinick);
     MyFree(prinick);
     return;
   }
 
   if(nickname_id_from_nick(parv[1], TRUE) != nickname_get_id(nick))
   {
-    reply_user(service, service, client, NS_MASTER_NOT_LINKED, parv[1]);
+    reply_user(service, service, client, NS_PRIMARY_NOT_LINKED, parv[1]);
     return;
   }
 
-  if(nickname_set_master(nick, parv[1]))
-    reply_user(service, service, client, NS_MASTER_SET_OK, parv[1]);
+  if(nickname_set_primary(nick, parv[1]))
+    reply_user(service, service, client, NS_PRIMARY_SET_OK, parv[1]);
   else
-    reply_user(service, service, client, NS_MASTER_SET_FAIL, parv[1]);
+    reply_user(service, service, client, NS_PRIMARY_SET_FAIL, parv[1]);
 }
 
 static void
@@ -1335,46 +1335,46 @@ m_regain(struct Service *service, struct Client *client, int parc, char *parv[])
 static void
 m_link(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  Nickname *nick, *master_nick;
+  Nickname *nick, *primary_nick;
 
   nick = client->nickname;
-  if((master_nick = nickname_find(parv[1])) == NULL)
+  if((primary_nick = nickname_find(parv[1])) == NULL)
   {
-    reply_user(service, service, client, NS_LINK_NOMASTER, parv[1]);
+    reply_user(service, service, client, NS_LINK_NOPRIMARY, parv[1]);
     return;
   }
 
-  if(nickname_get_id(master_nick) == nickname_get_id(nick))
+  if(nickname_get_id(primary_nick) == nickname_get_id(nick))
   {
-    nickname_free(master_nick);
+    nickname_free(primary_nick);
     reply_user(service, service, client, NS_LINK_NOSELF);
     return;
   }
 
-  if(parv[2] == NULL || !check_nick_pass(client, master_nick, parv[2]))
+  if(parv[2] == NULL || !check_nick_pass(client, primary_nick, parv[2]))
   {
-    nickname_free(master_nick);
+    nickname_free(primary_nick);
     reply_user(service, service, client, NS_LINK_BADPASS, parv[1]);
     return;
   }
 
-  if(!nickname_get_verified(master_nick) || !nickname_get_verified(nick))
+  if(!nickname_get_verified(primary_nick) || !nickname_get_verified(nick))
   {
-    nickname_free(master_nick);
+    nickname_free(primary_nick);
     reply_user(service, service, client, NS_LINK_NOTVERIFIED, nickname_get_nick(nick), parv[1]);
     return;
   }
 
-  if(!nickname_link(master_nick, nick))
+  if(!nickname_link(primary_nick, nick))
   {
-    nickname_free(master_nick);
+    nickname_free(primary_nick);
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
     return;
   }
 
   reply_user(service, service, client, NS_LINK_OK, nickname_get_nick(nick), parv[1]);
   
-  nickname_free(master_nick);
+  nickname_free(primary_nick);
   nickname_free(nick);
 
   client->nickname = nickname_find(parv[1]);
@@ -1398,7 +1398,7 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
   if(newid > 0)
   {
     reply_user(service, service, client, NS_UNLINK_OK, nickname_get_nick(nick));
-    // In case this was a linked nick, it is now a master of itself
+    // In case this was a linked nick, it is now a primary of itself
     nickname_free(client->nickname);
     nickname_set_id(nick, newid);
     client->nickname = nickname_find(client->name);
@@ -1528,7 +1528,7 @@ m_info(struct Service *service, struct Client *client, int parc, char *parv[])
     {
       char *prinick = nickname_nick_from_id(nickname_get_id(nick), TRUE);
 
-      reply_user(service, service, client, NS_INFO_MASTER, prinick);
+      reply_user(service, service, client, NS_INFO_PRIMARY, prinick);
       MyFree(prinick);
     }
 

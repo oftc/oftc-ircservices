@@ -3,7 +3,7 @@ Release Notes
 
 1.x.x
 -----
-o Rename ENSLAVE to GROUP
+o Rename ENSLAVE to GROUP; rename SET MASTER to SET PRIMARY
 
 1.5.8
 -----

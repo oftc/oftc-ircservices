@@ -78,7 +78,7 @@ int nickname_link_count(Nickname *);
 
 char *nickname_nick_from_id(int, int);
 int nickname_id_from_nick(const char *, int);
-int nickname_set_master(Nickname *, const char *);
+int nickname_set_primary(Nickname *, const char *);
 
 int nickname_save(Nickname *);
 

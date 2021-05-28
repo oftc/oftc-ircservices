@@ -199,7 +199,7 @@ static query_t queries[QUERY_COUNT] = {
     " AND chmode = $3", EXECUTE },
   { DELETE_AKICK_ACCOUNT, "DELETE FROM channel_akick WHERE channel_id=$1 AND target IN (SELECT account_id "
     "FROM nickname WHERE irc_lower(nick)=irc_lower($2)) AND chmode = $3", EXECUTE },
-  { SET_NICK_MASTER, "UPDATE account SET primary_nick=$1 WHERE id=$2", EXECUTE },
+  { SET_NICK_PRIMARY, "UPDATE account SET primary_nick=$1 WHERE id=$2", EXECUTE },
   { DELETE_AKILL, "DELETE FROM akill WHERE mask=$1", EXECUTE },
   { GET_CHAN_MASTER_COUNT, "SELECT COUNT(id) FROM channel_access WHERE channel_id=$1 AND level=4",
     QUERY },
