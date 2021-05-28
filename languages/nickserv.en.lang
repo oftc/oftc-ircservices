@@ -353,7 +353,7 @@ NS_HELP_SET_PRIVATE_LONG
 	being shown in an INFO request, prevents your nickname showing in a LIST, and
 	also prevents the information from being shown in the web interface.
 NS_HELP_LINK_SHORT
-	%s: Link this nickname to a master nickname.
+	%s: Link (group) this nickname to a master nickname.
 NS_HELP_LINK_LONG
 	Usage: LINK master_nickname [password]
 	
@@ -373,7 +373,7 @@ NS_HELP_LINK_LONG
 	          HELP ENSLAVE
 	          HELP SET MASTER
 NS_HELP_ENSLAVE_SHORT
-	%s: Enslave a nickname to this master nickname.
+	%s: Enslave (group) a nickname to this master nickname.
 NS_HELP_ENSLAVE_LONG
 	Usage: ENSLAVE slave_nickname [password]
 	
