@@ -372,9 +372,7 @@ INIT_MODULE(chanserv, "$Revision$")
   hash_add_service(chanserv);
   chanserv_client = introduce_client(chanserv->name, chanserv->name, TRUE);
   load_language(chanserv->languages, "chanserv.en");
-/*  load_language(chanserv, "chanserv.rude");
-  load_language(chanserv, "chanserv.de");
-*/
+
   mod_add_servcmd(&chanserv->msg_tree, &register_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &help_msgtab);
   mod_add_servcmd(&chanserv->msg_tree, &set_msgtab);
