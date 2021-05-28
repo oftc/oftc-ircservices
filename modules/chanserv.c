@@ -609,7 +609,14 @@ m_drop(struct Service *service, struct Client *client,
 
     dbchannel_free(regchptr);
     if(chptr != NULL)
+    {
+      dlink_node *ptr;
+
       chptr->regchan = NULL;
+
+      if((ptr = dlinkFindDelete(&channel_expireban_list, chptr)) != NULL)
+        free_dlink_node(ptr);
+    }
     regchptr = NULL;
   } 
   else
@@ -1333,9 +1340,9 @@ m_set_expirebans(struct Service *service, struct Client *client,
   DBChannel *regchptr;
   int interval;
   char *flag;
+  int was_set, is_set;
 
   regchptr = (chptr == NULL) ? dbchannel_find(parv[1]) : chptr->regchan;
-  interval = dbchannel_get_expirebans_lifetime(regchptr); 
 
   if(parv[2] != NULL)
   {
@@ -1352,28 +1359,40 @@ m_set_expirebans(struct Service *service, struct Client *client,
       flag = parv[2];
       interval = dbchannel_get_expirebans_lifetime(regchptr);
     }
-  }
-  else
-    flag = NULL;
 
-  m_set_flag(service, client, parv[1], flag, "EXPIREBANS",
-    &dbchannel_get_expirebans, &dbchannel_set_expirebans);
-  if(chptr != NULL && chptr->regchan != NULL && dbchannel_get_expirebans(chptr->regchan))
-    dlinkAdd(chptr, make_dlink_node(), &channel_expireban_list);
-  else if(chptr != NULL && chptr->regchan != NULL)
-  {
-    dlink_node *ptr;
+    was_set = dbchannel_get_expirebans(regchptr);
 
-    if((ptr = dlinkFindDelete(&channel_expireban_list, chptr)) != NULL)
-      free_dlink_node(ptr);
-  }
-
-  if(parv[2] != NULL)
+    m_set_flag(service, client, parv[1], flag, "EXPIREBANS",
+      &dbchannel_get_expirebans, &dbchannel_set_expirebans);
     dbchannel_set_expirebans_lifetime(regchptr, interval);
 
-  reply_user(service, service, client, CS_EXPIREBANS_LIFETIME, interval);
+    is_set = dbchannel_get_expirebans(regchptr);
 
-  dbchannel_set_expirebans_lifetime(regchptr, interval);
+    if(chptr != NULL && chptr->regchan != NULL)
+    {
+      if(!was_set && is_set)
+      {
+        dlinkAdd(chptr, make_dlink_node(), &channel_expireban_list);
+      }
+      else if(was_set && !is_set)
+      {
+        dlink_node *ptr;
+
+        if((ptr = dlinkFindDelete(&channel_expireban_list, chptr)) != NULL)
+          free_dlink_node(ptr);
+      }
+    }
+  }
+  else
+  {
+    flag = NULL;
+    interval = dbchannel_get_expirebans_lifetime(regchptr);
+
+    m_set_flag(service, client, parv[1], flag, "EXPIREBANS",
+      &dbchannel_get_expirebans, &dbchannel_set_expirebans);
+  }
+
+  reply_user(service, service, client, CS_EXPIREBANS_LIFETIME, interval);
 
   if(chptr == NULL)
     dbchannel_free(regchptr);
