@@ -88,7 +88,7 @@ static void m_sudo(struct Service *, struct Client *, int, char *[]);
 static void m_sendpass(struct Service *, struct Client *, int, char *[]);
 static void m_list(struct Service *, struct Client *, int, char *[]);
 static void m_status(struct Service *, struct Client *, int, char*[]);
-static void m_enslave(struct Service *, struct Client *, int, char*[]);
+static void m_group(struct Service *, struct Client *, int, char*[]);
 static void m_dropnick(struct Service *, struct Client *, int, char*[]);
 static void m_checkverify(struct Service *, struct Client *, int, char*[]);
 static void m_verify(struct Service *, struct Client *, int, char*[]);
@@ -290,9 +290,9 @@ static struct ServiceMessage status_msgtab = {
   NS_HELP_STATUS_LONG, m_status
 };
 
-static struct ServiceMessage enslave_msgtab = {
-  NULL, "ENSLAVE", 0, 1, 2, 0, IDENTIFIED_FLAG, NS_HELP_ENSLAVE_SHORT, 
-  NS_HELP_ENSLAVE_LONG, m_enslave
+static struct ServiceMessage group_msgtab = {
+  NULL, "GROUP", 0, 1, 2, 0, IDENTIFIED_FLAG, NS_HELP_GROUP_SHORT, 
+  NS_HELP_GROUP_LONG, m_group
 };
 
 static struct ServiceMessage dropnick_msgtab = {
@@ -341,7 +341,7 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &sendpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &list_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &status_msgtab);
-  mod_add_servcmd(&nickserv->msg_tree, &enslave_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &group_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &resetpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &dropnick_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &checkverify_msgtab);
@@ -1398,7 +1398,7 @@ m_unlink(struct Service *service, struct Client *client, int parc, char *parv[])
   if(newid > 0)
   {
     reply_user(service, service, client, NS_UNLINK_OK, nickname_get_nick(nick));
-    // In case this was a slave nick, it is now a master of itself
+    // In case this was a linked nick, it is now a master of itself
     nickname_free(client->nickname);
     nickname_set_id(nick, newid);
     client->nickname = nickname_find(client->name);
@@ -1900,48 +1900,48 @@ m_list(struct Service *service, struct Client *client, int parc, char *parv[])
 }
 
 static void
-m_enslave(struct Service *service, struct Client *client, int parc, char *parv[])
+m_group(struct Service *service, struct Client *client, int parc, char *parv[])
 {
-  Nickname *nick, *slave_nick;
+  Nickname *nick, *linked_nick;
 
   nick = client->nickname;
-  if((slave_nick = nickname_find(parv[1])) == NULL)
+  if((linked_nick = nickname_find(parv[1])) == NULL)
   {
-    reply_user(service, service, client, NS_LINK_NOSLAVE, parv[1]);
+    reply_user(service, service, client, NS_LINK_NOREG, parv[1]);
     return;
   }
 
-  if(nickname_get_id(slave_nick) == nickname_get_id(nick))
+  if(nickname_get_id(linked_nick) == nickname_get_id(nick))
   {
-    nickname_free(slave_nick);
+    nickname_free(linked_nick);
     reply_user(service, service, client, NS_LINK_NOSELF);
     return;
   }
 
-  if(parv[2] == NULL || !check_nick_pass(client, slave_nick, parv[2]))
+  if(parv[2] == NULL || !check_nick_pass(client, linked_nick, parv[2]))
   {
-    nickname_free(slave_nick);
+    nickname_free(linked_nick);
     reply_user(service, service, client, NS_LINK_BADPASS, parv[1]);
     return;
   }
 
-  if(!nickname_get_verified(slave_nick) || !nickname_get_verified(nick))
+  if(!nickname_get_verified(linked_nick) || !nickname_get_verified(nick))
   {
-    nickname_free(slave_nick);
+    nickname_free(linked_nick);
     reply_user(service, service, client, NS_LINK_NOTVERIFIED, nickname_get_nick(nick), parv[1]);
     return;
   }
 
-  if(!nickname_link(nick, slave_nick))
+  if(!nickname_link(nick, linked_nick))
   {
-    nickname_free(slave_nick);
+    nickname_free(linked_nick);
     reply_user(service, service, client, NS_LINK_FAIL, parv[1]);
     return;
   }
 
   reply_user(service, service, client, NS_LINK_OK, parv[1], nickname_get_nick(nick));
   
-  nickname_free(slave_nick);
+  nickname_free(linked_nick);
   client->nickname = nickname_find(nick->nick);
   nickname_free(nick);
 

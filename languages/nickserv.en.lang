@@ -343,7 +343,7 @@ NS_HELP_SET_MASTER_LONG
 	
 	See Also:
 	    HELP LINK
-	    HELP ENSLAVE
+	    HELP GROUP
 NS_HELP_SET_PRIVATE_SHORT
 	%s
 NS_HELP_SET_PRIVATE_LONG
@@ -353,7 +353,7 @@ NS_HELP_SET_PRIVATE_LONG
 	being shown in an INFO request, prevents your nickname showing in a LIST, and
 	also prevents the information from being shown in the web interface.
 NS_HELP_LINK_SHORT
-	%s: Link (group) this nickname to a master nickname.
+	%s: Link this nickname to a master nickname.
 NS_HELP_LINK_LONG
 	Usage: LINK master_nickname [password]
 	
@@ -366,27 +366,26 @@ NS_HELP_LINK_LONG
 	fingerprint on the list of the master nickname, you do not need to specify a
 	password.
 	
-	Both the master and the slave must already be REGISTERed for this command
-	to succeed.
+	Both the master and the other nickname must already be REGISTERed for
+	this command to succeed.
 	
 	See also: HELP UNLINK
-	          HELP ENSLAVE
+	          HELP GROUP
 	          HELP SET MASTER
-NS_HELP_ENSLAVE_SHORT
-	%s: Enslave (group) a nickname to this master nickname.
-NS_HELP_ENSLAVE_LONG
-	Usage: ENSLAVE slave_nickname [password]
+NS_HELP_GROUP_SHORT
+	%s: Group a nickname to this master nickname.
+NS_HELP_GROUP_LONG
+	Usage: GROUP other_nickname [password]
 	
 	Link the specified nickname to your master nickname.  This is the reverse
 	process of the LINK command.  You issue it on a nickname you want linked to
-	your current nickname.  Your current nickname will be the master nickname
-	and the nickname you specify will be the child or slave nickname.  If you
-	are connecting via SSL and your client certificate fingerprint matches a
-	fingerprint on the list of the specified nickname, you do not need to
-	specify a password.
+	your current nickname.  Your current nickname will be the master nickname.
+	If you are connecting via SSL and your client certificate fingerprint
+	matches a fingerprint on the list of the specified nickname, you do not
+	need to specify a password.
 	
-	Both the master and the slave must already be REGISTERed for this command
-	to succeed.
+	Both the master and the other nick must already be REGISTERed for
+	this command to succeed.
 	
 	See also: HELP LINK
 	          HELP UNLINK
@@ -666,10 +665,10 @@ NS_REGAIN_NOTONLINE
 	%s is not online.  The nickname may be freely used and does not
 	require regain or ghost.
 NS_LINK_NOMASTER
-	Master nickname %s not registered.  The nickname you want to link to must
-	be registered with nickname services.
-NS_LINK_NOSLAVE
-	Slave nickname %s not registered.  The nickname you want to link to must
+	Master nickname %s not registered.  Both nicknames you want to link
+	must be registered with nickname services.
+NS_LINK_NOREG
+	Nickname %s not registered.  Both nicknames you want to link must
 	be registered with nickname services.
 NS_LINK_BADPASS
 	Incorrect password for master nickname %s.  You must supply the correct

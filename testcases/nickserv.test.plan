@@ -40,20 +40,20 @@ IDENTIFY <correct password> -> Identify success, set +R, removed from enforce
 list
 IDENTIFY <correct password> <master nickname not in use> -> Identify success, 
 set +R, removed from enforce list, user changed to master nickname specified
-IDENTIFY <correct password> <slave nickname not in use> -> Identify success, 
-set +R, removed from enforce list, user changed to slave nickname specified
+IDENTIFY <correct password> <linked nickname not in use> -> Identify success, 
+set +R, removed from enforce list, user changed to linked nickname specified
 IDENTIFY <correct password> <master nickname in use by another user> -> Identify success, 
 set +R, removed from enforce list, user using this nick guested, user changed 
 to master nickname specified
-IDENTIFY <correct password> <slave nickname in use by another user> -> Identify success, 
+IDENTIFY <correct password> <linked nickname in use by another user> -> Identify success, 
 set +R, removed from enforce list, user using this nick guested, user changed 
-to slave nickname specified
+to linked nickname specified
 IDENTIFY <correct password> <master nickname in use by enforcer> -> Identify 
 success, set +R, removed from enforce list, enforcer exited, nick removed from 
 enforce list, user changed to master nickname specified
-IDENTIFY <correct password> <slave nickname in use by enforcer> -> Identify 
+IDENTIFY <correct password> <linked nickname in use by enforcer> -> Identify 
 success, set +R, removed from enforce list, enforcer exited, nick removed from 
-enforce list, user changed to slave nickname specified
+enforce list, user changed to linked nickname specified
 IDENTIFY <correct password> <from a nick that is already identified> -> Same as
 IDENTIFY <correct password>
 IDENTIFY <correct password> <nick that is the one you're currently using> ->
