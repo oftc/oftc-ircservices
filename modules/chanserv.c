@@ -1346,7 +1346,15 @@ m_set_expirebans(struct Service *service, struct Client *client,
 
   if(parv[2] != NULL)
   {
-    interval = atoi(parv[2]);
+    char *end;
+    long value = strtol(parv[2], &end, 10);
+    if(value < INT_MIN || end == parv[2])
+      interval = INT_MIN;
+    else if(value > INT_MAX)
+      interval = INT_MAX;
+    else
+      interval = (int)value;
+
     if(interval > 0)
       flag = "ON";
     else if(interval == 0)
