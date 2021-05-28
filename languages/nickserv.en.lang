@@ -789,7 +789,7 @@ NS_PRIMARY_NOT_LINKED
 	%s is not linked to your nickname.  You may not set a primary nickname
 	which is not linked to this one.
 NS_PRIMARY_SET_OK
-	primary nickname set to %s.  This nickname will now show in services lists
+	Primary nickname set to %s.  This nickname will now show in services lists
 	such as access lists.
 NS_PRIMARY_SET_FAIL
 	Failed to set primary nickname to %s.
