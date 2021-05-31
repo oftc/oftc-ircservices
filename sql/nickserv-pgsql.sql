@@ -35,6 +35,8 @@ CREATE UNIQUE INDEX nickname_nick_idx ON nickname (irc_lower(nick));
 -- this speeds up GET_NICK_LINKS("SELECT nick FROM nickname WHERE account_id=?d") for instance.
 -- it's otherwise not often needed
 CREATE INDEX nickname_account_id_idx ON nickname (account_id);
+-- speed up /LIST *
+CREATE INDEX account_private_idx ON account (id) WHERE NOT flag_private;
 
 -- This needs to be here because of the table creation order and the circular
 -- reference
