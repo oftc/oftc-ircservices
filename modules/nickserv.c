@@ -55,6 +55,7 @@ static dlink_node *ns_quit_hook;
 static dlink_node *ns_certfp_hook;
 static dlink_node *ns_on_auth_req_hook;
 static dlink_node *ns_on_identify_hook;
+static dlink_node *ns_on_verified_notify_hook;
 
 static dlink_list nick_enforce_list = { NULL, NULL, 0 };
 static dlink_list nick_release_list = { NULL, NULL, 0 };
@@ -73,6 +74,7 @@ static void *ns_on_quit(va_list);
 static void *ns_on_certfp(va_list);
 static void *ns_on_auth_requested(va_list);
 static void *ns_on_identify(va_list);
+static void *ns_on_verified_notify(va_list);
 
 static void m_drop(struct Service *, struct Client *, int, char *[]);
 static void m_help(struct Service *, struct Client *, int, char *[]);
@@ -354,6 +356,7 @@ INIT_MODULE(nickserv, "$Revision$")
   ns_certfp_hook      = install_hook(on_certfp_cb, ns_on_certfp);
   ns_on_auth_req_hook = install_hook(on_auth_request_cb, ns_on_auth_requested);
   ns_on_identify_hook = install_hook(on_identify_cb, ns_on_identify);
+  ns_on_verified_notify_hook = install_hook(find_callback("verified notifies"), ns_on_verified_notify);
   
   guest_number = 0;
 
@@ -371,6 +374,7 @@ CLEANUP_MODULE
   uninstall_hook(on_certfp_cb, ns_on_certfp);
   uninstall_hook(on_auth_request_cb, ns_on_auth_requested);
   uninstall_hook(on_identify_cb, ns_on_identify);
+  uninstall_hook(find_callback("verified notifies"), ns_on_verified_notify);
   eventDelete(process_enforce_list, NULL);
   eventDelete(process_release_list, NULL);
   serv_clear_messages(nickserv);
@@ -2582,4 +2586,43 @@ set_nickname_password(Nickname *nick, const char *new_password)
   MyFree(pass);
  
   return TRUE;
+}
+
+static void *
+ns_on_verified_notify(va_list args)
+{
+  char *name = va_arg(args, char *);
+  struct Client *client;
+  Nickname *nick;
+
+  client = find_client(name);
+  if(client == NULL || !IsIdentified(client))
+    return pass_callback(ns_on_verified_notify_hook, name);
+
+  /* Refresh from the DB */
+  nick = nickname_find(name);
+  if(!nick)
+  {
+    /* Handle disappearing nicknames sanely */
+    ClearIdentified(client);
+    nickname_free(client->nickname);
+    client->nickname = NULL;
+    reply_user(nickserv, nickserv, client, NS_CHECKVERIFY_FAIL);
+    return pass_callback(ns_on_verified_notify_hook, name);
+  }
+  nickname_free(client->nickname);
+  client->nickname = nick;
+
+  if(nickname_get_verified(client->nickname))
+  {
+    send_umode(NULL, client, "+R");
+    do_cloak(client);
+    reply_user(nickserv, nickserv, client, NS_CHECKVERIFY_SUCCESS);
+    return pass_callback(ns_on_verified_notify_hook, name);
+  }
+  else
+  {
+    reply_user(nickserv, nickserv, client, NS_CHECKVERIFY_FAIL);
+    return pass_callback(ns_on_verified_notify_hook, name);
+  }
 }
