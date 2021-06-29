@@ -44,6 +44,7 @@
 #define TEMP_BUFSIZE 32
 
 static database_t *pgsql;
+static struct Callback *verified_notifies_cb;
 
 static int pg_connect(const char *);
 static char *pg_execute_scalar(int, int *, const char *, dlink_list*);
@@ -58,6 +59,8 @@ static int pg_rollback_transaction();
 static void pg_free_result(result_set_t *);
 static int void_to_char(char, char **, void *);
 static int pg_is_connected();
+static void consumeInput(fde_t *, void *);
+static void checkNotifies(void *);
 
 static query_t queries[QUERY_COUNT] = { 
   { GET_FULL_NICK, "SELECT account.id, primary_nick, nickname.id, "
@@ -336,6 +339,7 @@ static query_t queries[QUERY_COUNT] = {
     "ORDER BY irc_lower(name)", QUERY },
   { SET_SYNCHRONOUS_COMMIT, "UPDATE pg_settings SET setting = 'on' WHERE name = 'synchronous_commit'", EXECUTE },
   { UNSET_SYNCHRONOUS_COMMIT, "UPDATE pg_settings SET setting = 'off' WHERE name = 'synchronous_commit'", EXECUTE },
+  { LISTEN_VERIFIED, "LISTEN verified", EXECUTE },
 };
 
 
@@ -356,11 +360,17 @@ INIT_MODULE(pgsql, "$Revision: 1251 $")
   pgsql->next_id = pg_nextid;
   pgsql->is_connected = pg_is_connected;
 
+  verified_notifies_cb = register_callback("verified notifies", NULL);
+  eventAdd("Check notifies", checkNotifies, NULL, 5);
+
   return pgsql;
 }
 
 CLEANUP_MODULE
 {
+  unregister_callback(verified_notifies_cb);
+  eventDelete(checkNotifies, NULL);
+
   PQfinish(pgsql->connection);
   MyFree(pgsql);
 }
@@ -398,18 +408,26 @@ pg_prepare(int id, const char *query)
 static int 
 pg_connect(const char *connection_string)
 {
+  static fde_t pg_fde = { 0 };
   int i;
 
   if(pgsql->connection == NULL)
+  {
     pgsql->connection = PQconnectdb(connection_string);
+  }
   else
+  {
+    fd_close(&pg_fde);
     PQreset(pgsql->connection);
+  }
 
   if(pgsql->connection == NULL)
     return 0;
 
   if(PQstatus(pgsql->connection) != CONNECTION_OK)
     return 0;
+
+  fd_open(&pg_fde, PQsocket(pgsql->connection), 1, "postgres connection");
 
   for(i = 0; i < QUERY_COUNT; i++)
   {
@@ -425,6 +443,9 @@ pg_connect(const char *connection_string)
   }
 
   pgsql->execute_nonquery(UNSET_SYNCHRONOUS_COMMIT, "", NULL); /* turn safe commits off until burst is completed */
+
+  comm_setselect(&pg_fde, COMM_SELECT_READ, consumeInput, NULL, 0);
+  pgsql->execute_nonquery(LISTEN_VERIFIED, "", NULL);
 
   return 1;
 }
@@ -816,4 +837,37 @@ pg_nextid(const char *table, const char *column)
   MyFree(pgquery);
   return(id);
 
+}
+
+static void
+consumeInput(fde_t *fd, void *data)
+{
+  int ret;
+
+  if(!pg_is_connected())
+    return;
+
+  ret = PQconsumeInput(pgsql->connection);
+  if(ret == 0)
+  {
+    db_log("PG consumeInput Error: %s", PQerrorMessage(pgsql->connection));
+  }
+}
+
+static void
+checkNotifies(void *unused)
+{
+  PGnotify *notify;
+
+  if(!pg_is_connected())
+    return;
+
+  while((notify = PQnotifies(pgsql->connection)) != NULL)
+  {
+    if(!strcmp(notify->relname, "verified"))
+    {
+      execute_callback(verified_notifies_cb, notify->extra);
+    }
+    PQfreemem(notify);
+  }
 }
