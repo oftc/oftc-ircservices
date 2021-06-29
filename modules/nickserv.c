@@ -2596,7 +2596,7 @@ ns_on_verified_notify(va_list args)
   Nickname *nick;
 
   client = find_client(name);
-  if(client == NULL)
+  if(client == NULL || !IsIdentified(client))
     return pass_callback(ns_on_verified_notify_hook, name);
 
   /* Refresh from the DB */
