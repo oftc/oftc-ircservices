@@ -566,12 +566,12 @@ class GanneffServ < ServiceModule
     end # if not reason.include?
 
     #client.host is always filled, check it for the cloak value
-    if client.is_tor?
-      debug(LOG_DEBUG, "Using /kill instead of AKILL for Tor user #{client.name}")
-      ret = kill_user(client, reason)
-    elsif client.host =~ /.*(noc|netop|netrep|chair|ombudsman|advisor).oftc.net/ # should this have an $ ending?
+    if client.host =~ /.*\.(noc|netop|netrep|chair|ombudsman|advisor)\.oftc\.net$/
       debug(LOG_DEBUG, "Not issuing AKILL for #{client.name} having cloak #{client.host}, real host #{client.realhost}")
       ret = false # continue with callbacks, we haven't set any kill
+    elsif client.is_tor?
+      debug(LOG_DEBUG, "Using /kill instead of AKILL for Tor user #{client.name}")
+      ret = kill_user(client, reason)
     else # if host
       reason = "#{reason}|#{operreason}"
       debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
