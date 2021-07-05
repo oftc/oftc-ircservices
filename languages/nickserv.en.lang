@@ -22,9 +22,9 @@ NS_HELP_REG_LONG
 	Once your nickname is registered, see HELP SET for information on settings
 	that can be set on it.
 	
-	To complete the registration, the nickname must be VERIFIED.  To verify
-	your nick, go to https://services.oftc.net/, log in with your NickServ
-	password, and follow the instructions there.
+	To complete the registration, the nickname must be VERIFIED.  You'll
+	receive a link to complete the verification process.  This link expires in
+	1 hour.  If the link expires, see REVERIFY.
 NS_HELP_ID_SHORT
 	%s: Identify your nickname.
 NS_HELP_ID_LONG
@@ -62,6 +62,13 @@ NS_HELP_CHECKVERIFY_LONG
 	
 	Checks the database to determine whether or not your nickname is verified.
 	If it is and you are not currently mode +R, sets +R.
+NS_HELP_REVERIFY_SHORT
+	%s: Generates a new verification link.
+NS_HELP_REVERIFY_LONG
+	Usage: REVERIFY
+	
+	Generates a new verification link to verify your nickname.  This link expires in
+	1 hour.
 NS_HELP_ACCESS_SHORT
 	%s: Maintains the nickname ACCESS list.
 NS_HELP_ACCESS_LONG
@@ -497,10 +504,8 @@ NS_REG_COMPLETE
 	required to identify using the password you chose when you registered.  See
 	HELP IDENTIFY for more information on identifying your nickname.
 	
-	To complete the registration, the nickname must be VERIFIED.  To verify
-	your nick, go to https://services.oftc.net/, log in with your NickServ
-	password, and follow the instructions there.  Note that we do not validate
-	the e-mail address.
+	To complete the registration, the nickname must be VERIFIED.  Note that we
+	do not validate the e-mail address.
 NS_REG_FAIL
 	Nickname %s failed to register.  This is usually caused by an internal
 	problem within services or a database problem.  Please try again in a short
@@ -862,9 +867,14 @@ NS_CHECKVERIFY_SUCCESS
 	Successfully set +R on your nick.
 NS_CHECKVERIFY_ALREADY
 	You're already verified.
+NS_REVERIFY_ALREADY
+	You're already verified.
 NS_VERIFY_YESNO
 	The second parameter, if given, must be YES or NO
 NS_VERIFY_SUCCESS
 	Changed verified status of %s to %s
 NS_VERIFY_FAIL
 	Failed to change verified status of %s to %s
+NS_REG_VERIFY_LINK
+	To verify your nick, please visit https://services.oftc.net/verify/%s:%ld:%s
+	in your browser.  This link expires in 1 hour.  If the link expires, see REVERIFY.
