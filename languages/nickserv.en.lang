@@ -55,13 +55,6 @@ NS_HELP_DROPNICK_LONG
 	This cannot be undone. Releasing a nickname in this way will allow others to
 	make use of it, or register it for their use, so make sure you really want
 	this.
-NS_HELP_CHECKVERIFY_SHORT
-	%s: Sets +R if you recently verified your nickname.
-NS_HELP_CHECKVERIFY_LONG
-	Usage: CHECKVERIFY
-	
-	Checks the database to determine whether or not your nickname is verified.
-	If it is and you are not currently mode +R, sets +R.
 NS_HELP_REVERIFY_SHORT
 	%s: Generates a new verification link.
 NS_HELP_REVERIFY_LONG
@@ -865,8 +858,6 @@ NS_CHECKVERIFY_FAIL
 	To set +R, your nick must be registered and verified.
 NS_CHECKVERIFY_SUCCESS
 	Successfully set +R on your nick.
-NS_CHECKVERIFY_ALREADY
-	You're already verified.
 NS_REVERIFY_ALREADY
 	You're already verified.
 NS_VERIFY_YESNO
