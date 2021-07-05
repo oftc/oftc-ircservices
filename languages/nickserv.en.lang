@@ -557,7 +557,7 @@ NS_NICK_DROPPED
 	Nickname %s has been dropped.  It is now free to be registered by other
 	users.
 NS_DROP_AUTH
-	If you are sure you wish to drop this nickname then type /msg %s DROP %d:%s
+	If you are sure you wish to drop this nickname then type /msg %s DROP %ld:%s
 NS_DROP_AUTH_FAIL
 	The auth code you supplied is invalid or has expired.  Nickname %s NOT
 	dropped.  This may be an internal error, please try again later.  If this is
