@@ -92,7 +92,6 @@ static void m_list(struct Service *, struct Client *, int, char *[]);
 static void m_status(struct Service *, struct Client *, int, char*[]);
 static void m_group(struct Service *, struct Client *, int, char*[]);
 static void m_dropnick(struct Service *, struct Client *, int, char*[]);
-static void m_checkverify(struct Service *, struct Client *, int, char*[]);
 static void m_verify(struct Service *, struct Client *, int, char*[]);
 static void m_reverify(struct Service *, struct Client *, int, char*[]);
 
@@ -303,11 +302,6 @@ static struct ServiceMessage dropnick_msgtab = {
     NS_HELP_DROPNICK_LONG, m_dropnick
 };
 
-static struct ServiceMessage checkverify_msgtab = {
-  NULL, "CHECKVERIFY", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_CHECKVERIFY_SHORT,
-  NS_HELP_CHECKVERIFY_LONG, m_checkverify
-};
-
 static struct ServiceMessage verify_msgtab = {
   NULL, "VERIFY", 0, 1, 2, 0, OPER_FLAG, NS_HELP_VERIFY_SHORT,
   NS_HELP_VERIFY_LONG, m_verify
@@ -352,7 +346,6 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &group_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &resetpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &dropnick_msgtab);
-  mod_add_servcmd(&nickserv->msg_tree, &checkverify_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &verify_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &reverify_msgtab);
 
@@ -2411,45 +2404,6 @@ m_status(struct Service *service, struct Client *client, int parc, char *parv[])
   {
     reply_user(service, service, client, NS_STATUS_OFFLINE, name);
     return;  
-  }
-}
-
-static void
-m_checkverify(struct Service *service, struct Client *client, int parc, char *parv[])
-{
-  Nickname *nick;
-
-  if(nickname_get_verified(client->nickname))
-  {
-    reply_user(service, service, client, NS_CHECKVERIFY_ALREADY);
-    return;
-  }
-  
-  /* Refresh from the DB */
-  nick = nickname_find(client->name);
-  if(!nick)
-  {
-    /* Handle disappearing nicknames sanely */
-    ClearIdentified(client);
-    nickname_free(client->nickname);
-    client->nickname = NULL;
-    reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
-    return;
-  }
-  nickname_free(client->nickname);
-  client->nickname = nick;
-  
-  if(nickname_get_verified(client->nickname))
-  {
-    send_umode(NULL, client, "+R");
-    do_cloak(client);
-    reply_user(service, service, client, NS_CHECKVERIFY_SUCCESS);
-    return;
-  }
-  else
-  {
-    reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
-    return;
   }
 }
 
