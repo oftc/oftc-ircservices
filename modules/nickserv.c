@@ -2474,7 +2474,7 @@ m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
       link = (char *)ptr->data;
       if((target = find_client(link)) != NULL && IsIdentified(target))
       {
-        // I hate this, but it's the safest way to all linked online nicks' verified status
+        // I hate this, but it's the safest way to update all linked online nicks' verified status
         nickname_free(target->nickname);
         target->nickname = nickname_find(link);
 
@@ -2491,6 +2491,7 @@ m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
     }
     nickname_link_list_free(&list);
 
+    ilog(L_INFO, "%s set verified status of %s to %s", client->name, parv[1], on ? "YES" : "NO");
     reply_user(service, service, client, NS_VERIFY_SUCCESS, parv[1], toggle);
   }
   else
