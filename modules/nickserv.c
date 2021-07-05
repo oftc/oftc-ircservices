@@ -92,8 +92,8 @@ static void m_list(struct Service *, struct Client *, int, char *[]);
 static void m_status(struct Service *, struct Client *, int, char*[]);
 static void m_group(struct Service *, struct Client *, int, char*[]);
 static void m_dropnick(struct Service *, struct Client *, int, char*[]);
-static void m_checkverify(struct Service *, struct Client *, int, char*[]);
 static void m_verify(struct Service *, struct Client *, int, char*[]);
+static void m_reverify(struct Service *, struct Client *, int, char*[]);
 
 static void m_set_language(struct Service *, struct Client *, int, char *[]);
 static void m_set_password(struct Service *, struct Client *, int, char *[]);
@@ -302,14 +302,14 @@ static struct ServiceMessage dropnick_msgtab = {
     NS_HELP_DROPNICK_LONG, m_dropnick
 };
 
-static struct ServiceMessage checkverify_msgtab = {
-  NULL, "CHECKVERIFY", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_CHECKVERIFY_SHORT,
-  NS_HELP_CHECKVERIFY_LONG, m_checkverify
-};
-
 static struct ServiceMessage verify_msgtab = {
   NULL, "VERIFY", 0, 1, 2, 0, OPER_FLAG, NS_HELP_VERIFY_SHORT,
   NS_HELP_VERIFY_LONG, m_verify
+};
+
+static struct ServiceMessage reverify_msgtab = {
+  NULL, "REVERIFY", 0, 0, 0, 0, IDENTIFIED_FLAG, NS_HELP_REVERIFY_SHORT,
+  NS_HELP_REVERIFY_LONG, m_reverify
 };
 
 INIT_MODULE(nickserv, "$Revision$")
@@ -346,8 +346,8 @@ INIT_MODULE(nickserv, "$Revision$")
   mod_add_servcmd(&nickserv->msg_tree, &group_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &resetpass_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &dropnick_msgtab);
-  mod_add_servcmd(&nickserv->msg_tree, &checkverify_msgtab);
   mod_add_servcmd(&nickserv->msg_tree, &verify_msgtab);
+  mod_add_servcmd(&nickserv->msg_tree, &reverify_msgtab);
 
   ns_umode_hook       = install_hook(on_umode_change_cb, ns_on_umode_change);
   ns_nick_hook        = install_hook(on_nick_change_cb, ns_on_nick_change);
@@ -547,13 +547,30 @@ m_register(struct Service *service, struct Client *client,
 
   if(nickname_register(nick))
   {
+    char hexnick[IRC_BUFSIZE] = {0};
+    char buf[IRC_BUFSIZE+1] = {0};
+    const char *tempnick;
+    char *hmac;
+
+    tempnick = nickname_get_nick(nick);
+
+    base16_encode(hexnick, IRC_BUFSIZE, tempnick, strlen(tempnick));
+
+    snprintf(buf, IRC_BUFSIZE, "%s:%ld", tempnick, CurrentTime);
+    hmac = generate_hmac(buf);
+
     client->nickname = nick;
     identify_user(client);
 
     reply_user(service, service, client, NS_REG_COMPLETE, client->name);
+    reply_user(service, service, client, NS_REG_VERIFY_LINK, hexnick,
+        CurrentTime, hmac);
+
     global_notice(NULL, "%s!%s@%s registered nick %s (email: %s)\n", client->name,
-        client->username, client->host, nickname_get_nick(nick),
+        client->username, client->host, tempnick,
         nickname_get_email(nick));
+
+    MyFree(hmac);
 
     execute_callback(on_nick_reg_cb, client);
     return;
@@ -2391,45 +2408,6 @@ m_status(struct Service *service, struct Client *client, int parc, char *parv[])
 }
 
 static void
-m_checkverify(struct Service *service, struct Client *client, int parc, char *parv[])
-{
-  Nickname *nick;
-
-  if(nickname_get_verified(client->nickname))
-  {
-    reply_user(service, service, client, NS_CHECKVERIFY_ALREADY);
-    return;
-  }
-  
-  /* Refresh from the DB */
-  nick = nickname_find(client->name);
-  if(!nick)
-  {
-    /* Handle disappearing nicknames sanely */
-    ClearIdentified(client);
-    nickname_free(client->nickname);
-    client->nickname = NULL;
-    reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
-    return;
-  }
-  nickname_free(client->nickname);
-  client->nickname = nick;
-  
-  if(nickname_get_verified(client->nickname))
-  {
-    send_umode(NULL, client, "+R");
-    do_cloak(client);
-    reply_user(service, service, client, NS_CHECKVERIFY_SUCCESS);
-    return;
-  }
-  else
-  {
-    reply_user(service, service, client, NS_CHECKVERIFY_FAIL);
-    return;
-  }
-}
-
-static void
 m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
 {
   Nickname *nick;
@@ -2499,6 +2477,30 @@ m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
     reply_user(service, service, client, NS_VERIFY_FAIL, parv[1], toggle);
   }
   nickname_free(nick);
+}
+
+static void
+m_reverify(struct Service *service, struct Client *client, int parc, char *parv[])
+{
+  char hexnick[IRC_BUFSIZE] = {0};
+  char buf[IRC_BUFSIZE+1] = {0};
+  char *hmac;
+
+  if(nickname_get_verified(client->nickname))
+  {
+    reply_user(service, service, client, NS_REVERIFY_ALREADY);
+    return;
+  }
+
+  base16_encode(hexnick, IRC_BUFSIZE, client->name, strlen(client->name));
+
+  snprintf(buf, IRC_BUFSIZE, "%s:%ld", client->name, CurrentTime);
+  hmac = generate_hmac(buf);
+
+  reply_user(service, service, client, NS_REG_VERIFY_LINK, hexnick,
+      CurrentTime, hmac);
+
+  MyFree(hmac);
 }
 
 static int
