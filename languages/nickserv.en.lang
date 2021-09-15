@@ -867,5 +867,8 @@ NS_VERIFY_SUCCESS
 NS_VERIFY_FAIL
 	Failed to change verified status of %s to %s
 NS_REG_VERIFY_LINK
-	To verify your nick, please visit https://services.oftc.net/verify/%s:%ld:%s
-	in your browser.  This link expires in 1 hour.  If the link expires, see REVERIFY.
+	To verify your nick, please visit the following link in your browser:
+	
+	https://services.oftc.net/verify/%s:%ld:%s
+	
+	This link expires in 1 hour.  If the link expires, see REVERIFY.
