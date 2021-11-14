@@ -579,7 +579,7 @@ irc_ns_put32(unsigned long src, unsigned char *dst)
 /*
  * special(ch)
  *      Thinking in noninternationalized USASCII (per the DNS spec),
- *      is this characted special ("in need of quoting") ?
+ *      is this character special ("in need of quoting") ?
  * return:
  *      boolean.
  */
