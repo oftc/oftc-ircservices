@@ -4,7 +4,7 @@
 struct TorNode {
   /* hash linked list */
   struct TorNode *next;
-  /* iteratable list */
+  /* iterable list */
   dlink_node node;
 
   char host[HOSTLEN+1];
