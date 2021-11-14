@@ -2015,7 +2015,7 @@ ns_on_nick_change(va_list args)
     struct Client *client = find_client(user->release_to);
     struct Client *target;
 
-    /* in the "real world" it is possible that a user gets deidenfitied in the
+    /* in the "real world" it is possible that a user gets deidentified in the
      * mean time, check they are still eligible for this nick.
      */
     if(client != NULL && client->nickname != NULL)
