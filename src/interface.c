@@ -1286,7 +1286,7 @@ enforce_mode_lock(struct Service *service, struct Channel *channel,
   if(separate_modes(parv[0], &on_modes, &off_modes, &key_pos, &limit_pos) == FALSE)
     return 1;
 
-  /* at first I tried to be clever on mlock set and only send the addtional
+  /* at first I tried to be clever on mlock set and only send the additional
    * modes, but set is rarely called, so it's really not a problem to resend
    * all mlock modes
    */
