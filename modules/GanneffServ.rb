@@ -69,6 +69,8 @@ class GanneffServ < ServiceModule
        ["STATS",    0,       0,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_STS_SHORT'), lm('GS_HLP_STS_LONG')],
        ["ENFORCE",  0,       0,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_ENF_SHORT'), lm('GS_HLP_ENF_LONG')],
        ["BADSERV",  0,       1,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_SRV_SHORT'), lm('GS_HLP_SRV_LONG')],
+       ["PROTECT",  1,       2,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_PRT_SHORT'), lm('GS_HLP_PRT_LONG')],
+       ["UNPROTECT",1,       2,       SFLG_NOMAXPARAM,              ADMIN_FLAG, lm('GS_HLP_UPR_SHORT'), lm('GS_HLP_UPR_LONG')],
       ]) # register
 
     # Which hooks do we want?
@@ -100,6 +102,13 @@ class GanneffServ < ServiceModule
       irc_lower($1)')
     @dbq['INCREASE_KILLS'] = DB.prepare('UPDATE ganneffserv SET kills = kills+1
       WHERE irc_lower(channel) = irc_lower($1)')
+    @dbq['INSERT_PROTECT'] = DB.prepare('INSERT INTO ganneffprotect(setter, time,
+      pattern, reason) VALUES($1, $2, $3, $4)')
+    @dbq['DELETE_PROTECT'] = DB.prepare('DELETE FROM ganneffprotect WHERE
+      irc_lower(pattern) = irc_lower($1)')
+    @dbq['GET_PROTECTED_PATTERNS'] = DB.prepare('SELECT pattern, reason FROM ganneffprotect')
+    @dbq['GET_PROTECTED_PATTERNS_DETAILED'] = DB.prepare('SELECT pattern, setter, time,
+      reason FROM ganneffprotect')
   end # def initialize
 
 ########################################################################
@@ -223,6 +232,50 @@ class GanneffServ < ServiceModule
 
 # ------------------------------------------------------------------------
 
+  # Protect users from collatoral damage
+  def PROTECT(client, parv = [])
+    parv[1].downcase!
+    debug(LOG_DEBUG, "#{client.name} called PROTECT and the params are #{parv.join(",")}")
+
+    requested_pattern = parv[1]
+    pattern = irc_pattern_to_regex(requested_pattern)
+    reason = parv[2]
+
+    ret = DB.execute_nonquery(@dbq['INSERT_PROTECT'], 'iiss', client.nick.account_id,
+      Time.now.to_i, pattern, reason)
+    if ret then
+      debug(LOG_NOTICE, "#{client.name} added protection #{pattern}, reason #{reason}")
+      @protection[pattern] = reason
+      load_protected_patterns
+      reply(client, "Protection #{requested_pattern} successfully added")
+    else
+      reply(client, "Failed to add #{requested_pattern}")
+    end
+  end
+
+# ------------------------------------------------------------------------
+
+  # Unprotect users from collatoral damage
+  def UNPROTECT(client, parv = [])
+    parv[1].downcase!
+    debug(LOG_DEBUG, "#{client.name} called UNPROTECT and the params are #{parv.join(",")}")
+
+    pattern = irc_pattern_to_regex(parv[1])
+    return unless @protection.has_key?(pattern)
+
+    ret = DB.execute_nonquery(@dbq['DELETE_PROTECT'], 's', pattern)
+    if ret then
+      debug(LOG_NOTICE, "#{client.name} removed protection #{pattern}")
+      @protection.delete(pattern)
+      load_protected_patterns
+      reply(client, "Protection #{pattern} successfully deleted.")
+    else
+      reply(client, "Failed to delete protection #{pattern}.")
+    end
+  end
+
+# ------------------------------------------------------------------------
+
   # List all channels we monitor
   def LIST(client, parv = [])
     debug(LOG_DEBUG, "#{client.name} called LIST")
@@ -242,6 +295,18 @@ class GanneffServ < ServiceModule
       time = Time.at(row[5].to_i).strftime('%Y-%m-%d %H:%M:%S')
       reason = row[1]
       reply(client, "%-20s %-4s %-10s %-19s %s" % [ chan, check, by, time, "AKILL: #{reason}" ])
+    }
+    result.free
+
+    reply(client, "Protected host patterns\n\n")
+    reply(client, "%-50s %-10s %-19s %s" % [ "Pattern", "By", "When", "Reason" ])
+    result = DB.execute(@dbq['GET_PROTECTED_PATTERNS_DETAILED'])
+    result.row_each { |row|
+      pattern = row[0]
+      by = row[1]
+      time = Time.at(row[2].to_i).strftime('%Y-%m-%d %H:%M:%S')
+      reason = row[3]
+      reply(client, "%-50s %-10s %-19s %s" % [ pattern, by, time, reason ])
     }
     result.free
 
@@ -574,8 +639,13 @@ class GanneffServ < ServiceModule
       ret = kill_user(client, reason)
     else # if host
       reason = "#{reason}|#{operreason}"
-      debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
-      ret = akill_add("*@#{host}", reason, @akill_duration)
+      if client.host =~ /#{@protected_patterns}/i # if protected hosts
+        debug(LOG_DEBUG, "Using /kill instead of AKILL for protected user #{client.name}")
+        ret = kill_user(client, reason)
+      else
+        debug(LOG_DEBUG, "Issuing AKILL: *@#{host}, #{reason} lasting for #{@akill_duration} seconds")
+        ret = akill_add("*@#{host}", reason, @akill_duration)
+      end # if protected hosts
     end # if host
 
     channel.downcase!
@@ -595,6 +665,31 @@ class GanneffServ < ServiceModule
       return true # Continue with callbacks, something went wrong
     end # if kill_user
   end # def akill
+
+# ------------------------------------------------------------------------
+
+  # convert irc pattern to regular expression
+  def irc_pattern_to_regex(pattern
+    # "." -> "\.", "*" -> ".*", "?" -> "."
+    # wrap with "^...$"
+    return pattern if pattern.start_with? '^'
+    pattern = pattern.gsub(/\./, '\\.')
+               .gsub(/\*/, '.*')
+               .gsub(/\?/, '.')
+    return "^#{pattern}$"
+  end
+
+# ------------------------------------------------------------------------
+
+  # get protected patterns as pattern
+  def load_protected_patterns()
+    patterns = @protection.keys
+    if patterns.empty?
+      @protected_patterns = '^$'
+    else
+      @protected_patterns = patterns.join('|')
+    end
+  end # def get_protected_patterns
 
 # ------------------------------------------------------------------------
 
@@ -648,6 +743,20 @@ class GanneffServ < ServiceModule
       count += 1
     }
     result.free
+
+    @protection = Hash.new
+    result = DB.execute(@dbq['GET_PROTECTED_PATTERNS'], '')
+    count = 0
+    result.row_each { |row|
+      pattern = row[0]
+      reason = row[1]
+      pattern = irc_pattern_to_regex(pattern)
+      @protection[pattern] = reason
+      count += 1
+    }
+    result.free
+    load_protected_patterns
+
     debug(LOG_DEBUG, "All channel data successfully loaded")
   end # def load_data
 
