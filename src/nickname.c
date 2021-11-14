@@ -262,7 +262,7 @@ failure:
  *
  * Tests a string nickname for a match in the forbid list.
  *
- * Returns FALSE if not found OR if a database error occured. 
+ * Returns FALSE if not found OR if a database error occurred. 
  *
  * Returns TRUE if a match was found and the nickname is forbidden.
  *
