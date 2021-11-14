@@ -1395,7 +1395,7 @@ enforce_mode_lock(struct Service *service, struct Channel *channel,
 }
 
 /* 
- * The reason this function looks a bit overkill is it doubles as a valdation
+ * The reason this function looks a bit overkill is it doubles as a validation
  * and setting function which can be called both by the chanserv module when
  * someone does set #foo mlock, but can also be called to enforce the mlock
  * without changing it in the db. It's because of this oddness it's full of
