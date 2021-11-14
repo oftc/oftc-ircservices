@@ -144,7 +144,7 @@ class GanneffServ < ServiceModule
   # Add a channel to GanneffServ monitoring
   def ADD(client, parv = [])
     parv[1].downcase!
-    debug(LOG_DEBUG, "#{client.name} called ADD and the parms are #{parv.join(",")}")
+    debug(LOG_DEBUG, "#{client.name} called ADD and the params are #{parv.join(",")}")
     enforce = false
 
     channel = parv[1].downcase
@@ -201,7 +201,7 @@ class GanneffServ < ServiceModule
   # Delete a channel from the monitoring
   def DEL(client, parv = [])
     parv[1].downcase!
-    debug(LOG_DEBUG, "#{client.name} called DEL and the parms are #{parv.join(",")}")
+    debug(LOG_DEBUG, "#{client.name} called DEL and the params are #{parv.join(",")}")
     channel = parv[1].downcase
     return unless @channels.has_key?(channel)
 
@@ -323,7 +323,7 @@ class GanneffServ < ServiceModule
   def BADSERV(client, parv = [])
     if parv.length > 0
       parv[1].downcase!
-      debug(LOG_DEBUG, "#{client.name} called BADSERV and the parms are #{parv.join(",")}")
+      debug(LOG_DEBUG, "#{client.name} called BADSERV and the params are #{parv.join(",")}")
       server = parv[1].downcase
 
       if server =~ /.*\.oftc.net$/
