@@ -287,7 +287,7 @@ load_module(const char *filename)
 /*
  * unload_module()
  *
- * [API] A module is unloaded. This is actually MUCH simplier.
+ * [API] A module is unloaded. This is actually MUCH simpler.
  *
  * inputs: pointer to struct Module
  * output: none
