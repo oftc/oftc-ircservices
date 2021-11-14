@@ -583,7 +583,7 @@ class GanneffServ < ServiceModule
     if channel.length > 0 and not @channels[channel].nil?
       @channels[channel]["kills"]+=1
       DB.execute_nonquery(@dbq['INCREASE_KILLS'], 's', channel)
-    end # if channel.lenght
+    end # if channel.length
 
     @tkills+=1
     @skills+=1
