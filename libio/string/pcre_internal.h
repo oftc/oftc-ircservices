@@ -83,7 +83,7 @@ setjmp and stdarg are used is when NO_RECURSE is set. */
 
 /* If you are compiling for a system that needs some magic to be inserted
 before the definition of an exported function, define this macro to contain the
-relevant magic. It apears at the start of every exported function. */
+relevant magic. It appears at the start of every exported function. */
 
 #define EXPORT
 
