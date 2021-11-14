@@ -983,7 +983,7 @@ irc_encode_bitsring(const char **bp, const char *end, unsigned char **labelp,
         if (beg_blen == NULL) {
 
           if (c == '0') {
-            /* blen never begings with 0 */
+            /* blen never begins with 0 */
             return(EINVAL);
           }
           beg_blen = cp;
