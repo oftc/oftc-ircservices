@@ -1775,7 +1775,7 @@ for (;; ptr++)
       }
 
     /* If previous was a character match, abolish the item and generate a
-    repeat item instead. If a char item has a minumum of more than one, ensure
+    repeat item instead. If a char item has a minimum of more than one, ensure
     that it is set in reqbyte - it might not be if a sequence such as x{3} is
     the first thing in a branch because the x will have gone into firstbyte
     instead.  */
