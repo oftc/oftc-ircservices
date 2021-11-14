@@ -326,7 +326,7 @@ class GanneffServ < ServiceModule
       debug(LOG_DEBUG, "#{client.name} called BADSERV and the parms are #{parv.join(",")}")
       server = parv[1].downcase
 
-      if server =~ /.*\.oftc.net$/
+      if server =~ /.*\.oftc\.net$/
         debug(LOG_DEBUG, "#{server} seems to be an oftc server, proceeding")
         @badserver = server
         reply(client, "#{server} is now marked as a bad server, all new connections will be killed")
