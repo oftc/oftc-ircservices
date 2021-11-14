@@ -3389,7 +3389,7 @@ while ((c = *(++ptr)) != 0)
     case '+':            /* those are handled separately */
     case '?':
     length++;
-    goto POSESSIVE;      /* A few lines below */
+    goto POSSESSIVE;      /* A few lines below */
 
     /* This covers the cases of braced repeats after a single char, metachar,
     class, or back reference. */
@@ -3419,7 +3419,7 @@ while ((c = *(++ptr)) != 0)
 
     if (ptr[1] == '?') ptr++;      /* Needs no extra length */
 
-    POSESSIVE:                     /* Test for possessive quantifier */
+    POSSESSIVE:                     /* Test for possessive quantifier */
     if (ptr[1] == '+')
       {
       ptr++;
