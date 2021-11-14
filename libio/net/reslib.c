@@ -624,7 +624,7 @@ labellen(const unsigned char *lp)
       return((bitlen + 7 ) / 8 + 1);
     }
 
-    return(-1); /* unknwon ELT */
+    return(-1); /* unknown ELT */
   }
 
   return(l);
