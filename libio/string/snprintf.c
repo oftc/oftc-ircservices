@@ -466,7 +466,7 @@ static void fmtint (char *buffer, size_t *currlen, size_t maxlen,
     spadlen = 0;
   }
   if (flags & DP_F_MINUS) 
-    spadlen = -spadlen; /* Left Justifty */
+    spadlen = -spadlen; /* Left Justify */
 
 #ifdef DEBUG_SNPRINTF
   dprint (1, (debugfile, "zpad: %d, spad: %d, min: %d, max: %d, place: %d\n",
@@ -623,7 +623,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   if (padlen < 0) 
     padlen = 0;
   if (flags & DP_F_MINUS) 
-    padlen = -padlen; /* Left Justifty */
+    padlen = -padlen; /* Left Justify */
 
   if ((flags & DP_F_ZERO) && (padlen > 0)) 
   {
