@@ -164,7 +164,7 @@ init_interface()
   on_nick_reg_cb      = register_callback("Newly Registered Nick", NULL);
   on_chan_reg_cb      = register_callback("Newly Registered Chan", NULL);
   on_group_reg_cb     = register_callback("Newly Registered Group", NULL);
-  on_auth_request_cb  = register_callback("Authetication requested", NULL);
+  on_auth_request_cb  = register_callback("Authentication requested", NULL);
   do_event_cb         = register_callback("Event Loop Callback", NULL);
 
   load_language(ServicesLanguages, "services.en");
