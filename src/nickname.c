@@ -358,7 +358,7 @@ nickname_delete_forbid(const char *nick)
  * If is_accid is TRUE, it treats the specified id as an account is and
  * looks for the primary nickname of the account. 
  *
- * If is_accid is FALSE, it treats the id specificed as a nickname and
+ * If is_accid is FALSE, it treats the id specified as a nickname and
  * returns that specific nickname.
  *
  * Returns the nickname if successful.  Returns NULL on error, or if the
