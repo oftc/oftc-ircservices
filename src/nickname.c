@@ -659,7 +659,7 @@ row_to_access_entry(row_t *row)
  *
  * Returns the number of entries on success, -1 on error.
  *
- * The list paramter is populated with a list of AccessEntry structures.
+ * The list parameter is populated with a list of AccessEntry structures.
  *
  */
 int

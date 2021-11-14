@@ -1098,7 +1098,7 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
   id = nickid = 0;
 
   /* 
-   * If we only have one paramter, it's either a nickname of a certfp.  If
+   * If we only have one parameter, it's either a nickname of a certfp.  If
    * it's a nick we take the cert from the client. If we have two parameters, 
    * we should have a cert followed by a nickname.
    *

@@ -208,7 +208,7 @@ long enough.
 
 1.2.0
 -----
-o Make the EXPIREBANS paramter more than just simple ON/OFF.  You can now
+o Make the EXPIREBANS parameter more than just simple ON/OFF.  You can now
 specify a interval in seconds to customise it however you want.  The default
 is now 5 hours. (Database change required!)
 o Add ENSLAVE command which works the opposite way to LINK.
