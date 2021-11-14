@@ -80,7 +80,7 @@ class FloodServ < ServiceModule
     
     if gmsg_enforce
       log(LOG_NOTICE, "#{source.name}@#{source.host} NETWORK FLOOD MSG: #{message}")
-      ret = akill_add("*@#{source.host}", "Triggered Network Flood Proection, please email support@oftc.net", @akill_duration)
+      ret = akill_add("*@#{source.host}", "Triggered Network Flood Protection, please email support@oftc.net", @akill_duration)
     end
   end
   
