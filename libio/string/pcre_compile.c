@@ -278,7 +278,7 @@ int c, i;
 c = *(++ptr);
 if (c == 0) *errorcodeptr = ERR1;
 
-/* Non-alphamerics are literals. For digits or letters, do an initial lookup in
+/* Non-alphanumerics are literals. For digits or letters, do an initial lookup in
 a table. A non-zero result is something that can be returned immediately.
 Otherwise further processing may be required. */
 
