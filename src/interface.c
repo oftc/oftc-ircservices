@@ -155,7 +155,7 @@ init_interface()
   on_notice_cb        = register_callback("Notice for channel received", NULL);
   on_burst_done_cb    = register_callback("Notification that burst is complete", 
       NULL);
-  on_certfp_cb        = register_callback("Client certificate recieved for this user", NULL);
+  on_certfp_cb        = register_callback("Client certificate received for this user", NULL);
   on_nick_drop_cb     = register_callback("Nick Dropped", NULL);
   on_chan_drop_cb     = register_callback("Chan Dropped", NULL);
   on_group_drop_cb    = register_callback("Group Dropped", NULL);
