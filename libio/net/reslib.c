@@ -69,7 +69,7 @@
  */
 
 /* Original copyright ISC as above. 
- * Code modified specifically for ircd use from the following orginal files
+ * Code modified specifically for ircd use from the following original files
  * in bind ...
  *
  * res_comp.c
