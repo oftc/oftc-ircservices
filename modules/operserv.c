@@ -255,34 +255,34 @@ static void
 m_mod_load(struct Service *service, struct Client *client,
             int parc, char *parv[])
 {
-  char *parm = parv[1];
+  char *param = parv[1];
   char *mbn;
 
-  mbn = basename(parm);
+  mbn = basename(param);
 
   if (find_module(mbn, 0) != NULL)
   {
-    reply_user(service, service, client, OS_MOD_ALREADYLOADED, parm);
+    reply_user(service, service, client, OS_MOD_ALREADYLOADED, param);
     return;
   }
 
-  if (parm == NULL)
+  if (param == NULL)
   {
     reply_user(service, service, client, 0, "You need to specify the modules name");
     return;
   }
 
   ilog(L_NOTICE, "Loading %s by request of %s",
-      parm, client->name);
-  if (load_module(parm) != NULL)
+      param, client->name);
+  if (load_module(param) != NULL)
   {
-    ilog(L_NOTICE, "Module %s loaded", parm);
-    reply_user(service, service, client, OS_MOD_LOADED, parm);
+    ilog(L_NOTICE, "Module %s loaded", param);
+    reply_user(service, service, client, OS_MOD_LOADED, param);
   }
   else
   {
-    ilog(L_NOTICE, "Module %s could not be loaded!", parm);
-    reply_user(service, service, client, OS_MOD_LOADFAIL, parm);
+    ilog(L_NOTICE, "Module %s could not be loaded!", param);
+    reply_user(service, service, client, OS_MOD_LOADFAIL, param);
   }
 }
 
@@ -290,30 +290,30 @@ static void
 m_mod_reload(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  char *parm = parv[1];
+  char *param = parv[1];
   char *mbn;
   struct Module *module;
   char modname[PATH_MAX];
 
-  mbn = basename(parm);
+  mbn = basename(param);
   module = find_module(mbn, 0);
   if (module == NULL)
   {
     ilog(L_NOTICE, "Module %s reload requested by %s, but failed because not loaded",
-        parm, client->name);
-    reply_user(service, service, client, OS_MOD_NOTLOADED, parm, client->name);
+        param, client->name);
+    reply_user(service, service, client, OS_MOD_NOTLOADED, param, client->name);
     return;
   }
   if(irccmp(module->name, service->name) == 0)
   {
     ilog(L_NOTICE, "%s tried to reload %s.  Can't be done because it's me!",
         client->name, service->name);
-    reply_user(service, service, client, OS_MOD_CANTRELOAD, parm);
+    reply_user(service, service, client, OS_MOD_CANTRELOAD, param);
     return;
   }
-  ilog(L_NOTICE, "Reloading %s by request of %s", parm, client->name);
-  reply_user(service, service, client, OS_MOD_RELOADING, parm, client->name);
-  snprintf(modname, sizeof(modname), "%s.%s", parm, module->type == MODTYPE_RUBY ? "rb" : "so");
+  ilog(L_NOTICE, "Reloading %s by request of %s", param, client->name);
+  reply_user(service, service, client, OS_MOD_RELOADING, param, client->name);
+  snprintf(modname, sizeof(modname), "%s.%s", param, module->type == MODTYPE_RUBY ? "rb" : "so");
   unload_module(module);
   if (load_module(modname) != NULL)
   {
@@ -331,21 +331,21 @@ static void
 m_mod_unload(struct Service *service, struct Client *client,
     int parc, char *parv[])
 {
-  char *parm = parv[1];
+  char *param = parv[1];
   char *mbn;
   struct Module *module;
 
-  mbn = basename(parm);
+  mbn = basename(param);
   module = find_module(mbn, 0);
   if (module == NULL)
   {
     ilog(L_NOTICE, "Module %s unload requested by %s, but failed because not "
-        "loaded", parm, client->name);
-    reply_user(service, service, client, OS_MOD_UNLOAD_NOTLOADED, parm); 
+        "loaded", param, client->name);
+    reply_user(service, service, client, OS_MOD_UNLOAD_NOTLOADED, param); 
     return;
   }
-  ilog(L_NOTICE, "Unloading %s by request of %s", parm, client->name);
-  reply_user(service, service, client, OS_MOD_UNLOAD, parm, client->name);
+  ilog(L_NOTICE, "Unloading %s by request of %s", param, client->name);
+  reply_user(service, service, client, OS_MOD_UNLOAD, param, client->name);
   unload_module(module);
 }
 
