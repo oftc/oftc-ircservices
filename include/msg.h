@@ -133,7 +133,7 @@ struct ServiceMessage
 
 
 #define   SFLG_UNREGOK          0x001   /* This message can be called for an 
-                                           unregisted nick/channel */
+                                           unregistered nick/channel */
 #define   SFLG_ALIAS            0x002   /* This message is an alias of another
                                            and should not show in help */
 #define   SFLG_KEEPARG          0x004   /* Keep the target argument as parv[1],

@@ -323,7 +323,7 @@ fix_key(char *arg)
  * 
  * inputs       - pointer to key to clean up
  * output       - pointer to cleaned up key
- * side effects - input string is modifed 
+ * side effects - input string is modified 
  *
  * Here we attempt to be compatible with older non-hybrid servers.
  * We can't back down from the ':' issue however.  --Rodder

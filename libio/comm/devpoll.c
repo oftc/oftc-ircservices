@@ -63,8 +63,8 @@ init_netio(void)
 
 /*
  * Write an update to the devpoll filter.
- * See, we end up having to do a seperate (?) remove before we do an
- * add of a new polltype, so we have to have this function seperate from
+ * See, we end up having to do a separate (?) remove before we do an
+ * add of a new polltype, so we have to have this function separate from
  * the others.
  */
 static void

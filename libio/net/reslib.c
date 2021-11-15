@@ -69,7 +69,7 @@
  */
 
 /* Original copyright ISC as above. 
- * Code modified specifically for ircd use from the following orginal files
+ * Code modified specifically for ircd use from the following original files
  * in bind ...
  *
  * res_comp.c
@@ -125,7 +125,7 @@ static int irc_ns_name_compress(const char *src, unsigned char *dst, size_t dsts
     const unsigned char **dnptrs, const unsigned char **lastdnptr);
 static int irc_dn_find(const unsigned char *, const unsigned char *, const unsigned char * const *,
                        const unsigned char * const *);
-static int irc_encode_bitsring(const char **, const char *, unsigned char **, unsigned char **, 
+static int irc_encode_bitstring(const char **, const char *, unsigned char **, unsigned char **, 
                                const char *);
 static int irc_ns_name_uncompress(const unsigned char *, const unsigned char *,
                                   const unsigned char *, char *, size_t);
@@ -246,7 +246,7 @@ add_nameserver(const char *arg)
 
 /*
  * Expand compressed domain name 'comp_dn' to full domain name.
- * 'msg' is a pointer to the begining of the message,
+ * 'msg' is a pointer to the beginning of the message,
  * 'eomorig' points to the first location after the message,
  * 'exp_dn' is a pointer to a buffer of size 'length' for the result.
  * Return size of compressed name or -1 if there was an error.
@@ -579,7 +579,7 @@ irc_ns_put32(unsigned long src, unsigned char *dst)
 /*
  * special(ch)
  *      Thinking in noninternationalized USASCII (per the DNS spec),
- *      is this characted special ("in need of quoting") ?
+ *      is this character special ("in need of quoting") ?
  * return:
  *      boolean.
  */
@@ -624,7 +624,7 @@ labellen(const unsigned char *lp)
       return((bitlen + 7 ) / 8 + 1);
     }
 
-    return(-1); /* unknwon ELT */
+    return(-1); /* unknown ELT */
   }
 
   return(l);
@@ -706,7 +706,7 @@ irc_ns_name_pton(const char *src, unsigned char *dst, size_t dstsiz)
           errno = EINVAL; /* ??? */
           return(-1);
         }
-        if ((e = irc_encode_bitsring(&src,
+        if ((e = irc_encode_bitstring(&src,
                cp + 2,
                &label,
                &bp,
@@ -937,7 +937,7 @@ irc_ns_name_compress(const char *src, unsigned char *dst, size_t dstsiz,
 }
 
 static int
-irc_encode_bitsring(const char **bp, const char *end, unsigned char **labelp,
+irc_encode_bitstring(const char **bp, const char *end, unsigned char **labelp,
                     unsigned char **dst, const char *eom)
 {
   int afterslash = 0;
@@ -983,7 +983,7 @@ irc_encode_bitsring(const char **bp, const char *end, unsigned char **labelp,
         if (beg_blen == NULL) {
 
           if (c == '0') {
-            /* blen never begings with 0 */
+            /* blen never begins with 0 */
             return(EINVAL);
           }
           beg_blen = cp;

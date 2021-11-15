@@ -278,7 +278,7 @@ int c, i;
 c = *(++ptr);
 if (c == 0) *errorcodeptr = ERR1;
 
-/* Non-alphamerics are literals. For digits or letters, do an initial lookup in
+/* Non-alphanumerics are literals. For digits or letters, do an initial lookup in
 a table. A non-zero result is something that can be returned immediately.
 Otherwise further processing may be required. */
 
@@ -1775,7 +1775,7 @@ for (;; ptr++)
       }
 
     /* If previous was a character match, abolish the item and generate a
-    repeat item instead. If a char item has a minumum of more than one, ensure
+    repeat item instead. If a char item has a minimum of more than one, ensure
     that it is set in reqbyte - it might not be if a sequence such as x{3} is
     the first thing in a branch because the x will have gone into firstbyte
     instead.  */
@@ -3389,7 +3389,7 @@ while ((c = *(++ptr)) != 0)
     case '+':            /* those are handled separately */
     case '?':
     length++;
-    goto POSESSIVE;      /* A few lines below */
+    goto POSSESSIVE;      /* A few lines below */
 
     /* This covers the cases of braced repeats after a single char, metachar,
     class, or back reference. */
@@ -3419,7 +3419,7 @@ while ((c = *(++ptr)) != 0)
 
     if (ptr[1] == '?') ptr++;      /* Needs no extra length */
 
-    POSESSIVE:                     /* Test for possessive quantifier */
+    POSSESSIVE:                     /* Test for possessive quantifier */
     if (ptr[1] == '+')
       {
       ptr++;

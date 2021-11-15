@@ -152,7 +152,7 @@ printf("\n");
 
 if (length > md->end_subject - eptr) return FALSE;
 
-/* Separate the caselesss case for speed */
+/* Separate the caseless case for speed */
 
 if ((ims & PCRE_CASELESS) != 0)
   {

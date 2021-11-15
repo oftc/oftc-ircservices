@@ -588,7 +588,7 @@ NS_ACCESS_DEL
 NS_ACCESS_DEL_NONE
 	%s was not found on the ACCESS list.
 NS_ACCESS_DEL_ERROR
-	An error occured attempting to delete the ACCESS list entry.  Please try
+	An error occurred attempting to delete the ACCESS list entry.  Please try
 	again.  If this is not the first time you have seen this message please
 	contact network support at <support@oftc.net>.
 NS_AJOIN_INVALID_CHAN
@@ -613,7 +613,7 @@ NS_AJOIN_DEL
 NS_AJOIN_DEL_NONE
 	%s was not found on the AJOIN list.
 NS_AJOIN_DEL_ERROR
-	An error occured attempting to delete the AJOIN entry.  Please try again.
+	An error occurred attempting to delete the AJOIN entry.  Please try again.
 	If this is not the first time you have seen this message please contact
 	network support at <support@oftc.net>.
 NS_CERT_ADD

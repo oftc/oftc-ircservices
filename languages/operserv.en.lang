@@ -184,7 +184,7 @@ OS_JUPE_ALREADY
 OS_JUPE_SERVER_EXISTS
 	Server %s is currently connected to the network and cannot be jupitered.
 OS_JUPE_ADDED
-	Server %s now jupitered becase: %s
+	Server %s now jupitered because: %s
 OS_JUPE_ADD_FAILED
 	Failed to add jupe for %s
 OS_JUPE_DELETED

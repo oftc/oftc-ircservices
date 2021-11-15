@@ -362,10 +362,10 @@ setup_corefile(void)
 }
 
 void
-libio_init(int daemonn)
+libio_init(int daemon)
 {
 #ifndef _WIN32
-  if (daemonn)
+  if (daemon)
     close_standard_fds();
 #endif
 

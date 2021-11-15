@@ -393,7 +393,7 @@ CS_HELP_INVEX_DEL_SHORT
 CS_HELP_INVEX_DEL_LONG
 	Usage: INVEX channel DEL user@host
 	
-	Deletes the specified mask fromt he channel INVITE exception list
+	Deletes the specified mask from the channel INVITE exception list
 CS_HELP_INVEX_LIST_SHORT
 	%s: Lists all INVEX
 CS_HELP_INVEX_LIST_LONG

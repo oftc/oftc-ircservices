@@ -166,7 +166,7 @@ o Add the beginnings of python support.  This is a work in progress.
 o Fix a bug in the auto reconnect functionality.  Services will now
 successfully reconnect to servers after losing its link.
 o Various TS6 enhancements to make services make more use of TS6.
-o Implment mask clumping to prevent mode spam on channels.
+o Implement mask clumping to prevent mode spam on channels.
 o Add QUIET/INVEX/EXCEPT lists to chanserv.
 o Set the nickname last host and last realname on identify.
 o Fix a bug in services help causing it to give help for commands that started
@@ -208,7 +208,7 @@ long enough.
 
 1.2.0
 -----
-o Make the EXPIREBANS paramter more than just simple ON/OFF.  You can now
+o Make the EXPIREBANS parameter more than just simple ON/OFF.  You can now
 specify a interval in seconds to customise it however you want.  The default
 is now 5 hours. (Database change required!)
 o Add ENSLAVE command which works the opposite way to LINK.

@@ -39,7 +39,7 @@ typedef struct
                         /* fields in third byte */
         unsigned        qr: 1;          /* response flag */
         unsigned        opcode: 4;      /* purpose of message */
-        unsigned        aa: 1;          /* authoritive answer */
+        unsigned        aa: 1;          /* authoritative answer */
         unsigned        tc: 1;          /* truncated message */
         unsigned        rd: 1;          /* recursion desired */
                         /* fields in fourth byte */
@@ -52,7 +52,7 @@ typedef struct
                         /* fields in third byte */
         unsigned        rd :1;          /* recursion desired */
         unsigned        tc :1;          /* truncated message */
-        unsigned        aa :1;          /* authoritive answer */
+        unsigned        aa :1;          /* authoritative answer */
         unsigned        opcode :4;      /* purpose of message */
         unsigned        qr :1;          /* response flag */
                         /* fields in fourth byte */

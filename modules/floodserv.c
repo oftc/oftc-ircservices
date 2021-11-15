@@ -591,7 +591,7 @@ fs_on_privmsg(va_list args)
         break;
     }
 
-    /* Finallly add the message to the per user per channel queue */
+    /* Finally add the message to the per user per channel queue */
     mqueue_add_message(queue, message);
     enforce = mqueue_enforce(queue);
     switch(enforce)

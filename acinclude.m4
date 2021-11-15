@@ -119,7 +119,7 @@ AC_DEFUN([AX_CHECK_LIB_PGSQL],
     fi
 
     if test ! -x "$PG_CONFIG"; then
-      AC_MSG_ERROR([$PG_CONFIG does not exist or it is not an exectuable file])
+      AC_MSG_ERROR([$PG_CONFIG does not exist or it is not an executable file])
       PG_CONFIG="no"
       found_postgresql="no"
     fi
@@ -170,7 +170,7 @@ AC_DEFUN([AX_ARG_ENABLE_IOLOOP_MECHANISM],[
   AC_DEFINE_UNQUOTED([__IOPOLL_MECHANISM_KQUEUE],[$iopoll_mechanism_kqueue],[kqueue mechanism])
   AC_LINK_IFELSE([AC_LANG_SOURCE([AC_LANG_FUNC_LINK_TRY([kevent])])],[is_kqueue_mechanism_available="yes"],[is_kqueue_mechanism_available="no"])
   dnl }}}
-  dnl {{{ check for epoll oechanism support
+  dnl {{{ check for epoll mechanism support
   iopoll_mechanism_epoll=2
   AC_DEFINE_UNQUOTED([__IOPOLL_MECHANISM_EPOLL],[$iopoll_mechanism_epoll],[epoll mechanism])
   AC_RUN_IFELSE([AC_LANG_PROGRAM([

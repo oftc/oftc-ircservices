@@ -26,4 +26,4 @@ BP_PENDING_SHORT
 BP_PENDING_LONG
 	Usage: PENDING
 	
-	Returns the number of clients left to be checkd
+	Returns the number of clients left to be checked

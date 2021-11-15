@@ -211,7 +211,7 @@ string_to_array(char *string, char *parv[])
 /*
  * parse a buffer.
  *
- * NOTE: parse() should not be called recusively by any other functions!
+ * NOTE: parse() should not be called recursively by any other functions!
  */
 void
 parse(struct Client *client, char *pbuffer, char *bufend)

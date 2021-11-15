@@ -1098,7 +1098,7 @@ m_cert_add(struct Service *service, struct Client *client, int parc,
   id = nickid = 0;
 
   /* 
-   * If we only have one paramter, it's either a nickname of a certfp.  If
+   * If we only have one parameter, it's either a nickname of a certfp.  If
    * it's a nick we take the cert from the client. If we have two parameters, 
    * we should have a cert followed by a nickname.
    *
@@ -2015,7 +2015,7 @@ ns_on_nick_change(va_list args)
     struct Client *client = find_client(user->release_to);
     struct Client *target;
 
-    /* in the "real world" it is possible that a user gets deidenfitied in the
+    /* in the "real world" it is possible that a user gets deidentified in the
      * mean time, check they are still eligible for this nick.
      */
     if(client != NULL && client->nickname != NULL)

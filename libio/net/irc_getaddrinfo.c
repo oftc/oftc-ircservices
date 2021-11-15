@@ -329,7 +329,7 @@ irc_getaddrinfo(const char *hostname, const char *servname,
 
 	/*
 	 * XXX
-	 * If numreic representation of AF1 can be interpreted as FQDN
+	 * If numeric representation of AF1 can be interpreted as FQDN
 	 * representation of AF2, we need to think again about the code below.
 	 */
 	if (sentinel.ai_next)

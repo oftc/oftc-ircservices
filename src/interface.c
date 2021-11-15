@@ -155,7 +155,7 @@ init_interface()
   on_notice_cb        = register_callback("Notice for channel received", NULL);
   on_burst_done_cb    = register_callback("Notification that burst is complete", 
       NULL);
-  on_certfp_cb        = register_callback("Client certificate recieved for this user", NULL);
+  on_certfp_cb        = register_callback("Client certificate received for this user", NULL);
   on_nick_drop_cb     = register_callback("Nick Dropped", NULL);
   on_chan_drop_cb     = register_callback("Chan Dropped", NULL);
   on_group_drop_cb    = register_callback("Group Dropped", NULL);
@@ -164,7 +164,7 @@ init_interface()
   on_nick_reg_cb      = register_callback("Newly Registered Nick", NULL);
   on_chan_reg_cb      = register_callback("Newly Registered Chan", NULL);
   on_group_reg_cb     = register_callback("Newly Registered Group", NULL);
-  on_auth_request_cb  = register_callback("Authetication requested", NULL);
+  on_auth_request_cb  = register_callback("Authentication requested", NULL);
   do_event_cb         = register_callback("Event Loop Callback", NULL);
 
   load_language(ServicesLanguages, "services.en");
@@ -1286,7 +1286,7 @@ enforce_mode_lock(struct Service *service, struct Channel *channel,
   if(separate_modes(parv[0], &on_modes, &off_modes, &key_pos, &limit_pos) == FALSE)
     return 1;
 
-  /* at first I tried to be clever on mlock set and only send the addtional
+  /* at first I tried to be clever on mlock set and only send the additional
    * modes, but set is rarely called, so it's really not a problem to resend
    * all mlock modes
    */
@@ -1395,7 +1395,7 @@ enforce_mode_lock(struct Service *service, struct Channel *channel,
 }
 
 /* 
- * The reason this function looks a bit overkill is it doubles as a valdation
+ * The reason this function looks a bit overkill is it doubles as a validation
  * and setting function which can be called both by the chanserv module when
  * someone does set #foo mlock, but can also be called to enforce the mlock
  * without changing it in the db. It's because of this oddness it's full of

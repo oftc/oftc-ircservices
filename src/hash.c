@@ -158,7 +158,7 @@ hash_add_service(struct Service *service)
  * side effects - Adds a channel's name in the proper hash linked
  *                list, can't fail. chptr must have a non-null name
  *                or expect a coredump. As before the name is taken
- *                from chptr->name, we do hash its entire lenght
+ *                from chptr->name, we do hash its entire length
  *                since this proved to be statistically faster
  */
 void

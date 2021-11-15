@@ -451,7 +451,7 @@ comm_connect_tryconnect(fde_t *fd, void *notused)
     return;
   }
 
-  /* If we get here, we've suceeded, so call with COMM_OK */
+  /* If we get here, we've succeeded, so call with COMM_OK */
   comm_connect_callback(fd, COMM_OK);
 }
 
