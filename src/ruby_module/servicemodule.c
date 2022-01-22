@@ -8,7 +8,6 @@
 #include "kill.h"
 
 VALUE cServiceModule = Qnil;
-VALUE cClient;
 
 /* Core Functions */
 static VALUE ServiceModule_register(VALUE, VALUE);

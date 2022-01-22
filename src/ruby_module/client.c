@@ -4,7 +4,6 @@
 #include "hash.h"
 
 VALUE cClient = Qnil;
-VALUE cNickname;
 
 static VALUE initialize(VALUE, VALUE);
 static VALUE name(VALUE);
