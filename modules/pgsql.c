@@ -31,6 +31,8 @@
 #undef PACKAGE_BUGREPORT
 #undef PACKAGE_STRING
 #undef PACKAGE_TARNAME
+/* undo redirection of snprintf to pg_snprintf in pgport.h */
+#undef snprintf
 
 #include "stdinc.h"
 #include "dbm.h"
