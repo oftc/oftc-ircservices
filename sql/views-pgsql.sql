@@ -52,9 +52,9 @@ CREATE OR REPLACE VIEW ns_view AS
 	(SELECT array_agg(nick) FROM nickname
 		WHERE account.id = nickname.account_id
 		AND nickname.id <> account.primary_nick) AS nicks,
-	abstime(reg_time) AS reg_time,
-	abstime(last_quit_time) AS last_quit_time,
-	(SELECT abstime(MAX(last_seen)) FROM nickname
+	to_timestamp(reg_time) AS reg_time,
+	to_timestamp(last_quit_time) AS last_quit_time,
+	(SELECT to_timestamp(MAX(last_seen)) FROM nickname
 		WHERE account.id = nickname.account_id) AS last_seen,
 	last_host,
 	last_realname,
