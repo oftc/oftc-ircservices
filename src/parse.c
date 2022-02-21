@@ -100,7 +100,7 @@ init_parser()
   char logpath[LOG_BUFSIZE];
 
   clear_tree_parse(&irc_msg_tree);
-  snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.sqllog);
+  snprintf(logpath, LOG_BUFSIZE, "%s/%s", LOGDIR, Logging.parselog);
   if(parse_log_fb == NULL)
   {
     if(Logging.parselog[0] != '\0' && (parse_log_fb = fbopen(logpath, "r")) != NULL)
