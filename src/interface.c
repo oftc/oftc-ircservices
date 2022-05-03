@@ -220,7 +220,8 @@ cleanup_interface()
   unregister_callback(on_nick_drop_cb);
   unregister_callback(on_chan_drop_cb);
   unregister_callback(on_group_drop_cb);
-  unregister_callback(on_ctcp_cb);
+  unregister_callback(on_ctcp_request_cb);
+  unregister_callback(on_ctcp_reply_cb);
   unregister_callback(on_nick_reg_cb);
   unregister_callback(on_chan_reg_cb);
   unregister_callback(on_group_reg_cb);
