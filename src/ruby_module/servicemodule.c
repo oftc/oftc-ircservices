@@ -572,7 +572,8 @@ Init_ServiceModule(void)
   rb_define_const(cServiceModule, "NOTICE_HOOK", INT2NUM(RB_HOOKS_NOTICE));
   rb_define_const(cServiceModule, "CHAN_CREATED_HOOK", INT2NUM(RB_HOOKS_CHAN_CREATED));
   rb_define_const(cServiceModule, "CHAN_DELETED_HOOK", INT2NUM(RB_HOOKS_CHAN_DELETED));
-  rb_define_const(cServiceModule, "CTCP_HOOK", INT2NUM(RB_HOOKS_CTCP));
+  rb_define_const(cServiceModule, "CTCP_REQUEST_HOOK", INT2NUM(RB_HOOKS_CTCP_REQUEST));
+  rb_define_const(cServiceModule, "CTCP_REPLY_HOOK", INT2NUM(RB_HOOKS_CTCP_REPLY));
   rb_define_const(cServiceModule, "CHAN_REG_HOOK", INT2NUM(RB_HOOKS_CHAN_REG));
   rb_define_const(cServiceModule, "NICK_REG_HOOK", INT2NUM(RB_HOOKS_NICK_REG));
   rb_define_const(cServiceModule, "DB_INIT_HOOK", INT2NUM(RB_HOOKS_DB_INIT));

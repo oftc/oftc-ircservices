@@ -1051,7 +1051,7 @@ m_notadmin(struct Service *service, struct Client *source,
 }
 
 void
-process_ctcp(struct Service *service, struct Client *client, char *command,
+process_ctcp(struct Service *service, struct Client *client, int privmsg, char *command,
     char *arg)
 {
   char buf[IRC_BUFSIZE + 1];
@@ -1061,41 +1061,48 @@ process_ctcp(struct Service *service, struct Client *client, char *command,
   else if(*command != '\0')
     command[strlen(command) - 1] = '\0';
 
-  if(irccmp(command, "PING") == 0)
+  if(privmsg)
   {
-    if(arg == NULL)
-      snprintf(buf, IRC_BUFSIZE, "\001PING\001");
-    else
-      snprintf(buf, IRC_BUFSIZE, "\001PING %s\001", arg);
-
-    reply_user(service, service, client, 0, buf);
-  }
-  else if(irccmp(command, "VERSION") == 0)
-  {
-    if(arg == NULL)
+    if(irccmp(command, "PING") == 0)
     {
-      snprintf(buf, IRC_BUFSIZE, "\001VERSION oftc-ircservices version %s\001",
-      PACKAGE_VERSION);
+      if(arg == NULL)
+        snprintf(buf, IRC_BUFSIZE, "\001PING\001");
+      else
+        snprintf(buf, IRC_BUFSIZE, "\001PING %s\001", arg);
+
       reply_user(service, service, client, 0, buf);
     }
+    else if(irccmp(command, "VERSION") == 0)
+    {
+      if(arg == NULL)
+      {
+        snprintf(buf, IRC_BUFSIZE, "\001VERSION oftc-ircservices version %s\001",
+            PACKAGE_VERSION);
+        reply_user(service, service, client, 0, buf);
+      }
+    }
+    else if(irccmp(command, "CLIENTINFO") == 0)
+    {
+      reply_user(service, service, client, 0, "\001CLIENTINFO PING VERSION "
+          "CLIENTINFO TIME\001");
+    }
+    else if(irccmp(command, "TIME") == 0)
+    {
+      char currtime[IRC_BUFSIZE/2+1];
+
+      strftime(currtime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z",
+          gmtime(&CurrentTime));
+
+      snprintf(buf, IRC_BUFSIZE, "\001TIME %s\001", currtime);
+      reply_user(service, service, client, 0, buf);
+    }
+
+    execute_callback(on_ctcp_request_cb, service, client, command, arg);
   }
-  else if(irccmp(command, "CLIENTINFO") == 0)
+  else
   {
-    reply_user(service, service, client, 0, "\001CLIENTINFO PING VERSION "
-        "CLIENTINFO TIME\001");
+    execute_callback(on_ctcp_reply_cb, service, client, command, arg);
   }
-  else if(irccmp(command, "TIME") == 0)
-  {
-    char currtime[IRC_BUFSIZE/2+1];
-
-    strftime(currtime, IRC_BUFSIZE/2, "%a %d %b %Y %H:%M:%S %z",
-        gmtime(&CurrentTime));
-
-    snprintf(buf, IRC_BUFSIZE, "\001TIME %s\001", currtime);
-    reply_user(service, service, client, 0, buf);
-  }
-
-  execute_callback(on_ctcp_cb, service, client, command, arg);
 }
 
 void
@@ -1140,7 +1147,7 @@ process_privmsg(int privmsg, struct Client *client, struct Client *source,
 
   if(*ch == '\001')
   {
-    process_ctcp(service, source, ch + 1, s);
+    process_ctcp(service, source, privmsg, ch + 1, s);
     return;
   }
 

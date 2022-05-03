@@ -38,7 +38,8 @@ static dlink_node *ruby_nick_hook;
 static dlink_node *ruby_notice_hook;
 static dlink_node *ruby_chan_create_hook;
 static dlink_node *ruby_chan_delete_hook;
-static dlink_node *ruby_ctcp_hook;
+static dlink_node *ruby_ctcp_request_hook;
+static dlink_node *ruby_ctcp_reply_hook;
 static dlink_node *ruby_nick_reg_hook;
 static dlink_node *ruby_chan_reg_hook;
 static dlink_node *ruby_db_init_hook;
@@ -62,7 +63,8 @@ static void *rb_nick_hdlr(va_list);
 static void *rb_notice_hdlr(va_list);
 static void *rb_chan_create_hdlr(va_list);
 static void *rb_chan_delete_hdlr(va_list);
-static void *rb_ctcp_hdlr(va_list);
+static void *rb_ctcp_request_hdlr(va_list);
+static void *rb_ctcp_reply_hdlr(va_list);
 static void *rb_nick_reg_hdlr(va_list);
 static void *rb_chan_reg_hdlr(va_list);
 static void *rb_db_init_hdlr(va_list);
@@ -487,14 +489,14 @@ rb_chan_delete_hdlr(va_list args)
 }
 
 static void *
-rb_ctcp_hdlr(va_list args)
+rb_ctcp_request_hdlr(va_list args)
 {
   struct Service *service = va_arg(args, struct Service *);
   struct Client *client   = va_arg(args, struct Client *);
   char *command           = va_arg(args, char *);
   char *arg               = va_arg(args, char *);
 
-  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CTCP);
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CTCP_REQUEST);
   VALUE varg, ret;
 
   if(arg == NULL)
@@ -506,7 +508,32 @@ rb_ctcp_hdlr(va_list args)
     client_to_value(client), rb_str_new2(command), varg);
 
   if(ret != Qfalse)
-    return pass_callback(ruby_ctcp_hook, service, client, command, arg);
+    return pass_callback(ruby_ctcp_request_hook, service, client, command, arg);
+  else
+    return NULL;
+}
+
+static void *
+rb_ctcp_reply_hdlr(va_list args)
+{
+  struct Service *service = va_arg(args, struct Service *);
+  struct Client *client   = va_arg(args, struct Client *);
+  char *command           = va_arg(args, char *);
+  char *arg               = va_arg(args, char *);
+
+  VALUE hooks = rb_ary_entry(ruby_server_hooks, RB_HOOKS_CTCP_REPLY);
+  VALUE varg, ret;
+
+  if(arg == NULL)
+    varg = Qnil;
+  else
+    varg = rb_str_new2(arg);
+
+  ret = do_hook(hooks, 4, /*TODO*/service,
+    client_to_value(client), rb_str_new2(command), varg);
+
+  if(ret != Qfalse)
+    return pass_callback(ruby_ctcp_reply_hook, service, client, command, arg);
   else
     return NULL;
 }
@@ -867,7 +894,8 @@ init_ruby(void)
   ruby_notice_hook = install_hook(on_notice_cb, rb_notice_hdlr);
   ruby_chan_create_hook = install_hook(on_channel_created_cb, rb_chan_create_hdlr);
   ruby_chan_delete_hook = install_hook(on_channel_destroy_cb, rb_chan_delete_hdlr);
-  ruby_ctcp_hook = install_hook(on_ctcp_cb, rb_ctcp_hdlr);
+  ruby_ctcp_request_hook = install_hook(on_ctcp_request_cb, rb_ctcp_request_hdlr);
+  ruby_ctcp_reply_hook = install_hook(on_ctcp_reply_cb, rb_ctcp_reply_hdlr);
   ruby_chan_reg_hook = install_hook(on_chan_reg_cb, rb_chan_reg_hdlr);
   ruby_nick_reg_hook = install_hook(on_nick_reg_cb, rb_nick_reg_hdlr);
   ruby_db_init_hook = install_hook(on_db_init_cb, rb_db_init_hdlr);

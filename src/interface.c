@@ -103,7 +103,8 @@ struct Callback *on_nick_drop_cb;
 struct Callback *on_chan_drop_cb;
 struct Callback *on_group_drop_cb;
 
-struct Callback *on_ctcp_cb;
+struct Callback *on_ctcp_request_cb;
+struct Callback *on_ctcp_reply_cb;
 
 struct Callback *do_event_cb;
 
@@ -160,7 +161,8 @@ init_interface()
   on_chan_drop_cb     = register_callback("Chan Dropped", NULL);
   on_group_drop_cb    = register_callback("Group Dropped", NULL);
   on_db_init_cb       = register_callback("On Database Init", NULL);
-  on_ctcp_cb          = register_callback("On CTCP Message", NULL);
+  on_ctcp_request_cb  = register_callback("On CTCP Request", NULL);
+  on_ctcp_reply_cb    = register_callback("On CTCP Reply", NULL);
   on_nick_reg_cb      = register_callback("Newly Registered Nick", NULL);
   on_chan_reg_cb      = register_callback("Newly Registered Chan", NULL);
   on_group_reg_cb     = register_callback("Newly Registered Group", NULL);

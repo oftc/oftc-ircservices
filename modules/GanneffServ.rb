@@ -77,7 +77,7 @@ class GanneffServ < ServiceModule
        [NICK_REG_HOOK,     'nick_registered'],
        [NEWUSR_HOOK,       'newuser'],
        [EOB_HOOK,          'eob'],
-       [CTCP_HOOK,         'ctcp_reply'],
+       [CTCP_REPLY_HOOK,   'ctcp_reply'],
        [QUIT_HOOK,         'quit'],
       ]) # add_hook
 
