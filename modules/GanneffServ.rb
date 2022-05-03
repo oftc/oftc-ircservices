@@ -470,7 +470,7 @@ class GanneffServ < ServiceModule
   # We got a ctcp reply
   def ctcp_reply(service, client, command, arg)
     debug(LOG_DEBUG, "Got a ctcp reply for #{client.name} and command #{command}")
-    return unless command == 'VERSION'
+    return true unless command == 'VERSION'
     msg = ""
     nick = client.name.downcase
     if @nicks.has_key?(client.id)
@@ -482,6 +482,7 @@ class GanneffServ < ServiceModule
 
     end # if @nicks.has_key
     debug(LOG_NOTICE, "#{nick} #{msg} CTCP'd #{command}: #{arg}")
+    true
   end
 
 # ------------------------------------------------------------------------
