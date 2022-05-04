@@ -1,0 +1,44 @@
+0 English
+CC_HELP_SHORT
+	%s: shows this help
+CC_HELP_LONG
+	Shows this help message
+CC_HELP_ADD_SHORT
+	%s: NOTIMP
+CC_HELP_ADD_LONG
+	NOTIMP
+CC_HELP_DEL_SHORT
+	%s: NOTIMP
+CC_HELP_DEL_LONG
+	Usage: DEL 1
+	
+	NOTIMP
+CC_HELP_LIST_SHORT
+	%s: List loaded patterns
+CC_HELP_LIST_LONG
+	Usage: LIST
+	
+	It really just lists loaded patterns
+CC_HELP_VERBOSE_SHORT
+	%s: Toggle verbose snooping
+CC_HELP_VERBOSE_LONG
+	Usage: VERBOSE
+	
+	Toggle verbose snooping to the snoop channel
+CC_HELP_ENFORCE_SHORT
+	%s: NOTIMP Enforces all current active patterns on all known clients
+CC_HELP_ENFORCE_LONG
+	NOTIMP Enforces all current active patterns on all known clients again
+CC_HELP_CHECK_SHORT
+	%s: Show details about a known client
+CC_HELP_CHECK_LONG
+	Usage: CHECK nick
+	
+	Show the details of a known client. Only works if we've sent them a query.
+CC_HELP_RELOAD_SHORT
+	%s: Reload config file and patterns from database
+CC_HELP_RELOAD_LONG
+	Usage: RELOAD
+	
+	Reload the config file and patterns from the database. Use if you've changed
+	the config file, or manually added patterns to the database.

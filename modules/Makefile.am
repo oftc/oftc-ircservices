@@ -8,7 +8,7 @@ else
 AM_LDFLAGS=-static
 noinst_LTLIBRARIES=chanserv.la operserv.la nickserv.la groupserv.la floodserv.la irc.la oftc.la pgsql.la nulldb.la
 endif
-dist_pkgdata_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb MoranServ.rb
+dist_pkgdata_DATA=PythonServ.py RubyServ.rb JupeServ.rb XmlRpc.rb ServiceBase.rb GanneffServ.rb Bopm.rb MoranServ.rb CTCPServ.rb
 chanserv_la_SOURCES=chanserv.c
 operserv_la_SOURCES=operserv.c
 nickserv_la_SOURCES=nickserv.c

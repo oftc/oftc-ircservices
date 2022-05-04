@@ -1,0 +1,4 @@
+---
+verbose: true
+channel: "#test"
+akill_duration: 2592000 # 30 days in seconds
