@@ -21,7 +21,7 @@ class CTCPServ < ServiceModule
 
     @dbq = Hash.new
     @dbq['GET_ALL_VERSION_PATTERNS'] = DB.prepare('
-      SELECT id, pattern, nick, time, monitor_only, kills, reason, active
+      SELECT ctcpserv_bad_versions.id, pattern, nick, time, monitor_only, kills, reason, active
       FROM ctcpserv_bad_versions, account, nickname
       WHERE ctcpserv_bad_versions.setter = account.id
       AND account.primary_nick = nickname.id
