@@ -51,6 +51,7 @@ class CTCPServ < ServiceModule
     load_version_patterns
 
     @nicks = Hash.new
+    log(LOG_DEBUG, "Init finished")
   end
 
   def load_config()
@@ -69,6 +70,7 @@ class CTCPServ < ServiceModule
     if not @config.has_key?('akill_duration')
       @config['akill_duration'] = 30*24*60*60
     end
+    log(LOG_DEBUG, "Config loaded")
   end
 
   def load_version_patterns()
@@ -100,9 +102,11 @@ class CTCPServ < ServiceModule
       @active_version_patterns << pattern
     end
     result.free
+    log(LOG_DEBUG, "Loaded #{@version_patterns.length} patterns; #{@active_version_patterns.length} active")
   end
 
   def loaded()
+    log(LOG_DEBUG, "Ready")
     return true
   end
 
@@ -186,10 +190,12 @@ class CTCPServ < ServiceModule
 
   def snoop(line)
     # This is really gross, but it's the only way to do it during bursting
+    log(LOG_DEBUG, "Snoop: #{line}")
     send_raw("#{self.client.id} PRIVMSG #{@config['channel']} :#{line}")
   end
 
   def client_new(client)
+    log(LOG_DEBUG, "Entered client_new with #{client.id} #{client.to_str}")
     return true if client.is_services_client?
 
     @nicks[client.id] = Hash.new
@@ -203,6 +209,7 @@ class CTCPServ < ServiceModule
   end
 
   def ctcp_reply(service, client, command, arg)
+    log(LOG_DEBUG, "Got CTCP #{command} reply from #{client.id} #{client.to_str} with arg: #{arg.inspect}")
     return true unless command == 'VERSION'
     return true unless @nicks.has_key?(client.id)
     return true unless @nicks[client.id][:reply] == 0
@@ -248,6 +255,7 @@ class CTCPServ < ServiceModule
   end
 
   def client_quit(client, reason)
+    log(LOG_DEBUG, "Entered client_quit with #{client.id} #{client.to_str}")
     if @nicks.has_key?(client.id)
       @nicks.delete(client.id)
     end
