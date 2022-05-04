@@ -167,7 +167,7 @@ class CTCPServ < ServiceModule
     reply(client, "%-4s %-16s %-19s %-3s %-3s %-7s %s" % [ "ID", "By", "When", "Act", "Mon", "Matches", "Reason" ])
     reply(client, " Pattern (quoted)")
 
-    @version_patterns.each do |pattern|
+    @version_patterns.sort{ |a, b| a['id'] <=> b['id'] }.each do |pattern|
       id = pattern['id']
       setter = pattern['setter']
       time = Time.at(pattern['time']).strftime('%Y-%m-%d %H:%M:%S')
