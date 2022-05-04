@@ -188,10 +188,10 @@ class CTCPServ < ServiceModule
   def CHECK(client, parv = [])
     c = Client.find(parv[1])
     if c.nil?
-      reply("#{parv[1]} not found!")
+      reply(client, "#{parv[1]} not found!")
       return true
     elsif not @nicks.has_key?(c.id)
-      reply("#{parv[1]} not known!")
+      reply(client, "#{parv[1]} not known!")
       return true
     end
 
