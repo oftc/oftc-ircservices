@@ -102,6 +102,10 @@ class CTCPServ < ServiceModule
     result.free
   end
 
+  def loaded()
+    return true
+  end
+
   def HELP(client, parv = [])
     do_help(client, parv[1], parv)
 
