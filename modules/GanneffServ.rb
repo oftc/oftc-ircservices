@@ -471,17 +471,17 @@ class GanneffServ < ServiceModule
   def ctcp_reply(service, client, command, arg)
     debug(LOG_DEBUG, "Got a ctcp reply for #{client.name} and command #{command}")
     return true unless command == 'VERSION'
-    msg = ""
-    nick = client.name.downcase
-    if @nicks.has_key?(client.id)
+    if @nicks.has_key?(client.id) and @nicks[client.id].has_key?("registered")
+      msg = ""
+      nick = client.name.downcase
       diff = @nicks[client.id]["registered"] - @nicks[client.id]["client"].firsttime
 
       if diff < 60
         msg = " (online for #{diff} seconds) "
       end # if diff
 
+      debug(LOG_NOTICE, "#{nick} #{msg} CTCP'd #{command}: #{arg}")
     end # if @nicks.has_key
-    debug(LOG_NOTICE, "#{nick} #{msg} CTCP'd #{command}: #{arg}")
     true
   end
 
