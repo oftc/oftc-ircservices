@@ -1055,11 +1055,16 @@ process_ctcp(struct Service *service, struct Client *client, int privmsg, char *
     char *arg)
 {
   char buf[IRC_BUFSIZE + 1];
+  char *to_trim = NULL;
+  size_t len;
 
   if(arg != NULL && *arg != '\0')
-    arg[strlen(arg) - 1] = '\0';
+    to_trim = arg;
   else if(*command != '\0')
-    command[strlen(command) - 1] = '\0';
+    to_trim = command;
+
+  if(to_trim && (len = strlen(to_trim)) && to_trim[len - 1] == '\x01')
+    to_trim[len - 1] = '\0';
 
   if(privmsg)
   {
