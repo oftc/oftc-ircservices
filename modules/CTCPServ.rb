@@ -81,7 +81,6 @@ class CTCPServ < ServiceModule
 
     result = DB.execute(@dbq['GET_ALL_VERSION_PATTERNS'], '')
     result.row_each do |row|
-      SELECT id, pattern, nick, time, monitor_only, kills, reason
       pattern = Hash.new
       pattern['id'] = row[0].to_i
       pattern['pattern'] = row[1]
