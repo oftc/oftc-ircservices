@@ -51,6 +51,8 @@ class CTCPServ < ServiceModule
     load_version_patterns
 
     @nicks = Hash.new
+    @kraken = Hash.new
+    @ready = false
     log(LOG_DEBUG, "Init finished")
   end
 
@@ -105,8 +107,43 @@ class CTCPServ < ServiceModule
     log(LOG_DEBUG, "Loaded #{@version_patterns.length} patterns; #{@active_version_patterns.length} active")
   end
 
+  def check_config_channel()
+    @channel = Channel.find(@config['channel'])
+    if @channel.nil?
+      log(LOG_ERROR, "Snoop channel #{@config['channel']} doesn't exist!")
+    end
+  end
+
+  def ctcp_client(client)
+    log(LOG_DEBUG, "CTCPing client #{client.id} #{client.to_str}")
+
+    @nicks[client.id] = Hash.new
+    @nicks[client.id][:request] = Time.new.to_i
+    @nicks[client.id][:reply] = 0
+    @nicks[client.id][:matches] = []
+
+    ctcp_user(client, "VERSION")
+  end
+
+  def release_the_kraken()
+    log(LOG_DEBUG, "Releasing the kraken! Length: #{@kraken.length}")
+
+    @kraken.delete_if do |key, value|
+      log(LOG_DEBUG, "Releasing kraken #{value.id} #{value.to_str}")
+      ctcp_client(value)
+      true
+    end
+  end
+
   def loaded()
     log(LOG_DEBUG, "Ready")
+
+    @ready = true
+
+    check_config_channel
+
+    release_the_kraken
+
     return true
   end
 
@@ -181,6 +218,7 @@ class CTCPServ < ServiceModule
 
   def RELOAD(client, parv = [])
     load_config
+    check_config_channel
     load_version_patterns
     log(LOG_NOTICE, "#{client.to_str} ran RELOAD")
     reply(client, "RELOAD completed")
@@ -189,21 +227,20 @@ class CTCPServ < ServiceModule
   end
 
   def snoop(line)
-    # This is really gross, but it's the only way to do it during bursting
     log(LOG_DEBUG, "Snoop: #{line}")
-    send_raw("#{self.client.id} PRIVMSG #{@config['channel']} :#{line}")
+    sendto_channel(@channel, line)
   end
 
   def client_new(client)
     log(LOG_DEBUG, "Entered client_new with #{client.id} #{client.to_str}")
     return true if client.is_services_client?
 
-    @nicks[client.id] = Hash.new
-    @nicks[:request] = Time.new.to_i
-    @nicks[:reply] = 0
-    @nicks[:matches] = []
-
-    ctcp_user(client, "VERSION")
+    if @ready
+      ctcp_client(client)
+    else
+      log(LOG_DEBUG, "Adding kraken #{client.id} #{client.to_str}")
+      @kraken[client.id] = client
+    end
 
     return true
   end
@@ -258,6 +295,9 @@ class CTCPServ < ServiceModule
     log(LOG_DEBUG, "Entered client_quit with #{client.id} #{client.to_str}")
     if @nicks.has_key?(client.id)
       @nicks.delete(client.id)
+    end
+    if @kraken.has_key?(client.id)
+      @kraken.delete(client.id)
     end
     return true
   end
