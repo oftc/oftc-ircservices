@@ -171,7 +171,7 @@ class CTCPServ < ServiceModule
       id = pattern['id']
       setter = pattern['setter']
       time = Time.at(pattern['time']).strftime('%Y-%m-%d %H:%M:%S')
-      active = pattern['active']
+      active = if pattern['active'] then 'T' else 'F' end
       mon = if pattern['monitor_only'] then 'T' else 'F' end
       matches = pattern['kills']
       reason = pattern['reason']
