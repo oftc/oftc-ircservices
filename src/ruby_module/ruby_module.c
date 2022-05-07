@@ -504,7 +504,7 @@ rb_ctcp_request_hdlr(va_list args)
   else
     varg = rb_str_new2(arg);
 
-  ret = do_hook(hooks, 4, /*TODO*/service,
+  ret = do_hook(hooks, 4, service->data,
     client_to_value(client), rb_str_new2(command), varg);
 
   if(ret != Qfalse)
@@ -529,7 +529,7 @@ rb_ctcp_reply_hdlr(va_list args)
   else
     varg = rb_str_new2(arg);
 
-  ret = do_hook(hooks, 4, /*TODO*/service,
+  ret = do_hook(hooks, 4, service->data,
     client_to_value(client), rb_str_new2(command), varg);
 
   if(ret != Qfalse)
