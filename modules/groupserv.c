@@ -364,7 +364,7 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 
   client->access = SUDO_FLAG;
 
-  ilog(L_INFO, "%s executed %s SUDO: %s", client->name, service->name,
+  ilog(L_NOTICE, "%s executed %s SUDO: %s", client->name, service->name,
       newparv[2]);
 
   process_privmsg(1, me.uplink, client, 3, newparv);

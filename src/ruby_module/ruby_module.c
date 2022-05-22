@@ -95,7 +95,7 @@ ruby_script_error()
     for (i = 0; i < RARRAY_LEN(array); ++i)
     {
       tmp = rb_ary_entry(array, i);
-      ilog(L_DEBUG, "RUBY BACKTRACE:   %s", StringValueCStr(tmp));
+      ilog(L_INFO, "RUBY BACKTRACE:   %s", StringValueCStr(tmp));
     }
   }
 }

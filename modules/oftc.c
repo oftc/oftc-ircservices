@@ -281,7 +281,7 @@ m_realhost(struct Client *client, struct Client *source, int parc, char *parv[])
 
   if(nclient == NULL)
   {
-    ilog(L_INFO, "Got REALHOST for %s but we don't know the client", parv[1]);
+    ilog(L_NOTICE, "Got REALHOST for %s but we don't know the client", parv[1]);
     return;
   }
 
@@ -299,7 +299,7 @@ m_certfp(struct Client *client, struct Client *source, int parc, char *parv[])
 
   if(target == NULL)
   {
-    ilog(L_INFO, "Got CERTFP for %s but we don't know the client", parv[1]);
+    ilog(L_NOTICE, "Got CERTFP for %s but we don't know the client", parv[1]);
     return;
   }
 
@@ -320,7 +320,7 @@ m_auth(struct Client *client, struct Client *source, int parc, char *parv[])
 static void
 m_eob(struct Client *client, struct Client *source, int parc, char *parv[])
 {
-  ilog(L_INFO, "Completed server burst");
+  ilog(L_NOTICE, "Completed server burst");
   sendto_server(client, "EOB");
   ClearConnecting(me.uplink);
   ServicesState.fully_connected = 1;

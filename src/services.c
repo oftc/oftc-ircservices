@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
 
     if(dorehash)
     {
-      ilog(L_INFO, "Got SIGHUP, reloading configuration");
+      ilog(L_NOTICE, "Got SIGHUP, reloading configuration");
       read_services_conf(NO);
       dorehash = 0;
     }

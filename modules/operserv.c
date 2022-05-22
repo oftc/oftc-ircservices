@@ -212,7 +212,7 @@ os_on_burst_done(va_list param)
       ilog(L_DEBUG, "JUPE Server %s already exists, removing jupe", jupe->name);
       ret = jupe_delete(jupe->name);
       if(ret <= 0)
-        ilog(L_INFO, "Failed to remove existing jupe for existing server %s", 
+        ilog(L_NOTICE, "Failed to remove existing jupe for existing server %s", 
             jupe->name);
     }
     else

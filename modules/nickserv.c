@@ -1725,7 +1725,7 @@ m_sudo(struct Service *service, struct Client *client, int parc, char *parv[])
 
   DupString(newparv[2], buf);
 
-  ilog(L_INFO, "%s executed %s SUDO on %s: %s", client->name, service->name, 
+  ilog(L_NOTICE, "%s executed %s SUDO on %s: %s", client->name, service->name, 
       nickname_get_nick(nick), newparv[2]);
 
   process_privmsg(1, me.uplink, client, 3, newparv);
@@ -1768,7 +1768,7 @@ m_dropnick(struct Service *service, struct Client *client, int parc, char *parv[
 
   DupString(newparv[2], "DROP");
 
-  ilog(L_INFO, "%s executed %s DROPNICK on %s", client->name, service->name,
+  ilog(L_NOTICE, "%s executed %s DROPNICK on %s", client->name, service->name,
       nickname_get_nick(nick));
 
   process_privmsg(1, me.uplink, client, 3, newparv);
@@ -2469,7 +2469,7 @@ m_verify(struct Service *service, struct Client *client, int parc, char *parv[])
     }
     nickname_link_list_free(&list);
 
-    ilog(L_INFO, "%s set verified status of %s to %s", client->name, parv[1], on ? "YES" : "NO");
+    ilog(L_NOTICE, "%s set verified status of %s to %s", client->name, parv[1], on ? "YES" : "NO");
     reply_user(service, service, client, NS_VERIFY_SUCCESS, parv[1], toggle);
   }
   else
