@@ -448,11 +448,12 @@ process_limit_list(void *param)
     {
       int limit;
 
-      limit = dlink_list_length(&chptr->members) + 3;
-      if(chptr->mode.limit != limit)
+      limit = dlink_list_length(&chptr->members) + 15;
+      if(chptr->mode.limit < limit - 5 || chptr->mode.limit > limit + 5)
+      {
         set_limit(chanserv, chptr, limit);
-
-      chptr->limit_time = CurrentTime + 90;
+        chptr->limit_time = CurrentTime + 600;
+      }
     }
   }
 }
@@ -1314,7 +1315,7 @@ m_set_autolimit(struct Service *service, struct Client *client,
     &dbchannel_get_autolimit, &dbchannel_set_autolimit);
   if(chptr != NULL && chptr->regchan != NULL && dbchannel_get_autolimit(chptr->regchan))
   {
-    chptr->limit_time = CurrentTime + 90;
+    chptr->limit_time = CurrentTime + 600;
     dlinkAdd(chptr, make_dlink_node(), &channel_limit_list);
   }
   else if(chptr != NULL && chptr->regchan != NULL)
@@ -2773,7 +2774,7 @@ cs_on_client_join(va_list args)
   {
     if(dlinkFind(&channel_limit_list, chptr) == NULL)
     {
-      chptr->limit_time = CurrentTime + 90;
+      chptr->limit_time = CurrentTime + 600;
       dlinkAdd(chptr, make_dlink_node(), &channel_limit_list);
     }
   }
