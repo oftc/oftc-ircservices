@@ -69,6 +69,24 @@ CREATE TABLE account_fingerprint (
 CREATE INDEX account_fingerprint_account_id_idx ON account_fingerprint (account_id);
 CREATE UNIQUE INDEX account_fingerprint_fingerprint_idx ON account_fingerprint (fingerprint);
 
+CREATE OR REPLACE FUNCTION account_fingerprint_dupe_check()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+declare
+  count bigint;
+begin
+  select count(*) into count from account_fingerprint af where af.fingerprint = new.fingerprint;
+  if count > 1 then
+    raise exception 'Fingerprint % is already in use', new.fingerprint;
+  end if;
+  return new;
+end;
+$function$;
+CREATE TRIGGER account_fingerprint_dupe_check
+  BEFORE INSERT ON account_fingerprint
+  FOR EACH ROW EXECUTE FUNCTION account_fingerprint_dupe_check();
+
 DROP TABLE IF EXISTS account_autojoin;
 CREATE TABLE account_autojoin (
   id                  SERIAL PRIMARY KEY,
