@@ -1798,7 +1798,7 @@ m_sendpass(struct Service *service, struct Client *client, int parc,
 
   if(parc == 1)
   {
-    if(dbmail_is_sent(nickname_get_id(nick), nickname_get_email(nick)))
+    if(client->access < OPER_FLAG && dbmail_is_sent(nickname_get_id(nick), nickname_get_email(nick)))
     {
       reply_user(service, service, client, NS_NO_SENDPASS_YET);
       nickname_free(nick);
