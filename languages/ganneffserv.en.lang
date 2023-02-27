@@ -75,3 +75,18 @@ GS_HLP_SRV_LONG
 	IN ROTATION.
 	
 	EVERY user that connects on this server WILL BE KLINED!
+GS_HLP_PRT_SHORT
+	%s: Protect users from akill triggered by another similar user
+GS_HLP_PRT_LONG
+	Takes a hostmask (or a regular expression if it starts with ^).
+
+	When a matching user trips on a trap, only they will be killed
+	instead of causing collateral damage to other matching users.
+
+	Usage: PROTECT <mask|regex> :<reason>
+GS_HLP_UPR_SHORT
+	%s: Delete protection for adjacent users
+GS_HLP_UPR_LONG
+	Delete collateral damage protection for matching users.
+
+	Usage: UNPROTECT <mask|regex>
