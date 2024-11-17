@@ -135,6 +135,9 @@ fd_close(fde_t *F)
 {
   unsigned int hashv = hash_fd(F->fd);
 
+  if (F->flags.open == 0)
+    return;
+
   if (F == fd_next_in_loop)
     fd_next_in_loop = F->hnext;
 
