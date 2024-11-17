@@ -237,8 +237,7 @@ close_connection(struct Client *client_p)
     send_queued_write(client_p);
   }
 
-  if (client_p->server->fd.flags.open)
-    fd_close(&client_p->server->fd);
+  fd_close(&client_p->server->fd);
 
   dbuf_clear(&client_p->server->buf_sendq);
   dbuf_clear(&client_p->server->buf_recvq);
