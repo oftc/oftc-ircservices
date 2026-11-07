@@ -154,8 +154,7 @@ init_interface()
   on_topic_change_cb  = register_callback("Topic changed", NULL);
   on_privmsg_cb       = register_callback("Privmsg for channel received", NULL);
   on_notice_cb        = register_callback("Notice for channel received", NULL);
-  on_burst_done_cb    = register_callback("Notification that burst is complete", 
-      NULL);
+  on_burst_done_cb    = register_callback("Notification that burst is complete", NULL);
   on_certfp_cb        = register_callback("Client certificate received for this user", NULL);
   on_nick_drop_cb     = register_callback("Nick Dropped", NULL);
   on_chan_drop_cb     = register_callback("Chan Dropped", NULL);
@@ -191,8 +190,6 @@ cleanup_interface()
   unregister_callback(send_topic_cb);
   unregister_callback(send_kill_cb);
   unregister_callback(send_resv_cb);
-  unregister_callback(send_topic_cb);
-  unregister_callback(send_resv_cb);
   unregister_callback(send_unresv_cb);
   unregister_callback(send_newserver_cb);
   unregister_callback(send_join_cb);
@@ -208,6 +205,7 @@ cleanup_interface()
   unregister_callback(on_quit_cb);
   unregister_callback(on_umode_change_cb);
   unregister_callback(on_cmode_change_cb);
+  unregister_callback(on_squit_cb);
   unregister_callback(on_identify_cb);
   unregister_callback(on_newuser_cb);
   unregister_callback(on_channel_created_cb);
@@ -220,6 +218,7 @@ cleanup_interface()
   unregister_callback(on_nick_drop_cb);
   unregister_callback(on_chan_drop_cb);
   unregister_callback(on_group_drop_cb);
+  unregister_callback(on_db_init_cb);
   unregister_callback(on_ctcp_request_cb);
   unregister_callback(on_ctcp_reply_cb);
   unregister_callback(on_nick_reg_cb);
